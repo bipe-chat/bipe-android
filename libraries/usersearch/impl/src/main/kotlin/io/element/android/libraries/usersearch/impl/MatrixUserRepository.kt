@@ -14,18 +14,26 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.MatrixPatterns
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
+import io.element.android.libraries.proseio.ProseioHandle
+import io.element.android.libraries.proseio.api.ProseioApiException
+import io.element.android.libraries.proseio.di.ProseioSession
 import io.element.android.libraries.usersearch.api.UserListDataSource
 import io.element.android.libraries.usersearch.api.UserRepository
 import io.element.android.libraries.usersearch.api.UserSearchResult
 import io.element.android.libraries.usersearch.api.UserSearchResultState
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import timber.log.Timber
+import java.util.Locale
 
 @ContributesBinding(SessionScope::class)
 class MatrixUserRepository(
     private val client: MatrixClient,
-    private val dataSource: UserListDataSource
+    private val dataSource: UserListDataSource,
+    private val proseioSession: ProseioSession,
 ) : UserRepository {
     override fun search(query: String): Flow<UserSearchResultState> = flow {
         val shouldQueryProfile = MatrixPatterns.isUserId(query) && !client.isMe(UserId(query))
@@ -45,13 +53,17 @@ class MatrixUserRepository(
         }
     }
 
-    private suspend fun fetchSearchResults(query: String, shouldQueryProfile: Boolean): UserSearchResultState {
+    private suspend fun fetchSearchResults(query: String, shouldQueryProfile: Boolean): UserSearchResultState = coroutineScope {
         // Debounce
         delay(DEBOUNCE_TIME_MILLIS)
-        val results = dataSource
+        // Proseio: exact @handle lookup next to the directory search. The match goes first.
+        val proseioMatch = async { proseioLookUp(query) }
+        val directoryResults = dataSource
             .search(query, MAXIMUM_SEARCH_RESULTS)
             .filter { !client.isMe(it.userId) }
             .map { UserSearchResult(it) }
+        val handleUser = proseioMatch.await()
+        val results = (listOfNotNull(handleUser?.let { UserSearchResult(it) }) + directoryResults.filter { it.matrixUser.userId != handleUser?.userId })
             .toMutableList()
 
         // If the query is another user's MXID and the result doesn't contain that user ID, query the profile information explicitly
@@ -64,7 +76,21 @@ class MatrixUserRepository(
             )
         }
 
-        return UserSearchResultState(results = results, isSearching = false)
+        UserSearchResultState(results = results, isSearching = false)
+    }
+
+    /** Proseio: the user who holds the handle in [query], or null (not a handle, nobody, the user's own, or a failed lookup). */
+    private suspend fun proseioLookUp(query: String): MatrixUser? {
+        val handle = ProseioHandle.sanitize(query).lowercase(Locale.ROOT)
+        if (ProseioHandle.localProblem(handle) != null) return null
+        val userId = try {
+            proseioSession.handleResolver.userId(forHandle = handle)
+        } catch (error: ProseioApiException) {
+            Timber.e(error, "Proseio handle lookup failed")
+            null
+        } ?: return null
+        if (client.isMe(UserId(userId))) return null
+        return dataSource.getProfile(UserId(userId)) ?: MatrixUser(UserId(userId))
     }
 
     companion object {

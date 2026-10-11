@@ -20,6 +20,7 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.proseio) // Proseio
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.di)
     implementation(projects.libraries.matrixui)
