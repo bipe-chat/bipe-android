@@ -69,6 +69,7 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.proseio.handle.ProseioHandleRow
+import io.element.android.libraries.proseio.handle.ProseioInvitesRow
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -98,6 +99,7 @@ fun PreferencesRootView(
     onDeactivateClick: () -> Unit,
     modifier: Modifier = Modifier,
     onProseioHandleClick: () -> Unit = {},
+    onProseioInvitesClick: () -> Unit = {},
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
 
@@ -117,6 +119,7 @@ fun PreferencesRootView(
                 matrixUser = state.myUser,
             )
             ProseioHandleRow(handle = state.proseioHandle, onClick = onProseioHandleClick) // Proseio
+            ProseioInvitesRow(onClick = onProseioInvitesClick) // Proseio
             if (state.userStatusState != null) {
                 UserStatusSection(
                     userStatusState = state.userStatusState,

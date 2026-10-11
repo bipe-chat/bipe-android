@@ -46,9 +46,11 @@ import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
 import io.element.android.libraries.proseio.handle.ProseioHandleNode
+import io.element.android.libraries.proseio.invites.ProseioInvitesNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -133,6 +135,9 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object ProseioHandle : NavTarget
+
+        @Parcelize
+        data object ProseioInvites : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -175,6 +180,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToProseioHandle() {
                         backstack.push(NavTarget.ProseioHandle)
+                    }
+
+                    override fun navigateToProseioInvites() {
+                        backstack.push(NavTarget.ProseioInvites)
                     }
 
                     override fun navigateToBugReport() {
@@ -252,6 +261,14 @@ class PreferencesFlowNode(
             }
             NavTarget.ProseioHandle -> {
                 createNode<ProseioHandleNode>(buildContext)
+            }
+            NavTarget.ProseioInvites -> {
+                val callback = object : ProseioInvitesNode.Callback {
+                    override fun navigateToUserProfile(userId: String) {
+                        callback.navigateToUserProfile(UserId(userId))
+                    }
+                }
+                createNode<ProseioInvitesNode>(buildContext, listOf(callback))
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {

@@ -40,6 +40,7 @@ import com.bumble.appyx.navmodel.backstack.operation.replace
 import com.bumble.appyx.navmodel.backstack.operation.singleTop
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
+import im.vector.app.features.analytics.plan.JoinedRoom as JoinedRoomAnalyticsEvent
 import io.element.android.annotations.ContributesNode
 import io.element.android.appnav.loggedin.LoggedInNode
 import io.element.android.appnav.loggedin.MediaPreviewConfigMigration
@@ -115,7 +116,6 @@ import java.util.Optional
 import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import im.vector.app.features.analytics.plan.JoinedRoom as JoinedRoomAnalyticsEvent
 
 // The maximum number of room nodes that should be kept in the backstack at the same time.
 // Having 5 rooms in the backstack seems reasonable and shouldn't grow the saved state size too much.
@@ -476,6 +476,11 @@ class LoggedInFlowNode(
                                 initialElement = RoomNavigationTarget.NotificationSettings,
                             )
                         }
+                    }
+
+                    // Proseio
+                    override fun navigateToUserProfile(userId: UserId) {
+                        backstack.push(NavTarget.UserProfile(userId))
                     }
 
                     override fun navigateToEvent(roomId: RoomId, eventId: EventId) {

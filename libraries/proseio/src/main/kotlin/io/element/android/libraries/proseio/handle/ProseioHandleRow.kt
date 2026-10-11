@@ -33,6 +33,16 @@ fun ProseioHandleRow(
     )
 }
 
+/** Settings row: "Convites", the personal invites screen. */
+@Composable
+fun ProseioInvitesRow(onClick: () -> Unit) {
+    ListItem(
+        content = { Text(stringResource(R.string.proseio_invites_title)) },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
+        onClick = onClick,
+    )
+}
+
 @PreviewsDayNight
 @Composable
 internal fun ProseioHandleRowPreview() = ElementPreview {

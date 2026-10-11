@@ -43,6 +43,7 @@ class PreferencesRootNode(
         fun navigateToLocationSettings()
         fun navigateToLabs()
         fun navigateToProseioHandle() // Proseio
+        fun navigateToProseioInvites() // Proseio
     }
 
     private val callback: Callback = callback()
@@ -90,6 +91,7 @@ class PreferencesRootNode(
             onSignOutClick = callback::startSignOutFlow,
             onDeactivateClick = callback::startAccountDeactivationFlow,
             onProseioHandleClick = callback::navigateToProseioHandle,
+            onProseioInvitesClick = callback::navigateToProseioInvites,
         )
     }
 }
