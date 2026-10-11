@@ -113,6 +113,7 @@ class NotLoggedInFlowNode(
                     params = LoginEntryPoint.Params(
                         accountProvider = inputs.loginParams?.accountProvider,
                         loginHint = inputs.loginParams?.loginHint,
+                        proseioInviteCode = inputs.loginParams?.proseioInviteCode,
                     ),
                     callback = callback,
                 )

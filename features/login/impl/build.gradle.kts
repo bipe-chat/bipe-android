@@ -58,6 +58,8 @@ dependencies {
     implementation(projects.features.preferences.api)
     implementation(projects.features.rageshake.api)
     implementation(projects.libraries.core)
+    implementation(projects.libraries.proseio)
+    implementation(projects.services.toolbox.api)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.matrix.api)

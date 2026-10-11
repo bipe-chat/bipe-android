@@ -27,6 +27,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
+import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.login.api.LoginEntryPoint
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
@@ -37,6 +38,7 @@ import io.element.android.features.login.impl.screens.classic.ClassicFlowNode
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderNode
 import io.element.android.features.login.impl.screens.loginpassword.LoginPasswordNode
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingNode
+import io.element.android.features.login.impl.screens.proseiosignup.ProseioSignupNode
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.BackstackView
@@ -76,6 +78,7 @@ class LoginFlowNode(
     data class Params(
         val accountProvider: String?,
         val loginHint: String?,
+        val proseioInviteCode: String? = null, // Proseio
     ) : NodeInputs
 
     private val callback: LoginEntryPoint.Callback = callback()
@@ -126,6 +129,10 @@ class LoginFlowNode(
         @Parcelize
         data object ChooseAccountProvider : NavTarget
 
+        // Proseio: invite sign-up. inviteCode is a normalised code from an invite link.
+        @Parcelize
+        data class ProseioSignup(val inviteCode: String? = null) : NavTarget
+
         @Parcelize
         data class LoginPassword(
             val initialLogin: String = "",
@@ -142,6 +149,8 @@ class LoginFlowNode(
                         } else {
                             backstack.replace(NavTarget.OnBoarding(showBackButton = false))
                         }
+                        // Proseio: an invite link opens the sign-up screen on top of onboarding.
+                        inputs<Params>().proseioInviteCode?.let { backstack.push(NavTarget.ProseioSignup(inviteCode = it)) }
                     }
 
                     override fun navigateToLoginPassword() {
@@ -158,7 +167,11 @@ class LoginFlowNode(
                 val callback = object : OnBoardingNode.Callback {
                     override fun navigateToSignUpFlow() {
                         backstack.push(
-                            NavTarget.ConfirmAccountProvider(isAccountCreation = true)
+                            if (OnBoardingConfig.USES_PROSEIO_SIGNUP) {
+                                NavTarget.ProseioSignup()
+                            } else {
+                                NavTarget.ConfirmAccountProvider(isAccountCreation = true)
+                            }
                         )
                     }
 
@@ -254,6 +267,19 @@ class LoginFlowNode(
                     }
                 }
                 createNode<ConfirmAccountProviderNode>(buildContext, plugins = listOf(inputs, callback))
+            }
+            is NavTarget.ProseioSignup -> {
+                val callback = object : ProseioSignupNode.Callback {
+                    override fun navigateToOAuth(oAuthDetails: OAuthDetails) {
+                        navigateToMas(oAuthDetails)
+                    }
+
+                    override fun navigateToLoginPassword() {
+                        backstack.push(NavTarget.LoginPassword())
+                    }
+                }
+                val inputs = ProseioSignupNode.Inputs(inviteCode = navTarget.inviteCode)
+                createNode<ProseioSignupNode>(buildContext, plugins = listOf(inputs, callback))
             }
             is NavTarget.LoginPassword -> {
                 val inputs = LoginPasswordNode.Inputs(

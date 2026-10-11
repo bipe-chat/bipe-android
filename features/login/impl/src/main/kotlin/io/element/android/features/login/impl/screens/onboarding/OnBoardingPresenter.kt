@@ -143,7 +143,8 @@ class OnBoardingPresenter(
             defaultAccountProvider = defaultAccountProvider,
             mustChooseAccountProvider = mustChooseAccountProvider,
             canLoginWithQrCode = canLoginWithQrCode,
-            canCreateAccount = defaultAccountProvider == null && canConnectToAnyAccountProvider && OnBoardingConfig.CAN_CREATE_ACCOUNT,
+            canCreateAccount = OnBoardingConfig.CAN_CREATE_ACCOUNT &&
+                (OnBoardingConfig.USES_PROSEIO_SIGNUP || (defaultAccountProvider == null && canConnectToAnyAccountProvider)), // Proseio
             canReportBug = canReportBug && showReportBug,
             loginModeState = loginModeState,
             version = buildMeta.versionName,

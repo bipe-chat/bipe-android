@@ -17,6 +17,7 @@ interface LoginEntryPoint : FeatureEntryPoint {
     data class Params(
         val accountProvider: String?,
         val loginHint: String?,
+        val proseioInviteCode: String? = null, // Proseio
     )
 
     interface Callback : Plugin {

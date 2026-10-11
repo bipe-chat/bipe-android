@@ -182,6 +182,7 @@ enum class ProseioApiErrorCode(val id: String) {
     HANDLE_TAKEN("handle_taken"),
     HANDLE_COOLDOWN("handle_cooldown"),
     PASSWORD_WEAK("password_weak"),
+    ATTESTATION_INVALID("attestation_invalid"),
     UNAUTHORIZED("unauthorized"),
     NOT_FOUND("not_found"),
     RATE_LIMITED("rate_limited"),
@@ -223,6 +224,8 @@ sealed class ProseioApiException(cause: Throwable? = null) : Exception(cause) {
             ProseioApiErrorCode.HANDLE_COOLDOWN -> stringProvider.getString(R.string.proseio_error_handle_cooldown)
             ProseioApiErrorCode.RATE_LIMITED -> stringProvider.getString(R.string.proseio_error_rate_limited)
             ProseioApiErrorCode.UNAUTHORIZED -> stringProvider.getString(R.string.proseio_error_unauthorized)
+            // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).
+            ProseioApiErrorCode.ATTESTATION_INVALID,
             ProseioApiErrorCode.BAD_REQUEST, ProseioApiErrorCode.NOT_FOUND, ProseioApiErrorCode.INTERNAL ->
                 stringProvider.getString(R.string.proseio_error_generic)
         }

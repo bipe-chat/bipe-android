@@ -29,6 +29,7 @@ class DefaultLoginEntryPoint : LoginEntryPoint {
                 LoginFlowNode.Params(
                     accountProvider = params.accountProvider,
                     loginHint = params.loginHint,
+                    proseioInviteCode = params.proseioInviteCode,
                 ),
                 callback,
             )

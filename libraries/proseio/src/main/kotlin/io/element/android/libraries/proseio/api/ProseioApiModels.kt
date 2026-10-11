@@ -72,6 +72,8 @@ data class ProseioInvite(
 data class ProseioMyInvites(
     @SerialName("quota") val quota: Int,
     @SerialName("available") val available: Int,
+    /** Only when [available] is 0: when the next slot comes back. */
+    @Serializable(with = InstantSerializer::class) @SerialName("next_available_at") val nextAvailableAt: Instant? = null,
     @SerialName("invites") val invites: List<ProseioInvite>,
 )
 

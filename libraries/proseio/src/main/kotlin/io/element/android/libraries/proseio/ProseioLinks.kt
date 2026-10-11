@@ -50,8 +50,10 @@ object ProseioProfileLink {
  * the app opens it as an app link and pre-fills the sign-up code.
  */
 object ProseioInviteLink {
-    /** Same alphabet as proseio-api `newInviteCode()`: no 0/O, 1/I/L. */
-    private const val ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+    /** Rule and cases: proseio-shared/test-vectors/invite-codes.json. iOS and the API use the same pattern. */
+    private val pattern = Regex(
+        """(?<![A-Z0-9])([A-HJKMNP-Z2-9]{4})[ \-\u2010-\u2014\u2212]?([A-HJKMNP-Z2-9]{4})[ \-\u2010-\u2014\u2212]?([A-HJKMNP-Z2-9]{4})(?![A-Z0-9])"""
+    )
 
     /** The invite code in a link, normalised, or `null` when the URL is not an invite link. */
     fun code(url: String): String? {
@@ -60,12 +62,15 @@ object ProseioInviteLink {
         return normalizedCode(components[1])
     }
 
-    /** `XXXX-XXXX-XXXX` from what a user typed or pasted: ignores case, spaces and dashes. `null` when it cannot be a code. */
+    /** `XXXX-XXXX-XXXX` from anything a user typed or pasted: a code, an invite link or a whole message. `null` when it holds no code. */
     fun normalizedCode(raw: String): String? {
-        val characters = raw.uppercase(Locale.ROOT).filter { !it.isWhitespace() && it != '-' }
-        if (characters.length != 12 || !characters.all { it in ALPHABET }) return null
-        return characters.chunked(4).joinToString("-")
+        val text = raw.take(MAX_INPUT_LENGTH).uppercase(Locale.ROOT)
+        val match = pattern.find(text) ?: return null
+        return match.groupValues.drop(1).joinToString("-")
     }
+
+    /** Same cap as the API's `invite_code` (`maxLength: 2048`). */
+    private const val MAX_INPUT_LENGTH = 2048
 }
 
 /** A normalised invite code. Prints redacted, because routes and actions get logged. */
