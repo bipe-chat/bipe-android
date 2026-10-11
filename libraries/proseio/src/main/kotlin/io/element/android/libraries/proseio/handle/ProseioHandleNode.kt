@@ -1,0 +1,37 @@
+/*
+ * Copyright 2026 Proseio.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+package io.element.android.libraries.proseio.handle
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.bumble.appyx.core.modality.BuildContext
+import com.bumble.appyx.core.node.Node
+import com.bumble.appyx.core.plugin.Plugin
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedInject
+import io.element.android.annotations.ContributesNode
+import io.element.android.libraries.di.SessionScope
+
+/** "Nome de usuário" in settings. */
+@ContributesNode(SessionScope::class)
+@AssistedInject
+class ProseioHandleNode(
+    @Assisted buildContext: BuildContext,
+    @Assisted plugins: List<Plugin>,
+    private val presenter: ProseioHandlePresenter,
+) : Node(buildContext, plugins = plugins) {
+    @Composable
+    override fun View(modifier: Modifier) {
+        val state = presenter.present()
+        ProseioHandleView(
+            state = state,
+            onBackClick = ::navigateUp,
+            onSaveSuccess = ::navigateUp,
+            modifier = modifier,
+        )
+    }
+}

@@ -33,6 +33,8 @@ data class PreferencesRootState(
     val showDeveloperSettings: Boolean,
     val showLabsItem: Boolean,
     val snackbarMessage: SnackbarMessage?,
+    // Proseio: the user's handle without "@", or null when there is none (or it is not loaded yet).
+    val proseioHandle: String? = null,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 

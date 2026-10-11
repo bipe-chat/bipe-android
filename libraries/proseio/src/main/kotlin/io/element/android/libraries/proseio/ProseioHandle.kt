@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.proseio
 
+import androidx.annotation.StringRes
 import io.element.android.libraries.proseio.api.ProseioApiClient
 import io.element.android.libraries.proseio.api.ProseioApiException
 import io.element.android.libraries.proseio.generated.ProseioRegistries
@@ -27,13 +28,25 @@ enum class ProseioHandleProblem(val id: String) {
     /** Also covers held and lookalike handles (server only). */
     TAKEN("taken");
 
-    fun localizedMessage(stringProvider: StringProvider): String = when (this) {
-        TOO_SHORT -> stringProvider.getString(R.string.proseio_handle_too_short, ProseioRegistries.HANDLE_MIN_LENGTH.toString())
-        TOO_LONG -> stringProvider.getString(R.string.proseio_handle_too_long, ProseioRegistries.HANDLE_MAX_LENGTH.toString())
-        INVALID_CHARACTERS -> stringProvider.getString(R.string.proseio_handle_invalid_characters)
-        RESERVED -> stringProvider.getString(R.string.proseio_handle_reserved)
-        TAKEN -> stringProvider.getString(R.string.proseio_handle_taken)
-    }
+    @get:StringRes
+    val messageRes: Int
+        get() = when (this) {
+            TOO_SHORT -> R.string.proseio_handle_too_short
+            TOO_LONG -> R.string.proseio_handle_too_long
+            INVALID_CHARACTERS -> R.string.proseio_handle_invalid_characters
+            RESERVED -> R.string.proseio_handle_reserved
+            TAKEN -> R.string.proseio_handle_taken
+        }
+
+    /** Format arguments for [messageRes]. */
+    val messageArgs: Array<Any>
+        get() = when (this) {
+            TOO_SHORT -> arrayOf(ProseioRegistries.HANDLE_MIN_LENGTH.toString())
+            TOO_LONG -> arrayOf(ProseioRegistries.HANDLE_MAX_LENGTH.toString())
+            else -> emptyArray()
+        }
+
+    fun localizedMessage(stringProvider: StringProvider): String = stringProvider.getString(messageRes, *messageArgs)
 
     companion object {
         fun fromId(id: String): ProseioHandleProblem? = entries.firstOrNull { it.id == id }

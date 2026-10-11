@@ -42,6 +42,7 @@ class PreferencesRootNode(
         fun navigateToMediaSettings()
         fun navigateToLocationSettings()
         fun navigateToLabs()
+        fun navigateToProseioHandle() // Proseio
     }
 
     private val callback: Callback = callback()
@@ -87,7 +88,8 @@ class PreferencesRootNode(
             onOpenNotificationSettings = callback::navigateToNotificationSettings,
             onEditProfileClick = callback::navigateToUserProfile,
             onSignOutClick = callback::startSignOutFlow,
-            onDeactivateClick = callback::startAccountDeactivationFlow
+            onDeactivateClick = callback::startAccountDeactivationFlow,
+            onProseioHandleClick = callback::navigateToProseioHandle,
         )
     }
 }

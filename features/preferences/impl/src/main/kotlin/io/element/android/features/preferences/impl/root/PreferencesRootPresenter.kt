@@ -31,6 +31,7 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.user.toMatrixUser
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.proseio.di.ProseioSession
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
@@ -53,6 +54,7 @@ class PreferencesRootPresenter(
     private val preferencesAccountPresenter: Presenter<PreferencesAccountState>,
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
+    private val proseioSession: ProseioSession,
 ) : Presenter<PreferencesRootState> {
     @Composable
     override fun present(): PreferencesRootState {
@@ -137,6 +139,10 @@ class PreferencesRootPresenter(
             }
         }
 
+        // Proseio: the handle row. The resolver looks the handle up and emits when it arrives.
+        val proseioHandles by proseioSession.handleResolver.handles.collectAsState()
+        val proseioHandle = remember(proseioHandles) { proseioSession.handleResolver.handle(matrixClient.sessionId.value) }
+
         return PreferencesRootState(
             myUser = matrixUser.value,
             userStatusState = userStatusState,
@@ -151,6 +157,7 @@ class PreferencesRootPresenter(
             showDeveloperSettings = showDeveloperSettings,
             showLabsItem = showLabsItem,
             snackbarMessage = snackbarMessage,
+            proseioHandle = proseioHandle,
             eventSink = ::handleEvent,
         )
     }

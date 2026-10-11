@@ -48,6 +48,7 @@ import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
+import io.element.android.libraries.proseio.handle.ProseioHandleNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -129,6 +130,9 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object OssLicenses : NavTarget
+
+        @Parcelize
+        data object ProseioHandle : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -167,6 +171,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToLabs() {
                         backstack.push(NavTarget.Labs)
+                    }
+
+                    override fun navigateToProseioHandle() {
+                        backstack.push(NavTarget.ProseioHandle)
                     }
 
                     override fun navigateToBugReport() {
@@ -241,6 +249,9 @@ class PreferencesFlowNode(
             }
             NavTarget.LocationSettings -> {
                 createNode<LocationSettingsNode>(buildContext)
+            }
+            NavTarget.ProseioHandle -> {
+                createNode<ProseioHandleNode>(buildContext)
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {
