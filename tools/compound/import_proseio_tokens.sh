@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 # Proseio variant of import_tokens.sh: copies the açaí tokens from the local
-# proseio-tokens clone (michellzappa/compound-design-tokens, private until launch)
+# proseio-tokens clone (proseio/compound-design-tokens, private until launch)
 # instead of cloning element-hq/compound-design-tokens.
 # Usage: ./tools/compound/import_proseio_tokens.sh [path to proseio-tokens]
 

@@ -13,7 +13,7 @@ This repo is Proseio's Android app: a fork of Element X Android (AGPL-3.0). Upst
 
 ## Upstream
 
-- `upstream` = element-hq/element-x-android (push disabled). `origin` = michellzappa/proseio-android. Local `main` tracks `origin/main`.
+- `upstream` = element-hq/element-x-android (push disabled). `origin` = proseio/proseio-android. Local `main` tracks `origin/main`.
 - Rebase: `git fetch upstream && git rebase upstream/develop`.
 
 ## Build (green gate)
