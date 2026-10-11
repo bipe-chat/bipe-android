@@ -64,6 +64,12 @@ object CompoundIcons {
     @Composable fun Block(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_block)
     }
+    @Composable fun BluetoothOutput(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_bluetooth_output)
+    }
+    @Composable fun Blur(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_blur)
+    }
     @Composable fun Bold(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_bold)
     }
@@ -72,6 +78,12 @@ object CompoundIcons {
     }
     @Composable fun Calendar(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_calendar)
+    }
+    @Composable fun Captions(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_captions)
+    }
+    @Composable fun CaptionsSolid(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_captions_solid)
     }
     @Composable fun Chart(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_chart)
@@ -262,6 +274,9 @@ object CompoundIcons {
     @Composable fun Guest(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_guest)
     }
+    @Composable fun GuestSolid(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_guest_solid)
+    }
     @Composable fun HeadphonesOffSolid(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_headphones_off_solid)
     }
@@ -285,6 +300,12 @@ object CompoundIcons {
     }
     @Composable fun Host(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_host)
+    }
+    @Composable fun Hourglass(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_hourglass)
+    }
+    @Composable fun HourglassSolid(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_hourglass_solid)
     }
     @Composable fun Image(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_image)
@@ -460,6 +481,9 @@ object CompoundIcons {
     @Composable fun PollsEnd(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_polls_end)
     }
+    @Composable fun PopIn(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_pop_in)
+    }
     @Composable fun PopOut(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_pop_out)
     }
@@ -498,6 +522,15 @@ object CompoundIcons {
     }
     @Composable fun ReactionSolid(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_reaction_solid)
+    }
+    @Composable fun Record(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_record)
+    }
+    @Composable fun RecordBorder(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_record_border)
+    }
+    @Composable fun RecordDot(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_record_dot)
     }
     @Composable fun Reply(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_reply)
@@ -562,6 +595,9 @@ object CompoundIcons {
     @Composable fun SignOut(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_sign_out)
     }
+    @Composable fun SmartTiles(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_smart_tiles)
+    }
     @Composable fun Space(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_space)
     }
@@ -612,6 +648,9 @@ object CompoundIcons {
     }
     @Composable fun Time(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_time)
+    }
+    @Composable fun Transcribe(): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_compound_transcribe)
     }
     @Composable fun Translate(): ImageVector {
         return ImageVector.vectorResource(R.drawable.ic_compound_translate)
@@ -740,9 +779,13 @@ object CompoundIcons {
         Backspace(),
         BackspaceSolid(),
         Block(),
+        BluetoothOutput(),
+        Blur(),
         Bold(),
         Bug(),
         Calendar(),
+        Captions(),
+        CaptionsSolid(),
         Chart(),
         Chat(),
         ChatNew(),
@@ -806,6 +849,7 @@ object CompoundIcons {
         Grid(),
         Group(),
         Guest(),
+        GuestSolid(),
         HeadphonesOffSolid(),
         HeadphonesSolid(),
         Help(),
@@ -814,6 +858,8 @@ object CompoundIcons {
         Home(),
         HomeSolid(),
         Host(),
+        Hourglass(),
+        HourglassSolid(),
         Image(),
         ImageError(),
         IndentDecrease(),
@@ -872,6 +918,7 @@ object CompoundIcons {
         Plus(),
         Polls(),
         PollsEnd(),
+        PopIn(),
         PopOut(),
         Preferences(),
         PresenceOutline8X8(),
@@ -885,6 +932,9 @@ object CompoundIcons {
         Reaction(),
         ReactionAdd(),
         ReactionSolid(),
+        Record(),
+        RecordBorder(),
+        RecordDot(),
         Reply(),
         Restart(),
         Room(),
@@ -906,6 +956,7 @@ object CompoundIcons {
         Shield(),
         Sidebar(),
         SignOut(),
+        SmartTiles(),
         Space(),
         SpaceSolid(),
         Spinner(),
@@ -923,6 +974,7 @@ object CompoundIcons {
         Threads(),
         ThreadsSolid(),
         Time(),
+        Transcribe(),
         Translate(),
         Tree(),
         Underline(),
@@ -977,9 +1029,13 @@ object CompoundIcons {
         R.drawable.ic_compound_backspace,
         R.drawable.ic_compound_backspace_solid,
         R.drawable.ic_compound_block,
+        R.drawable.ic_compound_bluetooth_output,
+        R.drawable.ic_compound_blur,
         R.drawable.ic_compound_bold,
         R.drawable.ic_compound_bug,
         R.drawable.ic_compound_calendar,
+        R.drawable.ic_compound_captions,
+        R.drawable.ic_compound_captions_solid,
         R.drawable.ic_compound_chart,
         R.drawable.ic_compound_chat,
         R.drawable.ic_compound_chat_new,
@@ -1043,6 +1099,7 @@ object CompoundIcons {
         R.drawable.ic_compound_grid,
         R.drawable.ic_compound_group,
         R.drawable.ic_compound_guest,
+        R.drawable.ic_compound_guest_solid,
         R.drawable.ic_compound_headphones_off_solid,
         R.drawable.ic_compound_headphones_solid,
         R.drawable.ic_compound_help,
@@ -1051,6 +1108,8 @@ object CompoundIcons {
         R.drawable.ic_compound_home,
         R.drawable.ic_compound_home_solid,
         R.drawable.ic_compound_host,
+        R.drawable.ic_compound_hourglass,
+        R.drawable.ic_compound_hourglass_solid,
         R.drawable.ic_compound_image,
         R.drawable.ic_compound_image_error,
         R.drawable.ic_compound_indent_decrease,
@@ -1109,6 +1168,7 @@ object CompoundIcons {
         R.drawable.ic_compound_plus,
         R.drawable.ic_compound_polls,
         R.drawable.ic_compound_polls_end,
+        R.drawable.ic_compound_pop_in,
         R.drawable.ic_compound_pop_out,
         R.drawable.ic_compound_preferences,
         R.drawable.ic_compound_presence_outline_8_x_8,
@@ -1122,6 +1182,9 @@ object CompoundIcons {
         R.drawable.ic_compound_reaction,
         R.drawable.ic_compound_reaction_add,
         R.drawable.ic_compound_reaction_solid,
+        R.drawable.ic_compound_record,
+        R.drawable.ic_compound_record_border,
+        R.drawable.ic_compound_record_dot,
         R.drawable.ic_compound_reply,
         R.drawable.ic_compound_restart,
         R.drawable.ic_compound_room,
@@ -1143,6 +1206,7 @@ object CompoundIcons {
         R.drawable.ic_compound_shield,
         R.drawable.ic_compound_sidebar,
         R.drawable.ic_compound_sign_out,
+        R.drawable.ic_compound_smart_tiles,
         R.drawable.ic_compound_space,
         R.drawable.ic_compound_space_solid,
         R.drawable.ic_compound_spinner,
@@ -1160,6 +1224,7 @@ object CompoundIcons {
         R.drawable.ic_compound_threads,
         R.drawable.ic_compound_threads_solid,
         R.drawable.ic_compound_time,
+        R.drawable.ic_compound_transcribe,
         R.drawable.ic_compound_translate,
         R.drawable.ic_compound_tree,
         R.drawable.ic_compound_underline,

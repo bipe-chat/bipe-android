@@ -101,6 +101,16 @@ data class SemanticColors(
     val bgSuccessRest: Color,
     /** Subtle background colour for success state elements. State: Rest. */
     val bgSuccessSubtle: Color,
+    /** Proseio trust UI. Amber card background. */
+    val bgTrustCautionSubtle: Color,
+    /** Proseio trust UI. Danger card background. */
+    val bgTrustDangerSubtle: Color,
+    /** Proseio trust UI. Information card background. */
+    val bgTrustNeutralSubtle: Color,
+    /** Proseio trust UI. Solid fill: institution seal, institutional header band. */
+    val bgTrustVerifiedSolid: Color,
+    /** Proseio trust UI. Subtle background for verified and Proseio cards. */
+    val bgTrustVerifiedSubtle: Color,
     /** Accent borders for containers */
     val borderAccentPrimary: Color,
     /** accent border intended for keylines on message highlights */
@@ -119,6 +129,8 @@ data class SemanticColors(
     val borderInfoSubtle: Color,
     /** Default contrast for accessible interactive element borders. State: Hover. */
     val borderInteractiveHovered: Color,
+    /** Default contrast for accessible interactive element borders. State: Pressed. */
+    val borderInteractivePressed: Color,
     /** Default contrast for accessible interactive element borders. State: Rest. */
     val borderInteractivePrimary: Color,
     /** ⚠️ Lowest contrast for non-accessible interactive element borders, <3:1. Only use for non-essential borders. Do not rely exclusively on them. State: Rest. */
@@ -127,6 +139,14 @@ data class SemanticColors(
     val borderSuccessPrimary: Color,
     /** Subtle border colour for success state elements. */
     val borderSuccessSubtle: Color,
+    /** Proseio trust UI. Amber card border. */
+    val borderTrustCaution: Color,
+    /** Proseio trust UI. Danger card border. */
+    val borderTrustDanger: Color,
+    /** Proseio trust UI. Information card border. */
+    val borderTrustNeutral: Color,
+    /** Proseio trust UI. Verified card and Pix request card border. */
+    val borderTrustVerified: Color,
     /** Background gradient stop for super and send buttons */
     val gradientActionStop1: Color,
     /** Background gradient stop for super and send buttons */
@@ -185,6 +205,14 @@ data class SemanticColors(
     val iconTertiary: Color,
     /** Translucent version of tertiary icon. Refer to it for intended use. */
     val iconTertiaryAlpha: Color,
+    /** Proseio trust UI. Amber glyphs. */
+    val iconTrustCaution: Color,
+    /** Proseio trust UI. Danger glyphs. */
+    val iconTrustDanger: Color,
+    /** Proseio trust UI. Information glyphs. */
+    val iconTrustNeutral: Color,
+    /** Proseio trust UI. Seal and verified glyphs. */
+    val iconTrustVerified: Color,
     /** Warning icon */
     val iconWarningPrimary: Color,
     /** Used to separate core sections of the UI as well as containers */
@@ -229,6 +257,14 @@ data class SemanticColors(
     val textSecondary: Color,
     /** Accent text colour for success state elements. */
     val textSuccessPrimary: Color,
+    /** Proseio trust UI. Caution (amber) text. AAA. */
+    val textTrustCaution: Color,
+    /** Proseio trust UI. Confirmed danger text. AAA. */
+    val textTrustDanger: Color,
+    /** Proseio trust UI. Information text (unverified, external). AAA. */
+    val textTrustNeutral: Color,
+    /** Proseio trust UI. Verified states (seal, verified name). AAA. */
+    val textTrustVerified: Color,
     /** Warning text */
     val textWarningPrimary: Color,
     /** True for light theme, false for dark theme. */
