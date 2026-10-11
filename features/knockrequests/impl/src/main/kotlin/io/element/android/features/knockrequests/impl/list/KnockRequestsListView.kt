@@ -75,6 +75,7 @@ import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.designsystem.utils.lazyColumnContentPadding
 import io.element.android.libraries.designsystem.utils.scaffoldScrollableContentInsets
+import io.element.android.libraries.proseio.ui.proseioDisplayText
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 
@@ -353,7 +354,7 @@ private fun KnockRequestItem(
             // UserId
             if (!knockRequest.displayName.isNullOrEmpty()) {
                 Text(
-                    text = knockRequest.userId.value,
+                    text = proseioDisplayText(knockRequest.userId.value), // Proseio
                     color = ElementTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

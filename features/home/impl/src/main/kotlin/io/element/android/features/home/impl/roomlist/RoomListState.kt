@@ -77,5 +77,7 @@ sealed interface RoomListContentState {
         val summaries: ImmutableList<RoomListRoomSummary>,
         val seenRoomInvites: ImmutableSet<RoomId>,
         val showAllActivity: Boolean,
+        // Proseio: DM invites kept out of the list, shown behind the Pedidos row.
+        val proseioRequestCount: Int = 0,
     ) : RoomListContentState
 }

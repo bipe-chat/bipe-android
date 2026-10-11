@@ -78,6 +78,8 @@ import io.element.android.libraries.matrix.api.spaces.SpaceRoomVisibility
 import io.element.android.libraries.matrix.ui.components.SpaceInfoRow
 import io.element.android.libraries.matrix.ui.components.SpaceMembersView
 import io.element.android.libraries.matrix.ui.model.InviteSender
+import io.element.android.libraries.proseio.ui.ProseioUnverifiedRequestCard
+import io.element.android.libraries.proseio.ui.proseioDisplayText
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.persistentListOf
 
@@ -398,6 +400,11 @@ private fun JoinRoomContent(
                                         Spacer(Modifier.height(16.dp))
                                         InvitedByView(inviteSender, hideAvatarsImages)
                                     }
+                                    // Proseio: a DM invite is a message request. No badges yet, so every account is unverified.
+                                    if ((contentState.details as? LoadedDetails.Room)?.isDm == true) {
+                                        Spacer(Modifier.height(16.dp))
+                                        ProseioUnverifiedRequestCard()
+                                    }
                                 }
                                 is JoinAuthorisationStatus.CanKnock -> {
                                     Spacer(modifier = Modifier.height(24.dp))
@@ -461,7 +468,7 @@ private fun InvitedByView(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = sender.userId.value,
+            text = proseioDisplayText(sender.userId.value), // Proseio
             style = ElementTheme.typography.fontBodySmRegular,
             color = ElementTheme.colors.textSecondary
         )

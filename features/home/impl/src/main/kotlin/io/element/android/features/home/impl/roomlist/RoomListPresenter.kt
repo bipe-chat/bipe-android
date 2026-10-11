@@ -30,6 +30,8 @@ import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.into
+import io.element.android.features.home.impl.model.RoomListRoomSummary
+import io.element.android.features.home.impl.model.RoomSummaryDisplayType
 import io.element.android.features.home.impl.search.GlobalSearchState
 import io.element.android.features.home.impl.search.RoomListSearchEvent
 import io.element.android.features.home.impl.search.RoomListSearchState
@@ -178,6 +180,7 @@ class RoomListPresenter(
             showNewNotificationSoundBanner,
             showUnreadCount,
             showAllActivity,
+            showsRequests = io.element.android.features.home.impl.filters.RoomListFilter.Invites in filtersState.selectedFilters(),
         )
 
         return RoomListState(
@@ -237,6 +240,7 @@ class RoomListPresenter(
         showNewNotificationSoundBanner: Boolean,
         showUnreadCount: Boolean,
         showAllActivity: Boolean,
+        showsRequests: Boolean,
     ): RoomListContentState {
         val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
             roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
@@ -262,15 +266,25 @@ class RoomListPresenter(
             else -> {
                 coldStartWatcher.onRoomListVisible()
 
+                // Proseio: DM invites are message requests (usernames.md "First contact"). They only show under the
+                // Pedidos filter. The SDK has no cheap "shares a joined room" check, so every DM invite counts.
+                val allSummaries = roomSummaries.dataOrNull().orEmpty()
+                val (requests, listed) = if (showsRequests) {
+                    emptyList<RoomListRoomSummary>() to allSummaries
+                } else {
+                    allSummaries.partition { it.displayType == RoomSummaryDisplayType.INVITE && it.isDm }
+                }
+
                 RoomListContentState.Rooms(
                     securityBannerState = securityBannerState,
                     showNewNotificationSoundBanner = showNewNotificationSoundBanner,
                     showUnreadCount = showUnreadCount,
                     fullScreenIntentPermissionsState = fullScreenIntentPermissionsPresenter.present(),
                     batteryOptimizationState = batteryOptimizationPresenter.present(),
-                    summaries = roomSummaries.dataOrNull().orEmpty().toImmutableList(),
+                    summaries = listed.toImmutableList(),
                     showAllActivity = showAllActivity,
                     seenRoomInvites = seenRoomInvites.toImmutableSet(),
+                    proseioRequestCount = requests.size,
                 )
             }
         }

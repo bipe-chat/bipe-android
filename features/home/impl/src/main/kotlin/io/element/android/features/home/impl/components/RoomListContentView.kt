@@ -34,6 +34,7 @@ import io.element.android.features.home.impl.R
 import io.element.android.features.home.impl.contentType
 import io.element.android.features.home.impl.filters.RoomListFilter
 import io.element.android.features.home.impl.filters.RoomListFiltersEmptyStateResources
+import io.element.android.features.home.impl.filters.RoomListFiltersEvent
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.aRoomListFiltersState
 import io.element.android.features.home.impl.filters.selection.FilterSelectionState
@@ -52,6 +53,7 @@ import io.element.android.libraries.designsystem.theme.components.HorizontalDivi
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
+import io.element.android.libraries.proseio.ui.ProseioRequestsRow
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 
@@ -203,6 +205,12 @@ private fun RoomsView(
     } else {
         RoomsViewList(
             state = state,
+            // Proseio: the Pedidos row opens the requests filter. Hidden while any filter is on.
+            onRequestsClick = if (state.proseioRequestCount > 0 && !hasAnyFilterSelected) {
+                { filtersState.eventSink(RoomListFiltersEvent.ToggleFilter(RoomListFilter.Invites)) }
+            } else {
+                null
+            },
             hideInvitesAvatars = hideInvitesAvatars,
             eventSink = eventSink,
             onSetUpRecoveryClick = onSetUpRecoveryClick,
@@ -218,6 +226,7 @@ private fun RoomsView(
 @Composable
 private fun RoomsViewList(
     state: RoomListContentState.Rooms,
+    onRequestsClick: (() -> Unit)?,
     hideInvitesAvatars: Boolean,
     eventSink: (RoomListEvent) -> Unit,
     onSetUpRecoveryClick: () -> Unit,
@@ -272,6 +281,13 @@ private fun RoomsViewList(
                         )
                     }
                 }
+            }
+        }
+
+        if (onRequestsClick != null) {
+            item {
+                ProseioRequestsRow(count = state.proseioRequestCount, onClick = onRequestsClick)
+                HorizontalDivider()
             }
         }
 
