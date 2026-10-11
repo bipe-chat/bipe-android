@@ -42,8 +42,10 @@ enum class FeatureFlags(
         description = "This setting controls how end-to-end encryption (E2E) keys are shared." +
             " Enabling it will prevent the inclusion of devices that have not been explicitly verified by their owners." +
             " You'll have to stop and re-open the app manually for that setting to take effect.",
-        defaultValue = { false },
-        isFinished = false,
+        // Proseio: always on, so a device the server adds without the owner's signature gets no room keys
+        // (proseio docs/security.md rule 13). isFinished makes the default fixed: no developer toggle.
+        defaultValue = { true },
+        isFinished = true,
     ),
     PrintLogsToLogcat(
         key = "feature.print_logs_to_logcat",
