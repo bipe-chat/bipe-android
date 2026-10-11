@@ -61,6 +61,7 @@ import io.element.android.libraries.matrix.ui.media.contentvalidation.NotFoundCo
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectOverallState
 import io.element.android.libraries.matrix.ui.media.contentvalidation.rememberEventContentValidationState
 import io.element.android.libraries.proseio.ui.ProseioScamWarningView
+import io.element.android.libraries.proseio.ui.ProseioVoiceTranscriptView
 import io.element.android.libraries.textcomposer.ElementRichTextEditorStyle
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayout
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
@@ -233,12 +234,20 @@ fun TimelineItemEventContentView(
                 )
                 is TimelineItemVoiceContent -> {
                     val presenter: Presenter<VoiceMessageState> = presenterFactories.rememberPresenter(content)
-                    TimelineItemVoiceView(
-                        state = presenter.present(),
-                        content = content,
-                        onContentLayoutChange = calculatedOnContentLayoutChange,
-                        contentValidationValue = overallValidationState,
-                    )
+                    // Proseio: the transcript (caption, ADR 0023) and its scam warning under the player.
+                    // With either one, the timestamp sits below them instead of beside the player.
+                    val transcript = content.caption?.takeIf { it.isNotBlank() }
+                    val hasProseioContent = transcript != null || content.proseioScamWarning != null
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TimelineItemVoiceView(
+                            state = presenter.present(),
+                            content = content,
+                            onContentLayoutChange = if (hasProseioContent) { _ -> } else calculatedOnContentLayoutChange,
+                            contentValidationValue = overallValidationState,
+                        )
+                        transcript?.let { ProseioVoiceTranscriptView(text = it) }
+                        content.proseioScamWarning?.let { ProseioScamWarningView(kind = it) }
+                    }
                 }
                 is TimelineItemRtcNotificationContent -> error("This shouldn't be rendered as the content of a bubble")
             }

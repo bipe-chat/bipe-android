@@ -258,7 +258,11 @@ class TimelineItemContentMessageFactory(
                     mimeType = messageType.info?.mimetype ?: MimeTypes.OctetStream,
                     waveform = messageType.details?.waveform?.toImmutableList() ?: persistentListOf(),
                     formattedFileSize = fileSizeFormatter.format(messageType.info?.size ?: 0),
-                    fileExtension = fileExtensionExtractor.extractFromName(messageType.filename)
+                    fileExtension = fileExtensionExtractor.extractFromName(messageType.filename),
+                    // Proseio: the scam detector reads incoming transcripts too (ADR 0023).
+                    proseioScamWarning = messageType.caption
+                        ?.takeIf { !isOutgoing && eventId != null }
+                        ?.let { ScamDetector.warningKind(it.trimEnd(), eventId!!.value) },
                 )
             }
             is FileMessageType -> {
