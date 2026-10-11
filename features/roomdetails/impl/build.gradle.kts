@@ -26,6 +26,7 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.proseio) // Proseio
     implementation(projects.appconfig)
     implementation(projects.libraries.core)
     implementation(projects.libraries.architecture)

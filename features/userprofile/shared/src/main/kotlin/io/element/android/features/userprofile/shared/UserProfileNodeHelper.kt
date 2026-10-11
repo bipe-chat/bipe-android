@@ -29,16 +29,18 @@ class UserProfileNodeHelper(
         fun startVerifyUserFlow(userId: UserId)
     }
 
+    /** [proseioProfileLink] (proseio.com.br/@handle) replaces the matrix.to permalink when the handle is known. */
     fun onShareUser(
         context: Context,
         permalinkBuilder: PermalinkBuilder,
+        proseioProfileLink: String? = null,
     ) {
         val permalinkResult = permalinkBuilder.permalinkForUser(userId)
         permalinkResult.onSuccess { permalink ->
             context.startSharePlainTextIntent(
                 activityResultLauncher = null,
                 chooserTitle = context.getString(CommonStrings.action_share),
-                text = permalink,
+                text = proseioProfileLink ?: permalink,
                 noActivityFoundMessage = context.getString(R.string.error_no_compatible_app_found)
             )
         }.onFailure {

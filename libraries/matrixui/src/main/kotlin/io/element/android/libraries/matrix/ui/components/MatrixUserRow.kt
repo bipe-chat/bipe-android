@@ -20,6 +20,7 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.getBestName
+import io.element.android.libraries.proseio.ui.proseioDisplayText
 
 @Composable
 fun MatrixUserRow(
@@ -32,13 +33,14 @@ fun MatrixUserRow(
     avatarData = matrixUser.getAvatarData(avatarSize),
     nameContent = {
         DisplayNameWithStatus(
-            name = matrixUser.getBestName(),
+            // Proseio: "@handle" in place of a bare Matrix ID.
+            name = if (matrixUser.displayName.isNullOrEmpty()) proseioDisplayText(matrixUser.userId.value) else matrixUser.getBestName(),
             status = matrixUser.displayedStatus,
             nameColor = ElementTheme.colors.textPrimary,
             style = ElementTheme.typography.fontBodyLgRegular,
         )
     },
-    subtext = if (matrixUser.displayName.isNullOrEmpty()) null else matrixUser.userId.value,
+    subtext = if (matrixUser.displayName.isNullOrEmpty()) null else proseioDisplayText(matrixUser.userId.value), // Proseio
     modifier = modifier,
     verticalSpaceWidth = verticalSpaceWidth,
     trailingContent = trailingContent,

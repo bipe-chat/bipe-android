@@ -97,6 +97,8 @@ import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.proseio.di.ProseioSession
+import io.element.android.libraries.proseio.ui.LocalProseioHandleResolver
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.ui.common.nodes.EmptyState
 import io.element.android.libraries.ui.common.nodes.emptyNode
@@ -140,6 +142,7 @@ class LoggedInFlowNode(
     private val roomDirectoryEntryPoint: RoomDirectoryEntryPoint,
     private val shareEntryPoint: ShareEntryPoint,
     private val matrixClient: MatrixClient,
+    private val proseioSession: ProseioSession,
     private val sendingQueue: SendQueues,
     private val nativeCallHost: NativeCallHost,
     private val incomingVerificationEntryPoint: IncomingVerificationEntryPoint,
@@ -693,7 +696,10 @@ class LoggedInFlowNode(
             compoundDark = colors.dark,
             buildMeta = buildMeta,
         ) {
-            CompositionLocalProvider(LocalMapTilerConfig provides updatedMapTilerConfig) {
+            CompositionLocalProvider(
+                LocalMapTilerConfig provides updatedMapTilerConfig,
+                LocalProseioHandleResolver provides proseioSession.handleResolver, // Proseio: @handles in shared UI
+            ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an
                 // offline banner during a call belongs under the call bar, not over it.

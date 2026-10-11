@@ -23,6 +23,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.libraries.proseio) // Proseio
     implementation(projects.libraries.core)
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.matrix.api)

@@ -27,6 +27,8 @@ import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.permalink.PermalinkBuilder
+import io.element.android.libraries.proseio.ProseioProfileLink
+import io.element.android.libraries.proseio.ui.proseioHandle
 import io.element.android.services.analytics.api.AnalyticsService
 
 @ContributesNode(SessionScope::class)
@@ -58,9 +60,11 @@ class UserProfileNode(
     @Composable
     override fun View(modifier: Modifier) {
         val context = LocalContext.current
+        // Proseio: share proseio.com.br/@handle when the handle is known.
+        val proseioProfileLink = proseioHandle(inputs.userId.value)?.let(ProseioProfileLink::url)
 
         fun onShareUser() {
-            userProfileNodeHelper.onShareUser(context, permalinkBuilder)
+            userProfileNodeHelper.onShareUser(context, permalinkBuilder, proseioProfileLink)
         }
 
         fun onStartDM(roomId: RoomId) {
