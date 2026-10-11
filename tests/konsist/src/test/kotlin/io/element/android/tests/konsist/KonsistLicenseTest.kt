@@ -23,6 +23,15 @@ class KonsistLicenseTest {
          \*/
         """.trimIndent().toRegex()
 
+    // Proseio: files Proseio adds carry its own AGPL header.
+    private val proseioLicense = """
+        /\*
+         \* Copyright 20\d\d Proseio\.
+         \*
+         \* SPDX-License-Identifier: AGPL-3.0-only
+         \*/
+        """.trimIndent().toRegex()
+
     @Test
     fun `assert that FOSS files have the correct license header`() {
         Konsist
@@ -38,7 +47,7 @@ class KonsistLicenseTest {
                 assertThat(it).isNotEmpty()
             }
             .assertTrue {
-                publicLicense.containsMatchIn(it.text)
+                publicLicense.containsMatchIn(it.text) || proseioLicense.containsMatchIn(it.text)
             }
     }
 
@@ -54,7 +63,8 @@ class KonsistLicenseTest {
                     it.name.startsWith("Template ").not()
             }
             .assertTrue {
-                it.text.count("Element Creations Ltd.") == 1
+                it.text.count("Element Creations Ltd.") == 1 ||
+                    (it.text.count("Element Creations Ltd.") == 0 && proseioLicense.containsMatchIn(it.text))
             }
     }
 }

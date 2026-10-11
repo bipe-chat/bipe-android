@@ -1,0 +1,51 @@
+# Proseio fork notes
+
+This repo is Proseio's Android app: a fork of Element X Android (AGPL-3.0). Upstream conventions in `AGENTS.md` still apply. This file adds the fork rules. Plan: `../proseio/docs/android-plan.md`.
+
+## Rules
+
+- **All Proseio code lives in `libraries/proseio`** (the mirror of ProseioKit on iOS). Element X sources get small hooks only, marked `// Proseio`. Keep the upstream diff small so rebases stay cheap.
+- **Never hand-edit `libraries/proseio/src/main/kotlin/.../generated/` or `res/values*/proseio_strings.xml`.** They come from `../proseio-shared` (`node tools/gen.mjs`). Change registries and strings there.
+- Proseio UI strings are `R.string.proseio_*` from that module, not `temporary.xml` and not Localazy.
+- Platform logic (badge verification, normalisation, scam detection) must pass `../proseio-shared/test-vectors/`, like iOS.
+- New Proseio files carry the Proseio AGPL header (`Copyright 2026 Proseio.`, `SPDX-License-Identifier: AGPL-3.0-only`). `KonsistLicenseTest` accepts it.
+- The `enterprise/` submodule (private Element repo) is not used. FOSS builds use `features/enterprise/impl-foss`.
+
+## Upstream
+
+- `upstream` = element-hq/element-x-android (push disabled). `origin` = michellzappa/proseio-android. Local `main` tracks `origin/main`.
+- Rebase: `git fetch upstream && git rebase upstream/develop`.
+
+## Build (green gate)
+
+```bash
+./gradlew assembleGplayDebug
+```
+
+Not run yet: the dev Mac has no JDK or Android SDK (11 October 2026). Nothing in this fork has compiled.
+
+## Configuration
+
+| What | Where | Value |
+|---|---|---|
+| Application ID, name | `plugins/src/main/kotlin/config/BuildTimeConfig.kt` | `br.com.proseio.app` (debug adds `.debug`), "Proseio" |
+| OAuth redirect scheme | `BuildTimeConfig.METADATA_HOST_REVERSED` | `br.com.proseio.app` (debug `br.com.proseio.app.debug`) |
+| OAuth client, logo, terms, privacy URLs | `BuildTimeConfig.URL_*` | `https://proseio.com.br/...` (MAS requires them on the client URI host) |
+| Server | `appconfig/.../ProseioConfig.kt`, used by `DefaultEnterpriseService` (impl-foss) | `proseio.com.br`, base `https://matrix.proseio.com.br`. Allow list of one, so the server picker is hidden. |
+| Proseio API | `ProseioConfig.API_BASE_URL` | `https://api.proseio.com.br` |
+| Firebase push gateway | `FirebaseConfig.PUSHER_HTTP_URL` | `https://push.proseio.com.br/_matrix/push/v1/notify` (own Sygnal, never matrix.org) |
+| Pusher app IDs | `BuildTimeConfig.PUSHER_APP_ID_*` | `br.com.proseio.app.android.prod` / `.android.dev`. Sygnal must list them. |
+| Telemetry | `BuildTimeConfig` | Sentry and PostHog keys stay `null`. Rageshake URL and app name are empty in `appconfig`, which disables bug reports. |
+| Locales | `plugins/.../extension/locales.kt`, `app/src/main/res/xml/locales_config.xml` | pt-BR and en only. Edited by hand: do not re-run the Localazy import. |
+| Accent colour | Compound tokens | Açaí from `../proseio-tokens`: `./tools/compound/import_proseio_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
+| App links | `app/src/main/AndroidManifest.xml` | `proseio.com.br` paths `/@` and `/convite/`. Element hosts removed. |
+
+## Not done
+
+- **Firebase:** `libraries/pushproviders/firebase/src/*/res/values/firebase.xml` still holds Element's Firebase project (`vector-alpha`). FCM cannot work with the Proseio application ID until Proseio has its own Firebase project.
+- **UnifiedPush:** the default gateway is still `matrix.gateway.unifiedpush.org`, a third party.
+- **Help links:** `LearnMoreConfig` still points at `element.io/help`. iOS hides these links.
+- **App icon:** `appicon/element` is Element's icon.
+- **Default language:** a device in a language other than pt or en gets en (the `values/` fallback). iOS defaults to pt-BR.
+- **`assetlinks.json`** on `proseio.com.br` for verified app links.
+- Proseio screens (phase 5) and the routing for Proseio links.

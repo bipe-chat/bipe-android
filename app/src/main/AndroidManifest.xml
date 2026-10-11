@@ -84,7 +84,9 @@
                 <data android:scheme="@string/login_redirect_scheme" />
             </intent-filter>
             <!--
-              Element web links
+              Proseio links: profile (https://proseio.com.br/@handle) and invite (https://proseio.com.br/convite/CODE).
+              Proseio: replaces the Element web and mobile link filters.
+              Matching asset file: https://proseio.com.br/.well-known/assetlinks.json (not published yet)
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -93,28 +95,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="https" />
-                <!-- Note: we can't use "*.element.io" here because it'll intercept the "mas.element.io" domain too. -->
-                <!-- Matching asset file: https://app.element.io/.well-known/assetlinks.json -->
-                <data android:host="app.element.io" />
-                <!-- Matching asset file: https://develop.element.io/.well-known/assetlinks.json -->
-                <data android:host="develop.element.io" />
-                <!-- Matching asset file: https://staging.element.io/.well-known/assetlinks.json -->
-                <data android:host="staging.element.io" />
-            </intent-filter>
-            <!--
-              Element mobile links
-              Example: https://mobile.element.io/element/?account_provider=example.org&login_hint=mxid:@alice:example.org
-            -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https" />
-                <!-- Matching asset file: https://mobile.element.io/.well-known/assetlinks.json -->
-                <data android:host="mobile.element.io" />
-                <data android:path="/element/" />
+                <data android:host="proseio.com.br" />
+                <data android:pathPrefix="/@" />
+                <data android:pathPrefix="/convite/" />
             </intent-filter>
             <!--
               matrix: links

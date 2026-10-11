@@ -13,7 +13,8 @@ object FirebaseConfig {
      * It is the push gateway for firebase.
      * Note: pusher_http_url should have path '/_matrix/push/v1/notify' -->
      */
-    const val PUSHER_HTTP_URL: String = "https://matrix.org/_matrix/push/v1/notify"
+    // Proseio: own Sygnal (issue #61); never matrix.org.
+    const val PUSHER_HTTP_URL: String = "https://push.proseio.com.br/_matrix/push/v1/notify"
 
     const val INDEX = 0
     const val NAME = "Firebase"

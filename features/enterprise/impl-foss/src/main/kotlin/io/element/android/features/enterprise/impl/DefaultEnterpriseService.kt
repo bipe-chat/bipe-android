@@ -11,6 +11,7 @@ package io.element.android.features.enterprise.impl
 import androidx.compose.ui.graphics.Color
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.appconfig.ProseioConfig
 import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.features.enterprise.api.BugReportUrl
 import io.element.android.features.enterprise.api.EnterpriseService
@@ -37,9 +38,11 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
-    override fun accountProviderAllowList(): List<AccountProvider> = emptyList()
-    override fun canConnectToAnyAccountProvider(): Boolean = true
-    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) = true
+    // Proseio: own server only (closed federation), like allowOtherAccountProviders = false on iOS.
+    override fun accountProviderAllowList(): List<AccountProvider> = listOf(ProseioConfig.accountProvider)
+    override fun canConnectToAnyAccountProvider(): Boolean = false
+    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) =
+        accountProvider.matches(ProseioConfig.accountProvider)
     override suspend fun isElementProEnforced(serverName: String): Boolean = withContext(dispatchers.io) {
         val temporaryMatrixClient = temporaryMatrixClientFactory.create(serverName).getOrElse { return@withContext false }
         temporaryMatrixClient.use { client ->
