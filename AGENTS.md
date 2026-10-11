@@ -121,3 +121,7 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 - Naming: SDK `Room` → `JoinedRoom` or `RoomInfo`.
 - Type Mapping: Map Rust SDK types to Kotlin data classes in the `api` module to avoid leaking `MatrixRustSDK` into the UI.
 - Always follow Kotlin naming conventions (e.g., `userId` instead of `userID`).
+
+## Decisions
+
+Product and architecture decisions for all Proseio repos are ADRs in the umbrella repo: `../proseio/docs/adr/` (index: `README.md`). Check them before changing a decided behaviour. A new decision gets an ADR there, not a note in this repo.
