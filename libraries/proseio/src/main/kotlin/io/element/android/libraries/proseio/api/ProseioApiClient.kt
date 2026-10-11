@@ -6,13 +6,17 @@
 
 package io.element.android.libraries.proseio.api
 
-import io.element.android.libraries.network.RetrofitFactory
+import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.libraries.proseio.ProseioHandleProblem
 import io.element.android.libraries.proseio.R
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -65,9 +69,18 @@ class ProseioApiClient internal constructor(private val service: ProseioApiServi
         call { service.setMyHandle(bearer(accessToken), SetHandleRequest(handle)) }
 
     companion object {
-        /** [baseUrl] is the API root, e.g. `https://api.proseio.com.br`. */
-        fun create(retrofitFactory: RetrofitFactory, baseUrl: String): ProseioApiClient =
-            ProseioApiClient(retrofitFactory.create(baseUrl).create(ProseioApiService::class.java))
+        /**
+         * [baseUrl] is the API root, e.g. `https://api.proseio.com.br`.
+         * [callFactory] must not log bodies or headers: requests carry passwords and access tokens.
+         */
+        fun create(callFactory: Call.Factory, json: Json, baseUrl: String): ProseioApiClient {
+            val retrofit = Retrofit.Builder()
+                .baseUrl(baseUrl.ensureTrailingSlash())
+                .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+                .callFactory(callFactory)
+                .build()
+            return ProseioApiClient(retrofit.create(ProseioApiService::class.java))
+        }
 
         /**
          * Runs [request] with the token from [accessToken]. On HTTP 401 it reads the token again and retries once,
