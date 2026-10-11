@@ -9,6 +9,8 @@
 package io.element.android.features.messages.impl.timeline.components.event
 
 import android.text.SpannedString
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
@@ -41,6 +43,7 @@ import io.element.android.features.messages.impl.timeline.model.event.TimelineIt
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStateContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStickerContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemTextBasedContent
+import io.element.android.features.messages.impl.timeline.model.event.TimelineItemTextContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemUnknownContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemVideoContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemVoiceContent
@@ -57,6 +60,7 @@ import io.element.android.libraries.matrix.ui.media.contentvalidation.InvalidCon
 import io.element.android.libraries.matrix.ui.media.contentvalidation.NotFoundContentView
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectOverallState
 import io.element.android.libraries.matrix.ui.media.contentvalidation.rememberEventContentValidationState
+import io.element.android.libraries.proseio.ui.ProseioScamWarningView
 import io.element.android.libraries.textcomposer.ElementRichTextEditorStyle
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayout
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
@@ -139,6 +143,15 @@ fun TimelineItemEventContentView(
                     content = content,
                     onContentLayoutChange = calculatedOnContentLayoutChange,
                 )
+                // Proseio: the scam warning card goes under the text. The timestamp then sits below the card.
+                is TimelineItemTextContent if content.proseioScamWarning != null -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TimelineItemTextView(
+                        content = content,
+                        onLinkClick = onLinkClick,
+                        onLinkLongClick = onLinkLongClick,
+                    )
+                    ProseioScamWarningView(kind = content.proseioScamWarning)
+                }
                 is TimelineItemTextBasedContent -> TimelineItemTextView(
                     content = content,
                     onLinkClick = onLinkClick,

@@ -90,6 +90,7 @@ class TimelineItemContentFactory(
                     senderProfile = senderProfile,
                     content = itemContent,
                     eventId = eventId,
+                    isOutgoing = isOutgoing, // Proseio: scam warnings are for incoming text only
                 )
             }
             is ProfileChangeContent -> {

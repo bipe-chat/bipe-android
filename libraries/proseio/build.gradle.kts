@@ -10,7 +10,7 @@ import extension.testCommonDependencies
 // src/main/kotlin/.../generated and src/main/res/values*/proseio_strings.xml come from proseio-shared
 // (node tools/gen.mjs). Do not edit them by hand.
 plugins {
-    id("io.element.android-library")
+    id("io.element.android-compose-library")
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.serialization.json)
     implementation(libs.google.tink)
+    implementation(projects.libraries.designsystem)
     implementation(projects.libraries.network)
     implementation(projects.services.toolbox.api)
     implementation(platform(libs.network.retrofit.bom))

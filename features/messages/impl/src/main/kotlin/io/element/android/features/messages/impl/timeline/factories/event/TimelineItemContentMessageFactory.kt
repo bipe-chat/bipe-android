@@ -57,6 +57,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.VoiceMessageT
 import io.element.android.libraries.matrix.api.timeline.item.event.getDisambiguatedDisplayName
 import io.element.android.libraries.matrix.ui.messages.toHtmlDocument
 import io.element.android.libraries.mediaviewer.api.util.FileExtensionExtractor
+import io.element.android.libraries.proseio.ScamDetector
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import org.jsoup.nodes.Document
@@ -82,6 +83,7 @@ class TimelineItemContentMessageFactory(
         senderId: UserId,
         senderProfile: ProfileDetails,
         eventId: EventId?,
+        isOutgoing: Boolean = false,
     ): TimelineItemEventContent {
         return when (val messageType = content.type) {
             is EmoteMessageType -> {
@@ -120,6 +122,8 @@ class TimelineItemContentMessageFactory(
                     } else {
                         null
                     },
+                    // Proseio: scam pattern check for incoming text, cached by event ID.
+                    proseioScamWarning = if (!isOutgoing && eventId != null) ScamDetector.warningKind(body, eventId.value) else null,
                 )
             }
             is ImageMessageType -> {
