@@ -117,7 +117,7 @@ internal fun ProseioMissedSummaryViewPreview() = ElementPreview {
     ProseioMissedSummaryView(
         summary = ProseioMissedSummary(
             lines = listOf(
-                ProseioMissedSummary.Line(ProseioMissedSummary.Kind.MENTION, "\$1", "Bia", "@mz você leva o carvão?"),
+                ProseioMissedSummary.Line(ProseioMissedSummary.Kind.MENTION, "\$1", "Bia", "@gabi você leva o carvão?"),
                 ProseioMissedSummary.Line(ProseioMissedSummary.Kind.REPLY, "\$2", "Léo", "Fechado, 13h lá em casa"),
                 ProseioMissedSummary.Line(ProseioMissedSummary.Kind.POLL, "\$3", "Léo", "Sábado ou domingo?"),
             ),
