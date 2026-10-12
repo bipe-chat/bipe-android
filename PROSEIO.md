@@ -22,7 +22,7 @@ This repo is Proseio's Android app: a fork of Element X Android (AGPL-3.0). Upst
 ./gradlew assembleGplayDebug
 ```
 
-Not run yet: the dev Mac has no JDK or Android SDK (11 October 2026). Nothing in this fork has compiled.
+The dev Mac has no JDK or Android SDK. Build on **mini4p** (Tailscale `mini-4p`), which has JDK 21 in `~/opt/jdk-21` and the SDK in `~/Library/Android/sdk` (platform 37.0, build-tools 37.0.0). It has no GitHub access: copy the tree over (`git ls-files -co --exclude-standard | tar`), make it a local git repo (the build reads git for BuildConfig), add `local.properties`, then `JAVA_HOME=~/opt/jdk-21/Contents/Home ./gradlew assembleGplayDebug`. First green build: 12 October 2026.
 
 Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVectorTest.kt` reads `../proseio-shared/test-vectors` directly. Not run yet either.
 
@@ -45,6 +45,11 @@ Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVec
 | Locales | `plugins/.../extension/locales.kt`, `app/src/main/res/xml/locales_config.xml` | pt-BR and en only. Edited by hand: do not re-run the Localazy import. |
 | Accent colour | Compound tokens | Açaí from `../proseio-tokens`: `./tools/compound/import_proseio_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
 | App links | `app/src/main/AndroidManifest.xml` | `proseio.com.br` paths `/@` and `/convite/`. Element hosts removed. |
+
+## Groups MVP (proseio/docs/groups.md, ADR 0026)
+
+- **Quiet by default (#97):** `ProseioQuietGroups` (libraries/proseio) runs from `LoggedInFlowNode` when the session starts. Group default becomes mentions and keywords; the override rule `br.com.proseio.poll_start` (`*.poll.start`) makes new polls notify. It waits for Synapse `msc4028_push_encrypted_events`. Android needs no extra entitlement to drop pushes, unlike iOS.
+- **"O que você perdeu" (#98):** rules in `features/messages/.../timeline/ProseioMissedSummaryFactory.kt`, view `ProseioMissedSummaryView` (libraries/proseio), shown in the read marker row through `TimelineRoomInfo.proseioMissedSummary`.
 
 ## Not done
 
@@ -74,3 +79,4 @@ Each line is a deliberate difference with its reason. A difference not listed he
 | Language fallback | en for other device languages | pt-BR | Undecided (#102) |
 | Handle lookup | Every user search | Start chat only | Undecided (#102) |
 | Unencrypted room option | Removed | Still offered | Not done on iOS (#78). **Gap** |
+| Quiet groups "done" marker | The poll rule in the account's push rules (once per account) | A flag on the device (once per device) | Android has no per-session store in libraries/proseio; same result for the user |
