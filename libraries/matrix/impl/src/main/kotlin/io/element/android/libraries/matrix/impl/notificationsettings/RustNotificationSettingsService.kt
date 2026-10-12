@@ -21,9 +21,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
+import org.matrix.rustcomponents.sdk.Action
 import org.matrix.rustcomponents.sdk.Client
 import org.matrix.rustcomponents.sdk.NotificationSettingsDelegate
 import org.matrix.rustcomponents.sdk.NotificationSettingsException
+import org.matrix.rustcomponents.sdk.PushCondition
+import org.matrix.rustcomponents.sdk.RuleKind
 import timber.log.Timber
 
 class RustNotificationSettingsService(
@@ -143,5 +146,17 @@ class RustNotificationSettingsService(
 
     override suspend fun getRawPushRules(): Result<String?> = runCatchingExceptions {
         notificationSettings.await().getRawPushRules()
+    }
+
+    // Proseio: proseio#97
+    override suspend fun setNotifyOverrideRule(ruleId: String, eventTypePattern: String): Result<Unit> = withContext(dispatchers.io) {
+        runCatchingExceptions {
+            notificationSettings.await().setCustomPushRule(
+                ruleId = ruleId,
+                ruleKind = RuleKind.Override,
+                actions = listOf(Action.Notify),
+                conditions = listOf(PushCondition.EventMatch(key = "type", pattern = eventTypePattern)),
+            )
+        }
     }
 }
