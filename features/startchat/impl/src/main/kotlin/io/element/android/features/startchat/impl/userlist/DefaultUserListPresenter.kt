@@ -70,13 +70,16 @@ class DefaultUserListPresenter(
             mutableStateOf(SearchBarResultState.Initial)
         }
         var showSearchLoader by remember { mutableStateOf(false) }
+        var proseioHandleNotFound by remember { mutableStateOf<String?>(null) }
 
         val searchQuery = queryState.text.toString()
         LaunchedEffect(searchQuery) {
             searchResults = SearchBarResultState.Initial
             showSearchLoader = false
+            proseioHandleNotFound = null
             userRepository.search(searchQuery).onEach { state ->
                 showSearchLoader = state.isSearching
+                proseioHandleNotFound = state.proseioHandleNotFound
                 searchResults = when {
                     state.results.isEmpty() && state.isSearching -> SearchBarResultState.Initial
                     state.results.isEmpty() && !state.isSearching -> SearchBarResultState.NoResultsFound
@@ -101,6 +104,7 @@ class DefaultUserListPresenter(
             showSearchLoader = showSearchLoader,
             selectionMode = args.selectionMode,
             recentDirectRooms = recentDirectRooms.toImmutableList(),
+            proseioHandleNotFound = proseioHandleNotFound,
             eventSink = ::handleEvent,
         )
     }

@@ -39,6 +39,7 @@ import io.element.android.libraries.matrix.ui.components.CheckableUserRowData
 import io.element.android.libraries.matrix.ui.components.SelectedUsersRowList
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.getBestName
+import io.element.android.libraries.proseio.R as ProseioR
 import io.element.android.libraries.ui.strings.CommonStrings
 
 @Composable
@@ -58,6 +59,7 @@ fun UserListView(
                 .padding(contentPaddingValues),
             queryState = state.searchQuery,
             resultState = state.searchResults,
+            noResultsText = state.proseioHandleNotFound?.let { stringResource(ProseioR.string.proseio_start_chat_handle_not_found, it) },
             selectedUsers = state.selectedUsers,
             active = state.isSearchActive,
             showLoader = state.showSearchLoader,

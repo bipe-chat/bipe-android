@@ -24,6 +24,7 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.proseio) // Proseio
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.uiStrings)
     implementation(projects.libraries.androidutils)

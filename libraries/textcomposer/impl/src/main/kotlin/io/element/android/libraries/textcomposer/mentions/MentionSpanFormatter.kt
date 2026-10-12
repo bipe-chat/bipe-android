@@ -14,6 +14,7 @@ import io.element.android.libraries.matrix.api.core.RoomIdOrAlias
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.ui.messages.RoomMemberProfilesCache
 import io.element.android.libraries.matrix.ui.messages.RoomNamesCache
+import io.element.android.libraries.proseio.di.ProseioSession
 
 private const val EVERYONE_DISPLAY_TEXT = "@room"
 private const val BUBBLE_ICON = "\uD83D\uDCAC" // 💬
@@ -31,6 +32,7 @@ interface MentionSpanFormatter {
 class DefaultMentionSpanFormatter(
     private val roomMemberProfilesCache: RoomMemberProfilesCache,
     private val roomNamesCache: RoomNamesCache,
+    private val proseioSession: ProseioSession,
 ) : MentionSpanFormatter {
     /**
      * Format the display text for a mention span.
@@ -53,7 +55,8 @@ class DefaultMentionSpanFormatter(
         return if (displayName != null) {
             "@$displayName"
         } else {
-            userId.value
+            // Proseio: "@handle" in place of the raw Matrix ID once the handle resolves.
+            proseioSession.handleResolver.displayText(userId.value)
         }
     }
 

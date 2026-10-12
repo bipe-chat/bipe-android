@@ -57,12 +57,13 @@ class MatrixUserRepository(
         // Debounce
         delay(DEBOUNCE_TIME_MILLIS)
         // Proseio: exact @handle lookup next to the directory search. The match goes first.
-        val proseioMatch = async { proseioLookUp(query) }
+        val proseioLookUp = async { proseioLookUp(query) }
         val directoryResults = dataSource
             .search(query, MAXIMUM_SEARCH_RESULTS)
             .filter { !client.isMe(it.userId) }
             .map { UserSearchResult(it) }
-        val handleUser = proseioMatch.await()
+        val lookUp = proseioLookUp.await()
+        val handleUser = lookUp?.user
         val results = (listOfNotNull(handleUser?.let { UserSearchResult(it) }) + directoryResults.filter { it.matrixUser.userId != handleUser?.userId })
             .toMutableList()
 
@@ -76,21 +77,28 @@ class MatrixUserRepository(
             )
         }
 
-        UserSearchResultState(results = results, isSearching = false)
+        UserSearchResultState(
+            results = results,
+            isSearching = false,
+            proseioHandleNotFound = lookUp?.takeIf { it.user == null }?.handle,
+        )
     }
 
-    /** Proseio: the user who holds the handle in [query], or null (not a handle, nobody, the user's own, or a failed lookup). */
-    private suspend fun proseioLookUp(query: String): MatrixUser? {
+    /** Proseio: a valid handle from the query, and its holder (null when nobody holds it). */
+    private data class ProseioLookUp(val handle: String, val user: MatrixUser?)
+
+    /** Proseio: exact handle lookup. Null when the query is not a handle, is the user's own handle, or the lookup failed. */
+    private suspend fun proseioLookUp(query: String): ProseioLookUp? {
         val handle = ProseioHandle.sanitize(query).lowercase(Locale.ROOT)
         if (ProseioHandle.localProblem(handle) != null) return null
         val userId = try {
             proseioSession.handleResolver.userId(forHandle = handle)
         } catch (error: ProseioApiException) {
             Timber.e(error, "Proseio handle lookup failed")
-            null
-        } ?: return null
+            return null
+        } ?: return ProseioLookUp(handle, user = null)
         if (client.isMe(UserId(userId))) return null
-        return dataSource.getProfile(UserId(userId)) ?: MatrixUser(UserId(userId))
+        return ProseioLookUp(handle, dataSource.getProfile(UserId(userId)) ?: MatrixUser(UserId(userId)))
     }
 
     companion object {

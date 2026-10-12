@@ -68,6 +68,8 @@ fun <T> SearchBar(
     activeBarColors: SearchBarColors = ElementSearchBarDefaults.activeColors(),
     contentPrefix: @Composable ColumnScope.() -> Unit = {},
     contentSuffix: @Composable ColumnScope.() -> Unit = {},
+    // Proseio: replaces "No results" when the caller knows why, e.g. a handle nobody holds.
+    noResultsText: String? = null,
     resultHandler: @Composable ColumnScope.(T) -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
@@ -142,7 +144,7 @@ fun <T> SearchBar(
                     Spacer(Modifier.size(80.dp))
 
                     Text(
-                        text = stringResource(CommonStrings.common_no_results),
+                        text = noResultsText ?: stringResource(CommonStrings.common_no_results),
                         textAlign = TextAlign.Center,
                         color = ElementTheme.colors.textSecondary,
                         modifier = Modifier.fillMaxWidth()

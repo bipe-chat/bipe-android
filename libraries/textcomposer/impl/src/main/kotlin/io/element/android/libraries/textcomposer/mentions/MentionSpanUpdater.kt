@@ -19,6 +19,7 @@ import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.matrix.ui.messages.RoomMemberProfilesCache
 import io.element.android.libraries.matrix.ui.messages.RoomNamesCache
 import io.element.android.libraries.matrix.ui.model.toEmojiText
+import io.element.android.libraries.proseio.di.ProseioSession
 
 interface MentionSpanUpdater {
     fun updateMentionSpans(text: CharSequence): CharSequence
@@ -33,13 +34,16 @@ class DefaultMentionSpanUpdater(
     private val theme: MentionSpanTheme,
     private val roomMemberProfilesCache: RoomMemberProfilesCache,
     private val roomNamesCache: RoomNamesCache,
+    private val proseioSession: ProseioSession,
 ) : MentionSpanUpdater {
     @Composable
     override fun rememberMentionSpans(text: CharSequence): CharSequence {
         val isLightTheme = ElementTheme.isLightTheme
         val roomInfoCacheUpdate by roomNamesCache.updateFlow.collectAsState(0)
         val roomMemberProfilesCacheUpdate by roomMemberProfilesCache.updateFlow.collectAsState(0)
-        return remember(text, roomInfoCacheUpdate, roomMemberProfilesCacheUpdate, isLightTheme) {
+        // Proseio: re-render pills when a handle arrives.
+        val proseioHandles by proseioSession.handleResolver.handles.collectAsState()
+        return remember(text, roomInfoCacheUpdate, roomMemberProfilesCacheUpdate, isLightTheme, proseioHandles) {
             updateMentionSpans(text)
             text
         }

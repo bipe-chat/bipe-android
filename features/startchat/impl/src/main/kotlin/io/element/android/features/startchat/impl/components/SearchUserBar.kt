@@ -51,6 +51,7 @@ fun SearchUserBar(
     modifier: Modifier = Modifier,
     showBackButton: Boolean = true,
     placeHolderTitle: String = stringResource(CommonStrings.common_search_for_someone),
+    noResultsText: String? = null, // Proseio
 ) {
     val columnState = rememberLazyListState()
 
@@ -61,6 +62,7 @@ fun SearchUserBar(
         modifier = modifier,
         placeHolderTitle = placeHolderTitle,
         showBackButton = showBackButton,
+        noResultsText = noResultsText,
         contentPrefix = {
             if (isMultiSelectionEnable && active && selectedUsers.isNotEmpty()) {
                 // We want the selected users to behave a bit like a top bar - when the list below is scrolled, the colour
