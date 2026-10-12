@@ -6,11 +6,15 @@
 
 package io.element.android.features.messages.impl.messagecomposer
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +27,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,12 +42,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Button
+import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
 import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.matrix.api.media.MediaSource
 import io.element.android.libraries.matrixmedia.api.MediaRequestData
 import io.element.android.libraries.proseio.stickers.Sticker
@@ -54,8 +65,19 @@ import io.element.android.libraries.proseio.R as ProseioR
 sealed interface StickerPickerState {
     data object Hidden : StickerPickerState
     data object Loading : StickerPickerState
-    data class Loaded(val packs: ImmutableList<StickerPack>) : StickerPickerState
+    data class Loaded(
+        val packs: ImmutableList<StickerPack>,
+        /** The result of the last import, shown above the packs. */
+        val importNotice: StickerImportNotice? = null,
+    ) : StickerPickerState
     data object Failed : StickerPickerState
+}
+
+@Immutable
+sealed interface StickerImportNotice {
+    data class Added(val count: Int) : StickerImportNotice
+    data object NoneNew : StickerImportNotice
+    data object Failed : StickerImportNotice
 }
 
 @Composable
@@ -64,13 +86,39 @@ internal fun StickerPickerBottomSheet(
     roomId: String,
     onStickerClick: (Sticker) -> Unit,
     onRetryClick: () -> Unit,
+    onImport: (List<Uri>) -> Unit,
     onDismiss: () -> Unit,
 ) {
     if (state == StickerPickerState.Hidden) return
+    var showImportHelp by remember { mutableStateOf(false) }
+    val filePicker = rememberLauncherForActivityResult(OpenStickerFiles()) { uris ->
+        if (uris.isNotEmpty()) onImport(uris)
+    }
     ModalBottomSheet(onDismissRequest = onDismiss, scrollable = false) {
-        StickerPickerContent(state, roomId, onStickerClick, onRetryClick)
+        StickerPickerContent(state, roomId, onStickerClick, onRetryClick, onImportClick = { showImportHelp = true })
+    }
+    if (showImportHelp) {
+        ConfirmationDialog(
+            title = stringResource(ProseioR.string.proseio_stickers_import_action),
+            content = listOf(
+                stringResource(ProseioR.string.proseio_stickers_import_help),
+                stringResource(ProseioR.string.proseio_stickers_import_help_folder_android),
+                stringResource(ProseioR.string.proseio_stickers_import_note),
+            ).joinToString("\n\n"),
+            submitText = stringResource(CommonStrings.action_choose_file),
+            onSubmitClick = {
+                showImportHelp = false
+                filePicker.launch(StickerImporterMimeTypes)
+            },
+            onDismiss = { showImportHelp = false },
+        )
     }
 }
+
+/** A WhatsApp chat export, or the sticker files themselves. */
+private val StickerImporterMimeTypes = arrayOf("application/zip", "image/webp", "image/png")
+
+private class OpenStickerFiles : ActivityResultContracts.OpenMultipleDocuments()
 
 @Composable
 private fun StickerPickerContent(
@@ -78,14 +126,34 @@ private fun StickerPickerContent(
     roomId: String,
     onStickerClick: (Sticker) -> Unit,
     onRetryClick: () -> Unit,
+    onImportClick: () -> Unit,
 ) {
     Column(modifier = Modifier.navigationBarsPadding()) {
-        Text(
-            text = stringResource(ProseioR.string.proseio_stickers_title),
-            style = ElementTheme.typography.fontHeadingSmMedium,
-            color = ElementTheme.colors.textPrimary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(ProseioR.string.proseio_stickers_title),
+                style = ElementTheme.typography.fontHeadingSmMedium,
+                color = ElementTheme.colors.textPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(
+                text = stringResource(ProseioR.string.proseio_stickers_import_action),
+                size = ButtonSize.Medium,
+                enabled = state != StickerPickerState.Loading,
+                onClick = onImportClick,
+            )
+        }
+        if (state is StickerPickerState.Loaded && state.importNotice != null) {
+            Text(
+                text = importNoticeText(state.importNotice),
+                style = ElementTheme.typography.fontBodyMdRegular,
+                color = ElementTheme.colors.textSecondary,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+        }
         when (state) {
             StickerPickerState.Hidden -> Unit
             StickerPickerState.Loading -> Box(Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
@@ -181,6 +249,13 @@ private fun Message(title: String, body: String?, onRetryClick: (() -> Unit)?) {
 }
 
 @Composable
+private fun importNoticeText(notice: StickerImportNotice): String = when (notice) {
+    is StickerImportNotice.Added -> stringResource(ProseioR.string.proseio_stickers_import_done, notice.count.toString())
+    StickerImportNotice.NoneNew -> stringResource(ProseioR.string.proseio_stickers_import_none)
+    StickerImportNotice.Failed -> stringResource(ProseioR.string.proseio_stickers_import_failed)
+}
+
+@Composable
 private fun packTitle(pack: StickerPack, roomId: String): String = when (val source = pack.source) {
     StickerPack.Source.User -> stringResource(ProseioR.string.proseio_stickers_pack_personal)
     is StickerPack.Source.Room -> pack.displayName
@@ -195,8 +270,13 @@ private fun packTitle(pack: StickerPack, roomId: String): String = when (val sou
 @Composable
 internal fun StickerPickerContentPreview() = ElementPreview {
     Column {
-        StickerPickerContent(StickerPickerState.Loading, roomId = "!room:proseio.com.br", onStickerClick = {}, onRetryClick = {})
-        StickerPickerContent(StickerPickerState.Failed, roomId = "!room:proseio.com.br", onStickerClick = {}, onRetryClick = {})
-        StickerPickerContent(StickerPickerState.Loaded(persistentListOf()), roomId = "!room:proseio.com.br", onStickerClick = {}, onRetryClick = {})
+        listOf(
+            StickerPickerState.Loading,
+            StickerPickerState.Failed,
+            StickerPickerState.Loaded(persistentListOf()),
+            StickerPickerState.Loaded(persistentListOf(), importNotice = StickerImportNotice.Added(12)),
+        ).forEach { state ->
+            StickerPickerContent(state, roomId = "!room:proseio.com.br", onStickerClick = {}, onRetryClick = {}, onImportClick = {})
+        }
     }
 }

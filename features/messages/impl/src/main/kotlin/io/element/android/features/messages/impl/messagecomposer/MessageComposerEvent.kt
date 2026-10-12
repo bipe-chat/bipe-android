@@ -36,6 +36,7 @@ sealed interface MessageComposerEvent {
     /** Proseio: sticker picker events (ADR 0029). */
     data class SendSticker(val sticker: io.element.android.libraries.proseio.stickers.Sticker) : MessageComposerEvent
     data object RetryStickers : MessageComposerEvent
+    data class ImportStickers(val uris: List<android.net.Uri>) : MessageComposerEvent
     data object DismissStickerPicker : MessageComposerEvent
 
     data class ToggleTextFormatting(val enabled: Boolean) : MessageComposerEvent

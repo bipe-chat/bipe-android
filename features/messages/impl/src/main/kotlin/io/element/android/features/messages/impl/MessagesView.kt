@@ -584,6 +584,7 @@ private fun MessagesViewContent(
             roomId = state.roomId.value,
             onStickerClick = { state.composerState.eventSink(MessageComposerEvent.SendSticker(it)) },
             onRetryClick = { state.composerState.eventSink(MessageComposerEvent.RetryStickers) },
+            onImport = { state.composerState.eventSink(MessageComposerEvent.ImportStickers(it)) },
             onDismiss = { state.composerState.eventSink(MessageComposerEvent.DismissStickerPicker) },
         )
 

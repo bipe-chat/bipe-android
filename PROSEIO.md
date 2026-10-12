@@ -61,6 +61,8 @@ Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVec
 - **Picker:** attachments sheet → `PickAttachmentSource.Sticker` → `MessageComposerState.stickerPicker` → `StickerPickerBottomSheet` in `MessagesView`. UI: `messagecomposer/ProseioStickerPicker.kt`.
 - **Packs:** MSC2545 (`im.ponies.*`). `HttpStickerPackRepository` in `libraries/proseio/stickers` reads them over HTTP: the SDK cannot read custom room state under sliding sync. Same order as iOS: the user's pack, this room's packs, then enabled packs from other rooms.
 - **Send:** `JoinedRoom.sendRaw("m.sticker", …)`. The SDK has no typed sticker send. `sendRaw` skips the send queue: no local echo, no retry. In a thread the content carries an `m.thread` relation.
+- **Import:** "Importar do WhatsApp" in the sheet opens the system document picker for a WhatsApp chat export ZIP, WebP or PNG. `StickerImporter` (`java.util.zip`) reads the `.webp` entries, checks magic bytes, size (1 MB) and sides (1024 px), derives the shortcode from SHA-256 (`wa_…`). `HttpStickerPackRepository.importStickers` uploads them and adds them to `im.ponies.user_emotes`. Same rules as iOS.
+- **Animated WebP:** Coil's `AnimatedImageDecoder` (already registered) plays it on Android 9+.
 - **Not compiled yet** (11 October 2026): this Mac has no JDK or Android SDK.
 
 ## Differences from iOS (ADR 0031)

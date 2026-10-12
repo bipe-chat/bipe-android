@@ -53,6 +53,8 @@ import io.element.android.libraries.permissions.test.FakePermissionsPresenterFac
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.preferences.api.store.VideoCompressionPreset
 import io.element.android.libraries.preferences.test.InMemorySessionPreferencesStore
+import io.element.android.libraries.proseio.stickers.StickerPack
+import io.element.android.libraries.proseio.stickers.StickerPackRepository
 import io.element.android.libraries.push.test.notifications.conversations.FakeNotificationConversationService
 import io.element.android.libraries.slashcommands.api.SlashCommand
 import io.element.android.libraries.slashcommands.api.SlashCommandService
@@ -324,7 +326,10 @@ class MessageComposerPresenterSlashCommandTest {
         featureFlagService = featureFlagService,
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
-        stickerPackRepository = { Result.success(emptyList()) },
+        stickerPackRepository = object : StickerPackRepository {
+            override suspend fun packs(roomId: String) = Result.success(emptyList<StickerPack>())
+            override suspend fun importStickers(uris: List<Uri>) = Result.success(0)
+        },
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

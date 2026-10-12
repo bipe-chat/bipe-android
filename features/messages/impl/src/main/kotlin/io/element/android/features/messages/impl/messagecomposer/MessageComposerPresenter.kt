@@ -219,10 +219,10 @@ class MessageComposerPresenter(
         var showAttachmentSourcePicker: Boolean by remember { mutableStateOf(false) }
         var stickerPicker: StickerPickerState by remember { mutableStateOf(StickerPickerState.Hidden) }
 
-        fun CoroutineScope.loadStickers() = launch {
+        fun CoroutineScope.loadStickers(importNotice: StickerImportNotice? = null) = launch {
             stickerPicker = StickerPickerState.Loading
             stickerPicker = stickerPackRepository.packs(room.roomId.value).fold(
-                onSuccess = { StickerPickerState.Loaded(it.toImmutableList()) },
+                onSuccess = { StickerPickerState.Loaded(it.toImmutableList(), importNotice) },
                 onFailure = {
                     Timber.e(it, "Sticker packs failed to load")
                     StickerPickerState.Failed
@@ -369,6 +369,17 @@ class MessageComposerPresenter(
                     localCoroutineScope.loadStickers()
                 }
                 MessageComposerEvent.RetryStickers -> localCoroutineScope.loadStickers()
+                is MessageComposerEvent.ImportStickers -> localCoroutineScope.launch {
+                    stickerPicker = StickerPickerState.Loading
+                    val notice = stickerPackRepository.importStickers(event.uris).fold(
+                        onSuccess = { added -> if (added > 0) StickerImportNotice.Added(added) else StickerImportNotice.NoneNew },
+                        onFailure = {
+                            Timber.e(it, "Sticker import failed")
+                            StickerImportNotice.Failed
+                        },
+                    )
+                    loadStickers(notice)
+                }
                 MessageComposerEvent.DismissStickerPicker -> stickerPicker = StickerPickerState.Hidden
                 is MessageComposerEvent.SendSticker -> localCoroutineScope.launch {
                     room.sendRaw("m.sticker", event.sticker.eventContentJson(threadRootId = threadRoot?.value))
