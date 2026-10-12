@@ -1723,6 +1723,7 @@ class MessageComposerPresenterTest : RobolectricTest() {
         featureFlagService = featureFlagService,
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
+        stickerPackRepository = { Result.success(emptyList()) },
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

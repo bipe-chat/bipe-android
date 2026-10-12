@@ -76,6 +76,7 @@ import io.element.android.libraries.mediaviewer.api.local.LocalMediaFactory
 import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
+import io.element.android.libraries.proseio.stickers.StickerPackRepository
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.slashcommands.api.SlashCommand
 import io.element.android.libraries.slashcommands.api.SlashCommandService
@@ -89,6 +90,7 @@ import io.element.android.libraries.textcomposer.model.Suggestion
 import io.element.android.libraries.textcomposer.model.SuggestionType
 import io.element.android.libraries.textcomposer.model.TextEditorState
 import io.element.android.libraries.textcomposer.model.rememberMarkdownTextEditorState
+import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
 import io.element.android.wysiwyg.compose.RichTextEditorState
@@ -145,6 +147,7 @@ class MessageComposerPresenter(
     private val featureFlagService: FeatureFlagService,
     private val contentScannerService: ContentScannerService,
     private val contentValidationCache: EventContentValidationCache,
+    private val stickerPackRepository: StickerPackRepository,
 ) : Presenter<MessageComposerState> {
     @AssistedFactory
     interface Factory {
@@ -214,6 +217,18 @@ class MessageComposerPresenter(
             mutableStateOf(false)
         }
         var showAttachmentSourcePicker: Boolean by remember { mutableStateOf(false) }
+        var stickerPicker: StickerPickerState by remember { mutableStateOf(StickerPickerState.Hidden) }
+
+        fun CoroutineScope.loadStickers() = launch {
+            stickerPicker = StickerPickerState.Loading
+            stickerPicker = stickerPackRepository.packs(room.roomId.value).fold(
+                onSuccess = { StickerPickerState.Loaded(it.toImmutableList()) },
+                onFailure = {
+                    Timber.e(it, "Sticker packs failed to load")
+                    StickerPickerState.Failed
+                },
+            )
+        }
 
         val sendTypingNotifications by remember {
             sessionPreferencesStore.isSendTypingNotificationsEnabled()
@@ -349,6 +364,20 @@ class MessageComposerPresenter(
                     showAttachmentSourcePicker = false
                     // Navigation to the create poll screen is done at the view layer
                 }
+                MessageComposerEvent.PickAttachmentSource.Sticker -> {
+                    showAttachmentSourcePicker = false
+                    localCoroutineScope.loadStickers()
+                }
+                MessageComposerEvent.RetryStickers -> localCoroutineScope.loadStickers()
+                MessageComposerEvent.DismissStickerPicker -> stickerPicker = StickerPickerState.Hidden
+                is MessageComposerEvent.SendSticker -> localCoroutineScope.launch {
+                    room.sendRaw("m.sticker", event.sticker.eventContentJson(threadRootId = threadRoot?.value))
+                        .onSuccess { stickerPicker = StickerPickerState.Hidden }
+                        .onFailure {
+                            Timber.e(it, "Sticker failed to send")
+                            snackbarDispatcher.post(SnackbarMessage(CommonStrings.error_unknown))
+                        }
+                }
                 is MessageComposerEvent.ToggleTextFormatting -> {
                     showAttachmentSourcePicker = false
                     localCoroutineScope.toggleTextFormatting(event.enabled, markdownTextEditorState, richTextEditorState)
@@ -432,6 +461,7 @@ class MessageComposerPresenter(
             showAttachmentSourcePicker = showAttachmentSourcePicker,
             showTextFormatting = showTextFormatting,
             canShareLocation = canShareLocation.value,
+            stickerPicker = stickerPicker,
             suggestions = suggestions.toImmutableList(),
             resolveMentionDisplay = resolveMentionDisplay,
             resolveAtRoomMentionDisplay = resolveAtRoomMentionDisplay,

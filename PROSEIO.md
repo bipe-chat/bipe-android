@@ -56,6 +56,13 @@ Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVec
 - **`assetlinks.json`** on `proseio.com.br` for verified app links.
 - Proseio screens (phase 5) and the routing for Proseio links.
 
+## Stickers (ADR 0029, 0033, issue #101)
+
+- **Picker:** attachments sheet → `PickAttachmentSource.Sticker` → `MessageComposerState.stickerPicker` → `StickerPickerBottomSheet` in `MessagesView`. UI: `messagecomposer/ProseioStickerPicker.kt`.
+- **Packs:** MSC2545 (`im.ponies.*`). `HttpStickerPackRepository` in `libraries/proseio/stickers` reads them over HTTP: the SDK cannot read custom room state under sliding sync. Same order as iOS: the user's pack, this room's packs, then enabled packs from other rooms.
+- **Send:** `JoinedRoom.sendRaw("m.sticker", …)`. The SDK has no typed sticker send. `sendRaw` skips the send queue: no local echo, no retry. In a thread the content carries an `m.thread` relation.
+- **Not compiled yet** (11 October 2026): this Mac has no JDK or Android SDK.
+
 ## Differences from iOS (ADR 0031)
 
 Each line is a deliberate difference with its reason. A difference not listed here is a bug.

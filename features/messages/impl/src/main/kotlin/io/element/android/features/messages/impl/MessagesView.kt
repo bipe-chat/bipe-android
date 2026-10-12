@@ -73,6 +73,7 @@ import io.element.android.features.messages.impl.messagecomposer.AttachmentsBott
 import io.element.android.features.messages.impl.messagecomposer.DisabledComposerView
 import io.element.android.features.messages.impl.messagecomposer.MessageComposerEvent
 import io.element.android.features.messages.impl.messagecomposer.MessageComposerView
+import io.element.android.features.messages.impl.messagecomposer.StickerPickerBottomSheet
 import io.element.android.features.messages.impl.messagecomposer.suggestions.SuggestionsPickerView
 import io.element.android.features.messages.impl.pinned.banner.PinnedMessagesBannerState
 import io.element.android.features.messages.impl.pinned.banner.PinnedMessagesBannerView
@@ -576,6 +577,14 @@ private fun MessagesViewContent(
             onSendLocationClick = onSendLocationClick,
             onCreatePollClick = onCreatePollClick,
             enableTextFormatting = state.enableTextFormatting,
+        )
+        // Proseio: sticker picker (ADR 0029).
+        StickerPickerBottomSheet(
+            state = state.composerState.stickerPicker,
+            roomId = state.roomId.value,
+            onStickerClick = { state.composerState.eventSink(MessageComposerEvent.SendSticker(it)) },
+            onRetryClick = { state.composerState.eventSink(MessageComposerEvent.RetryStickers) },
+            onDismiss = { state.composerState.eventSink(MessageComposerEvent.DismissStickerPicker) },
         )
 
         if (state.voiceMessageComposerState.showPermissionRationaleDialog) {

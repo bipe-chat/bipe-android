@@ -141,6 +141,12 @@ private fun AttachmentSourcePickerMenu(
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Polls())),
             content = { Text(stringResource(R.string.screen_room_attachment_source_poll)) },
         )
+        // Proseio: sticker picker (ADR 0029).
+        ListItem(
+            modifier = Modifier.clickable { state.eventSink(MessageComposerEvent.PickAttachmentSource.Sticker) },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Sticker())),
+            content = { Text(stringResource(io.element.android.libraries.proseio.R.string.proseio_action_stickers)) },
+        )
         if (enableTextFormatting) {
             ListItem(
                 modifier = Modifier.clickable { state.eventSink(MessageComposerEvent.ToggleTextFormatting(enabled = true)) },

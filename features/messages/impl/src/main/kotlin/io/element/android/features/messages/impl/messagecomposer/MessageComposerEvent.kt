@@ -28,7 +28,15 @@ sealed interface MessageComposerEvent {
         data object VideoFromCamera : PickAttachmentSource
         data object Location : PickAttachmentSource
         data object Poll : PickAttachmentSource
+
+        /** Proseio: sticker picker (ADR 0029). */
+        data object Sticker : PickAttachmentSource
     }
+
+    /** Proseio: sticker picker events (ADR 0029). */
+    data class SendSticker(val sticker: io.element.android.libraries.proseio.stickers.Sticker) : MessageComposerEvent
+    data object RetryStickers : MessageComposerEvent
+    data object DismissStickerPicker : MessageComposerEvent
 
     data class ToggleTextFormatting(val enabled: Boolean) : MessageComposerEvent
     data class Error(val error: Throwable) : MessageComposerEvent
