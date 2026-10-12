@@ -13,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -88,16 +87,16 @@ fun ElementLogoAtom(
                 .shadow(
                     elevation = 35.dp,
                     clip = false,
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(percent = 22),
                     ambientColor = logoShadowColor,
                 )
                 .shadow(
                     elevation = 35.dp,
                     clip = false,
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(percent = 22),
                     ambientColor = Color(0x80000000),
                 ),
-            painter = painterResource(id = R.drawable.element_logo),
+            painter = painterResource(id = R.drawable.bipe_logo),
             contentDescription = null
         )
     }

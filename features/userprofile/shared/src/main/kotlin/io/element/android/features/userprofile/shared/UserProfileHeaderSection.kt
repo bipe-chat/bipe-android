@@ -44,6 +44,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.model.toText
+import io.element.android.libraries.proseio.ui.ProseioPublicBio
 import io.element.android.libraries.proseio.ui.proseioDisplayText
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
@@ -113,6 +114,7 @@ fun UserProfileHeaderSection(
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(12.dp))
+        ProseioPublicBio(userId.value) // Proseio: the public profile bio, when published
         when (verificationState) {
             UserProfileVerificationState.UNKNOWN, UserProfileVerificationState.UNVERIFIED -> Unit
             UserProfileVerificationState.VERIFIED -> {

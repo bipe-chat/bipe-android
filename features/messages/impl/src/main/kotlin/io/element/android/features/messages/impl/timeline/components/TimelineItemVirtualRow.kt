@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.timeline.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +30,8 @@ import io.element.android.features.messages.impl.timeline.model.virtual.Timeline
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemRoomBeginningModel
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemTypingNotificationModel
 import io.element.android.features.messages.impl.typing.TypingNotificationView
+import io.element.android.libraries.matrix.api.core.EventId
+import io.element.android.libraries.proseio.ui.ProseioMissedSummaryView
 import timber.log.Timber
 
 @Composable
@@ -41,7 +44,16 @@ fun TimelineItemVirtualRow(
     Box(modifier = modifier) {
         when (virtual.model) {
             is TimelineItemDaySeparatorModel -> TimelineItemDaySeparatorView(virtual.model)
-            TimelineItemReadMarkerModel -> TimelineItemReadMarkerView()
+            TimelineItemReadMarkerModel -> Column {
+                // Proseio: proseio#98
+                timelineRoomInfo.proseioMissedSummary?.let { summary ->
+                    ProseioMissedSummaryView(
+                        summary = summary,
+                        onLineClick = { eventId -> eventSink(TimelineEvent.FocusOnEventFromMissedSummary(EventId(eventId))) },
+                    )
+                }
+                TimelineItemReadMarkerView()
+            }
             TimelineItemRoomBeginningModel -> {
                 TimelineItemRoomBeginningView(
                     predecessorRoom = timelineRoomInfo.predecessorRoom,

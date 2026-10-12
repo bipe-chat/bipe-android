@@ -142,6 +142,9 @@ class PreferencesRootPresenter(
         // Proseio: the handle row. The resolver looks the handle up and emits when it arrives.
         val proseioHandles by proseioSession.handleResolver.handles.collectAsState()
         val proseioHandle = remember(proseioHandles) { proseioSession.handleResolver.handle(matrixClient.sessionId.value) }
+        // Proseio: on or off for the public profile row. The profile screen stores every change it saves.
+        val proseioMyProfile by proseioSession.publicProfiles.myProfile.collectAsState()
+        LaunchedEffect(Unit) { proseioSession.publicProfiles.refreshMine() }
 
         return PreferencesRootState(
             myUser = matrixUser.value,
@@ -158,6 +161,7 @@ class PreferencesRootPresenter(
             showLabsItem = showLabsItem,
             snackbarMessage = snackbarMessage,
             proseioHandle = proseioHandle,
+            proseioPublicProfileEnabled = proseioMyProfile?.enabled,
             eventSink = ::handleEvent,
         )
     }

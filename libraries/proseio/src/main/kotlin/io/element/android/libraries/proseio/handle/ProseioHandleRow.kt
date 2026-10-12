@@ -33,6 +33,24 @@ fun ProseioHandleRow(
     )
 }
 
+/** Settings row: "Perfil público" with on or off, or nothing while the profile is not loaded. */
+@Composable
+fun ProseioPublicProfileRow(
+    enabled: Boolean?,
+    onClick: () -> Unit,
+) {
+    ListItem(
+        content = { Text(stringResource(R.string.proseio_settings_public_profile)) },
+        supportingContent = enabled?.let {
+            {
+                Text(stringResource(if (it) R.string.proseio_public_profile_on else R.string.proseio_public_profile_off))
+            }
+        },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Public())),
+        onClick = onClick,
+    )
+}
+
 /** Settings row: "Convites", the personal invites screen. */
 @Composable
 fun ProseioInvitesRow(onClick: () -> Unit) {

@@ -24,6 +24,9 @@ sealed interface RoomListEvent {
     data class ShowDeclineInviteMenu(val roomSummary: RoomListRoomSummary) : RoomListEvent
     data object HideDeclineInviteMenu : RoomListEvent
 
+    /** Proseio: the Grupos tab shows groups, the Conversas tab shows direct chats (ADR 0053). */
+    data class ProseioShowGroups(val showGroups: Boolean) : RoomListEvent
+
     sealed interface ContextMenuEvent : RoomListEvent
     data object HideContextMenu : ContextMenuEvent
     data class LeaveRoom(val roomId: RoomId, val needsConfirmation: Boolean) : ContextMenuEvent

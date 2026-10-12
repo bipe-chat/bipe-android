@@ -19,10 +19,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -71,6 +75,8 @@ import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.proseio.ProseioTrustProfile
 import io.element.android.libraries.proseio.handle.ProseioHandleRow
 import io.element.android.libraries.proseio.handle.ProseioInvitesRow
+import io.element.android.libraries.proseio.handle.ProseioPublicProfileRow
+import io.element.android.libraries.proseio.selfchat.ProseioSelfChatRow
 import io.element.android.libraries.proseio.ui.ProseioTrustProfileSection
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
@@ -102,16 +108,16 @@ fun PreferencesRootView(
     modifier: Modifier = Modifier,
     onProseioHandleClick: () -> Unit = {},
     onProseioInvitesClick: () -> Unit = {},
+    onProseioPublicProfileClick: () -> Unit = {},
+    // Proseio: the Você tab (ADR 0053) shows this screen without its top bar, with the self-chat row first.
+    proseioTabContentPadding: PaddingValues? = null,
+    onProseioSelfChatClick: (() -> Unit)? = null,
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
 
     Box(modifier = modifier) {
-        // Include pref from other modules
-        PreferencePage(
-            onBackClick = onBackClick,
-            title = stringResource(id = CommonStrings.common_settings),
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) {
+        val pageContent: @Composable ColumnScope.() -> Unit = {
+            onProseioSelfChatClick?.let { ProseioSelfChatRow(onClick = it) } // Proseio
             UserPreferences(
                 modifier = Modifier
                     .testTag(TestTags.settingsUserProfile)
@@ -120,7 +126,7 @@ fun PreferencesRootView(
                     },
                 matrixUser = state.myUser,
             )
-            // Proseio: the trust profile card, then the handle and invites rows.
+            // Proseio: the trust profile card, then the handle, public profile and invites rows.
             ProseioTrustProfileSection(
                 profile = ProseioTrustProfile.create(
                     displayName = state.myUser.displayName,
@@ -131,6 +137,7 @@ fun PreferencesRootView(
                 onHandleClick = onProseioHandleClick,
             )
             ProseioHandleRow(handle = state.proseioHandle, onClick = onProseioHandleClick) // Proseio
+            ProseioPublicProfileRow(enabled = state.proseioPublicProfileEnabled, onClick = onProseioPublicProfileClick) // Proseio
             ProseioInvitesRow(onClick = onProseioInvitesClick) // Proseio
             if (state.userStatusState != null) {
                 UserStatusSection(
@@ -183,6 +190,24 @@ fun PreferencesRootView(
                 } else {
                     null
                 }
+            )
+        }
+        if (proseioTabContentPadding != null) {
+            // Proseio: the Você tab. The home screen has the top bar and the snackbar host.
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(proseioTabContentPadding),
+                content = pageContent,
+            )
+        } else {
+            // Include pref from other modules
+            PreferencePage(
+                onBackClick = onBackClick,
+                title = stringResource(id = CommonStrings.common_settings),
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                content = pageContent,
             )
         }
         state.userStatusState?.let {

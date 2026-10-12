@@ -15,6 +15,7 @@ enum class ScamWarningKind(val id: String, @StringRes val messageRes: Int) {
     PIX_CODE("pixCode", R.string.proseio_scam_warning_pix_code),
     BOLETO("boleto", R.string.proseio_scam_warning_boleto),
     PIX_KEY("pixKey", R.string.proseio_scam_warning_pix_key),
+    DELIVERY_FEE("deliveryFee", R.string.proseio_scam_warning_delivery_fee),
     RECEIPT("receipt", R.string.proseio_scam_warning_receipt),
     NEW_NUMBER("newNumber", R.string.proseio_scam_warning_new_number),
     URGENCY("urgency", R.string.proseio_scam_warning_urgency);
@@ -74,13 +75,16 @@ object ScamDetector {
     fun warningKind(matchIds: List<String>, message: String): ScamWarningKind? {
         val groups = matchIds.map { it.substringBefore(':') }.toSet()
         val phrases = matchIds.filter { it.startsWith(URGENCY_PREFIX) }.map { it.removePrefix(URGENCY_PREFIX) }
+        val normalized = NameNormalizer.normalize(message, homoglyphs = emptyMap())
 
         return warningKindPriority.firstOrNull { kind ->
             when (kind) {
                 ScamWarningKind.PIX_CODE -> "pixCopyPastePatterns" in groups
                 ScamWarningKind.BOLETO -> "boletoPatterns" in groups
                 // A phone number or e-mail alone is normal chat. Warn only when the message also talks about Pix.
-                ScamWarningKind.PIX_KEY -> "pixKeyPatterns" in groups && mentionsPix(message)
+                ScamWarningKind.PIX_KEY -> "pixKeyPatterns" in groups && containsAny(normalized, ProseioRegistries.pixKeyContextWords)
+                // The fake-delivery fee scam: a link, and the message talks about a held parcel and a fee.
+                ScamWarningKind.DELIVERY_FEE -> "linkPatterns" in groups && deliveryWordLists.all { containsAny(normalized, it) }
                 ScamWarningKind.RECEIPT -> "receipt" in groups
                 ScamWarningKind.NEW_NUMBER -> phrases.any { it in ProseioRegistries.newNumberPhrases }
                 ScamWarningKind.URGENCY -> phrases.isNotEmpty()
@@ -105,6 +109,7 @@ object ScamDetector {
             "pixKeyPatterns" to ProseioRegistries.pixKeyPatterns,
             "pixCopyPastePatterns" to ProseioRegistries.pixCopyPastePatterns,
             "boletoPatterns" to ProseioRegistries.boletoPatterns,
+            "linkPatterns" to ProseioRegistries.linkPatterns,
         )
         // UNICODE_CHARACTER_CLASS makes `\s` match Unicode spaces, as in V8 and ICU. The registries use explicit
         // ASCII classes for digits and letters, so the flag changes nothing else.
@@ -118,8 +123,11 @@ object ScamDetector {
         }
     }
 
-    private fun mentionsPix(message: String): Boolean {
-        val normalized = NameNormalizer.normalize(message, homoglyphs = emptyMap())
-        return ProseioRegistries.pixKeyContextWords.any { normalized.contains(it) }
-    }
+    private val deliveryWordLists = listOf(
+        ProseioRegistries.deliveryParcelWords,
+        ProseioRegistries.deliveryHoldWords,
+        ProseioRegistries.deliveryFeeWords,
+    )
+
+    private fun containsAny(normalized: String, words: List<String>): Boolean = words.any { normalized.contains(it) }
 }

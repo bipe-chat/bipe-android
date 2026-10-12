@@ -4,6 +4,7 @@
 package io.element.android.libraries.proseio.generated
 
 enum class ReservedNameCategory(val id: String) {
+    BIPE("bipe"),
     PROSEIO("proseio"),
     BANK("bank"),
     GOVERNMENT("government"),
@@ -14,6 +15,12 @@ data class ScamPattern(val id: String, val regex: String)
 object ProseioRegistries {
     /** Normalised reserved display names and their category. */
     val reservedNames: Map<String, ReservedNameCategory> = mapOf(
+        "bipe" to ReservedNameCategory.BIPE,
+        "bipe oficial" to ReservedNameCategory.BIPE,
+        "bipe chat" to ReservedNameCategory.BIPE,
+        "suporte bipe" to ReservedNameCategory.BIPE,
+        "equipe bipe" to ReservedNameCategory.BIPE,
+        "seguranca bipe" to ReservedNameCategory.BIPE,
         "proseio" to ReservedNameCategory.PROSEIO,
         "proseio oficial" to ReservedNameCategory.PROSEIO,
         "suporte proseio" to ReservedNameCategory.PROSEIO,
@@ -156,6 +163,10 @@ object ProseioRegistries {
         ScamPattern(id = "linha-digitavel", regex = "(?<![0-9A-Za-z])[0-9]{5}\\.?[0-9]{5}\\s?[0-9]{5}\\.?[0-9]{6}\\s?[0-9]{5}\\.?[0-9]{6}\\s?[0-9]\\s?[0-9]{14}(?![0-9A-Za-z])"),
     )
 
+    val linkPatterns: List<ScamPattern> = listOf(
+        ScamPattern(id = "domain", regex = "(?<![0-9A-Za-z@.-])[0-9A-Za-z](?:[0-9A-Za-z-]*[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:[0-9A-Za-z-]*[0-9A-Za-z])?)*\\.(?:com|net|org|info|biz|br|ly|app|site|online|shop|store|top|xyz|link|click|vip|live|icu|cfd|sbs|lat)(?![0-9A-Za-z-])"),
+    )
+
     /** Normalised phrases, matched as substrings of the normalised message. */
     val urgencyPhrases: List<String> = listOf(
         "troquei de numero",
@@ -206,11 +217,44 @@ object ProseioRegistries {
         "salva esse numero",
     )
 
+    /** Normalised words for the "delivery fee" kind. It needs a link and an entry from each of the three lists. */
+    val deliveryParcelWords: List<String> = listOf(
+        "pacote",
+        "encomenda",
+        "entrega",
+        "pedido",
+        "correios",
+        "remessa",
+    )
+    val deliveryHoldWords: List<String> = listOf(
+        "retid",
+        "taxad",
+        "tributad",
+        "bloquead",
+        "liberar",
+        "liberacao",
+        "pendente",
+        "aguardando pagamento",
+        "nao foi entregue",
+        "nao pode ser entregue",
+        "devolvid",
+    )
+    val deliveryFeeWords: List<String> = listOf(
+        "taxa",
+        "tarifa",
+        "imposto",
+        "pague",
+        "pagar",
+        "pagamento",
+        "r\$",
+    )
+
     /** Scam warning kind ids, most actionable first. The first kind whose rule applies wins. */
     val scamWarningKindPriority: List<String> = listOf(
         "pixCode",
         "boleto",
         "pixKey",
+        "deliveryFee",
         "receipt",
         "newNumber",
         "urgency",
@@ -221,7 +265,91 @@ object ProseioRegistries {
     const val HANDLE_MAX_LENGTH = 30
     const val HANDLE_PATTERN = "^[a-z0-9](?:[a-z0-9_]|\\.(?!\\.))*[a-z0-9_]\$"
 
+    /** Public profile rules (ADR 0041). Lengths count code points. The server is the authority. */
+    const val PROFILE_NAME_MAX_LENGTH = 50
+    const val PROFILE_BIO_MAX_LENGTH = 160
+    const val PROFILE_BIO_MAX_LINES = 4
+    const val PROFILE_PHOTO_MAX_BYTES = 262144
+    const val PROFILE_PHOTO_MAX_PIXELS = 512
+
     /** Invite codes: the code inside anything a user pastes (registries/invite-codes.json). */
     const val INVITE_CODE_PATTERN = "(?<![A-Z0-9])([A-HJKMNP-Z2-9]{4})[ \\-\\u2010-\\u2014\\u2212]?([A-HJKMNP-Z2-9]{4})[ \\-\\u2010-\\u2014\\u2212]?([A-HJKMNP-Z2-9]{4})(?![A-Z0-9])"
     const val INVITE_CODE_MAX_INPUT_LENGTH = 2048
+
+    /** Brazilian mobile numbers for contact discovery (registries/phone-numbers.json). */
+    const val PHONE_COUNTRY_CODE = "55"
+    val phoneAreaCodes: Set<String> = setOf(
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "21",
+        "22",
+        "24",
+        "27",
+        "28",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "37",
+        "38",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48",
+        "49",
+        "51",
+        "53",
+        "54",
+        "55",
+        "61",
+        "62",
+        "63",
+        "64",
+        "65",
+        "66",
+        "67",
+        "68",
+        "69",
+        "71",
+        "73",
+        "74",
+        "75",
+        "77",
+        "79",
+        "81",
+        "82",
+        "83",
+        "84",
+        "85",
+        "86",
+        "87",
+        "88",
+        "89",
+        "91",
+        "92",
+        "93",
+        "94",
+        "95",
+        "96",
+        "97",
+        "98",
+        "99",
+    )
+    const val PHONE_MOBILE_LENGTH = 9
+    const val PHONE_MOBILE_PREFIX = "9"
+    const val PHONE_MAX_INPUT_LENGTH = 64
+    const val PHONE_INTERNATIONAL_MIN_DIGITS = 8
+    const val PHONE_INTERNATIONAL_MAX_DIGITS = 15
 }

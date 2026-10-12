@@ -17,6 +17,7 @@ import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.parcelize.Parcelize
 
 interface PreferencesEntryPoint : FeatureEntryPoint {
@@ -32,6 +33,32 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
 
         @Parcelize
         data object DeveloperSettings : InitialTarget
+
+        /** Proseio: a settings screen opened from a row of the Você tab (ADR 0053). */
+        @Parcelize
+        data class ProseioScreen(val screen: ProseioSettingsScreen) : InitialTarget
+
+        /** Proseio: the edit profile screen opened from the Você tab (ADR 0053). */
+        @Parcelize
+        data class ProseioEditProfile(val matrixUser: MatrixUser) : InitialTarget
+    }
+
+    /** Proseio: the settings screens that the Você tab rows open (ADR 0053). */
+    enum class ProseioSettingsScreen {
+        Analytics,
+        About,
+        DeveloperSettings,
+        LockScreen,
+        Media,
+        Location,
+        Labs,
+        ModerationAndSafety,
+        Notifications,
+        SignOut,
+        AccountDeactivation,
+        Handle,
+        Invites,
+        PublicProfile,
     }
 
     data class Params(val initialElement: InitialTarget) : NodeInputs

@@ -132,6 +132,9 @@ fun HomeTopBar(
                         }
                     }
                     HomeNavigationBarItem.Spaces -> null
+                    // Proseio: Grupos and Você (ADR 0053)
+                    HomeNavigationBarItem.Groups,
+                    HomeNavigationBarItem.You -> stringResource(selectedNavigationItem.labelRes)
                 }
                 displayTitle?.let {
                     val style = when (spaceFiltersState) {
@@ -156,7 +159,7 @@ fun HomeTopBar(
                 )
             },
             actions = {
-                if (selectedNavigationItem == HomeNavigationBarItem.Chats) {
+                if (selectedNavigationItem.isProseioRoomList) { // Proseio: search on Conversas and Grupos
                     RoomListMenuItems(
                         onToggleSearch = onToggleSearch,
                         onMenuActionClick = onMenuActionClick,

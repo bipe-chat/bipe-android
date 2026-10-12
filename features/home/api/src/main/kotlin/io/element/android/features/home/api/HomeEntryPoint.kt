@@ -11,6 +11,7 @@ package io.element.android.features.home.api
 import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.core.node.Node
 import com.bumble.appyx.core.plugin.Plugin
+import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.libraries.architecture.FeatureEntryPoint
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -33,5 +34,11 @@ interface HomeEntryPoint : FeatureEntryPoint {
         fun navigateToRoomSettings(roomId: RoomId)
         fun navigateToBugReport()
         fun navigateToAddAccount()
+
+        /** Proseio: opens a settings screen from a row of the Você tab (ADR 0053). */
+        fun proseioNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) = navigateToSettings()
+
+        /** Proseio: the "link new device" row of the Você tab (ADR 0053). */
+        fun proseioNavigateToLinkNewDevice() = Unit
     }
 }

@@ -185,4 +185,6 @@ class FakeNotificationSettingsService(
     override suspend fun getRawPushRules(): Result<String?> {
         return getRawPushRulesResult()
     }
+
+    override suspend fun setNotifyOverrideRule(ruleId: String, eventTypePattern: String): Result<Unit> = Result.success(Unit)
 }

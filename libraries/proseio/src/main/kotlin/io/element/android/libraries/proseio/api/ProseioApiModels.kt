@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.proseio.api
 
+import io.element.android.libraries.proseio.BadgeEnvelope
 import io.element.android.libraries.proseio.ProseioHandleProblem
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -111,6 +112,40 @@ data class ProseioMyHandle(
     @SerialName("handle") val handle: String? = null,
     /** `null` when a change is allowed now. */
     @Serializable(with = InstantSerializer::class) @SerialName("changeable_at") val changeableAt: Instant? = null,
+)
+
+/** `GET /v1/profiles/{handle}`: a published profile (ADR 0041). Never carries the Matrix ID. */
+@Serializable
+data class ProseioPublicProfile(
+    @SerialName("handle") val handle: String,
+    @SerialName("name") val name: String,
+    /** Plain text. `null` when empty. */
+    @SerialName("bio") val bio: String? = null,
+    /** Absolute URL of the photo, with a version. `null` without a photo. */
+    @SerialName("photo_url") val photoUrl: String? = null,
+    /** Set by the server only. The apps do not show it from the profile yet. */
+    @SerialName("badge") val badge: BadgeEnvelope? = null,
+)
+
+/** `GET /v1/me/profile`: the caller's profile, published or not. A user who never saved one gets `enabled` false and an empty name. */
+@Serializable
+data class ProseioMyProfile(
+    @SerialName("enabled") val enabled: Boolean,
+    @SerialName("name") val name: String,
+    @SerialName("bio") val bio: String,
+    @SerialName("has_photo") val hasPhoto: Boolean,
+    /** `null` when the caller has no handle. */
+    @SerialName("handle") val handle: String? = null,
+    /** `null` without a photo or without a handle. */
+    @SerialName("photo_url") val photoUrl: String? = null,
+)
+
+/** `PUT /v1/me/profile`. */
+@Serializable
+data class ProseioProfileUpdate(
+    @SerialName("enabled") val enabled: Boolean,
+    @SerialName("name") val name: String,
+    @SerialName("bio") val bio: String,
 )
 
 @Serializable

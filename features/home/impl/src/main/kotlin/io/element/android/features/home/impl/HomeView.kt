@@ -69,6 +69,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.proseio.tabs.ProseioTabBadges
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.coroutines.launch
 
@@ -89,6 +90,8 @@ fun HomeView(
     acceptDeclineInviteView: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     leaveRoomView: @Composable () -> Unit,
+    // Proseio: the Você tab content (ADR 0053), built by the node.
+    youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit = { _, _ -> },
 ) {
     val state: RoomListState = homeState.roomListState
     val coroutineScope = rememberCoroutineScope()
@@ -130,6 +133,7 @@ fun HomeView(
             onStartChatClick = { if (firstThrottler.canHandle()) onStartChatClick() },
             onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
             onMenuActionClick = onMenuActionClick,
+            youTabView = youTabView,
         )
 
         if (state.globalSearchState.isEnabled) {
@@ -167,6 +171,7 @@ private fun HomeScaffold(
     onStartChatClick: () -> Unit,
     onCreateSpaceClick: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
+    youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     fun onRoomClick(room: RoomListRoomSummary) {
@@ -191,6 +196,7 @@ private fun HomeScaffold(
 
     val roomsLazyListState = rememberLazyListState()
     val spacesLazyListState = rememberLazyListState()
+    val proseioGroupsLazyListState = rememberLazyListState() // Proseio
 
     Scaffold(
         modifier = modifier,
@@ -230,13 +236,16 @@ private fun HomeScaffold(
                 // navigation bar, so the floating toolbar has to apply the bottom inset itself to avoid overlapping it.
                 modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
                 currentHomeNavigationBarItem = state.currentHomeNavigationBarItem,
+                proseioBadges = state.proseioBadges,
                 onItemClick = { item ->
                     // scroll to top if selecting the same item
                     if (item == state.currentHomeNavigationBarItem) {
                         val lazyListStateTarget = when (item) {
                             HomeNavigationBarItem.Chats -> roomsLazyListState
                             HomeNavigationBarItem.Spaces -> spacesLazyListState
-                        }
+                            HomeNavigationBarItem.Groups -> proseioGroupsLazyListState
+                            HomeNavigationBarItem.You -> null
+                        } ?: return@HomeBottomBar
                         coroutineScope.launch {
                             if (lazyListStateTarget.firstVisibleItemIndex > 10) {
                                 lazyListStateTarget.scrollToItem(10)
@@ -249,13 +258,23 @@ private fun HomeScaffold(
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },
-                floatingActionButton = {
-                    when (state.currentHomeNavigationBarItem) {
-                        HomeNavigationBarItem.Chats -> {
-                            HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
-                        }
-                        HomeNavigationBarItem.Spaces -> {
-                            HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space)
+                // Proseio: Você has no floating action button.
+                floatingActionButton = if (state.currentHomeNavigationBarItem == HomeNavigationBarItem.You) {
+                    null
+                } else {
+                    {
+                        when (state.currentHomeNavigationBarItem) {
+                            HomeNavigationBarItem.Chats -> {
+                                HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
+                            }
+                            HomeNavigationBarItem.Spaces -> {
+                                HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space)
+                            }
+                            // Proseio: a new group starts from the same screen as a new chat.
+                            HomeNavigationBarItem.Groups -> {
+                                HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
+                            }
+                            HomeNavigationBarItem.You -> Unit
                         }
                     }
                 },
@@ -282,12 +301,17 @@ private fun HomeScaffold(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 when (state.currentHomeNavigationBarItem) {
-                    HomeNavigationBarItem.Chats -> {
+                    // Proseio: Conversas and Grupos use the same room list with a fixed category (ADR 0053).
+                    HomeNavigationBarItem.Chats, HomeNavigationBarItem.Groups -> {
                         RoomListContentView(
                             contentState = roomListState.contentState,
                             filtersState = roomListState.filtersState,
                             spaceFiltersState = roomListState.spaceFiltersState,
-                            lazyListState = roomsLazyListState,
+                            lazyListState = if (state.currentHomeNavigationBarItem == HomeNavigationBarItem.Groups) {
+                                proseioGroupsLazyListState
+                            } else {
+                                roomsLazyListState
+                            },
                             hideInvitesAvatars = roomListState.hideInvitesAvatars,
                             eventSink = roomListState.eventSink,
                             onSetUpRecoveryClick = onSetUpRecoveryClick,
@@ -318,6 +342,16 @@ private fun HomeScaffold(
                             onExploreClick = {},
                         )
                     }
+                    // Proseio: Você (ADR 0053)
+                    HomeNavigationBarItem.You -> {
+                        youTabView(
+                            lazyColumnContentPadding + contentPadding,
+                            Modifier
+                                .fillMaxSize()
+                                .padding(outerPadding)
+                                .consumeWindowInsets(outerPadding),
+                        )
+                    }
                 }
             }
         },
@@ -342,6 +376,7 @@ private fun HomeFloatingActionButton(
 @Composable
 private fun HomeBottomBar(
     currentHomeNavigationBarItem: HomeNavigationBarItem,
+    proseioBadges: ProseioTabBadges,
     onItemClick: (HomeNavigationBarItem) -> Unit,
     modifier: Modifier = Modifier,
     floatingActionButton: (@Composable () -> Unit)?,
@@ -351,16 +386,24 @@ private fun HomeBottomBar(
         modifier = modifier
             .zIndex(1f),
     ) {
-        HomeNavigationBarItem.entries.forEachIndexed { index, item ->
+        HomeNavigationBarItem.proseioVisibleItems.forEachIndexed { index, item ->
             if (index > 0) {
                 HorizontalFloatingToolbarSeparator()
             }
             val isSelected = currentHomeNavigationBarItem == item
+            // Proseio: badge counts (ADR 0053)
+            val badge = when (item) {
+                HomeNavigationBarItem.Chats -> proseioBadges.chats
+                HomeNavigationBarItem.Groups -> proseioBadges.groups
+                HomeNavigationBarItem.Spaces,
+                HomeNavigationBarItem.You -> 0L
+            }
             HorizontalFloatingToolbarItem(
                 icon = item.icon(isSelected),
                 tooltipLabel = stringResource(item.labelRes),
                 isSelected = isSelected,
                 onClick = { onItemClick(item) },
+                counter = badge.takeIf { it > 0 }?.coerceAtMost(Int.MAX_VALUE.toLong())?.toInt(),
             )
         }
     }

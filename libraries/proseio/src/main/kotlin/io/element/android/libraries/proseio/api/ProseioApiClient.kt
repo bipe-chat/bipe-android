@@ -8,12 +8,15 @@ package io.element.android.libraries.proseio.api
 
 import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.libraries.proseio.ProseioHandleProblem
+import io.element.android.libraries.proseio.ProseioProfileProblem
 import io.element.android.libraries.proseio.R
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -68,7 +71,28 @@ class ProseioApiClient internal constructor(private val service: ProseioApiServi
     suspend fun setMyHandle(handle: String, accessToken: String): ProseioMyHandle =
         call { service.setMyHandle(bearer(accessToken), SetHandleRequest(handle)) }
 
+    // Public profiles (ADR 0041)
+
+    /** `GET /v1/profiles/{handle}`. No auth. HTTP 404 for "no such handle" and "profile off" alike. */
+    suspend fun publicProfile(handle: String): ProseioPublicProfile = call { service.publicProfile(handle) }
+
+    /** `GET /v1/me/profile`. */
+    suspend fun myProfile(accessToken: String): ProseioMyProfile = call { service.myProfile(bearer(accessToken)) }
+
+    /** `PUT /v1/me/profile`. Error `profile_invalid` carries a [ProseioProfileProblem] id as the reason. */
+    suspend fun setMyProfile(update: ProseioProfileUpdate, accessToken: String): ProseioMyProfile =
+        call { service.setMyProfile(bearer(accessToken), update) }
+
+    /** `PUT /v1/me/profile/photo`. [jpeg] must already be re-encoded within the limits of registries/profiles.json. */
+    suspend fun setMyProfilePhoto(jpeg: ByteArray, accessToken: String): ProseioMyProfile =
+        call { service.setMyProfilePhoto(bearer(accessToken), jpeg.toRequestBody(JPEG)) }
+
+    /** `DELETE /v1/me/profile/photo`. */
+    suspend fun deleteMyProfilePhoto(accessToken: String): ProseioMyProfile = call { service.deleteMyProfilePhoto(bearer(accessToken)) }
+
     companion object {
+        private val JPEG = "image/jpeg".toMediaType()
+
         /**
          * [baseUrl] is the API root, e.g. `https://api.proseio.com.br`.
          * [callFactory] must not log bodies or headers: requests carry passwords and access tokens.
@@ -170,6 +194,22 @@ internal interface ProseioApiService {
 
     @PUT("v1/me/handle")
     suspend fun setMyHandle(@Header("Authorization") authorization: String, @Body request: SetHandleRequest): Response<ProseioMyHandle>
+
+    @GET("v1/profiles/{handle}")
+    suspend fun publicProfile(@Path("handle") handle: String): Response<ProseioPublicProfile>
+
+    @GET("v1/me/profile")
+    suspend fun myProfile(@Header("Authorization") authorization: String): Response<ProseioMyProfile>
+
+    @PUT("v1/me/profile")
+    suspend fun setMyProfile(@Header("Authorization") authorization: String, @Body request: ProseioProfileUpdate): Response<ProseioMyProfile>
+
+    /** Retrofit sends a [RequestBody] as it is, past the JSON converter. */
+    @PUT("v1/me/profile/photo")
+    suspend fun setMyProfilePhoto(@Header("Authorization") authorization: String, @Body photo: RequestBody): Response<ProseioMyProfile>
+
+    @DELETE("v1/me/profile/photo")
+    suspend fun deleteMyProfilePhoto(@Header("Authorization") authorization: String): Response<ProseioMyProfile>
 }
 
 /** The contract's `Error.error` enum. */
@@ -183,6 +223,8 @@ enum class ProseioApiErrorCode(val id: String) {
     HANDLE_COOLDOWN("handle_cooldown"),
     PASSWORD_WEAK("password_weak"),
     ATTESTATION_INVALID("attestation_invalid"),
+    PROFILE_INVALID("profile_invalid"),
+    PHOTO_INVALID("photo_invalid"),
     UNAUTHORIZED("unauthorized"),
     NOT_FOUND("not_found"),
     RATE_LIMITED("rate_limited"),
@@ -222,6 +264,9 @@ sealed class ProseioApiException(cause: Throwable? = null) : Exception(cause) {
             ProseioApiErrorCode.HANDLE_INVALID ->
                 (reason?.let(ProseioHandleProblem::fromId) ?: ProseioHandleProblem.INVALID_CHARACTERS).localizedMessage(stringProvider)
             ProseioApiErrorCode.HANDLE_COOLDOWN -> stringProvider.getString(R.string.proseio_error_handle_cooldown)
+            ProseioApiErrorCode.PROFILE_INVALID ->
+                reason?.let(ProseioProfileProblem::fromId)?.localizedMessage(stringProvider) ?: stringProvider.getString(R.string.proseio_error_generic)
+            ProseioApiErrorCode.PHOTO_INVALID -> stringProvider.getString(R.string.proseio_public_profile_photo_invalid)
             ProseioApiErrorCode.RATE_LIMITED -> stringProvider.getString(R.string.proseio_error_rate_limited)
             ProseioApiErrorCode.UNAUTHORIZED -> stringProvider.getString(R.string.proseio_error_unauthorized)
             // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).

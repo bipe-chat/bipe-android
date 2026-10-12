@@ -259,6 +259,7 @@ class TimelinePresenter(
                     Timber.tag(tag).d("Started focus on ${event.eventId}")
                     focusOnEvent(event.eventId, focusRequestState)
                 }.start()
+                is TimelineEvent.FocusOnEventFromMissedSummary -> handleEvent(TimelineEvent.FocusOnEvent(event.eventId)) // Proseio
                 is TimelineEvent.OnFocusEventRender -> {
                     // If there was a pending 'notification tap opens timeline' transaction, finish it now we're focused in the required event
                     analyticsService.finishLongRunningTransaction(NotificationToMessage)
@@ -493,7 +494,11 @@ class TimelinePresenter(
         val userEventPermissions by room.permissionsAsState(UserEventPermissions.DEFAULT) { perms ->
             perms.userEventPermissions()
         }
-        val timelineRoomInfo by remember(typingNotificationState, roomCallState, roomInfo) {
+        // Proseio: proseio#98
+        val proseioMissedSummary = remember(timelineItems, roomInfo.isDm) {
+            proseioMissedSummary(items = timelineItems, currentUserId = room.sessionId, isDm = roomInfo.isDm)
+        }
+        val timelineRoomInfo by remember(typingNotificationState, roomCallState, roomInfo, proseioMissedSummary) {
             derivedStateOf {
                 TimelineRoomInfo(
                     currentUserId = room.sessionId,
@@ -505,6 +510,7 @@ class TimelinePresenter(
                     pinnedEventIds = roomInfo.pinnedEventIds,
                     typingNotificationState = typingNotificationState,
                     predecessorRoom = room.predecessorRoom(),
+                    proseioMissedSummary = proseioMissedSummary,
                 )
             }
         }

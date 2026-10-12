@@ -24,6 +24,7 @@ import io.element.android.libraries.preferences.api.store.SessionPreferencesStor
 import io.element.android.libraries.preferences.api.store.VideoCompressionPreset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.io.File
 
@@ -62,8 +63,7 @@ class DefaultSessionPreferencesStore(
     override suspend fun setSharePresence(enabled: Boolean) {
         update(sharePresenceKey, enabled)
         // Also update all the other settings
-        setSendPublicReadReceipts(enabled)
-        setRenderReadReceipts(enabled)
+        // Proseio: read receipts are not part of this toggle (ADR 0050)
         setSendTypingNotifications(enabled)
         setRenderTypingNotifications(enabled)
     }
@@ -73,10 +73,12 @@ class DefaultSessionPreferencesStore(
     }
 
     override suspend fun setSendPublicReadReceipts(enabled: Boolean) = update(sendPublicReadReceiptsKey, enabled)
-    override fun isSendPublicReadReceiptsEnabled(): Flow<Boolean> = get(sendPublicReadReceiptsKey) { true }
+    // Proseio: receipts are always public, whatever an older build stored (ADR 0050)
+    override fun isSendPublicReadReceiptsEnabled(): Flow<Boolean> = flowOf(true)
 
     override suspend fun setRenderReadReceipts(enabled: Boolean) = update(renderReadReceiptsKey, enabled)
-    override fun isRenderReadReceiptsEnabled(): Flow<Boolean> = get(renderReadReceiptsKey) { true }
+    // Proseio: receipts of other people are always shown (ADR 0050)
+    override fun isRenderReadReceiptsEnabled(): Flow<Boolean> = flowOf(true)
 
     override suspend fun setSendTypingNotifications(enabled: Boolean) = update(sendTypingNotificationsKey, enabled)
     override fun isSendTypingNotificationsEnabled(): Flow<Boolean> = get(sendTypingNotificationsKey) { true }

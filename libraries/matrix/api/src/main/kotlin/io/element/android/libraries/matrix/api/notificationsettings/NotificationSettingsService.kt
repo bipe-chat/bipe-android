@@ -121,4 +121,12 @@ interface NotificationSettingsService {
 
     /** The push rules as raw JSON, for debugging and bug reports; `null` when the server returned none. */
     suspend fun getRawPushRules(): Result<String?>
+
+    /**
+     * Proseio (proseio#97): adds or replaces a user override rule that notifies for events whose type matches a glob.
+     *
+     * @param ruleId the rule ID; setting it again replaces the rule.
+     * @param eventTypePattern a glob on the event type, for example `*.poll.start`.
+     */
+    suspend fun setNotifyOverrideRule(ruleId: String, eventTypePattern: String): Result<Unit>
 }

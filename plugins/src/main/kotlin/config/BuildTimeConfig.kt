@@ -10,13 +10,13 @@ package config
 
 object BuildTimeConfig {
     const val APPLICATION_ID = "br.com.proseio.app" // Proseio. Debug builds add ".debug". Do not upload this ID before the Proseio organisation owns the Play account.
-    const val APPLICATION_NAME = "Proseio" // Proseio
+    const val APPLICATION_NAME = "Bipe" // Proseio: product name Bipe (ADR 0054)
     // Proseio: OAuth redirect scheme. MAS requires it to be the reverse of the client URI host (proseio.com.br) or below it.
     val METADATA_HOST_REVERSED: String? = "br.com.proseio.app"
     val OAUTH_CLIENT_URL_PATH: String? = "apps/android"
     val URL_WEBSITE: String? = "https://proseio.com.br" // Proseio: MAS requires the OAuth URLs on the client URI host
     val URL_LOGO: String? = "https://proseio.com.br/icone.png" // Proseio
-    val URL_COPYRIGHT: String? = "https://proseio.com.br/direitos" // Proseio
+    val URL_COPYRIGHT: String? = "https://proseio.com.br/sobre" // Proseio: the About page names the steward (ADR 0040)
     val URL_ACCEPTABLE_USE: String? = "https://proseio.com.br/termos" // Proseio
     val URL_PRIVACY: String? = "https://proseio.com.br/privacidade" // Proseio
     val URL_POLICY: String? = "https://proseio.com.br/privacidade" // Proseio

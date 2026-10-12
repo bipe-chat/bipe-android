@@ -13,6 +13,7 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
+import io.element.android.libraries.proseio.tabs.ProseioTabBadges
 import kotlinx.collections.immutable.ImmutableList
 
 data class HomeState(
@@ -30,7 +31,9 @@ data class HomeState(
     val canReportBug: Boolean,
     val showMultiAccountAnnouncement: Boolean,
     val eventSink: (HomeEvent) -> Unit,
+    // Proseio: tab bar badges (ADR 0053)
+    val proseioBadges: ProseioTabBadges = ProseioTabBadges.NONE,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
-    val displayRoomListFilters = currentHomeNavigationBarItem == HomeNavigationBarItem.Chats && roomListState.displayFilters
+    val displayRoomListFilters = currentHomeNavigationBarItem.isProseioRoomList && roomListState.displayFilters // Proseio: Conversas and Grupos
 }

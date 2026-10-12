@@ -16,4 +16,5 @@ android {
 dependencies {
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.matrix.api)
+    api(projects.features.preferences.api) // Proseio: settings targets for the Você tab (ADR 0053)
 }
