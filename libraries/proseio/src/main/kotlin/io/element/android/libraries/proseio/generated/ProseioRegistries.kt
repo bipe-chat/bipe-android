@@ -220,4 +220,8 @@ object ProseioRegistries {
     const val HANDLE_MIN_LENGTH = 3
     const val HANDLE_MAX_LENGTH = 30
     const val HANDLE_PATTERN = "^[a-z0-9](?:[a-z0-9_]|\\.(?!\\.))*[a-z0-9_]\$"
+
+    /** Invite codes: the code inside anything a user pastes (registries/invite-codes.json). */
+    const val INVITE_CODE_PATTERN = "(?<![A-Z0-9])([A-HJKMNP-Z2-9]{4})[ \\-\\u2010-\\u2014\\u2212]?([A-HJKMNP-Z2-9]{4})[ \\-\\u2010-\\u2014\\u2212]?([A-HJKMNP-Z2-9]{4})(?![A-Z0-9])"
+    const val INVITE_CODE_MAX_INPUT_LENGTH = 2048
 }

@@ -67,6 +67,8 @@
     <string name="proseio_error_unauthorized">Your session expired. Sign out and sign in again.</string>
     <string name="proseio_error_network">Cannot reach Proseio. Check your connection and try again.</string>
     <string name="proseio_error_generic">Something went wrong. Try again.</string>
+    <string name="proseio_error_attestation_invalid">We couldn\'t confirm this is the official Proseio app. Update the app and try again.</string>
+    <string name="proseio_error_attestation_failed">We couldn\'t check this phone with Apple. Check your connection and try again.</string>
     <string name="proseio_signup_display_name_footer">This is the name people see in chats. You can change it later.</string>
     <string name="proseio_start_chat_handle_not_found">Nobody on Proseio uses @%1$s. Check the spelling.</string>
     <string name="proseio_profile_share">Share profile</string>
@@ -124,7 +126,7 @@
     <string name="proseio_voice_transcript_title">Transcript</string>
     <string name="proseio_voice_transcribing">Transcribing…</string>
     <string name="proseio_voice_transcript_placeholder">Check the text before you send</string>
-    <string name="proseio_voice_transcript_unavailable">No transcript. This phone can\'t transcribe this language offline.</string>
+    <string name="proseio_voice_transcript_unavailable">No transcript. The audio goes without text.</string>
     <string name="proseio_action_show_more">Show more</string>
     <string name="proseio_action_show_less">Show less</string>
 </resources>

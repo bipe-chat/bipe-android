@@ -24,6 +24,12 @@ This repo is Proseio's Android app: a fork of Element X Android (AGPL-3.0). Upst
 
 Not run yet: the dev Mac has no JDK or Android SDK (11 October 2026). Nothing in this fork has compiled.
 
+Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVectorTest.kt` reads `../proseio-shared/test-vectors` directly. Not run yet either.
+
+```bash
+./gradlew :libraries:proseio:testDebugUnitTest
+```
+
 ## Configuration
 
 | What | Where | Value |

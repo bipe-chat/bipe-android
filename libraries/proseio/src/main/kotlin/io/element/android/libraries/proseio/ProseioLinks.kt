@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.proseio
 
+import io.element.android.libraries.proseio.generated.ProseioRegistries
 import java.net.URI
 import java.util.Locale
 
@@ -50,10 +51,8 @@ object ProseioProfileLink {
  * the app opens it as an app link and pre-fills the sign-up code.
  */
 object ProseioInviteLink {
-    /** Rule and cases: proseio-shared/test-vectors/invite-codes.json. iOS and the API use the same pattern. */
-    private val pattern = Regex(
-        """(?<![A-Z0-9])([A-HJKMNP-Z2-9]{4})[ \-\u2010-\u2014\u2212]?([A-HJKMNP-Z2-9]{4})[ \-\u2010-\u2014\u2212]?([A-HJKMNP-Z2-9]{4})(?![A-Z0-9])"""
-    )
+    /** Rule: proseio-shared/registries/invite-codes.json (generated). Cases: test-vectors/invite-codes.json. */
+    private val pattern = Regex(ProseioRegistries.INVITE_CODE_PATTERN)
 
     /** The invite code in a link, normalised, or `null` when the URL is not an invite link. */
     fun code(url: String): String? {
@@ -64,13 +63,10 @@ object ProseioInviteLink {
 
     /** `XXXX-XXXX-XXXX` from anything a user typed or pasted: a code, an invite link or a whole message. `null` when it holds no code. */
     fun normalizedCode(raw: String): String? {
-        val text = raw.take(MAX_INPUT_LENGTH).uppercase(Locale.ROOT)
+        val text = raw.take(ProseioRegistries.INVITE_CODE_MAX_INPUT_LENGTH).uppercase(Locale.ROOT)
         val match = pattern.find(text) ?: return null
         return match.groupValues.drop(1).joinToString("-")
     }
-
-    /** Same cap as the API's `invite_code` (`maxLength: 2048`). */
-    private const val MAX_INPUT_LENGTH = 2048
 }
 
 /** A normalised invite code. Prints redacted, because routes and actions get logged. */
