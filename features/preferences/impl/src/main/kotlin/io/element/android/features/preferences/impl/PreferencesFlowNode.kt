@@ -51,6 +51,7 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
 import io.element.android.libraries.proseio.handle.ProseioHandleNode
 import io.element.android.libraries.proseio.invites.ProseioInvitesNode
+import io.element.android.libraries.proseio.profile.ProseioPublicProfileNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -138,6 +139,9 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object ProseioInvites : NavTarget
+
+        @Parcelize
+        data object ProseioPublicProfile : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -184,6 +188,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToProseioInvites() {
                         backstack.push(NavTarget.ProseioInvites)
+                    }
+
+                    override fun navigateToProseioPublicProfile() {
+                        backstack.push(NavTarget.ProseioPublicProfile)
                     }
 
                     override fun navigateToBugReport() {
@@ -269,6 +277,14 @@ class PreferencesFlowNode(
                     }
                 }
                 createNode<ProseioInvitesNode>(buildContext, listOf(callback))
+            }
+            NavTarget.ProseioPublicProfile -> {
+                val callback = object : ProseioPublicProfileNode.Callback {
+                    override fun navigateToHandle() {
+                        backstack.push(NavTarget.ProseioHandle)
+                    }
+                }
+                createNode<ProseioPublicProfileNode>(buildContext, listOf(callback))
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {

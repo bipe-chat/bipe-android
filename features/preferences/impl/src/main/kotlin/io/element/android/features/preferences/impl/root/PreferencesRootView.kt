@@ -71,6 +71,7 @@ import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.proseio.ProseioTrustProfile
 import io.element.android.libraries.proseio.handle.ProseioHandleRow
 import io.element.android.libraries.proseio.handle.ProseioInvitesRow
+import io.element.android.libraries.proseio.handle.ProseioPublicProfileRow
 import io.element.android.libraries.proseio.ui.ProseioTrustProfileSection
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
@@ -102,6 +103,7 @@ fun PreferencesRootView(
     modifier: Modifier = Modifier,
     onProseioHandleClick: () -> Unit = {},
     onProseioInvitesClick: () -> Unit = {},
+    onProseioPublicProfileClick: () -> Unit = {},
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
 
@@ -120,7 +122,7 @@ fun PreferencesRootView(
                     },
                 matrixUser = state.myUser,
             )
-            // Proseio: the trust profile card, then the handle and invites rows.
+            // Proseio: the trust profile card, then the handle, public profile and invites rows.
             ProseioTrustProfileSection(
                 profile = ProseioTrustProfile.create(
                     displayName = state.myUser.displayName,
@@ -131,6 +133,7 @@ fun PreferencesRootView(
                 onHandleClick = onProseioHandleClick,
             )
             ProseioHandleRow(handle = state.proseioHandle, onClick = onProseioHandleClick) // Proseio
+            ProseioPublicProfileRow(enabled = state.proseioPublicProfileEnabled, onClick = onProseioPublicProfileClick) // Proseio
             ProseioInvitesRow(onClick = onProseioInvitesClick) // Proseio
             if (state.userStatusState != null) {
                 UserStatusSection(

@@ -99,6 +99,7 @@ import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.proseio.di.ProseioSession
 import io.element.android.libraries.proseio.groups.ProseioQuietGroups
 import io.element.android.libraries.proseio.ui.LocalProseioHandleResolver
+import io.element.android.libraries.proseio.ui.LocalProseioPublicProfiles
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.ui.common.nodes.EmptyState
 import io.element.android.libraries.ui.common.nodes.emptyNode
@@ -701,6 +702,7 @@ class LoggedInFlowNode(
             CompositionLocalProvider(
                 LocalMapTilerConfig provides updatedMapTilerConfig,
                 LocalProseioHandleResolver provides proseioSession.handleResolver, // Proseio: @handles in shared UI
+                LocalProseioPublicProfiles provides proseioSession.publicProfiles, // Proseio: public profile bios in shared UI
             ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an

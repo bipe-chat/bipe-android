@@ -12,6 +12,7 @@ import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.proseio.ProseioHandleResolver
+import io.element.android.libraries.proseio.ProseioPublicProfiles
 import io.element.android.libraries.proseio.api.ProseioApiClient
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +34,12 @@ class ProseioSession(
     val handleResolver = ProseioHandleResolver(
         apiClient = apiClient,
         serverName = matrixClient.userIdServerName(),
+        scope = sessionCoroutineScope,
+        accessToken = accessToken,
+    )
+
+    val publicProfiles = ProseioPublicProfiles(
+        apiClient = apiClient,
         scope = sessionCoroutineScope,
         accessToken = accessToken,
     )

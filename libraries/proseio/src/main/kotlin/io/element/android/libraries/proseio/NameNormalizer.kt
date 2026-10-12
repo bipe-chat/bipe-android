@@ -51,6 +51,23 @@ object NameNormalizer {
     fun reservedCategory(displayName: String): ReservedNameCategory? =
         ProseioRegistries.reservedNames[normalize(displayName)]
 
+    /** JS `String.prototype.trim()`: strips the same whitespace set as JS, not Kotlin's [String.trim] set. */
+    fun trimJavaScript(input: String): String {
+        var start = 0
+        var end = input.length
+        while (start < end) {
+            val codePoint = input.codePointAt(start)
+            if (!isJavaScriptWhitespace(codePoint)) break
+            start += Character.charCount(codePoint)
+        }
+        while (end > start) {
+            val codePoint = input.codePointBefore(end)
+            if (!isJavaScriptWhitespace(codePoint)) break
+            end -= Character.charCount(codePoint)
+        }
+        return input.substring(start, end)
+    }
+
     private fun isMark(codePoint: Int): Boolean = when (Character.getType(codePoint).toByte()) {
         Character.NON_SPACING_MARK, Character.COMBINING_SPACING_MARK, Character.ENCLOSING_MARK -> true
         else -> false
