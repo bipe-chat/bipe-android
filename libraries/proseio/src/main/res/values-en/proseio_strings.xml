@@ -59,6 +59,13 @@
     <string name="proseio_handle_screen_footer">This is how people find you on Proseio. After a change, you wait 30 days to change it again.</string>
     <string name="proseio_settings_handle">Username</string>
     <string name="proseio_settings_handle_none">Not set</string>
+    <string name="proseio_messaging_title">Who can message me</string>
+    <string name="proseio_messaging_everyone">Everyone</string>
+    <string name="proseio_messaging_everyone_body">People you don\'t know land in Requests.</string>
+    <string name="proseio_messaging_verified">Verified accounts only</string>
+    <string name="proseio_messaging_verified_body">Plus people you already know. Nobody is verified yet, so for now this works like Contacts only.</string>
+    <string name="proseio_messaging_contacts">Contacts only</string>
+    <string name="proseio_messaging_contacts_body">People in a group or chat with you, people you invited and whoever invited you.</string>
     <string name="proseio_error_invite_invalid">This invite is not valid or was already used.</string>
     <string name="proseio_error_email_taken">An account with this email already exists. Sign in with it.</string>
     <string name="proseio_error_password_weak">This password is too weak. Pick a longer or less obvious one.</string>
@@ -156,4 +163,15 @@
     <string name="proseio_sticker_saved">Sticker saved to My stickers</string>
     <string name="proseio_sticker_save_failed">The sticker was not saved. Try again.</string>
     <string name="proseio_stickers_from_photo">Make from a photo</string>
+    <string name="proseio_contacts_title">Contacts on Proseio</string>
+    <string name="proseio_contacts_intro">See which of your contacts are already on Proseio. Numbers are only compared on the server and are not stored.</string>
+    <string name="proseio_contacts_allow">Allow access to contacts</string>
+    <string name="proseio_contacts_denied">Proseio has no access to your contacts. You can allow it in iPhone Settings.</string>
+    <string name="proseio_contacts_open_settings">Open Settings</string>
+    <string name="proseio_contacts_none">None of your contacts are on Proseio yet.</string>
+    <string name="proseio_contacts_invite">Invite people who are not here</string>
+    <string name="proseio_discovery_toggle">People who have my number can find me</string>
+    <string name="proseio_discovery_footer">Your number is never shown to anyone. Only people who already have you in their contacts can find you.</string>
+    <string name="proseio_phone_not_linked">Your number is not linked yet, so nobody can find you by it for now.</string>
+    <string name="proseio_phone_linked">Your number is linked.</string>
 </resources>

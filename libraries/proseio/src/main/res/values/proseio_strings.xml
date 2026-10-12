@@ -59,6 +59,13 @@
     <string name="proseio_handle_screen_footer">É assim que as pessoas acham você no Proseio. Depois de mudar, você espera 30 dias para mudar de novo.</string>
     <string name="proseio_settings_handle">Nome de usuário</string>
     <string name="proseio_settings_handle_none">Não definido</string>
+    <string name="proseio_messaging_title">Quem pode me mandar mensagem</string>
+    <string name="proseio_messaging_everyone">Todo mundo</string>
+    <string name="proseio_messaging_everyone_body">Quem você não conhece cai em Pedidos.</string>
+    <string name="proseio_messaging_verified">Só contas verificadas</string>
+    <string name="proseio_messaging_verified_body">E quem você já conhece. Ninguém tem verificação ainda, então por enquanto vale como Só contatos.</string>
+    <string name="proseio_messaging_contacts">Só contatos</string>
+    <string name="proseio_messaging_contacts_body">Quem está em algum grupo ou conversa com você, quem você convidou e quem te convidou.</string>
     <string name="proseio_error_invite_invalid">Este convite não vale ou já foi usado.</string>
     <string name="proseio_error_email_taken">Já existe uma conta com este e-mail. Entre com ele.</string>
     <string name="proseio_error_password_weak">Senha fraca. Escolha uma mais longa ou menos óbvia.</string>
@@ -156,4 +163,15 @@
     <string name="proseio_sticker_saved">Sticker salvo em Meus stickers</string>
     <string name="proseio_sticker_save_failed">O sticker não foi salvo. Tente de novo.</string>
     <string name="proseio_stickers_from_photo">Criar de uma foto</string>
+    <string name="proseio_contacts_title">Contatos no Proseio</string>
+    <string name="proseio_contacts_intro">Veja quem dos seus contatos já está no Proseio. Os números só são comparados no servidor e não ficam guardados.</string>
+    <string name="proseio_contacts_allow">Permitir acesso aos contatos</string>
+    <string name="proseio_contacts_denied">O Proseio não tem acesso aos seus contatos. Você pode liberar nos Ajustes do iPhone.</string>
+    <string name="proseio_contacts_open_settings">Abrir Ajustes</string>
+    <string name="proseio_contacts_none">Nenhum contato seu está no Proseio ainda.</string>
+    <string name="proseio_contacts_invite">Convidar quem não está</string>
+    <string name="proseio_discovery_toggle">Quem tem meu número pode me encontrar</string>
+    <string name="proseio_discovery_footer">Seu número nunca aparece para ninguém. Só quem já tem você nos contatos consegue te achar.</string>
+    <string name="proseio_phone_not_linked">Seu número ainda não está vinculado, então ninguém te encontra por ele por enquanto.</string>
+    <string name="proseio_phone_linked">Seu número está vinculado.</string>
 </resources>
