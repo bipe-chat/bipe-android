@@ -62,6 +62,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVec
 - **Packs:** MSC2545 (`im.ponies.*`). `HttpStickerPackRepository` in `libraries/proseio/stickers` reads them over HTTP: the SDK cannot read custom room state under sliding sync. Same order as iOS: the user's pack, this room's packs, then enabled packs from other rooms.
 - **Send:** `JoinedRoom.sendRaw("m.sticker", …)`. The SDK has no typed sticker send. `sendRaw` skips the send queue: no local echo, no retry. In a thread the content carries an `m.thread` relation.
 - **Import:** "Importar do WhatsApp" in the sheet opens the system document picker for a WhatsApp chat export ZIP, WebP or PNG. `StickerImporter` (`java.util.zip`) reads the `.webp` entries, checks magic bytes, size (1 MB) and sides (1024 px), derives the shortcode from SHA-256 (`wa_…`). `HttpStickerPackRepository.importStickers` uploads them and adds them to `im.ponies.user_emotes`. Same rules as iOS.
+- **WhatsApp folder:** the picker opens in `Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Stickers` (`EXTRA_INITIAL_URI`, Android 8+), where WhatsApp keeps every received sticker as `.webp`. The user selects several files there. This is an Android-only route; the help text says so (`proseio_stickers_import_help_folder_android`). Whether every Android version lets the picker open that folder is not verified.
 - **Animated WebP:** Coil's `AnimatedImageDecoder` (already registered) plays it on Android 9+.
 - **Not compiled yet** (11 October 2026): this Mac has no JDK or Android SDK.
 
@@ -79,6 +80,7 @@ Each line is a deliberate difference with its reason. A difference not listed he
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81). **Gap** |
 | Help links | Still point to element.io | Hidden | Not done on Android. **Gap** |
 | App icon | Element's icon | Placeholder açaí bubble | Not done on Android. **Gap** |
+| Sticker import | Chat export ZIP or files | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | iOS apps cannot read WhatsApp's files |
 | Signed-device isolation | Fixed on | User preference, default on | Undecided (#102) |
 | Language fallback | en for other device languages | pt-BR | Undecided (#102) |
 | Handle lookup | Every user search | Start chat only | Undecided (#102) |

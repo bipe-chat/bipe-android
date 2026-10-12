@@ -6,7 +6,11 @@
 
 package io.element.android.features.messages.impl.messagecomposer
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -118,7 +122,24 @@ internal fun StickerPickerBottomSheet(
 /** A WhatsApp chat export, or the sticker files themselves. */
 private val StickerImporterMimeTypes = arrayOf("application/zip", "image/webp", "image/png")
 
-private class OpenStickerFiles : ActivityResultContracts.OpenMultipleDocuments()
+/**
+ * Opens the document picker in WhatsApp's received-stickers folder, where every sticker the user got is a `.webp` file.
+ * If the folder does not exist, the picker opens in its default place.
+ */
+private class OpenStickerFiles : ActivityResultContracts.OpenMultipleDocuments() {
+    override fun createIntent(context: Context, input: Array<String>): Intent {
+        val intent = super.createIntent(context, input)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, WHATSAPP_STICKERS_FOLDER)
+        }
+        return intent
+    }
+}
+
+private val WHATSAPP_STICKERS_FOLDER: Uri = DocumentsContract.buildDocumentUri(
+    "com.android.externalstorage.documents",
+    "primary:Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Stickers",
+)
 
 @Composable
 private fun StickerPickerContent(
