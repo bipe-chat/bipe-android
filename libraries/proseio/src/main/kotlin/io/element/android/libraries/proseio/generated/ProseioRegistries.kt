@@ -4,6 +4,7 @@
 package io.element.android.libraries.proseio.generated
 
 enum class ReservedNameCategory(val id: String) {
+    BIPE("bipe"),
     PROSEIO("proseio"),
     BANK("bank"),
     GOVERNMENT("government"),
@@ -14,6 +15,12 @@ data class ScamPattern(val id: String, val regex: String)
 object ProseioRegistries {
     /** Normalised reserved display names and their category. */
     val reservedNames: Map<String, ReservedNameCategory> = mapOf(
+        "bipe" to ReservedNameCategory.BIPE,
+        "bipe oficial" to ReservedNameCategory.BIPE,
+        "bipe chat" to ReservedNameCategory.BIPE,
+        "suporte bipe" to ReservedNameCategory.BIPE,
+        "equipe bipe" to ReservedNameCategory.BIPE,
+        "seguranca bipe" to ReservedNameCategory.BIPE,
         "proseio" to ReservedNameCategory.PROSEIO,
         "proseio oficial" to ReservedNameCategory.PROSEIO,
         "suporte proseio" to ReservedNameCategory.PROSEIO,
