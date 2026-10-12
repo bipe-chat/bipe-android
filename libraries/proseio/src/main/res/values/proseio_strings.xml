@@ -152,4 +152,8 @@
     <string name="proseio_stickers_import_done">Stickers adicionados: %1$s</string>
     <string name="proseio_stickers_import_none">Nenhum sticker novo nesse arquivo.</string>
     <string name="proseio_stickers_import_failed">A importação não deu certo. Tente de novo.</string>
+    <string name="proseio_action_save_sticker">Salvar nos meus stickers</string>
+    <string name="proseio_sticker_saved">Sticker salvo em Meus stickers</string>
+    <string name="proseio_sticker_save_failed">O sticker não foi salvo. Tente de novo.</string>
+    <string name="proseio_stickers_from_photo">Criar de uma foto</string>
 </resources>
