@@ -32,6 +32,7 @@
     <string name="proseio_charge_status_pending">Pending</string>
     <string name="proseio_settings_language">Language</string>
     <string name="proseio_settings_language_footer">Choose Portuguese or English in iPhone Settings.</string>
+    <string name="proseio_settings_share_presence_footer">If you turn this off, nobody sees you typing and you don\'t see others typing. Read receipts always stay on.</string>
     <string name="proseio_about_steward">Proseio is a project by Envisioning. The servers are in Brazil.</string>
     <string name="proseio_signup_title">Create account</string>
     <string name="proseio_signup_header">You need an invite to join Proseio.</string>
