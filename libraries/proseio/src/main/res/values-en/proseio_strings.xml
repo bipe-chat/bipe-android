@@ -129,4 +129,12 @@
     <string name="proseio_voice_transcript_unavailable">No transcript. The audio goes without text.</string>
     <string name="proseio_action_show_more">Show more</string>
     <string name="proseio_action_show_less">Show less</string>
+    <string name="proseio_action_stickers">Stickers</string>
+    <string name="proseio_stickers_title">Stickers</string>
+    <string name="proseio_stickers_pack_personal">My stickers</string>
+    <string name="proseio_stickers_pack_room">From this chat</string>
+    <string name="proseio_stickers_empty_title">No stickers yet</string>
+    <string name="proseio_stickers_empty_body">Your sticker packs show up here.</string>
+    <string name="proseio_stickers_error_load">The stickers did not load. Try again.</string>
+    <string name="proseio_a11y_sticker_send">Send sticker: %1$s</string>
 </resources>
