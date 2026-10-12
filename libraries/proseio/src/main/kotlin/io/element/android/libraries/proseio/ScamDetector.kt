@@ -86,7 +86,8 @@ object ScamDetector {
                 // The fake-delivery fee scam: a link, and the message talks about a held parcel and a fee.
                 ScamWarningKind.DELIVERY_FEE -> "linkPatterns" in groups && deliveryWordLists.all { containsAny(normalized, it) }
                 ScamWarningKind.RECEIPT -> "receipt" in groups
-                ScamWarningKind.NEW_NUMBER -> phrases.any { it in ProseioRegistries.newNumberPhrases }
+                // The falso parente opener. On Bipe it says new account, which is normal chat without a family term or urgency.
+                ScamWarningKind.NEW_NUMBER -> phrases.any { it in ProseioRegistries.newNumberPhrases } || isNewAccountOpener(normalized, phrases)
                 ScamWarningKind.URGENCY -> phrases.isNotEmpty()
             }
         }
@@ -130,4 +131,19 @@ object ScamDetector {
     )
 
     private fun containsAny(normalized: String, words: List<String>): Boolean = words.any { normalized.contains(it) }
+
+    private fun isNewAccountOpener(normalized: String, phrases: List<String>): Boolean =
+        containsAny(normalized, ProseioRegistries.newAccountPhrases) &&
+            (phrases.isNotEmpty() || containsWord(normalized, ProseioRegistries.familyTerms))
+
+    /**
+     * True when the normalised text has one of [terms] as a whole word: each run of characters outside [0-9a-z]
+     * becomes one space, then the term must have a space on each side.
+     */
+    private fun containsWord(normalized: String, terms: Set<String>): Boolean {
+        val words = " ${normalized.replace(nonWordRuns, " ")} "
+        return terms.any { words.contains(" $it ") }
+    }
+
+    private val nonWordRuns = Regex("[^0-9a-z]+")
 }

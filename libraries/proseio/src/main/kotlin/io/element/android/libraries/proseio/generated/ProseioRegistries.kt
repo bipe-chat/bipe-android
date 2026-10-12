@@ -173,6 +173,10 @@ object ProseioRegistries {
         "numero novo",
         "esse e meu numero novo",
         "salva esse numero",
+        "troquei de celular",
+        "perdi meu celular",
+        "essa e minha conta nova",
+        "salva essa conta",
         "faz um pix",
         "faz um pix pra mim",
         "preciso de um pix",
@@ -215,6 +219,19 @@ object ProseioRegistries {
         "numero novo",
         "esse e meu numero novo",
         "salva esse numero",
+        "troquei de celular",
+        "perdi meu celular",
+        "essa e minha conta nova",
+        "salva essa conta",
+    )
+
+    /**
+     * Normalised phrases, matched as substrings of the normalised message. They make a message the "new number" kind
+     * only with a family term (whole word) or a matched urgency phrase.
+     */
+    val newAccountPhrases: List<String> = listOf(
+        "conta nova",
+        "nova conta",
     )
 
     /** Normalised words for the "delivery fee" kind. It needs a link and an entry from each of the three lists. */
