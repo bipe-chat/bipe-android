@@ -16,6 +16,8 @@ enum class ScamWarningKind(val id: String, @StringRes val messageRes: Int) {
     BOLETO("boleto", R.string.proseio_scam_warning_boleto),
     PIX_KEY("pixKey", R.string.proseio_scam_warning_pix_key),
     DELIVERY_FEE("deliveryFee", R.string.proseio_scam_warning_delivery_fee),
+    LOOKALIKE_LINK("lookalikeLink", R.string.proseio_scam_warning_lookalike_link),
+    BANK_ALERT("bankAlert", R.string.proseio_scam_warning_bank_alert),
     RECEIPT("receipt", R.string.proseio_scam_warning_receipt),
     NEW_NUMBER("newNumber", R.string.proseio_scam_warning_new_number),
     URGENCY("urgency", R.string.proseio_scam_warning_urgency);
@@ -76,6 +78,7 @@ object ScamDetector {
         val groups = matchIds.map { it.substringBefore(':') }.toSet()
         val phrases = matchIds.filter { it.startsWith(URGENCY_PREFIX) }.map { it.removePrefix(URGENCY_PREFIX) }
         val normalized = NameNormalizer.normalize(message, homoglyphs = emptyMap())
+        val hosts = linkHosts(message)
 
         return warningKindPriority.firstOrNull { kind ->
             when (kind) {
@@ -84,11 +87,37 @@ object ScamDetector {
                 // A phone number or e-mail alone is normal chat. Warn only when the message also talks about Pix.
                 ScamWarningKind.PIX_KEY -> "pixKeyPatterns" in groups && containsAny(normalized, ProseioRegistries.pixKeyContextWords)
                 // The fake-delivery fee scam: a link, and the message talks about a held parcel and a fee.
-                ScamWarningKind.DELIVERY_FEE -> "linkPatterns" in groups && deliveryWordLists.all { containsAny(normalized, it) }
+                ScamWarningKind.DELIVERY_FEE -> hosts.isNotEmpty() && deliveryWordLists.all { containsAny(normalized, it) }
+                // A link that copies a bank, government or company address, also when spelled with homoglyphs.
+                ScamWarningKind.LOOKALIKE_LINK -> hosts.any(::isLookalike)
+                // The fake bank alert: a link, and the message says the account, card or Pix is blocked or needs an update.
+                ScamWarningKind.BANK_ALERT -> hosts.isNotEmpty() && bankAlertWordLists.all { containsAny(normalized, it) }
                 ScamWarningKind.RECEIPT -> "receipt" in groups
                 // The falso parente opener. On Bipe it says new account, which is normal chat without a family term or urgency.
                 ScamWarningKind.NEW_NUMBER -> phrases.any { it in ProseioRegistries.newNumberPhrases } || isNewAccountOpener(normalized, phrases)
                 ScamWarningKind.URGENCY -> phrases.isNotEmpty()
+            }
+        }
+    }
+
+    /**
+     * A link host. [folded] is a link-pattern match on the host-folded message. [plain] is the same UTF-16 range
+     * of the message normalised without folding, so it keeps homoglyphs.
+     */
+    data class LinkHost(val folded: String, val plain: String)
+
+    /** Every link host in the message. Must match proseio-shared `linkHosts`. */
+    fun linkHosts(message: String): List<LinkHost> {
+        val plain = NameNormalizer.normalize(message, homoglyphs = emptyMap())
+        val folded = NameNormalizer.normalize(message, homoglyphs = ProseioRegistries.hostHomoglyphs)
+        // proseio-shared validates that host folding keeps every UTF-16 index. An empty plain host is never official.
+        val aligned = plain.length == folded.length
+        return linkExpressions.flatMap { expression ->
+            val matcher = expression.matcher(folded)
+            buildList {
+                while (matcher.find()) {
+                    add(LinkHost(matcher.group(), if (aligned) plain.substring(matcher.start(), matcher.end()) else ""))
+                }
             }
         }
     }
@@ -122,6 +151,22 @@ object ScamDetector {
                     ?.let { CompiledPattern("$name:${pattern.id}", it) }
             }
         }
+    }
+
+    private val linkExpressions: List<Pattern> by lazy {
+        ProseioRegistries.linkPatterns.mapNotNull { runCatching { Pattern.compile(it.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull() }
+    }
+
+    private val bankAlertWordLists = listOf(
+        ProseioRegistries.bankAlertSubjectWords,
+        ProseioRegistries.bankAlertThreatWords,
+    )
+
+    /** True when the host copies a brand: its folded form names a brand and its plain form is not that brand's domain. */
+    private fun isLookalike(host: LinkHost): Boolean {
+        val squashed = host.folded.replace(".", "").replace("-", "")
+        if (ProseioRegistries.lookalikeBrandTokens.none { squashed.contains(it) }) return false
+        return ProseioRegistries.officialDomains.none { host.plain == it || host.plain.endsWith(".$it") }
     }
 
     private val deliveryWordLists = listOf(
