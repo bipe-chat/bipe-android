@@ -1,3 +1,5 @@
+> **Contributing to Proseio:** read the [Proseio contributing guide](https://github.com/proseio/.github/blob/main/CONTRIBUTING.md) first. Proseio needs a DCO sign-off on every commit (`git commit -s`). Element's guide below still applies to code style.
+
 # Contributing to Element X Android
 
 <!--- TOC -->
