@@ -34,7 +34,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVec
 
 | What | Where | Value |
 |---|---|---|
-| Application ID, name | `plugins/src/main/kotlin/config/BuildTimeConfig.kt` | `br.com.proseio.app` (debug adds `.debug`), "Proseio" |
+| Application ID, name | `plugins/src/main/kotlin/config/BuildTimeConfig.kt` | `br.com.proseio.app` (debug adds `.debug`), "Bipe" (ADR 0054) |
 | OAuth redirect scheme | `BuildTimeConfig.METADATA_HOST_REVERSED` | `br.com.proseio.app` (debug `br.com.proseio.app.debug`) |
 | OAuth client, logo, terms, privacy URLs | `BuildTimeConfig.URL_*` | `https://proseio.com.br/...` (MAS requires them on the client URI host) |
 | Server | `appconfig/.../ProseioConfig.kt`, used by `DefaultEnterpriseService` (impl-foss) | `proseio.com.br`, base `https://matrix.proseio.com.br`. Allow list of one, so the server picker is hidden. |
