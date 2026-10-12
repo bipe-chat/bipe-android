@@ -369,6 +369,17 @@ class MessageComposerPresenter(
                     localCoroutineScope.loadStickers()
                 }
                 MessageComposerEvent.RetryStickers -> localCoroutineScope.loadStickers()
+                is MessageComposerEvent.MakeSticker -> localCoroutineScope.launch {
+                    stickerPicker = StickerPickerState.Loading
+                    val notice = stickerPackRepository.makeSticker(event.photo).fold(
+                        onSuccess = { StickerImportNotice.Added(1) },
+                        onFailure = {
+                            Timber.e(it, "Sticker from a photo failed")
+                            StickerImportNotice.Failed
+                        },
+                    )
+                    loadStickers(notice)
+                }
                 is MessageComposerEvent.ImportStickers -> localCoroutineScope.launch {
                     stickerPicker = StickerPickerState.Loading
                     val notice = stickerPackRepository.importStickers(event.uris).fold(

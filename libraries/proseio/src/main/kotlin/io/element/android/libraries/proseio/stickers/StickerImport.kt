@@ -6,7 +6,9 @@
 
 package io.element.android.libraries.proseio.stickers
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.security.MessageDigest
@@ -27,6 +29,9 @@ object StickerImporter {
     /** WhatsApp stickers are 512 × 512, static up to 100 KB, animated up to 500 KB. These limits leave room. */
     const val MAX_FILE_SIZE = 1_000_000
     const val MAX_SIDE = 1024
+
+    /** WhatsApp's sticker size. */
+    const val STICKER_SIDE = 512
 
     /**
      * Sticker files from one picked file. A ZIP gives its `.webp` entries; a WebP or PNG file gives itself.
@@ -53,7 +58,27 @@ object StickerImporter {
         val height = options.outHeight
         if (width <= 0 || height <= 0 || width > MAX_SIDE || height > MAX_SIDE) return null
         val digest = MessageDigest.getInstance("SHA-256").digest(bytes).take(8).joinToString("") { "%02x".format(it) }
-        return StickerImportCandidate(bytes, mimeType, width, height, "wa_$digest")
+        return StickerImportCandidate(bytes, mimeType, width, height, "st_$digest")
+    }
+
+    /**
+     * "Make from a photo": crops a centred square, scales it to 512 × 512 and encodes WebP.
+     * No subject cut-out on Android: that needs ML Kit, a Google dependency (not decided).
+     */
+    fun fromPhoto(photo: Bitmap): StickerImportCandidate? {
+        val side = minOf(photo.width, photo.height)
+        if (side <= 0) return null
+        val square = Bitmap.createBitmap(photo, (photo.width - side) / 2, (photo.height - side) / 2, side, side)
+        val scaled = Bitmap.createScaledBitmap(square, STICKER_SIDE, STICKER_SIDE, true)
+        val output = ByteArrayOutputStream()
+        val format = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Bitmap.CompressFormat.WEBP_LOSSY
+        } else {
+            @Suppress("DEPRECATION")
+            Bitmap.CompressFormat.WEBP
+        }
+        scaled.compress(format, 90, output)
+        return candidate(output.toByteArray())
     }
 
     private fun zipEntries(stream: InputStream): List<ByteArray> {

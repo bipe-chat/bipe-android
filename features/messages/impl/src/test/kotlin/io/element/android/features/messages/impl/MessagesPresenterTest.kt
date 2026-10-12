@@ -95,6 +95,7 @@ import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_ID_2
 import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.libraries.matrix.test.encryption.FakeEncryptionService
+import io.element.android.libraries.matrix.test.media.FakeMatrixMediaLoader
 import io.element.android.libraries.matrix.test.permalink.FakePermalinkParser
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.FakeJoinedRoom
@@ -1640,6 +1641,8 @@ class MessagesPresenterTest {
             markAsFullyRead = markAsFullyRead,
             liveLocationShareManager = liveLocationShareManager,
             sessionCoroutineScope = backgroundScope,
+            mediaLoader = FakeMatrixMediaLoader(),
+            stickerPackRepository = FakeStickerPackRepository(),
         )
     }
 }

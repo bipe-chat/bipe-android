@@ -585,6 +585,7 @@ private fun MessagesViewContent(
             onStickerClick = { state.composerState.eventSink(MessageComposerEvent.SendSticker(it)) },
             onRetryClick = { state.composerState.eventSink(MessageComposerEvent.RetryStickers) },
             onImport = { state.composerState.eventSink(MessageComposerEvent.ImportStickers(it)) },
+            onMakeFromPhoto = { state.composerState.eventSink(MessageComposerEvent.MakeSticker(it)) },
             onDismiss = { state.composerState.eventSink(MessageComposerEvent.DismissStickerPicker) },
         )
 

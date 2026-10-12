@@ -36,6 +36,7 @@ import io.element.android.features.messages.impl.timeline.model.event.TimelineIt
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemRedactedContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemRtcNotificationContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStateContent
+import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStickerContent
 import io.element.android.features.messages.impl.timeline.model.event.canBeCopied
 import io.element.android.features.messages.impl.timeline.model.event.canBeForwarded
 import io.element.android.features.messages.impl.timeline.model.event.canReact
@@ -228,6 +229,10 @@ class DefaultActionListPresenter(
                 } else {
                     add(TimelineItemAction.Pin)
                 }
+            }
+            // Proseio: save a sticker to "Meus stickers" (ADR 0029).
+            if (timelineItem.content is TimelineItemStickerContent && timelineItem.isRemote) {
+                add(TimelineItemAction.SaveSticker)
             }
             if (timelineItem.content.canBeCopied()) {
                 add(TimelineItemAction.CopyText)

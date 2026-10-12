@@ -7,7 +7,11 @@
 package io.element.android.libraries.proseio.stickers
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.provider.OpenableColumns
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -46,6 +50,12 @@ interface StickerPackRepository {
      * Returns how many stickers it added; 0 when none were new.
      */
     suspend fun importStickers(uris: List<Uri>): Result<Int>
+
+    /** "Save to my stickers": adds a received sticker's file. Returns 0 when it was already in the pack. */
+    suspend fun addSticker(bytes: ByteArray): Result<Int>
+
+    /** "Make from a photo": turns the photo at [uri] into a sticker and adds it. */
+    suspend fun makeSticker(uri: Uri): Result<Int>
 }
 
 /**
@@ -81,6 +91,39 @@ class HttpStickerPackRepository(
         }
         if (candidates.isEmpty()) return@runCatchingExceptions 0
         withTokenRetry { token -> addToUserPack(candidates, token) }
+    }
+
+    override suspend fun addSticker(bytes: ByteArray): Result<Int> = runCatchingExceptions {
+        val candidate = StickerImporter.candidate(bytes) ?: throw IOException("Not a usable sticker")
+        withTokenRetry { token -> addToUserPack(listOf(candidate), token) }
+    }
+
+    override suspend fun makeSticker(uri: Uri): Result<Int> = runCatchingExceptions {
+        val candidate = withContext(Dispatchers.Default) {
+            decodePhoto(uri)?.let(StickerImporter::fromPhoto)
+        } ?: throw IOException("The photo did not decode")
+        withTokenRetry { token -> addToUserPack(listOf(candidate), token) }
+    }
+
+    /** Decodes the photo at most 2048 px on the long side. ImageDecoder (Android 9+) applies the EXIF orientation. */
+    private fun decodePhoto(uri: Uri): Bitmap? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(context.contentResolver, uri)
+            return ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+                val longSide = maxOf(info.size.width, info.size.height)
+                if (longSide > 2048) {
+                    val scale = 2048f / longSide
+                    decoder.setTargetSize((info.size.width * scale).toInt(), (info.size.height * scale).toInt())
+                }
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
+        }
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        var sampleSize = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / (sampleSize * 2) >= 2048) sampleSize *= 2
+        val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        return context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
     }
 
     /** Uploads the candidates that are not yet in the pack. Keeps every other field of the pack. */

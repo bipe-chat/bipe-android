@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -91,6 +92,7 @@ internal fun StickerPickerBottomSheet(
     onStickerClick: (Sticker) -> Unit,
     onRetryClick: () -> Unit,
     onImport: (List<Uri>) -> Unit,
+    onMakeFromPhoto: (Uri) -> Unit,
     onDismiss: () -> Unit,
 ) {
     if (state == StickerPickerState.Hidden) return
@@ -98,8 +100,20 @@ internal fun StickerPickerBottomSheet(
     val filePicker = rememberLauncherForActivityResult(OpenStickerFiles()) { uris ->
         if (uris.isNotEmpty()) onImport(uris)
     }
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) onMakeFromPhoto(uri)
+    }
     ModalBottomSheet(onDismissRequest = onDismiss, scrollable = false) {
-        StickerPickerContent(state, roomId, onStickerClick, onRetryClick, onImportClick = { showImportHelp = true })
+        StickerPickerContent(
+            state = state,
+            roomId = roomId,
+            onStickerClick = onStickerClick,
+            onRetryClick = onRetryClick,
+            onImportClick = { showImportHelp = true },
+            onMakeFromPhotoClick = {
+                photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
+        )
     }
     if (showImportHelp) {
         ConfirmationDialog(
@@ -148,17 +162,21 @@ private fun StickerPickerContent(
     onStickerClick: (Sticker) -> Unit,
     onRetryClick: () -> Unit,
     onImportClick: () -> Unit,
+    onMakeFromPhotoClick: () -> Unit,
 ) {
     Column(modifier = Modifier.navigationBarsPadding()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(ProseioR.string.proseio_stickers_title),
-                style = ElementTheme.typography.fontHeadingSmMedium,
-                color = ElementTheme.colors.textPrimary,
-                modifier = Modifier.weight(1f),
+        Text(
+            text = stringResource(ProseioR.string.proseio_stickers_title),
+            style = ElementTheme.typography.fontHeadingSmMedium,
+            color = ElementTheme.colors.textPrimary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+            TextButton(
+                text = stringResource(ProseioR.string.proseio_stickers_from_photo),
+                size = ButtonSize.Medium,
+                enabled = state != StickerPickerState.Loading,
+                onClick = onMakeFromPhotoClick,
             )
             TextButton(
                 text = stringResource(ProseioR.string.proseio_stickers_import_action),
@@ -297,7 +315,14 @@ internal fun StickerPickerContentPreview() = ElementPreview {
             StickerPickerState.Loaded(persistentListOf()),
             StickerPickerState.Loaded(persistentListOf(), importNotice = StickerImportNotice.Added(12)),
         ).forEach { state ->
-            StickerPickerContent(state, roomId = "!room:proseio.com.br", onStickerClick = {}, onRetryClick = {}, onImportClick = {})
+            StickerPickerContent(
+                state = state,
+                roomId = "!room:proseio.com.br",
+                onStickerClick = {},
+                onRetryClick = {},
+                onImportClick = {},
+                onMakeFromPhotoClick = {},
+            )
         }
     }
 }

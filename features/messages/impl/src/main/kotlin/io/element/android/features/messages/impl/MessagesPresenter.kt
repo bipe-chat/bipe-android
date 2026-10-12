@@ -50,6 +50,7 @@ import io.element.android.features.messages.impl.timeline.model.TimelineItem
 import io.element.android.features.messages.impl.timeline.model.TimelineItemThreadInfo
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemPollContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStateContent
+import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStickerContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemTextBasedContent
 import io.element.android.features.messages.impl.timeline.model.event.captionOrNull
 import io.element.android.features.messages.impl.timeline.model.event.htmlCaptionOrNull
@@ -79,6 +80,7 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.toThreadId
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
+import io.element.android.libraries.matrix.api.media.MatrixMediaLoader
 import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.RoomInfo
@@ -93,6 +95,7 @@ import io.element.android.libraries.matrix.ui.messages.reply.map
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
+import io.element.android.libraries.proseio.stickers.StickerPackRepository
 import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
@@ -105,6 +108,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import io.element.android.libraries.proseio.R as ProseioR
 
 @AssistedInject
 class MessagesPresenter(
@@ -137,6 +141,8 @@ class MessagesPresenter(
     private val markAsFullyRead: MarkAsFullyRead,
     private val liveLocationShareManager: ActiveLiveLocationShareManager,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
+    private val mediaLoader: MatrixMediaLoader,
+    private val stickerPackRepository: StickerPackRepository,
 ) : Presenter<MessagesState> {
     @AssistedFactory
     interface Factory {
@@ -440,10 +446,24 @@ class MessagesPresenter(
             TimelineItemAction.EndPoll -> handleEndPollAction(targetEvent, timelineState)
             TimelineItemAction.Pin -> handlePinAction(targetEvent)
             TimelineItemAction.Unpin -> handleUnpinAction(targetEvent)
+            TimelineItemAction.SaveSticker -> handleSaveSticker(targetEvent)
             TimelineItemAction.ViewInTimeline -> Unit
             TimelineItemAction.RetrySending -> handleRetrySending(targetEvent)
             TimelineItemAction.AbortSending -> handleActionAbortSend(targetEvent)
         }
+    }
+
+    /** Proseio: downloads the sticker and adds it to "Meus stickers" (ADR 0029). The same file twice is kept once. */
+    private suspend fun handleSaveSticker(targetEvent: TimelineItem.Event) {
+        val content = targetEvent.content as? TimelineItemStickerContent ?: return
+        val source = content.preferredMediaSource ?: return
+        mediaLoader.loadMediaContent(source)
+            .flatMap { stickerPackRepository.addSticker(it) }
+            .onSuccess { snackbarDispatcher.post(SnackbarMessage(ProseioR.string.proseio_sticker_saved)) }
+            .onFailure {
+                Timber.e(it, "Sticker save failed")
+                snackbarDispatcher.post(SnackbarMessage(ProseioR.string.proseio_sticker_save_failed))
+            }
     }
 
     private suspend fun handleRetrySending(targetEvent: TimelineItem.Event) {

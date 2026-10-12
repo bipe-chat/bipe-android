@@ -37,6 +37,7 @@ sealed interface MessageComposerEvent {
     data class SendSticker(val sticker: io.element.android.libraries.proseio.stickers.Sticker) : MessageComposerEvent
     data object RetryStickers : MessageComposerEvent
     data class ImportStickers(val uris: List<android.net.Uri>) : MessageComposerEvent
+    data class MakeSticker(val photo: android.net.Uri) : MessageComposerEvent
     data object DismissStickerPicker : MessageComposerEvent
 
     data class ToggleTextFormatting(val enabled: Boolean) : MessageComposerEvent
