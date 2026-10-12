@@ -49,3 +49,22 @@ Not run yet: the dev Mac has no JDK or Android SDK (11 October 2026). Nothing in
 - **Default language:** a device in a language other than pt or en gets en (the `values/` fallback). iOS defaults to pt-BR.
 - **`assetlinks.json`** on `proseio.com.br` for verified app links.
 - Proseio screens (phase 5) and the routing for Proseio links.
+
+## Differences from iOS (ADR 0031)
+
+Each line is a deliberate difference with its reason. A difference not listed here is a bug.
+
+| Area | Android | iOS | Reason |
+|---|---|---|---|
+| Dev application ID | `br.com.proseio.app.debug` | `br.com.proseio.app.dev` | Element's build-type suffix on each platform |
+| OAuth redirect | `<application id>:/` | `<bundle id>:/oauth/callback` | Element's default per platform; both are reverse-domain private-use schemes |
+| Push | FCM through Sygnal; UnifiedPush optional | APNs through Sygnal | OS push channel (#89, #90, #91) |
+| Sign-up attestation | None yet | App Attest | Play Integrity not built (#92). **Gap** |
+| Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
+| Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81). **Gap** |
+| Help links | Still point to element.io | Hidden | Not done on Android. **Gap** |
+| App icon | Element's icon | Placeholder açaí bubble | Not done on Android. **Gap** |
+| Signed-device isolation | Fixed on | User preference, default on | Undecided (#102) |
+| Language fallback | en for other device languages | pt-BR | Undecided (#102) |
+| Handle lookup | Every user search | Start chat only | Undecided (#102) |
+| Unencrypted room option | Removed | Still offered | Not done on iOS (#78). **Gap** |
