@@ -16,7 +16,7 @@ object BuildTimeConfig {
     val OAUTH_CLIENT_URL_PATH: String? = "apps/android"
     val URL_WEBSITE: String? = "https://proseio.com.br" // Proseio: MAS requires the OAuth URLs on the client URI host
     val URL_LOGO: String? = "https://proseio.com.br/icone.png" // Proseio
-    val URL_COPYRIGHT: String? = "https://proseio.com.br/direitos" // Proseio
+    val URL_COPYRIGHT: String? = "https://proseio.com.br/sobre" // Proseio: the About page names the steward (ADR 0040)
     val URL_ACCEPTABLE_USE: String? = "https://proseio.com.br/termos" // Proseio
     val URL_PRIVACY: String? = "https://proseio.com.br/privacidade" // Proseio
     val URL_POLICY: String? = "https://proseio.com.br/privacidade" // Proseio

@@ -16,8 +16,10 @@ import io.element.android.libraries.designsystem.components.preferences.Preferen
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.ListItem
+import io.element.android.libraries.designsystem.theme.components.ListSupportingText
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.proseio.R as ProseioR
 
 @Composable
 fun AboutView(
@@ -46,6 +48,8 @@ fun AboutView(
             },
             onClick = onOpenSourceLicensesClick,
         )
+        // Proseio: name the steward (ADR 0040).
+        ListSupportingText(text = stringResource(ProseioR.string.proseio_about_steward))
     }
 }
 
