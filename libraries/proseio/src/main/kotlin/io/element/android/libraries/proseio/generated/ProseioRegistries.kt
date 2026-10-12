@@ -299,4 +299,6 @@ object ProseioRegistries {
     const val PHONE_MOBILE_LENGTH = 9
     const val PHONE_MOBILE_PREFIX = "9"
     const val PHONE_MAX_INPUT_LENGTH = 64
+    const val PHONE_INTERNATIONAL_MIN_DIGITS = 8
+    const val PHONE_INTERNATIONAL_MAX_DIGITS = 15
 }
