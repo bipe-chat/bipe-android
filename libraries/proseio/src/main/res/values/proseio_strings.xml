@@ -129,4 +129,19 @@
     <string name="proseio_voice_transcript_unavailable">Sem transcrição. O áudio vai sem texto.</string>
     <string name="proseio_action_show_more">Ver mais</string>
     <string name="proseio_action_show_less">Ver menos</string>
+    <string name="proseio_action_stickers">Stickers</string>
+    <string name="proseio_stickers_title">Stickers</string>
+    <string name="proseio_stickers_pack_personal">Meus stickers</string>
+    <string name="proseio_stickers_pack_room">Desta conversa</string>
+    <string name="proseio_stickers_empty_title">Nenhum sticker ainda</string>
+    <string name="proseio_stickers_empty_body">Seus pacotes de stickers aparecem aqui.</string>
+    <string name="proseio_stickers_error_load">Os stickers não carregaram. Tente de novo.</string>
+    <string name="proseio_a11y_sticker_send">Enviar sticker: %1$s</string>
+    <string name="proseio_group_missed_title">O que você perdeu</string>
+    <string name="proseio_group_missed_mention">%1$s marcou você</string>
+    <string name="proseio_group_missed_reply">%1$s respondeu você</string>
+    <string name="proseio_group_missed_poll">Falta você votar: %1$s</string>
+    <string name="proseio_group_missed_pinned">Fixada: %1$s</string>
+    <string name="proseio_group_missed_more">Outras mensagens: %1$s</string>
+    <string name="proseio_invites_joined">%1$s entrou com seu convite</string>
 </resources>
