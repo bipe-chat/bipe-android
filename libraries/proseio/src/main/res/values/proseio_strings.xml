@@ -196,4 +196,10 @@
     <string name="proseio_discovery_footer">Ninguém vê o seu número. Só quem já tem ele salvo consegue te achar.</string>
     <string name="proseio_phone_not_linked">Seu número ainda não está vinculado, então ninguém te encontra por ele por enquanto.</string>
     <string name="proseio_phone_linked">Seu número está vinculado.</string>
+    <string name="proseio_tab_chats">Conversas</string>
+    <string name="proseio_tab_groups">Grupos</string>
+    <string name="proseio_tab_you">Você</string>
+    <string name="proseio_self_chat_title">Anotações</string>
+    <string name="proseio_self_chat_subtitle">Mensagens que só você vê</string>
+    <string name="proseio_self_chat_error">Não deu para abrir suas anotações. Tente de novo.</string>
 </resources>

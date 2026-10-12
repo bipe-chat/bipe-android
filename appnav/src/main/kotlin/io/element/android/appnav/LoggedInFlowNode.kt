@@ -338,6 +338,15 @@ class LoggedInFlowNode(
                         backstack.push(NavTarget.Settings())
                     }
 
+                    // Proseio: the Você tab rows (ADR 0053)
+                    override fun proseioNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) {
+                        backstack.push(NavTarget.Settings(initialTarget))
+                    }
+
+                    override fun proseioNavigateToLinkNewDevice() {
+                        backstack.push(NavTarget.LinkNewDevice)
+                    }
+
                     override fun navigateToCreateRoom() {
                         backstack.push(NavTarget.CreateRoom)
                     }

@@ -11,12 +11,14 @@ package io.element.android.features.home.impl
 import android.app.Activity
 import android.os.Parcelable
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
@@ -32,6 +34,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.MobileScreen
 import io.element.android.annotations.ContributesNode
+import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.home.api.HomeEntryPoint
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -40,9 +43,13 @@ import io.element.android.features.invite.api.InviteData
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteView
 import io.element.android.features.invite.api.declineandblock.DeclineInviteAndBlockEntryPoint
 import io.element.android.features.leaveroom.api.LeaveRoomRenderer
+import io.element.android.features.preferences.api.PreferencesEntryPoint
+import io.element.android.features.preferences.impl.root.PreferencesRootPresenter
+import io.element.android.features.preferences.impl.root.PreferencesRootView
 import io.element.android.features.reportroom.api.ReportRoomEntryPoint
 import io.element.android.features.rolesandpermissions.api.ChangeRoomMemberRolesEntryPoint
 import io.element.android.features.rolesandpermissions.api.ChangeRoomMemberRolesListType
+import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.BackstackView
 import io.element.android.libraries.architecture.BaseFlowNode
@@ -52,11 +59,15 @@ import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.deeplink.api.usecase.InviteFriendsUseCase
 import io.element.android.libraries.designsystem.components.ProgressDialog
 import io.element.android.libraries.designsystem.utils.DelayedVisibility
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
+import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.proseio.selfchat.ProseioSelfChat
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -71,6 +82,7 @@ import kotlinx.parcelize.Parcelize
 import timber.log.Timber
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
+import io.element.android.libraries.proseio.R as ProseioR
 
 @ContributesNode(SessionScope::class)
 @AssistedInject
@@ -87,6 +99,11 @@ class HomeFlowNode(
     private val changeRoomMemberRolesEntryPoint: ChangeRoomMemberRolesEntryPoint,
     private val leaveRoomRenderer: LeaveRoomRenderer,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
+    // Proseio: the Você tab (ADR 0053)
+    private val preferencesRootPresenter: Lazy<PreferencesRootPresenter>,
+    private val emojiPickerRenderer: EmojiPickerRenderer,
+    private val proseioSelfChat: ProseioSelfChat,
+    private val snackbarDispatcher: SnackbarDispatcher,
 ) : BaseFlowNode<HomeFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Root,
@@ -152,6 +169,66 @@ class HomeFlowNode(
                 callback.navigateToBugReport()
             }
         }
+    }
+
+    // Proseio: opens the self-chat, or creates it on first use (ADR 0053).
+    private var proseioSelfChatJob: Job? = null
+
+    private fun openProseioSelfChat(name: String, navigateToRoom: (RoomId, EventId?) -> Unit) {
+        if (proseioSelfChatJob?.isActive == true) return
+        proseioSelfChatJob = sessionCoroutineScope.launch {
+            proseioSelfChat.openOrCreate(name).fold(
+                onSuccess = { roomId -> navigateToRoom(roomId, null) },
+                onFailure = {
+                    Timber.e(it, "Proseio self-chat: open failed")
+                    snackbarDispatcher.post(SnackbarMessage(ProseioR.string.proseio_self_chat_error))
+                },
+            )
+        }
+    }
+
+    private fun openProseioSettings(screen: PreferencesEntryPoint.ProseioSettingsScreen) {
+        callback.proseioNavigateToSettings(PreferencesEntryPoint.InitialTarget.ProseioScreen(screen))
+    }
+
+    @Composable
+    private fun ProseioYouTab(
+        contentPadding: PaddingValues,
+        modifier: Modifier,
+        navigateToRoom: (RoomId, EventId?) -> Unit,
+    ) {
+        val youState = preferencesRootPresenter.value.present()
+        val activity = requireNotNull(LocalActivity.current)
+        val isDark = !ElementTheme.isLightTheme
+        val selfChatName = stringResource(ProseioR.string.proseio_self_chat_title)
+        PreferencesRootView(
+            state = youState,
+            emojiPickerRenderer = emojiPickerRenderer,
+            modifier = modifier,
+            onBackClick = {},
+            onAddAccountClick = callback::navigateToAddAccount,
+            onOpenAnalytics = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Analytics) },
+            onOpenLockScreenSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.LockScreen) },
+            onOpenAbout = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.About) },
+            onOpenDeveloperSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.DeveloperSettings) },
+            onOpenMediaSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Media) },
+            onOpenLocationSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Location) },
+            onOpenLabs = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Labs) },
+            onEditProfileClick = { callback.proseioNavigateToSettings(PreferencesEntryPoint.InitialTarget.ProseioEditProfile(it)) },
+            onSecureBackupClick = callback::navigateToSetUpRecovery,
+            onManageAccountClick = { url -> activity.openUrlInChromeCustomTab(null, darkTheme = isDark, url = url) },
+            onLinkNewDeviceClick = callback::proseioNavigateToLinkNewDevice,
+            onOpenRageShake = callback::navigateToBugReport,
+            onModerationAndSafetyClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.ModerationAndSafety) },
+            onOpenNotificationSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Notifications) },
+            onSignOutClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.SignOut) },
+            onDeactivateClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.AccountDeactivation) },
+            onProseioHandleClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Handle) },
+            onProseioInvitesClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Invites) },
+            onProseioPublicProfileClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.PublicProfile) },
+            proseioTabContentPadding = contentPadding,
+            onProseioSelfChatClick = { openProseioSelfChat(selfChatName, navigateToRoom) },
+        )
     }
 
     private fun navigateToSelectNewOwnersWhenLeavingRoom(roomId: RoomId) {
@@ -220,7 +297,8 @@ class HomeFlowNode(
             HomeView(
                 homeState = state,
                 onRoomClick = ::navigateToRoom,
-                onSettingsClick = callback::navigateToSettings,
+                // Proseio: the avatar opens the Você tab, which holds the settings (ADR 0053).
+                onSettingsClick = { state.eventSink(HomeEvent.SelectHomeNavigationBarItem(HomeNavigationBarItem.You)) },
                 onAddAccountClick = callback::navigateToAddAccount,
                 onStartChatClick = callback::navigateToCreateRoom,
                 onCreateSpaceClick = callback::navigateToCreateSpace,
@@ -245,7 +323,10 @@ class HomeFlowNode(
                         onSelectNewOwners = ::navigateToSelectNewOwnersWhenLeavingRoom,
                         modifier = Modifier
                     )
-                }
+                },
+                youTabView = { contentPadding, tabModifier ->
+                    ProseioYouTab(contentPadding = contentPadding, modifier = tabModifier, navigateToRoom = ::navigateToRoom)
+                },
             )
         }
     }

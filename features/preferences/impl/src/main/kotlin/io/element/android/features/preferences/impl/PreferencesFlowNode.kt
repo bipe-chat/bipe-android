@@ -251,7 +251,8 @@ class PreferencesFlowNode(
             NavTarget.Labs -> {
                 val callback = object : LabsNode.Callback {
                     override fun onDone() {
-                        backstack.pop()
+                        // Proseio: the Você tab can open this screen as the first one (ADR 0053).
+                        if (backstack.canPop()) backstack.pop() else navigateUp()
                     }
                 }
                 createNode<LabsNode>(buildContext, listOf(callback))
@@ -383,7 +384,8 @@ class PreferencesFlowNode(
                 val inputs = EditUserProfileNode.Inputs(navTarget.matrixUser)
                 val callback = object : EditUserProfileNode.Callback {
                     override fun onDone() {
-                        backstack.pop()
+                        // Proseio: the Você tab can open this screen as the first one (ADR 0053).
+                        if (backstack.canPop()) backstack.pop() else navigateUp()
                     }
                 }
                 createNode<EditUserProfileNode>(buildContext, listOf(inputs, callback))

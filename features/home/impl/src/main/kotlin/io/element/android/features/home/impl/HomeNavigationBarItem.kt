@@ -11,16 +11,25 @@ package io.element.android.features.home.impl
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.libraries.proseio.R as ProseioR
 
 enum class HomeNavigationBarItem(
     @StringRes
     val labelRes: Int,
 ) {
     Chats(
-        labelRes = R.string.screen_home_tab_chats
+        labelRes = ProseioR.string.proseio_tab_chats // Proseio: "Conversas"
     ),
     Spaces(
         labelRes = R.string.screen_home_tab_spaces
+    ),
+
+    // Proseio: Grupos and Você (ADR 0053). Chats is Conversas. Spaces stays in the code but is not shown.
+    Groups(
+        labelRes = ProseioR.string.proseio_tab_groups
+    ),
+    You(
+        labelRes = ProseioR.string.proseio_tab_you
     );
 
     @Composable
@@ -29,9 +38,18 @@ enum class HomeNavigationBarItem(
     ) = when (this) {
         Chats -> if (isSelected) CompoundIcons.ChatSolid() else CompoundIcons.Chat()
         Spaces -> if (isSelected) CompoundIcons.SpaceSolid() else CompoundIcons.Space()
+        Groups -> CompoundIcons.Group()
+        You -> if (isSelected) CompoundIcons.UserProfileSolid() else CompoundIcons.UserProfile()
     }
 
+    /** Proseio: the room list tabs. */
+    val isProseioRoomList: Boolean
+        get() = this == Chats || this == Groups
+
     companion object {
+        /** Proseio: the tabs in the bar, in order (ADR 0053). */
+        val proseioVisibleItems = listOf(Chats, Groups, You)
+
         fun from(index: Int): HomeNavigationBarItem {
             return entries.getOrElse(index) { Chats }
         }

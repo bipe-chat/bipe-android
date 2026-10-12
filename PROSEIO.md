@@ -51,6 +51,15 @@ Shared test vectors (ADR 0031 rule 4): `libraries/proseio/src/test/.../SharedVec
 - **Quiet by default (#97):** `ProseioQuietGroups` (libraries/proseio) runs from `LoggedInFlowNode` when the session starts. Group default becomes mentions and keywords; the override rule `br.com.proseio.poll_start` (`*.poll.start`) makes new polls notify. It waits for Synapse `msc4028_push_encrypted_events`. Android needs no extra entitlement to drop pushes, unlike iOS.
 - **"O que você perdeu" (#98):** rules in `features/messages/.../timeline/ProseioMissedSummaryFactory.kt`, view `ProseioMissedSummaryView` (libraries/proseio), shown in the read marker row through `TimelineRoomInfo.proseioMissedSummary`.
 
+## Tab bar (ADR 0053)
+
+- **Tabs:** Conversas, Grupos, Você in `HomeNavigationBarItem.proseioVisibleItems`. The Spaces tab stays in the code but is not shown. The avatar in the top bar opens Você.
+- **Conversas and Grupos** use the one room list (`RoomListPresenter`) with a fixed SDK category filter: `Category.People` or `Category.Group`. The SDK decides with the DM flag. The People and Rooms chips are hidden. Pedidos stays on Conversas only.
+- **Badges:** `ProseioTabBadges` (libraries/proseio) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls.
+- **Você** is the settings root (`PreferencesRootView` without its top bar). Each row opens the settings flow at that screen (`PreferencesEntryPoint.InitialTarget.ProseioScreen`).
+- **Self-chat ("Anotações"):** `ProseioSelfChat` (libraries/proseio). The room ID is in global account data `br.com.proseio.self_chat`, content `{"room_id": "..."}`, the same as iOS. It opens the stored room when the user is joined, else creates an encrypted private room with no invites. The room does not show in Conversas or Grupos.
+- **Search** stays in the top bar on Conversas and Grupos.
+
 ## Not done
 
 - **Firebase:** `libraries/pushproviders/firebase/src/*/res/values/firebase.xml` still holds Element's Firebase project (`vector-alpha`). FCM cannot work with the Proseio application ID until Proseio has its own Firebase project.
@@ -79,4 +88,5 @@ Each line is a deliberate difference with its reason. A difference not listed he
 | Language fallback | en for other device languages | pt-BR | Undecided (#102) |
 | Handle lookup | Every user search | Start chat only | Undecided (#102) |
 | Unencrypted room option | Removed | Still offered | Not done on iOS (#78). **Gap** |
+| Search | Search button in the top bar of Conversas and Grupos | Search tab | Platform idiom: Android has no search-tab pattern (ADR 0053) |
 | Quiet groups "done" marker | The poll rule in the account's push rules (once per account) | A flag on the device (once per device) | Android has no per-session store in libraries/proseio; same result for the user |

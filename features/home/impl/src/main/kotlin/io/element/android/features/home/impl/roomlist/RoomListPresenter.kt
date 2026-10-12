@@ -28,6 +28,7 @@ import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
+import io.element.android.features.home.impl.filters.RoomListFiltersEvent
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.into
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -57,6 +58,7 @@ import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.roomlist.RoomList
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
 import io.element.android.libraries.matrix.ui.safety.rememberHideInvitesAvatar
+import io.element.android.libraries.proseio.selfchat.ProseioSelfChat
 import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.watchers.AnalyticsColdStartWatcher
@@ -72,6 +74,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import io.element.android.features.home.impl.filters.RoomListFilter as HomeRoomListFilter
 
 @Inject
 class RoomListPresenter(
@@ -91,6 +94,7 @@ class RoomListPresenter(
     private val spaceFiltersPresenter: Presenter<SpaceFiltersState>,
     private val globalSearchPresenter: Presenter<GlobalSearchState>,
     private val featureFlagService: FeatureFlagService,
+    private val proseioSelfChat: ProseioSelfChat,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -117,6 +121,10 @@ class RoomListPresenter(
 
         // Avatar indicator
         val hideInvitesAvatar by client.rememberHideInvitesAvatar()
+
+        // Proseio: the fixed category of the list. Conversas (direct chats) is the first tab (ADR 0053).
+        var proseioShowsGroups by rememberSaveable { mutableStateOf(false) }
+        val proseioSelfChatRoomId by proseioSelfChat.roomId.collectAsState()
 
         val contextMenu = remember { mutableStateOf<RoomListState.ContextMenu>(RoomListState.ContextMenu.Hidden) }
         val declineInviteMenu = remember { mutableStateOf<RoomListState.DeclineInviteMenu>(RoomListState.DeclineInviteMenu.Hidden) }
@@ -160,13 +168,22 @@ class RoomListPresenter(
                 }
                 is RoomListEvent.ShowDeclineInviteMenu -> declineInviteMenu.value = RoomListState.DeclineInviteMenu.Shown(event.roomSummary)
                 RoomListEvent.HideDeclineInviteMenu -> declineInviteMenu.value = RoomListState.DeclineInviteMenu.Hidden
+                is RoomListEvent.ProseioShowGroups -> {
+                    // Pedidos (the invites filter) belongs to Conversas only.
+                    if (event.showGroups && HomeRoomListFilter.Invites in filtersState.selectedFilters()) {
+                        filtersState.eventSink(RoomListFiltersEvent.ToggleFilter(HomeRoomListFilter.Invites))
+                    }
+                    proseioShowsGroups = event.showGroups
+                }
             }
         }
 
-        LaunchedEffect(filtersState.filterSelectionStates, spaceFiltersState.selectedFilter()) {
+        LaunchedEffect(filtersState.filterSelectionStates, spaceFiltersState.selectedFilter(), proseioShowsGroups) {
             val selectedFilters = filtersState.selectedFilters().map { filter -> filter.into() }
             val selectedSpaceFilter = spaceFiltersState.selectedFilter().into()
-            val allFilters = RoomListFilter.All(selectedFilters + listOfNotNull(selectedSpaceFilter))
+            // Proseio: the tab fixes the category. The SDK uses the DM flag for it (ADR 0053).
+            val proseioCategory = if (proseioShowsGroups) RoomListFilter.Category.Group else RoomListFilter.Category.People
+            val allFilters = RoomListFilter.All(selectedFilters + listOfNotNull(selectedSpaceFilter) + proseioCategory)
             roomListDataSource.updateFilter(allFilters)
         }
 
@@ -181,13 +198,21 @@ class RoomListPresenter(
             showUnreadCount,
             showAllActivity,
             showsRequests = io.element.android.features.home.impl.filters.RoomListFilter.Invites in filtersState.selectedFilters(),
+            proseioSelfChatRoomId = proseioSelfChatRoomId,
+        )
+
+        // Proseio: the tab sets the category, so the People and Rooms chips are gone. Pedidos shows on Conversas only.
+        val proseioFiltersState = filtersState.copy(
+            filterSelectionStates = filtersState.filterSelectionStates
+                .filterNot { it.filter in proseioHiddenFilters(proseioShowsGroups) }
+                .toImmutableList(),
         )
 
         return RoomListState(
             contextMenu = contextMenu.value,
             declineInviteMenu = declineInviteMenu.value,
             leaveRoomState = leaveRoomState,
-            filtersState = filtersState,
+            filtersState = proseioFiltersState,
             searchState = searchState,
             globalSearchState = globalSearchState,
             spaceFiltersState = spaceFiltersState,
@@ -197,6 +222,15 @@ class RoomListPresenter(
             canReportRoom = canReportRoom,
             eventSink = ::handleEvent,
         )
+    }
+
+    // Proseio: the filter chips that the current tab hides.
+    private fun proseioHiddenFilters(showsGroups: Boolean): Set<HomeRoomListFilter> {
+        val alwaysHidden = setOf(
+            HomeRoomListFilter.People,
+            HomeRoomListFilter.Rooms,
+        )
+        return if (showsGroups) alwaysHidden + HomeRoomListFilter.Invites else alwaysHidden
     }
 
     @Composable
@@ -241,6 +275,7 @@ class RoomListPresenter(
         showUnreadCount: Boolean,
         showAllActivity: Boolean,
         showsRequests: Boolean,
+        proseioSelfChatRoomId: RoomId?,
     ): RoomListContentState {
         val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
             roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
@@ -268,7 +303,8 @@ class RoomListPresenter(
 
                 // Proseio: DM invites are message requests (usernames.md "First contact"). They only show under the
                 // Pedidos filter. The SDK has no cheap "shares a joined room" check, so every DM invite counts.
-                val allSummaries = roomSummaries.dataOrNull().orEmpty()
+                // Proseio: the self-chat shows in the Você tab only (ADR 0053).
+                val allSummaries = roomSummaries.dataOrNull().orEmpty().filter { it.roomId != proseioSelfChatRoomId }
                 val (requests, listed) = if (showsRequests) {
                     emptyList<RoomListRoomSummary>() to allSummaries
                 } else {
