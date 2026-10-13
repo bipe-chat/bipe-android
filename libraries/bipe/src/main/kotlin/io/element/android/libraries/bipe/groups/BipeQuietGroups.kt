@@ -11,7 +11,7 @@ import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import timber.log.Timber
 
 /**
- * Groups MVP (proseio#97): groups notify only for mentions, replies and new polls. iOS: `BipeQuietGroups`.
+ * Groups MVP (bipe#97): groups notify only for mentions, replies and new polls. iOS: `BipeQuietGroups`.
  *
  * Mentions in encrypted rooms need the server to push every encrypted event so the client can check them after decryption
  * (Synapse `msc4028_push_encrypted_events`). Without it, mentions-only silences an encrypted group completely, so this

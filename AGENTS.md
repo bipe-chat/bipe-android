@@ -124,4 +124,4 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 ## Decisions
 
-Product and architecture decisions for all Bipe repos are ADRs in the umbrella repo: `../proseio/docs/adr/` (index: `README.md`). Check them before changing a decided behaviour. A new decision gets an ADR there, not a note in this repo.
+Product and architecture decisions for all Bipe repos are ADRs in the umbrella repo: `../bipe/docs/adr/` (index: `README.md`). Check them before changing a decided behaviour. A new decision gets an ADR there, not a note in this repo.

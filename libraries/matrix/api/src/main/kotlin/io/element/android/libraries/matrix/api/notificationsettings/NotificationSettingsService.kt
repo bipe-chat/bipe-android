@@ -123,7 +123,7 @@ interface NotificationSettingsService {
     suspend fun getRawPushRules(): Result<String?>
 
     /**
-     * Bipe (proseio#97): adds or replaces a user override rule that notifies for events whose type matches a glob.
+     * Bipe (bipe#97): adds or replaces a user override rule that notifies for events whose type matches a glob.
      *
      * @param ruleId the rule ID; setting it again replaces the rule.
      * @param eventTypePattern a glob on the event type, for example `*.poll.start`.

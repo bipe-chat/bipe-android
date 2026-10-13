@@ -18,7 +18,7 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 
-// Sticker packs per MSC2545 (proseio/docs/adr/0033-sticker-packs-msc2545.md). Mirrors StickerPacks.swift in BipeKit.
+// Sticker packs per MSC2545 (bipe/docs/adr/0033-sticker-packs-msc2545.md). Mirrors StickerPacks.swift in BipeKit.
 
 object StickerPackEventType {
     /** Global account data: the user's own pack. */

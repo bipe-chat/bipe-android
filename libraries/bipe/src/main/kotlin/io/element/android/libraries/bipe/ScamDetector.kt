@@ -29,7 +29,7 @@ enum class ScamWarningKind(val id: String, @StringRes val messageRes: Int) {
 
 /**
  * Flags payment-scam signals in a message.
- * Must match proseio-shared/test-vectors/scam-detection.json and scam-warnings.json.
+ * Must match bipe-shared/test-vectors/scam-detection.json and scam-warnings.json.
  */
 object ScamDetector {
     /** Match IDs in reference order: `<patternGroup>:<id>` for regexes, then `urgency:<phrase>`, then `receipt:<keyword>`. */
@@ -72,7 +72,7 @@ object ScamDetector {
 
     /**
      * Picks the most actionable warning from [matchIds] output.
-     * Must match proseio-shared/test-vectors/scam-warnings.json.
+     * Must match bipe-shared/test-vectors/scam-warnings.json.
      */
     fun warningKind(matchIds: List<String>, message: String): ScamWarningKind? {
         val groups = matchIds.map { it.substringBefore(':') }.toSet()
@@ -106,11 +106,11 @@ object ScamDetector {
      */
     data class LinkHost(val folded: String, val plain: String)
 
-    /** Every link host in the message. Must match proseio-shared `linkHosts`. */
+    /** Every link host in the message. Must match bipe-shared `linkHosts`. */
     fun linkHosts(message: String): List<LinkHost> {
         val plain = NameNormalizer.normalize(message, homoglyphs = emptyMap())
         val folded = NameNormalizer.normalize(message, homoglyphs = BipeRegistries.hostHomoglyphs)
-        // proseio-shared validates that host folding keeps every UTF-16 index. An empty plain host is never official.
+        // bipe-shared validates that host folding keeps every UTF-16 index. An empty plain host is never official.
         val aligned = plain.length == folded.length
         return linkExpressions.flatMap { expression ->
             val matcher = expression.matcher(folded)
@@ -131,7 +131,7 @@ object ScamDetector {
 
     private val warningCache = HashMap<String, CachedWarning>()
 
-    /** proseio-shared validates that the priority lists every kind once, so `mapNotNull` drops nothing. */
+    /** bipe-shared validates that the priority lists every kind once, so `mapNotNull` drops nothing. */
     private val warningKindPriority = BipeRegistries.scamWarningKindPriority.mapNotNull(ScamWarningKind::fromId)
 
     private val compiledPatterns: List<CompiledPattern> by lazy {
@@ -143,7 +143,7 @@ object ScamDetector {
         )
         // UNICODE_CHARACTER_CLASS makes `\s` match Unicode spaces, as in V8 and ICU. The registries use explicit
         // ASCII classes for digits and letters, so the flag changes nothing else.
-        // proseio-shared validates every regex at generation time, so a compile failure here is not expected.
+        // bipe-shared validates every regex at generation time, so a compile failure here is not expected.
         groups.flatMap { (name, patterns) ->
             patterns.mapNotNull { pattern ->
                 runCatching { Pattern.compile(pattern.regex, Pattern.UNICODE_CHARACTER_CLASS) }

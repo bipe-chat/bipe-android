@@ -13,7 +13,7 @@ object BipeConfig {
     const val SERVER_NAME = "bipe.net.br"
     const val HOMESERVER_BASE_URL = "https://matrix.bipe.net.br"
 
-    /** Bipe API (sign-up, handles, invites). Contract: proseio-shared/api/openapi.yaml. */
+    /** Bipe API (sign-up, handles, invites). Contract: bipe-shared/api/openapi.yaml. */
     const val API_BASE_URL = "https://api.bipe.net.br"
 
     /** The only account provider. Closed federation: the server picker is hidden. */

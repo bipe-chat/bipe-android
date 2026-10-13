@@ -45,7 +45,7 @@ fun TimelineItemVirtualRow(
         when (virtual.model) {
             is TimelineItemDaySeparatorModel -> TimelineItemDaySeparatorView(virtual.model)
             TimelineItemReadMarkerModel -> Column {
-                // Bipe: proseio#98
+                // Bipe: bipe#98
                 timelineRoomInfo.bipeMissedSummary?.let { summary ->
                     BipeMissedSummaryView(
                         summary = summary,

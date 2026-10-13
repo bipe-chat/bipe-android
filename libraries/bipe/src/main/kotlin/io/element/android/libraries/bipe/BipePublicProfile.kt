@@ -23,7 +23,7 @@ import timber.log.Timber
 import java.util.Locale
 import kotlin.time.Duration.Companion.minutes
 
-/** Same ids as `profileProblem()` in proseio-shared/tools/lib/registries.mjs and the API's `ProfileProblem`. */
+/** Same ids as `profileProblem()` in bipe-shared/tools/lib/registries.mjs and the API's `ProfileProblem`. */
 enum class BipeProfileProblem(val id: String) {
     NAME_EMPTY("name_empty"),
     NAME_TOO_LONG("name_too_long"),
@@ -68,7 +68,7 @@ enum class BipeProfileProblem(val id: String) {
 object BipeProfileRules {
     private val lineBreaks = Regex("\r\n?")
 
-    /** Port of `profileProblem()` in proseio-shared/tools/lib/registries.mjs. Lengths count code points. */
+    /** Port of `profileProblem()` in bipe-shared/tools/lib/registries.mjs. Lengths count code points. */
     fun problem(name: String, bio: String): BipeProfileProblem? {
         val trimmedName = NameNormalizer.trimJavaScript(name)
         if (trimmedName.isEmpty()) return BipeProfileProblem.NAME_EMPTY

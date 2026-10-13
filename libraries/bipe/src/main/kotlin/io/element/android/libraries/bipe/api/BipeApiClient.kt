@@ -28,7 +28,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
-/** Client for the Bipe API. Contract: proseio-shared/api/openapi.yaml. */
+/** Client for the Bipe API. Contract: bipe-shared/api/openapi.yaml. */
 class BipeApiClient internal constructor(private val service: BipeApiService) {
     // Sign-up
 

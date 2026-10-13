@@ -92,7 +92,7 @@ data class TimelineRoomInfo(
     val pinnedEventIds: ImmutableList<EventId>,
     val typingNotificationState: TypingNotificationState,
     val predecessorRoom: PredecessorRoom?,
-    // Bipe: proseio#98
+    // Bipe: bipe#98
     val bipeMissedSummary: BipeMissedSummary? = null,
 )
 

@@ -19,7 +19,7 @@ import io.element.android.libraries.textcomposer.mentions.MentionType
 import io.element.android.libraries.textcomposer.mentions.getMentionSpans
 
 /**
- * Groups MVP (proseio#98): builds the "O que você perdeu" block from the loaded items after the read marker.
+ * Groups MVP (bipe#98): builds the "O que você perdeu" block from the loaded items after the read marker.
  * Fixed rules over decrypted items on the device. Nothing goes to the server.
  */
 internal fun bipeMissedSummary(items: List<TimelineItem>, currentUserId: UserId, isDm: Boolean): BipeMissedSummary? {

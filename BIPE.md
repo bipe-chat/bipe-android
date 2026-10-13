@@ -1,19 +1,19 @@
 # Bipe fork notes
 
-This repo is Bipe's Android app: a fork of Element X Android (AGPL-3.0). Upstream conventions in `AGENTS.md` still apply. This file adds the fork rules. Plan: `../proseio/docs/android-plan.md`.
+This repo is Bipe's Android app: a fork of Element X Android (AGPL-3.0). Upstream conventions in `AGENTS.md` still apply. This file adds the fork rules. Plan: `../bipe/docs/android-plan.md`.
 
 ## Rules
 
 - **All Bipe code lives in `libraries/bipe`** (the mirror of BipeKit on iOS). Element X sources get small hooks only, marked `// Bipe`. Keep the upstream diff small so rebases stay cheap.
-- **Never hand-edit `libraries/bipe/src/main/kotlin/.../generated/` or `res/values*/bipe_strings.xml`.** They come from `../proseio-shared` (`node tools/gen.mjs`). Change registries and strings there.
+- **Never hand-edit `libraries/bipe/src/main/kotlin/.../generated/` or `res/values*/bipe_strings.xml`.** They come from `../bipe-shared` (`node tools/gen.mjs`). Change registries and strings there.
 - Bipe UI strings are `R.string.bipe_*` from that module, not `temporary.xml` and not Localazy.
-- Platform logic (badge verification, normalisation, scam detection) must pass `../proseio-shared/test-vectors/`, like iOS.
+- Platform logic (badge verification, normalisation, scam detection) must pass `../bipe-shared/test-vectors/`, like iOS.
 - New Bipe files carry the Bipe AGPL header (`Copyright 2026 Bipe.`, `SPDX-License-Identifier: AGPL-3.0-only`). `KonsistLicenseTest` accepts it.
 - The `enterprise/` submodule (private Element repo) is not used. FOSS builds use `features/enterprise/impl-foss`.
 
 ## Upstream
 
-- `upstream` = element-hq/element-x-android (push disabled). `origin` = bipe-chat/proseio-android. Local `main` tracks `origin/main`.
+- `upstream` = element-hq/element-x-android (push disabled). `origin` = bipe-chat/bipe-android. Local `main` tracks `origin/main`.
 - Rebase: `git fetch upstream && git rebase upstream/develop`.
 
 ## Build (green gate)
@@ -24,7 +24,7 @@ This repo is Bipe's Android app: a fork of Element X Android (AGPL-3.0). Upstrea
 
 The dev Mac has no JDK or Android SDK. Build on **mini4p** (Tailscale `mini-4p`), which has JDK 21 in `~/opt/jdk-21` and the SDK in `~/Library/Android/sdk` (platform 37.0, build-tools 37.0.0). It has no GitHub access: copy the tree over (`git ls-files -co --exclude-standard | tar`), make it a local git repo (the build reads git for BuildConfig), add `local.properties`, then `JAVA_HOME=~/opt/jdk-21/Contents/Home ./gradlew assembleGplayDebug`. First green build: 12 October 2026.
 
-Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVectorTest.kt` reads `../proseio-shared/test-vectors` directly. Not run yet either.
+Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVectorTest.kt` reads `../bipe-shared/test-vectors` directly. Not run yet either.
 
 ```bash
 ./gradlew :libraries:bipe:testDebugUnitTest
@@ -43,14 +43,14 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 | Pusher app IDs | `BuildTimeConfig.PUSHER_APP_ID_*` | `chat.bipe.app.android.prod` / `.android.dev`. Sygnal must list them. |
 | Telemetry | `BuildTimeConfig` | Sentry and PostHog keys stay `null`. Rageshake URL and app name are empty in `appconfig`, which disables bug reports. |
 | Locales | `plugins/.../extension/locales.kt`, `app/src/main/res/xml/locales_config.xml` | pt-BR and en only. Edited by hand: do not re-run the Localazy import. |
-| Accent colour | Compound tokens | Açaí from `../proseio-tokens`: `./tools/compound/import_bipe_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
+| Accent colour | Compound tokens | Açaí from `../bipe-tokens`: `./tools/compound/import_bipe_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
 | App links | `app/src/main/AndroidManifest.xml` | `bipe.chat` (and www) paths `/@` and `/convite/`. Old `proseio.com.br` links still open the app (second filter, no autoVerify). Element hosts removed. |
 
 ## Welcome screen
 
-- `BipeWelcomeView` and `Modifier.bipeWelcomeBackground` (libraries/bipe) replace Element's logo, welcome text and `onboarding_bg` artwork in `OnBoardingView`. Copy: `bipe_onboarding_*` in proseio-shared. iOS: `BipeWelcomeView`.
+- `BipeWelcomeView` and `Modifier.bipeWelcomeBackground` (libraries/bipe) replace Element's logo, welcome text and `onboarding_bg` artwork in `OnBoardingView`. Copy: `bipe_onboarding_*` in bipe-shared. iOS: `BipeWelcomeView`.
 
-## Groups MVP (proseio/docs/groups.md, ADR 0026)
+## Groups MVP (bipe/docs/groups.md, ADR 0026)
 
 - **Quiet by default (#97):** `BipeQuietGroups` (libraries/bipe) runs from `LoggedInFlowNode` when the session starts. Group default becomes mentions and keywords; the override rule `chat.bipe.poll_start` (`*.poll.start`) makes new polls notify. It waits for Synapse `msc4028_push_encrypted_events`. Android needs no extra entitlement to drop pushes, unlike iOS.
 - **"O que você perdeu" (#98):** rules in `features/messages/.../timeline/BipeMissedSummaryFactory.kt`, view `BipeMissedSummaryView` (libraries/bipe), shown in the read marker row through `TimelineRoomInfo.bipeMissedSummary`.

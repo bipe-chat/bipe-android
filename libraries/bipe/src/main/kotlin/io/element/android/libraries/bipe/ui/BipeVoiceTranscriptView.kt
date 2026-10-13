@@ -30,7 +30,7 @@ private const val COLLAPSED_LINE_LIMIT = 3
 // A character count approximates truncation: measuring rendered lines costs a layout pass per row. Same as iOS.
 private const val COLLAPSE_THRESHOLD = 140
 
-/** Bipe: the sender-side transcript under a voice message (proseio/docs/audio.md, ADR 0023). */
+/** Bipe: the sender-side transcript under a voice message (bipe/docs/audio.md, ADR 0023). */
 @Composable
 fun BipeVoiceTranscriptView(
     text: String,

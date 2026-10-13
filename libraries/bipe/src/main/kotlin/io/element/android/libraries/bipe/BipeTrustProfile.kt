@@ -7,7 +7,7 @@
 package io.element.android.libraries.bipe
 
 /**
- * The "Perfil de confiança" ladder from proseio/docs/trust-levels.md. Only the account owner sees it.
+ * The "Perfil de confiança" ladder from bipe/docs/trust-levels.md. Only the account owner sees it.
  * Step 2 is computed here from the Matrix profile and the handle; steps 3 to 5 wait for the API.
  * Port of BipeTrustProfile on iOS: same step and item ids.
  */

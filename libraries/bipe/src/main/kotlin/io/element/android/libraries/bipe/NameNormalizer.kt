@@ -12,8 +12,8 @@ import java.text.Normalizer
 import java.util.Locale
 
 /**
- * Port of `normalize()` in proseio-shared/tools/lib/registries.mjs.
- * Must match proseio-shared/test-vectors/normalization.json.
+ * Port of `normalize()` in bipe-shared/tools/lib/registries.mjs.
+ * Must match bipe-shared/test-vectors/normalization.json.
  */
 object NameNormalizer {
     /**

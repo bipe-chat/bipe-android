@@ -55,7 +55,7 @@ object BipeProfileLink {
  * the app opens it as an app link and pre-fills the sign-up code.
  */
 object BipeInviteLink {
-    /** Rule: proseio-shared/registries/invite-codes.json (generated). Cases: test-vectors/invite-codes.json. */
+    /** Rule: bipe-shared/registries/invite-codes.json (generated). Cases: test-vectors/invite-codes.json. */
     private val pattern = Regex(BipeRegistries.INVITE_CODE_PATTERN)
 
     /** The invite code in a link, normalised, or `null` when the URL is not an invite link. */

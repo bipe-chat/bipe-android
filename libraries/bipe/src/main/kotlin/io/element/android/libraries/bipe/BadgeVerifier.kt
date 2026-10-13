@@ -16,8 +16,8 @@ import kotlinx.serialization.json.intOrNull
 import java.security.GeneralSecurityException
 
 /**
- * Verifies signed badge envelopes (proseio-shared/docs/badge-attestation.md, v1).
- * Must match proseio-shared/test-vectors/badges.json.
+ * Verifies signed badge envelopes (bipe-shared/docs/badge-attestation.md, v1).
+ * Must match bipe-shared/test-vectors/badges.json.
  *
  * @param trustedKeys `kid` to raw 32-byte Ed25519 public key. Release builds must not include `test-only-*` keys.
  * @throws IllegalArgumentException when a key is not 32 bytes.

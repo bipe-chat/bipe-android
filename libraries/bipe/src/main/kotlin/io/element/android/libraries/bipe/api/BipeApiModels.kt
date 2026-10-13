@@ -18,7 +18,7 @@ import kotlinx.serialization.encoding.Encoder
 import java.time.Instant
 import java.time.OffsetDateTime
 
-// Models of proseio-shared/api/openapi.yaml. JSON keys are snake_case.
+// Models of bipe-shared/api/openapi.yaml. JSON keys are snake_case.
 
 @Serializable
 data class BipeSignupRequest(

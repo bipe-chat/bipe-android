@@ -26,7 +26,7 @@ import io.element.android.libraries.designsystem.theme.components.HorizontalDivi
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.bipe.R
 
-/** Groups MVP (proseio#98): what a member missed since the last visit. iOS: `BipeMissedSummary`. */
+/** Groups MVP (bipe#98): what a member missed since the last visit. iOS: `BipeMissedSummary`. */
 @Immutable
 data class BipeMissedSummary(
     val lines: List<Line>,

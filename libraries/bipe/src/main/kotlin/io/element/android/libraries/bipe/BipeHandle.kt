@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-/** Same ids as `handleProblem()` in proseio-shared/tools/lib/registries.mjs and the API's `HandleProblem`. */
+/** Same ids as `handleProblem()` in bipe-shared/tools/lib/registries.mjs and the API's `HandleProblem`. */
 enum class BipeHandleProblem(val id: String) {
     TOO_SHORT("too_short"),
     TOO_LONG("too_long"),

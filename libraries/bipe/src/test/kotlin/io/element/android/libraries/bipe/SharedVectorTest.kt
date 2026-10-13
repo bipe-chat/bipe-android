@@ -19,7 +19,7 @@ import kotlinx.serialization.json.long
 import org.junit.Test
 import java.io.File
 
-/** Every case in proseio-shared/test-vectors must pass (ADR 0031, rule 4). iOS runs the same files. */
+/** Every case in bipe-shared/test-vectors must pass (ADR 0031, rule 4). iOS runs the same files. */
 class SharedVectorTest {
     @Test
     fun normalization() {
@@ -95,7 +95,7 @@ class SharedVectorTest {
     private fun JsonObject.string(key: String): String? = (get(key) as JsonElement?)?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
 
     private companion object {
-        /** proseio-shared next to this repo. Unit tests run in the module directory. BIPE_SHARED overrides it. */
-        val vectorsDir: File = File(System.getenv("BIPE_SHARED") ?: "../../../proseio-shared", "test-vectors")
+        /** bipe-shared next to this repo. Unit tests run in the module directory. BIPE_SHARED overrides it. */
+        val vectorsDir: File = File(System.getenv("BIPE_SHARED") ?: "../../../bipe-shared", "test-vectors")
     }
 }

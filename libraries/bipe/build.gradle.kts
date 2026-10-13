@@ -8,7 +8,7 @@ import extension.setupDependencyInjection
 import extension.testCommonDependencies
 
 // Bipe-specific code: the Android mirror of BipeKit on iOS.
-// src/main/kotlin/.../generated and src/main/res/values*/bipe_strings.xml come from proseio-shared
+// src/main/kotlin/.../generated and src/main/res/values*/bipe_strings.xml come from bipe-shared
 // (node tools/gen.mjs). Do not edit them by hand.
 plugins {
     id("io.element.android-compose-library")

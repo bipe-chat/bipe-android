@@ -35,7 +35,7 @@ import io.element.android.libraries.bipe.BipeTrustProfile.Status
 import io.element.android.libraries.bipe.BipeTrustProfile.StepId
 import io.element.android.libraries.bipe.R
 
-/** Bipe: the "Perfil de confiança" card in settings (proseio/docs/trust-levels.md). Port of BipeTrustProfileSection on iOS. */
+/** Bipe: the "Perfil de confiança" card in settings (bipe/docs/trust-levels.md). Port of BipeTrustProfileSection on iOS. */
 @Composable
 fun BipeTrustProfileSection(
     profile: BipeTrustProfile,

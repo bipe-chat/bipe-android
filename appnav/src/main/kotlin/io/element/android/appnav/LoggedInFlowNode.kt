@@ -214,7 +214,7 @@ class LoggedInFlowNode(
                 appNavigationStateService.onNavigateToSession(id, matrixClient.sessionId)
                 loggedInFlowProcessor.observeEvents(sessionCoroutineScope)
                 mediaPreviewConfigMigration()
-                sessionCoroutineScope.launch { BipeQuietGroups(matrixClient.notificationSettingsService).run() } // Bipe: proseio#97
+                sessionCoroutineScope.launch { BipeQuietGroups(matrixClient.notificationSettingsService).run() } // Bipe: bipe#97
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }

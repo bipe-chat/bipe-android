@@ -494,7 +494,7 @@ class TimelinePresenter(
         val userEventPermissions by room.permissionsAsState(UserEventPermissions.DEFAULT) { perms ->
             perms.userEventPermissions()
         }
-        // Bipe: proseio#98
+        // Bipe: bipe#98
         val bipeMissedSummary = remember(timelineItems, roomInfo.isDm) {
             bipeMissedSummary(items = timelineItems, currentUserId = room.sessionId, isDm = roomInfo.isDm)
         }

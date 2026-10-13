@@ -5,15 +5,15 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 # Bipe variant of import_tokens.sh: copies the açaí tokens from the local
-# proseio-tokens clone (proseio/compound-design-tokens, private until launch)
+# bipe-tokens clone (bipe-chat/compound-design-tokens, private until launch)
 # instead of cloning element-hq/compound-design-tokens.
-# Usage: ./tools/compound/import_bipe_tokens.sh [path to proseio-tokens]
+# Usage: ./tools/compound/import_bipe_tokens.sh [path to bipe-tokens]
 
 set -e
 
-TOKENS="${1:-../proseio-tokens}"
+TOKENS="${1:-../bipe-tokens}"
 if [ ! -d "$TOKENS/assets/android" ]; then
-    echo "No assets/android in $TOKENS. Build proseio-tokens first (see its PROSEIO.md)." >&2
+    echo "No assets/android in $TOKENS. Build bipe-tokens first (see its BIPE.md)." >&2
     exit 1
 fi
 
