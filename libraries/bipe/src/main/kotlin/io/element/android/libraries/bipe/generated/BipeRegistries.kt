@@ -331,6 +331,22 @@ object BipeRegistries {
         "bipe",
     )
 
+    /** Short public-body and bank names for the "lookalike link" kind, matched as a whole label of a folded link host. */
+    val lookalikeHostLabels: Set<String> = setOf(
+        "bcb",
+        "bacen",
+        "gov",
+        "inss",
+        "receita",
+        "rfb",
+        "detran",
+        "sefaz",
+        "bb",
+        "cef",
+        "c6",
+        "btg",
+    )
+
     /** Real domains of those brands. A host that is one of them, or a subdomain of one, is not a lookalike. */
     val officialDomains: List<String> = listOf(
         "gov.br",
@@ -364,6 +380,12 @@ object BipeRegistries {
         "bipe.chat",
         "bipe.net.br",
         "proseio.com.br",
+    )
+
+    /** App store hosts. An install link to one of them, or a subdomain of one, does not count for the "remote app" kind. */
+    val appStoreDomains: List<String> = listOf(
+        "apps.apple.com",
+        "play.google.com",
     )
 
     /** Normalised words for the "bank alert" kind. It needs a link and an entry from each of the two lists. */
@@ -406,10 +428,130 @@ object BipeRegistries {
         "nao reconhec",
     )
 
+    /** Normalised substrings for the "extortion" kind: a threat phrase and a payment demand. */
+    val extortionThreatPhrases: List<String> = listOf(
+        "mando pra todos",
+        "mando para todos",
+        "mando pros seus",
+        "mando para os seus",
+        "mando pra sua",
+        "mando para sua",
+        "vou mandar pra todos",
+        "vou mandar para todos",
+        "vou mandar pros seus",
+        "vou mandar pra sua familia",
+        "vou mandar para sua familia",
+        "vou espalhar",
+        "vou divulgar",
+        "vou publicar",
+        "vou postar",
+        "vou vazar",
+        "vou expor",
+        "todo mundo vai ver",
+        "sua familia vai ver",
+        "seus contatos vao ver",
+        "sei onde voce mora",
+        "sei onde voce trabalha",
+        "sei onde seu filho",
+        "sei onde sua filha",
+        "sei onde seus filhos",
+        "vai se arrepender",
+    )
+    val extortionDemandWords: List<String> = listOf(
+        "pix",
+        "pagar",
+        "pague",
+        "pagamento",
+        "r\$",
+        "dinheiro",
+        "reais",
+        "deposit",
+        "transfer",
+    )
+
+    /**
+     * The "remote app" kind: an install word (whole word) and an app name (whole word), or a link that is not
+     * official or an app store and a bank word (substring).
+     */
+    val remoteAppInstallWords: Set<String> = setOf(
+        "instala",
+        "instale",
+        "instalar",
+        "baixa",
+        "baixe",
+        "baixar",
+        "download",
+    )
+    val remoteAppNames: Set<String> = setOf(
+        "anydesk",
+        "any desk",
+        "teamviewer",
+        "team viewer",
+        "rustdesk",
+        "quicksupport",
+        "quick support",
+        "airdroid",
+        "ammyy",
+        "acesso remoto",
+    )
+    val remoteAppBankWords: List<String> = listOf(
+        "banco",
+        "cartao",
+        "pix",
+        "fatura",
+        "estorno",
+        "seguranca",
+        "protecao",
+    )
+
+    /** The "PIN request" kind: an ask phrase (substring), a secret (whole word) and a support word (whole word). */
+    val pinRequestAskPhrases: List<String> = listOf(
+        "me passa",
+        "me passe",
+        "me manda",
+        "me mande",
+        "me envia",
+        "me envie",
+        "me fala",
+        "me fale",
+        "me diz",
+        "me diga",
+        "me informa",
+        "me informe",
+        "informe",
+        "confirme",
+        "digite",
+        "qual e a sua",
+        "qual a sua",
+        "qual e sua",
+        "qual sua",
+        "preciso da sua",
+        "preciso do seu",
+    )
+    val pinRequestSecretWords: Set<String> = setOf(
+        "senha",
+        "pin",
+        "codigo",
+        "token",
+        "chave de recuperacao",
+        "8 numeros",
+        "oito numeros",
+        "8 digitos",
+    )
+    val pinRequestSupportWords: Set<String> = setOf(
+        "suporte",
+        "bipe",
+        "atendimento",
+        "atendente",
+    )
+
     /** Scam warning kind ids, most actionable first. The first kind whose rule applies wins. */
     val scamWarningKindPriority: List<String> = listOf(
+        "extortion",
         "pixCode",
         "boleto",
+        "remoteApp",
+        "pinRequest",
         "pixKey",
         "deliveryFee",
         "lookalikeLink",

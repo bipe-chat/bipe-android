@@ -12,8 +12,11 @@ import java.util.regex.Pattern
 
 /** The scam pattern a message looks like (security.md rule 9). Friction, not protection. */
 enum class ScamWarningKind(val id: String, @StringRes val messageRes: Int) {
+    EXTORTION("extortion", R.string.bipe_scam_warning_extortion),
     PIX_CODE("pixCode", R.string.bipe_scam_warning_pix_code),
     BOLETO("boleto", R.string.bipe_scam_warning_boleto),
+    REMOTE_APP("remoteApp", R.string.bipe_scam_warning_remote_app),
+    PIN_REQUEST("pinRequest", R.string.bipe_scam_warning_pin_request),
     PIX_KEY("pixKey", R.string.bipe_scam_warning_pix_key),
     DELIVERY_FEE("deliveryFee", R.string.bipe_scam_warning_delivery_fee),
     LOOKALIKE_LINK("lookalikeLink", R.string.bipe_scam_warning_lookalike_link),
@@ -82,8 +85,20 @@ object ScamDetector {
 
         return warningKindPriority.firstOrNull { kind ->
             when (kind) {
+                // A threat with a payment demand (sextortion, "I know where you live"). A threat alone is not this kind.
+                ScamWarningKind.EXTORTION -> containsAny(normalized, BipeRegistries.extortionThreatPhrases) &&
+                    containsAny(normalized, BipeRegistries.extortionDemandWords)
                 ScamWarningKind.PIX_CODE -> "pixCopyPastePatterns" in groups
                 ScamWarningKind.BOLETO -> "boletoPatterns" in groups
+                // A request to install a remote-access app: by name, or by a link that is not an official or app-store
+                // address in a message about a bank, a card or Pix.
+                ScamWarningKind.REMOTE_APP -> containsWord(normalized, BipeRegistries.remoteAppInstallWords) &&
+                    (containsWord(normalized, BipeRegistries.remoteAppNames) ||
+                        (hosts.any { !isUnder(it.plain, installSafeDomains) } && containsAny(normalized, BipeRegistries.remoteAppBankWords)))
+                // Fake support asks for the PIN or a code. Bipe never asks for either.
+                ScamWarningKind.PIN_REQUEST -> containsAny(normalized, BipeRegistries.pinRequestAskPhrases) &&
+                    containsWord(normalized, BipeRegistries.pinRequestSecretWords) &&
+                    containsWord(normalized, BipeRegistries.pinRequestSupportWords)
                 // A phone number or e-mail alone is normal chat. Warn only when the message also talks about Pix.
                 ScamWarningKind.PIX_KEY -> "pixKeyPatterns" in groups && containsAny(normalized, BipeRegistries.pixKeyContextWords)
                 // The fake-delivery fee scam: a link, and the message talks about a held parcel and a fee.
@@ -162,12 +177,23 @@ object ScamDetector {
         BipeRegistries.bankAlertThreatWords,
     )
 
-    /** True when the host copies a brand: its folded form names a brand and its plain form is not that brand's domain. */
+    /**
+     * True when the host copies a brand: its folded form names a brand and its plain form is not that brand's domain.
+     * A short host label ("bcb", "gov") must be a whole label, so "receitas.globo.com" does not match "receita".
+     */
     private fun isLookalike(host: LinkHost): Boolean {
         val squashed = host.folded.replace(".", "").replace("-", "")
-        if (BipeRegistries.lookalikeBrandTokens.none { squashed.contains(it) }) return false
-        return BipeRegistries.officialDomains.none { host.plain == it || host.plain.endsWith(".$it") }
+        val labels = host.folded.split('.', '-')
+        val namesBrand = BipeRegistries.lookalikeBrandTokens.any { squashed.contains(it) } ||
+            labels.any { it in BipeRegistries.lookalikeHostLabels }
+        if (!namesBrand) return false
+        return !isUnder(host.plain, BipeRegistries.officialDomains)
     }
+
+    /** True when the plain host is one of [domains] or a subdomain of one. */
+    private fun isUnder(plain: String, domains: List<String>): Boolean = domains.any { plain == it || plain.endsWith(".$it") }
+
+    private val installSafeDomains = BipeRegistries.officialDomains + BipeRegistries.appStoreDomains
 
     private val deliveryWordLists = listOf(
         BipeRegistries.deliveryParcelWords,
