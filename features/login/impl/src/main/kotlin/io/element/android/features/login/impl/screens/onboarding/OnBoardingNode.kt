@@ -9,6 +9,8 @@
 package io.element.android.features.login.impl.screens.onboarding
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.bumble.appyx.core.modality.BuildContext
@@ -23,6 +25,8 @@ import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.inputs
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @ContributesNode(AppScope::class)
 @AssistedInject
@@ -39,6 +43,9 @@ class OnBoardingNode(
         fun navigateToSignInFlow(mustChooseAccountProvider: Boolean)
         fun navigateToQrCode()
         fun navigateToBipeRecovery() // Bipe
+
+        /** Bipe: the inviter of a pending invite, named on the main button (bipe-chat/bipe#195). */
+        val bipeInviterHandle: StateFlow<String?> get() = NO_BIPE_INVITER
         fun navigateToBugReport()
         fun navigateToLoginPassword()
         fun navigateToOAuth(oAuthDetails: OAuthDetails)
@@ -63,6 +70,7 @@ class OnBoardingNode(
     override fun View(modifier: Modifier) {
         val state = presenter.present()
         val context = LocalContext.current
+        val bipeInviterHandle by callback.bipeInviterHandle.collectAsState()
 
         OnBoardingView(
             state = state,
@@ -71,6 +79,7 @@ class OnBoardingNode(
             onCreateAccount = callback::navigateToSignUpFlow,
             onSignInWithQrCode = callback::navigateToQrCode,
             onBipeRecovery = callback::navigateToBipeRecovery,
+            bipeInviterHandle = bipeInviterHandle,
             onReportProblem = callback::navigateToBugReport,
             onOAuthDetails = callback::navigateToOAuth,
             onNeedLoginPassword = callback::navigateToLoginPassword,
@@ -80,3 +89,5 @@ class OnBoardingNode(
         )
     }
 }
+
+private val NO_BIPE_INVITER: StateFlow<String?> = MutableStateFlow(null)

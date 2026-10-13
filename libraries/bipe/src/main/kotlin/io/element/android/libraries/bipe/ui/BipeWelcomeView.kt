@@ -47,7 +47,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.R as DesignSystemR
 
 /**
- * Bipe's welcome content on the onboarding screen: the logo, the welcome line, the promise and three value points.
+ * Bipe's welcome content on the onboarding screen: the logo, one headline and three value points.
  * iOS: `BipeWelcomeView`.
  */
 @Composable
@@ -81,15 +81,9 @@ fun BipeWelcomeView(modifier: Modifier = Modifier) {
                 )
                 Spacer(modifier = Modifier.height(32.dp))
             }
+            // One headline (bipe-chat/bipe#195): the welcome line, at heading size.
             Text(
                 text = stringResource(R.string.bipe_onboarding_welcome),
-                style = ElementTheme.typography.fontBodyLgMedium,
-                color = ElementTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.bipe_onboarding_title),
                 style = ElementTheme.typography.fontHeadingXlBold,
                 color = ElementTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,

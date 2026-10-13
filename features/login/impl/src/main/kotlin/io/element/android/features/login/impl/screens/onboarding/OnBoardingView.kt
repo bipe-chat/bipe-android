@@ -44,6 +44,7 @@ import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.IconSource
+import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
@@ -51,6 +52,7 @@ import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPer
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Ref: https://www.figma.com/design/pDlJZGBsri47FNTXMnEdXB/Compound-Android-Templates?node-id=41-6503
@@ -69,6 +71,7 @@ fun OnBoardingView(
     onReportProblem: () -> Unit,
     modifier: Modifier = Modifier,
     onBipeRecovery: () -> Unit = {},
+    bipeInviterHandle: String? = null,
 ) {
     val loginView = @Composable {
         LoginModeView(
@@ -98,6 +101,7 @@ fun OnBoardingView(
             onCreateAccount = onCreateAccount,
             onReportProblem = onReportProblem,
             onBipeRecovery = onBipeRecovery,
+            bipeInviterHandle = bipeInviterHandle,
         )
     }
 
@@ -227,11 +231,46 @@ private fun OnBoardingButtons(
     onCreateAccount: () -> Unit,
     onReportProblem: () -> Unit,
     onBipeRecovery: () -> Unit,
+    bipeInviterHandle: String?,
 ) {
     val isLoading by remember(state.loginModeState.loginMode) {
         derivedStateOf {
             state.loginModeState.loginMode is AsyncData.Loading
         }
+    }
+
+    // Bipe (bipe-chat/bipe#195): one clear action for a new account, then the way back for a returning user.
+    // Beta accounts with an e-mail and a password sign in from the recovery screen ("Entrar manualmente").
+    if (OnBoardingConfig.USES_BIPE_SIGNUP && !state.isAddingAccount) {
+        ButtonColumnMolecule {
+            Button(
+                text = bipeInviterHandle?.let { stringResource(id = BipeR.string.bipe_start_join_invite, it) }
+                    ?: stringResource(id = BipeR.string.bipe_start_begin),
+                onClick = onCreateAccount,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedButton(
+                text = stringResource(id = BipeR.string.bipe_start_have_account),
+                onClick = onBipeRecovery,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.onBoardingSignIn),
+            )
+            // No version line in release builds.
+            if (state.showDeveloperSettings) {
+                Text(
+                    modifier = Modifier
+                        .clickable(role = Role.Button) {
+                            state.eventSink(OnBoardingEvent.OnVersionClick)
+                        }
+                        .padding(16.dp),
+                    text = stringResource(id = R.string.screen_onboarding_app_version, state.version),
+                    style = ElementTheme.typography.fontBodySmRegular,
+                    color = ElementTheme.colors.textSecondary,
+                )
+            }
+        }
+        return
     }
 
     ButtonColumnMolecule {
@@ -275,15 +314,6 @@ private fun OnBoardingButtons(
             TextButton(
                 text = stringResource(id = R.string.screen_onboarding_sign_up),
                 onClick = onCreateAccount,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-        }
-        // Bipe: a device-first account on a new phone (ADR 0057).
-        if (OnBoardingConfig.USES_BIPE_SIGNUP && !state.isAddingAccount) {
-            TextButton(
-                text = stringResource(id = io.element.android.libraries.bipe.R.string.bipe_recovery_title),
-                onClick = onBipeRecovery,
                 modifier = Modifier
                     .fillMaxWidth()
             )

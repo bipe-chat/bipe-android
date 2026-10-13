@@ -18,12 +18,11 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.bipe.BipeHandle
-import io.element.android.libraries.bipe.BipeHandleAvailabilityChecker
-import io.element.android.libraries.bipe.BipeHandleStatus
 import io.element.android.libraries.bipe.BipeInviteCode
+import io.element.android.libraries.bipe.BipeSignupRules
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
+import io.element.android.libraries.bipe.account.BipePin
 import io.element.android.libraries.bipe.account.ui.BipeNewPinState
 import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.api.BipeApiErrorCode
@@ -34,9 +33,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * Device-first sign-up (ADR 0057, port of BipeSignupScreenViewModel on iOS): name, optional @, invite code, optional e-mail,
- * then the PIN. The Bipe API makes the account and a hidden password; the app signs in with it, with no browser.
- * Attestation: none on Android yet (Play Integrity, bipe-chat/bipe#92).
+ * Device-first sign-up (ADR 0057, port of BipeSignupScreenViewModel on iOS), one question per screen (bipe-chat/bipe#196):
+ * the invite (bipe ADR 0072), the name, the PIN, the PIN again. The Bipe API makes the account and a hidden password;
+ * the app signs in with it, with no browser. Attestation: none on Android yet (Play Integrity, bipe-chat/bipe#92).
  */
 @AssistedInject
 class BipeSignupPresenter(
@@ -58,22 +57,24 @@ class BipeSignupPresenter(
     @Composable
     override fun present(): BipeSignupState {
         val coroutineScope = rememberCoroutineScope()
-        val checker = remember { BipeHandleAvailabilityChecker(apiClient, coroutineScope) }
 
         // Plain remember, not rememberSaveable: the PIN must not go into the saved instance state.
-        var step by remember { mutableStateOf(BipeSignupStep.FORM) }
+        var firstStep by remember { mutableStateOf(if (params.inviteCode == null) BipeSignupStep.INVITE else BipeSignupStep.NAME) }
+        var step by remember { mutableStateOf(firstStep) }
         var displayName by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
-        var handle by remember { mutableStateOf("") }
         var inviteCodeInput by remember { mutableStateOf(params.inviteCode?.value.orEmpty()) }
-        var handleStatus by remember { mutableStateOf<BipeHandleStatus>(BipeHandleStatus.Empty) }
-        var emailError by remember { mutableStateOf<String?>(null) }
-        var handleError by remember { mutableStateOf<String?>(null) }
         var inviteCodeError by remember { mutableStateOf<String?>(null) }
         var inviterHandle by remember { mutableStateOf<String?>(null) }
-        var isFallbackEmailOpen by remember { mutableStateOf(false) }
+        var showsNoInviteHelp by remember { mutableStateOf(false) }
         val pinState = remember { BipeNewPinState() }
+        var pinError by remember { mutableStateOf<String?>(null) }
+        var pinMismatch by remember { mutableStateOf(false) }
         var createAction by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
+
+        fun clearPins() {
+            pinState.clear()
+            pinMismatch = false
+        }
 
         // Validity and the inviter's handle, each time the field holds a whole code.
         val inviteCode = BipeInviteCode.parse(inviteCodeInput)
@@ -88,41 +89,43 @@ class BipeSignupPresenter(
                 inviterHandle = preview.inviterHandle
             } else {
                 inviteCodeError = stringProvider.getString(R.string.bipe_error_invite_invalid)
+                // A dead code from a link: ask for another one before the name.
+                if (createAction !is AsyncAction.Loading) {
+                    clearPins()
+                    firstStep = BipeSignupStep.INVITE
+                    step = BipeSignupStep.INVITE
+                }
             }
         }
 
-        /** Field errors go back to the form, under their field; anything else is a dialog. */
+        /** A weak PIN goes back to the PIN step, a dead invite to the invite step; anything else is a dialog. */
         fun show(error: Throwable) {
             val message = (error as? BipeApiException)?.localizedMessage(stringProvider)
                 ?: stringProvider.getString(R.string.bipe_error_generic)
             createAction = AsyncAction.Uninitialized
             when ((error as? BipeApiException.Server)?.code) {
-                BipeApiErrorCode.EMAIL_TAKEN -> {
-                    emailError = message
-                    step = BipeSignupStep.FORM
-                }
-                BipeApiErrorCode.HANDLE_TAKEN, BipeApiErrorCode.HANDLE_INVALID -> {
-                    handleError = message
-                    step = BipeSignupStep.FORM
-                }
                 BipeApiErrorCode.INVITE_INVALID -> {
+                    clearPins()
                     inviteCodeError = message
-                    step = BipeSignupStep.FORM
+                    firstStep = BipeSignupStep.INVITE
+                    step = BipeSignupStep.INVITE
                 }
                 BipeApiErrorCode.PIN_WEAK -> {
-                    pinState.clear()
+                    clearPins()
+                    pinError = message
                     step = BipeSignupStep.PIN
+                }
+                else -> {
+                    // Typing the second PIN again tries again.
+                    pinState.confirmation = ""
                     createAction = AsyncAction.Failure(Exception(message))
                 }
-                else -> createAction = AsyncAction.Failure(Exception(message))
             }
         }
 
         fun createAccount() = coroutineScope.launch {
             val request = BipeSignupRequest(
                 inviteCode = BipeInviteCode.parse(inviteCodeInput)?.value,
-                email = email.trim().ifEmpty { null },
-                handle = BipeHandle.sanitize(handle).ifEmpty { null },
                 displayName = displayName.trim().ifEmpty { null },
             )
             createAction = AsyncAction.Loading
@@ -140,45 +143,50 @@ class BipeSignupPresenter(
         fun handleEvent(event: BipeSignupEvent) {
             when (event) {
                 is BipeSignupEvent.UpdateDisplayName -> displayName = event.value
-                is BipeSignupEvent.UpdateEmail -> {
-                    email = event.value
-                    emailError = null
-                }
-                is BipeSignupEvent.UpdateHandle -> {
-                    handle = event.value
-                    handleError = null
-                    checker.check(event.value) { handleStatus = it }
-                }
                 is BipeSignupEvent.UpdateInviteCode -> {
                     inviteCodeError = null
                     inviterHandle = null
                     // A pasted link or message collapses to the code it holds.
                     inviteCodeInput = BipeInviteCode.parse(event.value)?.value ?: event.value
                 }
-                BipeSignupEvent.Continue -> when (step) {
-                    BipeSignupStep.FORM -> step = BipeSignupStep.PIN
-                    BipeSignupStep.PIN -> {
+                BipeSignupEvent.ContinueFromInvite -> {
+                    if (step == BipeSignupStep.INVITE && inviteCode != null && inviteCodeError == null) step = BipeSignupStep.NAME
+                }
+                BipeSignupEvent.ShowNoInviteHelp -> showsNoInviteHelp = true
+                BipeSignupEvent.ContinueFromName -> {
+                    val name = displayName.trim()
+                    if (step == BipeSignupStep.NAME && name.isNotEmpty() && name.length <= BipeSignupRules.DISPLAY_NAME_MAX_LENGTH) {
+                        clearPins()
+                        step = BipeSignupStep.PIN
+                    }
+                }
+                is BipeSignupEvent.UpdatePin -> {
+                    pinState.pin = BipePin.sanitizeInput(event.value)
+                    if (pinState.pin.isNotEmpty()) pinError = null
+                    // A whole, acceptable PIN moves on by itself, like a bank app.
+                    if (step == BipeSignupStep.PIN && pinState.pin.length == BipePin.LENGTH && BipePin.problem(pinState.pin) == null) {
+                        step = BipeSignupStep.PIN_CONFIRMATION
+                    }
+                }
+                is BipeSignupEvent.UpdatePinConfirmation -> {
+                    val confirmation = BipePin.sanitizeInput(event.value)
+                    pinState.confirmation = confirmation
+                    if (confirmation.isNotEmpty()) pinMismatch = false
+                    if (step == BipeSignupStep.PIN_CONFIRMATION && confirmation.length == BipePin.LENGTH && createAction !is AsyncAction.Loading) {
                         if (pinState.isValid) {
-                            if (email.isBlank()) {
-                                step = BipeSignupStep.FALLBACK
-                            } else {
-                                createAccount()
-                            }
+                            createAccount()
+                        } else {
+                            pinMismatch = true
+                            pinState.confirmation = ""
                         }
                     }
-                    BipeSignupStep.FALLBACK -> {
-                        createAccount()
+                }
+                BipeSignupEvent.Back -> {
+                    if (step.ordinal > firstStep.ordinal) {
+                        val previous = BipeSignupStep.entries[step.ordinal - 1]
+                        if (previous == BipeSignupStep.PIN) clearPins()
+                        step = previous
                     }
-                }
-                BipeSignupEvent.OpenFallbackEmail -> isFallbackEmailOpen = true
-                BipeSignupEvent.SkipFallback -> {
-                    email = ""
-                    isFallbackEmailOpen = false
-                    createAccount()
-                }
-                BipeSignupEvent.Back -> step = when (step) {
-                    BipeSignupStep.FORM, BipeSignupStep.PIN -> BipeSignupStep.FORM
-                    BipeSignupStep.FALLBACK -> BipeSignupStep.PIN
                 }
                 BipeSignupEvent.ClearError -> createAction = AsyncAction.Uninitialized
             }
@@ -186,18 +194,15 @@ class BipeSignupPresenter(
 
         return BipeSignupState(
             step = step,
+            firstStep = firstStep,
             displayName = displayName,
-            email = email,
-            handle = handle,
             inviteCodeInput = inviteCodeInput,
-            handleStatus = handleStatus,
-            emailError = emailError,
-            handleError = handleError,
             inviteCodeError = inviteCodeError,
             inviterHandle = inviterHandle,
+            showsNoInviteHelp = showsNoInviteHelp,
             pinState = pinState,
-            isFallbackEmailOpen = isFallbackEmailOpen,
-            isTokenSynced = deviceAccount.isTokenSynced,
+            pinError = pinError,
+            pinMismatch = pinMismatch,
             createAction = createAction,
             eventSink = ::handleEvent,
         )
