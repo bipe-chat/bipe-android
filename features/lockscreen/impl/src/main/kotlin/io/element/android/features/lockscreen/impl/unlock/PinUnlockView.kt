@@ -43,6 +43,7 @@ import androidx.lifecycle.Lifecycle
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.lockscreen.impl.R
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.features.lockscreen.impl.components.PinEntryTextField
 import io.element.android.features.lockscreen.impl.pin.model.PinDigit
 import io.element.android.features.lockscreen.impl.pin.model.PinEntry
@@ -356,6 +357,14 @@ private fun PinUnlockHeader(
             textAlign = TextAlign.Center,
             style = ElementTheme.typography.fontBodyMdRegular,
             color = subtitleColor,
+        )
+        // Bipe: nobody from Bipe asks for the PIN (bipe#182).
+        Text(
+            text = stringResource(BipeR.string.bipe_pin_never_asked),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = ElementTheme.typography.fontBodySmRegular,
+            color = ElementTheme.colors.textSecondary,
         )
         if (!isInAppUnlock && state.pinEntry is AsyncData.Success) {
             Spacer(Modifier.height(24.dp))
