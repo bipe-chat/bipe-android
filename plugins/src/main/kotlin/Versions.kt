@@ -10,7 +10,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 /**
- * Bipe (ADR 0076): the version name and the build number come from bipe-shared/product/version.json,
+ * Bipe (ADR 0088): the version name and the build number come from bipe-shared/product/version.json,
  * through the generated BipeVersion.kt. iOS uses the same build number. Element's CalVer version code
  * and its release script are not used.
  *
