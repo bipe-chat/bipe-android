@@ -59,7 +59,8 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_username)
+        // Bipe: the login field is labelled e-mail (beta accounts sign in with their e-mail).
+        val userNameHint = activity!!.getString(io.element.android.libraries.bipe.R.string.bipe_signup_email)
         onNodeWithText(userNameHint).performTextInput(A_USER_NAME)
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetLogin(A_USER_NAME)
@@ -74,7 +75,8 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_username)
+        // Bipe: the login field is labelled e-mail (beta accounts sign in with their e-mail).
+        val userNameHint = activity!!.getString(io.element.android.libraries.bipe.R.string.bipe_signup_email)
         onNodeWithText(userNameHint).performTextInput("a\nb")
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetLogin("ab")
@@ -89,7 +91,8 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_username)
+        // Bipe: the login field is labelled e-mail (beta accounts sign in with their e-mail).
+        val userNameHint = activity!!.getString(io.element.android.libraries.bipe.R.string.bipe_signup_email)
         onNodeWithText(userNameHint).performTextInput("a\r\nb")
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetLogin("ab")

@@ -198,7 +198,7 @@ class OnBoardingPresenterTest {
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(AccountProvider.Generic(ACCOUNT_PROVIDER_FROM_LINK))
                 assertThat(it.canLoginWithQrCode).isFalse()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canCreateAccount).isTrue() // Bipe: USES_BIPE_SIGNUP keeps account creation on (OnBoardingPresenter)
             }
         }
     }
@@ -227,7 +227,7 @@ class OnBoardingPresenterTest {
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isNull()
                 assertThat(it.canLoginWithQrCode).isTrue()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canCreateAccount).isTrue() // Bipe: USES_BIPE_SIGNUP keeps account creation on (OnBoardingPresenter)
             }
         }
     }
@@ -250,7 +250,7 @@ class OnBoardingPresenterTest {
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(anAccountProviderManaged(serverName = ACCOUNT_PROVIDER_FROM_CONFIG))
                 assertThat(it.canLoginWithQrCode).isTrue()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canCreateAccount).isTrue() // Bipe: USES_BIPE_SIGNUP keeps account creation on (OnBoardingPresenter)
             }
         }
     }
