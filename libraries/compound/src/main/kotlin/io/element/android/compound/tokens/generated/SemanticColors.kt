@@ -16,11 +16,284 @@
 package io.element.android.compound.tokens.generated
 
 import androidx.compose.ui.graphics.Color
-
+import androidx.compose.runtime.Immutable
 /**
  * This class holds all the semantic tokens of the Compound theme.
+ *
+ * The colours are in one holder class for each token group, because one constructor with all the colours
+ * is larger than the JVM limit of 255 argument slots. Read a colour with its property, for example
+ * `colors.textPrimary`. To change colours, copy the group, for example
+ * `colors.copy(bg = colors.bg.copy(bgCanvasDefault = Color.Black))`.
  */
+@Immutable
 data class SemanticColors(
+    val bg: SemanticColorsBg,
+    val border: SemanticColorsBorder,
+    val gradient: SemanticColorsGradient,
+    val icon: SemanticColorsIcon,
+    val separator: SemanticColorsSeparator,
+    val text: SemanticColorsText,
+    /** True for light theme, false for dark theme. */
+    val isLight: Boolean,
+) {
+    /** Background colour for accent or brand actions. State: Hover */
+    val bgAccentHovered: Color get() = bg.bgAccentHovered
+    /** Background colour for accent or brand actions. State: Pressed */
+    val bgAccentPressed: Color get() = bg.bgAccentPressed
+    /** Background colour for accent or brand actions. State: Rest. */
+    val bgAccentRest: Color get() = bg.bgAccentRest
+    /** Background colour for accent or brand actions. State: Selected */
+    val bgAccentSelected: Color get() = bg.bgAccentSelected
+    /** Accent colour, subtle shade for Text buttons Hover/press */
+    val bgAccentSubtle: Color get() = bg.bgAccentSubtle
+    /** Background colour for primary actions. State: Disabled. */
+    val bgActionPrimaryDisabled: Color get() = bg.bgActionPrimaryDisabled
+    /** Background colour for primary actions. State: Hover. */
+    val bgActionPrimaryHovered: Color get() = bg.bgActionPrimaryHovered
+    /** Background colour for primary actions. State: Pressed. */
+    val bgActionPrimaryPressed: Color get() = bg.bgActionPrimaryPressed
+    /** Background colour for primary actions. State: Rest. */
+    val bgActionPrimaryRest: Color get() = bg.bgActionPrimaryRest
+    /** Background colour for secondary actions. State: Hover. */
+    val bgActionSecondaryHovered: Color get() = bg.bgActionSecondaryHovered
+    /** Background colour for secondary actions. State: Pressed. */
+    val bgActionSecondaryPressed: Color get() = bg.bgActionSecondaryPressed
+    /** Background colour for secondary actions. State: Rest. */
+    val bgActionSecondaryRest: Color get() = bg.bgActionSecondaryRest
+    /** Background colour for tertiary actions. State: Hover */
+    val bgActionTertiaryHovered: Color get() = bg.bgActionTertiaryHovered
+    /** Background colour for tertiary actions. State: Rest */
+    val bgActionTertiaryRest: Color get() = bg.bgActionTertiaryRest
+    /** Background colour for tertiary actions. State: Selected */
+    val bgActionTertiarySelected: Color get() = bg.bgActionTertiarySelected
+    val bgBadgeAccent: Color get() = bg.bgBadgeAccent
+    val bgBadgeCritical: Color get() = bg.bgBadgeCritical
+    val bgBadgeDefault: Color get() = bg.bgBadgeDefault
+    val bgBadgeInfo: Color get() = bg.bgBadgeInfo
+    val bgBadgePrimary: Color get() = bg.bgBadgePrimary
+    val bgBadgeSecondary: Color get() = bg.bgBadgeSecondary
+    /** Default global background for the user interface. Elevation: Default (Level 0) */
+    val bgCanvasDefault: Color get() = bg.bgCanvasDefault
+    /** Default global background for the user interface. Elevation: Level 1. */
+    val bgCanvasDefaultLevel1: Color get() = bg.bgCanvasDefaultLevel1
+    /** Default background for disabled elements. There's no minimum contrast requirement. */
+    val bgCanvasDisabled: Color get() = bg.bgCanvasDisabled
+    /** High-contrast background color for critical state. State: Hover. */
+    val bgCriticalHovered: Color get() = bg.bgCriticalHovered
+    /** High-contrast background color for critical state. State: Rest. */
+    val bgCriticalPrimary: Color get() = bg.bgCriticalPrimary
+    /** Default subtle critical surfaces. State: Rest. */
+    val bgCriticalSubtle: Color get() = bg.bgCriticalSubtle
+    /** Default subtle critical surfaces. State: Hover. */
+    val bgCriticalSubtleHovered: Color get() = bg.bgCriticalSubtleHovered
+    /** Decorative background (1, Lime) for avatars and usernames. */
+    val bgDecorative1: Color get() = bg.bgDecorative1
+    /** Decorative background (2, Cyan) for avatars and usernames. */
+    val bgDecorative2: Color get() = bg.bgDecorative2
+    /** Decorative background (3, Fuchsia) for avatars and usernames. */
+    val bgDecorative3: Color get() = bg.bgDecorative3
+    /** Decorative background (4, Purple) for avatars and usernames. */
+    val bgDecorative4: Color get() = bg.bgDecorative4
+    /** Decorative background (5, Pink) for avatars and usernames. */
+    val bgDecorative5: Color get() = bg.bgDecorative5
+    /** Decorative background (6, Orange) for avatars and usernames. */
+    val bgDecorative6: Color get() = bg.bgDecorative6
+    /** Subtle background colour for informational elements. State: Rest. */
+    val bgInfoSubtle: Color get() = bg.bgInfoSubtle
+    /** Medium contrast surfaces. Elevation: Default (Level 3). */
+    val bgSubtlePrimary: Color get() = bg.bgSubtlePrimary
+    /** Low contrast surfaces. Elevation: Default (Level 2). */
+    val bgSubtleSecondary: Color get() = bg.bgSubtleSecondary
+    /** Lower contrast surfaces. Elevation: Level 0. */
+    val bgSubtleSecondaryLevel0: Color get() = bg.bgSubtleSecondaryLevel0
+    /** Lowest contrast surfaces. Elevation: Default (Level 1). */
+    val bgSubtleTertiary: Color get() = bg.bgSubtleTertiary
+    /** Hovered Background for success states */
+    val bgSuccessHovered: Color get() = bg.bgSuccessHovered
+    /** Pressed Background for success states */
+    val bgSuccessPressed: Color get() = bg.bgSuccessPressed
+    /** Default Background for success states */
+    val bgSuccessRest: Color get() = bg.bgSuccessRest
+    /** Subtle background colour for success state elements. State: Rest. */
+    val bgSuccessSubtle: Color get() = bg.bgSuccessSubtle
+    /** Bipe trust UI. Amber card background. */
+    val bgTrustCautionSubtle: Color get() = bg.bgTrustCautionSubtle
+    /** Bipe trust UI. Danger card background. */
+    val bgTrustDangerSubtle: Color get() = bg.bgTrustDangerSubtle
+    /** Bipe trust UI. Information card background. */
+    val bgTrustNeutralSubtle: Color get() = bg.bgTrustNeutralSubtle
+    /** Bipe trust UI. Solid fill: institution seal, institutional header band. */
+    val bgTrustVerifiedSolid: Color get() = bg.bgTrustVerifiedSolid
+    /** Bipe trust UI. Subtle background for verified and Bipe cards. */
+    val bgTrustVerifiedSubtle: Color get() = bg.bgTrustVerifiedSubtle
+
+    /** Accent borders for containers */
+    val borderAccentPrimary: Color get() = border.borderAccentPrimary
+    /** accent border intended for keylines on message highlights */
+    val borderAccentSubtle: Color get() = border.borderAccentSubtle
+    /** High-contrast border for critical state. State: Hover. */
+    val borderCriticalHovered: Color get() = border.borderCriticalHovered
+    /** High-contrast border for critical state. State: Rest. */
+    val borderCriticalPrimary: Color get() = border.borderCriticalPrimary
+    /** Subtle border colour for critical state elements. */
+    val borderCriticalSubtle: Color get() = border.borderCriticalSubtle
+    /** Used for borders of disabled elements. There's no minimum contrast requirement. */
+    val borderDisabled: Color get() = border.borderDisabled
+    /** Used for the focus state outline. */
+    val borderFocused: Color get() = border.borderFocused
+    /** Subtle border colour for informational elements. */
+    val borderInfoSubtle: Color get() = border.borderInfoSubtle
+    /** Default contrast for accessible interactive element borders. State: Hover. */
+    val borderInteractiveHovered: Color get() = border.borderInteractiveHovered
+    /** Default contrast for accessible interactive element borders. State: Pressed. */
+    val borderInteractivePressed: Color get() = border.borderInteractivePressed
+    /** Default contrast for accessible interactive element borders. State: Rest. */
+    val borderInteractivePrimary: Color get() = border.borderInteractivePrimary
+    /** ⚠️ Lowest contrast for non-accessible interactive element borders, <3:1. Only use for non-essential borders. Do not rely exclusively on them. State: Rest. */
+    val borderInteractiveSecondary: Color get() = border.borderInteractiveSecondary
+    /** Border success state */
+    val borderSuccessPrimary: Color get() = border.borderSuccessPrimary
+    /** Subtle border colour for success state elements. */
+    val borderSuccessSubtle: Color get() = border.borderSuccessSubtle
+    /** Bipe trust UI. Amber card border. */
+    val borderTrustCaution: Color get() = border.borderTrustCaution
+    /** Bipe trust UI. Danger card border. */
+    val borderTrustDanger: Color get() = border.borderTrustDanger
+    /** Bipe trust UI. Information card border. */
+    val borderTrustNeutral: Color get() = border.borderTrustNeutral
+    /** Bipe trust UI. Verified card and Pix request card border. */
+    val borderTrustVerified: Color get() = border.borderTrustVerified
+
+    /** Background gradient stop for super and send buttons */
+    val gradientActionStop1: Color get() = gradient.gradientActionStop1
+    /** Background gradient stop for super and send buttons */
+    val gradientActionStop2: Color get() = gradient.gradientActionStop2
+    /** Background gradient stop for super and send buttons */
+    val gradientActionStop3: Color get() = gradient.gradientActionStop3
+    /** Background gradient stop for super and send buttons */
+    val gradientActionStop4: Color get() = gradient.gradientActionStop4
+    /** Subtle background gradient stop for critical */
+    val gradientCriticalStop1: Color get() = gradient.gradientCriticalStop1
+    /** Subtle background gradient stop for critical */
+    val gradientCriticalStop2: Color get() = gradient.gradientCriticalStop2
+    /** Subtle background gradient stop for info */
+    val gradientInfoStop1: Color get() = gradient.gradientInfoStop1
+    /** Subtle background gradient stop for info */
+    val gradientInfoStop2: Color get() = gradient.gradientInfoStop2
+    /** Subtle background gradient stop for message highlight and bloom */
+    val gradientSubtleStop1: Color get() = gradient.gradientSubtleStop1
+    /** Subtle background gradient stop for message highlight and bloom */
+    val gradientSubtleStop2: Color get() = gradient.gradientSubtleStop2
+    /** Subtle background gradient stop for message highlight and bloom */
+    val gradientSubtleStop3: Color get() = gradient.gradientSubtleStop3
+    /** Subtle background gradient stop for message highlight and bloom */
+    val gradientSubtleStop4: Color get() = gradient.gradientSubtleStop4
+    /** Subtle background gradient stop for message highlight and bloom */
+    val gradientSubtleStop5: Color get() = gradient.gradientSubtleStop5
+    /** Subtle background gradient stop for message highlight and bloom */
+    val gradientSubtleStop6: Color get() = gradient.gradientSubtleStop6
+
+    /** Highest contrast accessible accent icons. */
+    val iconAccentPrimary: Color get() = icon.iconAccentPrimary
+    /** Lowest contrast accessible accent icons. */
+    val iconAccentTertiary: Color get() = icon.iconAccentTertiary
+    /** High-contrast icon for critical state. State: Rest. */
+    val iconCriticalPrimary: Color get() = icon.iconCriticalPrimary
+    /** Use for icons in disabled elements. There's no minimum contrast requirement. */
+    val iconDisabled: Color get() = icon.iconDisabled
+    /** High-contrast icon for informational elements. */
+    val iconInfoPrimary: Color get() = icon.iconInfoPrimary
+    /** Highest contrast icon color on top of high-contrast solid backgrounds like primary, accent, or destructive actions. */
+    val iconOnSolidPrimary: Color get() = icon.iconOnSolidPrimary
+    /** Highest contrast icons. */
+    val iconPrimary: Color get() = icon.iconPrimary
+    /** Translucent version of primary icon. Refer to it for intended use. */
+    val iconPrimaryAlpha: Color get() = icon.iconPrimaryAlpha
+    /** ⚠️ Lowest contrast non-accessible icons, <3:1. Only use for non-essential icons. Do not rely exclusively on them. */
+    val iconQuaternary: Color get() = icon.iconQuaternary
+    /** Translucent version of quaternary icon. Refer to it for intended use. */
+    val iconQuaternaryAlpha: Color get() = icon.iconQuaternaryAlpha
+    /** Lower contrast icons. */
+    val iconSecondary: Color get() = icon.iconSecondary
+    /** Translucent version of secondary icon. Refer to it for intended use. */
+    val iconSecondaryAlpha: Color get() = icon.iconSecondaryAlpha
+    /** High-contrast icon for success state elements. */
+    val iconSuccessPrimary: Color get() = icon.iconSuccessPrimary
+    /** Lowest contrast accessible icons. */
+    val iconTertiary: Color get() = icon.iconTertiary
+    /** Translucent version of tertiary icon. Refer to it for intended use. */
+    val iconTertiaryAlpha: Color get() = icon.iconTertiaryAlpha
+    /** Bipe trust UI. Amber glyphs. */
+    val iconTrustCaution: Color get() = icon.iconTrustCaution
+    /** Bipe trust UI. Danger glyphs. */
+    val iconTrustDanger: Color get() = icon.iconTrustDanger
+    /** Bipe trust UI. Information glyphs. */
+    val iconTrustNeutral: Color get() = icon.iconTrustNeutral
+    /** Bipe trust UI. Seal and verified glyphs. */
+    val iconTrustVerified: Color get() = icon.iconTrustVerified
+    /** Warning icon */
+    val iconWarningPrimary: Color get() = icon.iconWarningPrimary
+
+    /** Used to separate core sections of the UI as well as containers */
+    val separatorPrimary: Color get() = separator.separatorPrimary
+    /** Secondary shade for separating sections of components or list items */
+    val separatorSecondary: Color get() = separator.separatorSecondary
+
+    /** Accent text colour for plain actions. */
+    val textActionAccent: Color get() = text.textActionAccent
+    /** Default text colour for plain actions. */
+    val textActionPrimary: Color get() = text.textActionPrimary
+    /** Text label success state */
+    val textActionSuccess: Color get() = text.textActionSuccess
+    /** Badge accent text colour */
+    val textBadgeAccent: Color get() = text.textBadgeAccent
+    /** Badge info text colour */
+    val textBadgeInfo: Color get() = text.textBadgeInfo
+    /** Text colour for destructive plain actions. */
+    val textCriticalPrimary: Color get() = text.textCriticalPrimary
+    /** Decorative text colour (1, Lime) for avatars and usernames. */
+    val textDecorative1: Color get() = text.textDecorative1
+    /** Decorative text colour (2, Cyan) for avatars and usernames. */
+    val textDecorative2: Color get() = text.textDecorative2
+    /** Decorative text colour (3, Fuchsia) for avatars and usernames. */
+    val textDecorative3: Color get() = text.textDecorative3
+    /** Decorative text colour (4, Purple) for avatars and usernames. */
+    val textDecorative4: Color get() = text.textDecorative4
+    /** Decorative text colour (5, Pink) for avatars and usernames. */
+    val textDecorative5: Color get() = text.textDecorative5
+    /** Decorative text colour (6, Orange) for avatars and usernames. */
+    val textDecorative6: Color get() = text.textDecorative6
+    /** Use for regular text in disabled elements. There's no minimum contrast requirement. */
+    val textDisabled: Color get() = text.textDisabled
+    /** Accent text colour for informational elements. */
+    val textInfoPrimary: Color get() = text.textInfoPrimary
+    /** Text colour for external links. */
+    val textLinkExternal: Color get() = text.textLinkExternal
+    /** For use as text color on top of high-contrast solid backgrounds like primary, accent, or destructive actions. */
+    val textOnSolidPrimary: Color get() = text.textOnSolidPrimary
+    /** Highest contrast text. */
+    val textPrimary: Color get() = text.textPrimary
+    /** Lowest contrast text. */
+    val textSecondary: Color get() = text.textSecondary
+    /** Accent text colour for success state elements. */
+    val textSuccessPrimary: Color get() = text.textSuccessPrimary
+    /** Bipe trust UI. Caution (amber) text. AAA. */
+    val textTrustCaution: Color get() = text.textTrustCaution
+    /** Bipe trust UI. Confirmed danger text. AAA. */
+    val textTrustDanger: Color get() = text.textTrustDanger
+    /** Bipe trust UI. Information text (unverified, external). AAA. */
+    val textTrustNeutral: Color get() = text.textTrustNeutral
+    /** Bipe trust UI. Verified states (seal, verified name). AAA. */
+    val textTrustVerified: Color get() = text.textTrustVerified
+    /** Warning text */
+    val textWarningPrimary: Color get() = text.textWarningPrimary
+}
+
+/**
+ * The `bg` semantic tokens of the Compound theme. See [SemanticColors].
+ */
+@Immutable
+data class SemanticColorsBg(
     /** Background colour for accent or brand actions. State: Hover */
     val bgAccentHovered: Color,
     /** Background colour for accent or brand actions. State: Pressed */
@@ -111,6 +384,13 @@ data class SemanticColors(
     val bgTrustVerifiedSolid: Color,
     /** Bipe trust UI. Subtle background for verified and Bipe cards. */
     val bgTrustVerifiedSubtle: Color,
+)
+
+/**
+ * The `border` semantic tokens of the Compound theme. See [SemanticColors].
+ */
+@Immutable
+data class SemanticColorsBorder(
     /** Accent borders for containers */
     val borderAccentPrimary: Color,
     /** accent border intended for keylines on message highlights */
@@ -147,6 +427,13 @@ data class SemanticColors(
     val borderTrustNeutral: Color,
     /** Bipe trust UI. Verified card and Pix request card border. */
     val borderTrustVerified: Color,
+)
+
+/**
+ * The `gradient` semantic tokens of the Compound theme. See [SemanticColors].
+ */
+@Immutable
+data class SemanticColorsGradient(
     /** Background gradient stop for super and send buttons */
     val gradientActionStop1: Color,
     /** Background gradient stop for super and send buttons */
@@ -175,6 +462,13 @@ data class SemanticColors(
     val gradientSubtleStop5: Color,
     /** Subtle background gradient stop for message highlight and bloom */
     val gradientSubtleStop6: Color,
+)
+
+/**
+ * The `icon` semantic tokens of the Compound theme. See [SemanticColors].
+ */
+@Immutable
+data class SemanticColorsIcon(
     /** Highest contrast accessible accent icons. */
     val iconAccentPrimary: Color,
     /** Lowest contrast accessible accent icons. */
@@ -215,10 +509,24 @@ data class SemanticColors(
     val iconTrustVerified: Color,
     /** Warning icon */
     val iconWarningPrimary: Color,
+)
+
+/**
+ * The `separator` semantic tokens of the Compound theme. See [SemanticColors].
+ */
+@Immutable
+data class SemanticColorsSeparator(
     /** Used to separate core sections of the UI as well as containers */
     val separatorPrimary: Color,
     /** Secondary shade for separating sections of components or list items */
     val separatorSecondary: Color,
+)
+
+/**
+ * The `text` semantic tokens of the Compound theme. See [SemanticColors].
+ */
+@Immutable
+data class SemanticColorsText(
     /** Accent text colour for plain actions. */
     val textActionAccent: Color,
     /** Default text colour for plain actions. */
@@ -267,6 +575,5 @@ data class SemanticColors(
     val textTrustVerified: Color,
     /** Warning text */
     val textWarningPrimary: Color,
-    /** True for light theme, false for dark theme. */
-    val isLight: Boolean,
 )
+

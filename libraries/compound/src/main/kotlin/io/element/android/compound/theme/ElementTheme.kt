@@ -113,7 +113,7 @@ fun ElementTheme(
     val darkTheme = theme.isDark()
     val currentCompoundColor = when {
         darkTheme -> if (theme == Theme.Black) {
-            // Bipe: copy() breaks dex verification with the Bipe tokens, see BlackThemeSemanticColors.kt
+            // Bipe: the Bipe tokens group the colours, see BlackThemeSemanticColors.kt
             compoundDark.toBlackTheme()
         } else {
             compoundDark
