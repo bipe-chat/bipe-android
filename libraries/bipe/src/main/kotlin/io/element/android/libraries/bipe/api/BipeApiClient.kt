@@ -10,6 +10,8 @@ import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.libraries.bipe.BipeHandleProblem
 import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.account.BipePinProblem
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
@@ -27,6 +29,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import java.time.Instant
 
 /** Client for the Bipe API. Contract: bipe-shared/api/openapi.yaml. */
 class BipeApiClient internal constructor(private val service: BipeApiService) {
@@ -34,6 +37,47 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     /** `POST /v1/signup`. No auth. */
     suspend fun signup(request: BipeSignupRequest): BipeSignupResponse = call { service.signup(request) }
+
+    // Device-first accounts (ADR 0057, ADR 0059)
+
+    /** `GET /v1/me/account`. PIN state and the recoveries of the caller's account. */
+    suspend fun account(accessToken: String): BipeAccountStatus = call { service.account(bearer(accessToken)) }
+
+    /** `PUT /v1/me/pin`. Set or change the PIN. The app does the biometric check before it calls this. */
+    suspend fun setPin(pin: String, accessToken: String) {
+        checked { service.setPin(bearer(accessToken), PinRequest(pin)) }
+    }
+
+    /** `POST /v1/me/device-first`. Moves a beta account to a hidden password. Needs a PIN first. */
+    suspend fun moveToDeviceFirst(accessToken: String): BipeCredentials = call { service.moveToDeviceFirst(bearer(accessToken)) }
+
+    /** `POST /v1/me/recoveries/{recoveryId}/cancel`. An old device cancels a waiting recovery. */
+    suspend fun cancelRecovery(recoveryId: String, accessToken: String) {
+        checked { service.cancelRecovery(bearer(accessToken), recoveryId) }
+    }
+
+    /** `POST /v1/recovery/token`. No auth. The synced token first, then the PIN. */
+    suspend fun recoverWithToken(recoveryToken: String, pin: String): BipeCredentials =
+        call { service.recoverWithToken(TokenRecoveryRequest(recoveryToken, pin)) }
+
+    /** `POST /v1/recovery/email`. No auth. Always 202 for a well-formed request. */
+    suspend fun requestEmailRecovery(email: String) {
+        checked { service.requestEmailRecovery(EmailRecoveryRequest(email)) }
+    }
+
+    /** `POST /v1/recovery/email/confirm`. No auth. Exactly one of [pin] and [newPin]. */
+    suspend fun confirmEmailRecovery(linkToken: String, pin: String?, newPin: String?): BipeRecoveryStarted =
+        call { service.confirmEmailRecovery(EmailRecoveryConfirmRequest(linkToken, pin, newPin)) }
+
+    /** `POST /v1/recovery/{recoveryId}/claim`. No auth; the claim secret proves the device. */
+    suspend fun claimRecovery(recoveryId: String, claimSecret: String): BipeRecoveryClaim =
+        call { service.claimRecovery(recoveryId, ClaimRequest(claimSecret)) }
+
+    // Handle changes (ADR 0066)
+
+    /** `POST /v1/handle-changes`. At most 100 IDs. Oldest first. */
+    suspend fun handleChanges(userIds: List<String>, since: Instant?, accessToken: String): List<BipeHandleChange> =
+        call { service.handleChanges(bearer(accessToken), HandleChangesRequest(userIds, since?.toString())) }.changes
 
     // Invites
 
@@ -152,6 +196,7 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
                     code = BipeApiErrorCode.fromId(errorBody.error) ?: BipeApiErrorCode.INTERNAL,
                     reason = errorBody.reason,
                     statusCode = response.code(),
+                    triesLeft = errorBody.triesLeft,
                 )
             }
             throw BipeApiException.UnexpectedResponse(statusCode = response.code())
@@ -164,6 +209,33 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 internal interface BipeApiService {
     @POST("v1/signup")
     suspend fun signup(@Body request: BipeSignupRequest): Response<BipeSignupResponse>
+
+    @GET("v1/me/account")
+    suspend fun account(@Header("Authorization") authorization: String): Response<BipeAccountStatus>
+
+    @PUT("v1/me/pin")
+    suspend fun setPin(@Header("Authorization") authorization: String, @Body request: PinRequest): Response<Unit>
+
+    @POST("v1/me/device-first")
+    suspend fun moveToDeviceFirst(@Header("Authorization") authorization: String): Response<BipeCredentials>
+
+    @POST("v1/me/recoveries/{recoveryId}/cancel")
+    suspend fun cancelRecovery(@Header("Authorization") authorization: String, @Path("recoveryId") recoveryId: String): Response<Unit>
+
+    @POST("v1/recovery/token")
+    suspend fun recoverWithToken(@Body request: TokenRecoveryRequest): Response<BipeCredentials>
+
+    @POST("v1/recovery/email")
+    suspend fun requestEmailRecovery(@Body request: EmailRecoveryRequest): Response<Unit>
+
+    @POST("v1/recovery/email/confirm")
+    suspend fun confirmEmailRecovery(@Body request: EmailRecoveryConfirmRequest): Response<BipeRecoveryStarted>
+
+    @POST("v1/recovery/{recoveryId}/claim")
+    suspend fun claimRecovery(@Path("recoveryId") recoveryId: String, @Body request: ClaimRequest): Response<BipeRecoveryClaim>
+
+    @POST("v1/handle-changes")
+    suspend fun handleChanges(@Header("Authorization") authorization: String, @Body request: HandleChangesRequest): Response<HandleChangesResponse>
 
     @GET("v1/invites/{code}")
     suspend fun invitePreview(@Path("code") code: String): Response<BipeInvitePreview>
@@ -228,7 +300,13 @@ enum class BipeApiErrorCode(val id: String) {
     UNAUTHORIZED("unauthorized"),
     NOT_FOUND("not_found"),
     RATE_LIMITED("rate_limited"),
-    INTERNAL("internal");
+    INTERNAL("internal"),
+    PIN_WEAK("pin_weak"),
+    PIN_WRONG("pin_wrong"),
+    PIN_BLOCKED("pin_blocked"),
+    PIN_NOT_SET("pin_not_set"),
+    RECOVERY_INVALID("recovery_invalid"),
+    EMAIL_UNAVAILABLE("email_unavailable");
 
     companion object {
         fun fromId(id: String): BipeApiErrorCode? = entries.firstOrNull { it.id == id }
@@ -237,7 +315,13 @@ enum class BipeApiErrorCode(val id: String) {
 
 sealed class BipeApiException(cause: Throwable? = null) : Exception(cause) {
     /** The server answered with the contract's error body. */
-    data class Server(val code: BipeApiErrorCode, val reason: String?, val statusCode: Int) : BipeApiException()
+    data class Server(
+        val code: BipeApiErrorCode,
+        val reason: String?,
+        val statusCode: Int,
+        /** With [BipeApiErrorCode.PIN_WRONG]: wrong PINs left before the PIN blocks. */
+        val triesLeft: Int? = null,
+    ) : BipeApiException()
 
     /** The request did not reach the server or got no answer. */
     class Network(cause: Throwable? = null) : BipeApiException(cause)
@@ -269,8 +353,15 @@ sealed class BipeApiException(cause: Throwable? = null) : Exception(cause) {
             BipeApiErrorCode.PHOTO_INVALID -> stringProvider.getString(R.string.bipe_public_profile_photo_invalid)
             BipeApiErrorCode.RATE_LIMITED -> stringProvider.getString(R.string.bipe_error_rate_limited)
             BipeApiErrorCode.UNAUTHORIZED -> stringProvider.getString(R.string.bipe_error_unauthorized)
+            BipeApiErrorCode.PIN_WEAK ->
+                (reason?.let(BipePinProblem::fromId) ?: BipePinProblem.SEQUENCE).localizedMessage(stringProvider)
+            BipeApiErrorCode.PIN_WRONG -> stringProvider.getString(R.string.bipe_pin_wrong, (triesLeft ?: 0).toString())
+            BipeApiErrorCode.PIN_BLOCKED ->
+                stringProvider.getString(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())
+            BipeApiErrorCode.RECOVERY_INVALID -> stringProvider.getString(R.string.bipe_error_recovery_invalid)
+            BipeApiErrorCode.EMAIL_UNAVAILABLE -> stringProvider.getString(R.string.bipe_error_email_unavailable)
             // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).
-            BipeApiErrorCode.ATTESTATION_INVALID,
+            BipeApiErrorCode.ATTESTATION_INVALID, BipeApiErrorCode.PIN_NOT_SET,
             BipeApiErrorCode.BAD_REQUEST, BipeApiErrorCode.NOT_FOUND, BipeApiErrorCode.INTERNAL ->
                 stringProvider.getString(R.string.bipe_error_generic)
         }

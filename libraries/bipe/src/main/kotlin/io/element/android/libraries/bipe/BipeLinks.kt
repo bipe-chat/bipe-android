@@ -73,6 +73,22 @@ object BipeInviteLink {
     }
 }
 
+/**
+ * Recovery links from the Bipe API e-mail (ADR 0057): `https://bipe.chat/recuperar/#<token>`. The token is in the fragment,
+ * so it stays out of server logs. The app opens the link as an app link on the new phone.
+ */
+object BipeRecoveryLink {
+    private val tokenPattern = Regex("^[A-Za-z0-9_-]{16,128}$")
+
+    /** The token in a recovery link, or `null` when the URL is not one. */
+    fun token(url: String): String? {
+        val components = BipeProfileLink.bipePathComponents(url) ?: return null
+        if (components != listOf("recuperar")) return null
+        val fragment = runCatching { URI(url).fragment }.getOrNull() ?: return null
+        return fragment.takeIf { tokenPattern.matches(it) }
+    }
+}
+
 /** A normalised invite code. Prints redacted, because routes and actions get logged. */
 @JvmInline
 value class BipeInviteCode private constructor(val value: String) {

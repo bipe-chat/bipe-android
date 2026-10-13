@@ -21,4 +21,10 @@ data class LoginParams(
     val loginHint: String?,
     // Bipe: normalised code from a bipe.chat/convite/ link. Opens the sign-up screen.
     val bipeInviteCode: String? = null,
-) : Parcelable
+    // Bipe: the token from a bipe.chat/recuperar/#<token> e-mail link (ADR 0057). Opens the recovery screen.
+    val bipeRecoveryToken: String? = null,
+) : Parcelable {
+    // Bipe: the recovery token is a secret; routes and intents get logged.
+    override fun toString(): String = "LoginParams(accountProvider=$accountProvider, hasInviteCode=${bipeInviteCode != null}, " +
+        "hasRecoveryToken=${bipeRecoveryToken != null})"
+}

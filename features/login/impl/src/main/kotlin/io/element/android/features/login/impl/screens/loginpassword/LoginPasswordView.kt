@@ -196,7 +196,8 @@ private fun LoginForm(
                 .semantics {
                     contentType = ContentType.Username
                 },
-            placeholder = stringResource(CommonStrings.common_username),
+            // Bipe: beta accounts sign in with their e-mail, not a username.
+            placeholder = stringResource(io.element.android.libraries.bipe.R.string.bipe_signup_email),
             onValueChange = {
                 val sanitized = it.sanitize()
                 loginFieldState = sanitized

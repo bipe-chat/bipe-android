@@ -114,6 +114,7 @@ class NotLoggedInFlowNode(
                         accountProvider = inputs.loginParams?.accountProvider,
                         loginHint = inputs.loginParams?.loginHint,
                         bipeInviteCode = inputs.loginParams?.bipeInviteCode,
+                        bipeRecoveryToken = inputs.loginParams?.bipeRecoveryToken,
                     ),
                     callback = callback,
                 )

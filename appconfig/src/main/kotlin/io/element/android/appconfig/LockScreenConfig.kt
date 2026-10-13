@@ -18,8 +18,8 @@ object LockScreenConfig {
     /** Set of forbidden PIN codes. */
     val FORBIDDEN_PIN_CODES: Set<String> = setOf("0000", "1234")
 
-    /** The size of the PIN. */
-    const val PIN_SIZE: Int = 4
+    /** The size of the PIN. Bipe: 8 digits, the account PIN of ADR 0057 (bipe-shared registries/accounts.json pinLength). */
+    const val PIN_SIZE: Int = 8
 
     /** Number of attempts before the user is logged out. */
     const val MAX_PIN_CODE_ATTEMPTS_BEFORE_LOGOUT: Int = 3

@@ -44,6 +44,7 @@ dependencies {
     implementation(projects.services.appnavstate.api)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.biometric)
+    implementation(projects.libraries.bipe) // Bipe: the account PIN is the lock screen PIN (ADR 0057)
 
     testCommonDependencies(libs, true)
     testImplementation(projects.features.lockscreen.test)

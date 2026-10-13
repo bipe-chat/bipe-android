@@ -23,6 +23,7 @@ import io.element.android.features.messages.impl.timeline.components.virtual.Tim
 import io.element.android.features.messages.impl.timeline.components.virtual.TimelineItemRoomBeginningView
 import io.element.android.features.messages.impl.timeline.components.virtual.TimelineLoadingMoreIndicator
 import io.element.android.features.messages.impl.timeline.model.TimelineItem
+import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemBipeHandleChangeModel
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemDaySeparatorModel
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemLastForwardIndicatorModel
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemLoadingIndicatorModel
@@ -31,6 +32,7 @@ import io.element.android.features.messages.impl.timeline.model.virtual.Timeline
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemTypingNotificationModel
 import io.element.android.features.messages.impl.typing.TypingNotificationView
 import io.element.android.libraries.matrix.api.core.EventId
+import io.element.android.libraries.bipe.ui.BipeHandleChangeLine
 import io.element.android.libraries.bipe.ui.BipeMissedSummaryView
 import timber.log.Timber
 
@@ -81,6 +83,12 @@ fun TimelineItemVirtualRow(
                     state = timelineRoomInfo.typingNotificationState,
                 )
             }
+            // Bipe: handle change line (ADR 0066)
+            is TimelineItemBipeHandleChangeModel -> BipeHandleChangeLine(
+                name = virtual.model.name,
+                oldHandle = virtual.model.oldHandle,
+                newHandle = virtual.model.newHandle,
+            )
         }
     }
 }

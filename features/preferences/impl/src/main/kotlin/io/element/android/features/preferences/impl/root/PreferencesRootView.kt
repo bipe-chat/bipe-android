@@ -73,6 +73,8 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.bipe.BipeTrustProfile
+import io.element.android.libraries.bipe.account.ui.BipeAccountRows
+import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.handle.BipeHandleRow
 import io.element.android.libraries.bipe.handle.BipeInvitesRow
 import io.element.android.libraries.bipe.handle.BipePublicProfileRow
@@ -139,6 +141,7 @@ fun PreferencesRootView(
             BipeHandleRow(handle = state.bipeHandle, onClick = onBipeHandleClick) // Bipe
             BipePublicProfileRow(enabled = state.bipePublicProfileEnabled, onClick = onBipePublicProfileClick) // Bipe
             BipeInvitesRow(onClick = onBipeInvitesClick) // Bipe
+            LocalBipeAccount.current?.let { BipeAccountRows(it) } // Bipe: PIN and beta account move (ADR 0057)
             if (state.userStatusState != null) {
                 UserStatusSection(
                     userStatusState = state.userStatusState,

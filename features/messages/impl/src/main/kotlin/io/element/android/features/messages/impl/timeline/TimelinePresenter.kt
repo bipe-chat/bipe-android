@@ -34,6 +34,7 @@ import io.element.android.features.messages.impl.timeline.factories.TimelineItem
 import io.element.android.features.messages.impl.timeline.model.NewEventState
 import io.element.android.features.messages.impl.timeline.model.TimelineItem
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemReadMarkerModel
+import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemBipeHandleChangeModel
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemTypingNotificationModel
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionEvent
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
@@ -47,6 +48,7 @@ import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.libraries.androidutils.clipboard.ClipboardHelper
 import io.element.android.libraries.androidutils.toast.ToastHelper
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
@@ -58,6 +60,7 @@ import io.element.android.libraries.matrix.api.core.UniqueId
 import io.element.android.libraries.matrix.api.core.asEventId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
+import io.element.android.libraries.matrix.api.room.joinedRoomMembers
 import io.element.android.libraries.matrix.api.room.roomMembers
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
 import io.element.android.libraries.matrix.api.timeline.Timeline
@@ -78,7 +81,9 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -116,6 +121,7 @@ class TimelinePresenter(
     private val timelineProtectionPresenter: Presenter<TimelineProtectionState>,
     private val clipboardHelper: ClipboardHelper,
     private val toastHelper: ToastHelper,
+    private val bipeSession: BipeSession, // Bipe: handle change lines (ADR 0066)
 ) : Presenter<TimelineState> {
     private val tag = "TimelinePresenter"
 
@@ -134,6 +140,9 @@ class TimelinePresenter(
         )
     )
     private var timelineItems by mutableStateOf<ImmutableList<TimelineItem>>(persistentListOf())
+
+    // Bipe: Matrix ID to the latest join time in the loaded timeline, for the handle change lines (ADR 0066).
+    private val bipeJoinTimes = MutableStateFlow<Map<String, Long>>(emptyMap())
 
     private val focusRequestState: MutableState<FocusRequestState> = mutableStateOf(FocusRequestState.None)
 
@@ -371,7 +380,16 @@ class TimelinePresenter(
         }
 
         LaunchedEffect(Unit) {
-            timelineItemsFactory.timelineItems
+            // Bipe: handle change lines between the events (ADR 0066), before indexing, so indices stay right.
+            combine(
+                timelineItemsFactory.timelineItems,
+                bipeSession.handleChanges.changes,
+                room.membersStateFlow,
+                bipeJoinTimes,
+            ) { items, changes, membersState, joinTimes ->
+                BipeHandleChangeLines.insert(items, changes, membersState.roomMembers().orEmpty(), joinTimes)
+            }
+                .flowOn(dispatchers.computation)
                 .onEach { newTimelineItems ->
                     timelineItemIndexer.process(newTimelineItems)
                     timelineItems = newTimelineItems.toImmutableList()
@@ -404,12 +422,21 @@ class TimelinePresenter(
                     roomMembers = membersState.roomMembers().orEmpty(),
                     renderReadReceipts = renderReadReceipts,
                 )
+                bipeJoinTimes.value = BipeHandleChangeLines.joinTimes(items) // Bipe
                 transaction?.finish()
                 items
             }
                 .onEach(redactedVoiceMessageManager::onEachMatrixTimelineItem)
                 .flowOn(dispatchers.computation)
                 .launchIn(this)
+        }
+
+        // Bipe: on room open and when members change, ask for their handle changes (ADR 0066). The store throttles per user.
+        LaunchedEffect(Unit) {
+            room.membersStateFlow
+                .map { state -> state.joinedRoomMembers().map { it.userId.value } }
+                .distinctUntilChanged()
+                .collect { bipeSession.handleChanges.refresh(it) }
         }
 
         LaunchedEffect(timelineItems.size) {
@@ -603,7 +630,8 @@ class TimelinePresenter(
         }
         val newMostRecentItem = timelineItems.firstOrNull {
             // Ignore typing item
-            (it as? TimelineItem.Virtual)?.model !is TimelineItemTypingNotificationModel
+            (it as? TimelineItem.Virtual)?.model !is TimelineItemTypingNotificationModel &&
+                (it as? TimelineItem.Virtual)?.model !is TimelineItemBipeHandleChangeModel // Bipe
         }
         val prevMostRecentItemIdValue = prevMostRecentItemId.value
         val newMostRecentItemId = newMostRecentItem?.identifier()

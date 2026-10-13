@@ -37,6 +37,8 @@ class BipeHandleResolver(
     private val scope: CoroutineScope,
     private val accessToken: suspend () -> String?,
     private val clock: () -> Long = System::currentTimeMillis,
+    /** Called with each batch after a `resolve` refresh. The handle change history refreshes with it (ADR 0066). */
+    private val onBatchResolved: (List<String>) -> Unit = {},
 ) {
     private data class Entry(val handle: String?, val expiryMillis: Long)
 
@@ -148,6 +150,7 @@ class BipeHandleResolver(
         try {
             val handles = BipeApiClient.withTokenRetry(accessToken) { token -> apiClient.resolveHandles(batch, token) }
             for (userId in batch) store(handles[userId], userId)
+            onBatchResolved(batch)
         } catch (_: BipeApiException) {
             // Keep the old values, with a short expiry so views do not retry on every render while offline.
             val expiry = clock() + MISSING_TTL_MILLIS

@@ -21,6 +21,7 @@ import io.element.android.features.lockscreen.impl.pin.model.PinEntry
 import io.element.android.features.lockscreen.impl.setup.pin.validation.PinValidator
 import io.element.android.features.lockscreen.impl.setup.pin.validation.SetupPinFailure
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.core.meta.BuildMeta
 import kotlinx.coroutines.delay
 
@@ -35,6 +36,7 @@ class SetupPinPresenter(
     private val pinValidator: PinValidator,
     private val buildMeta: BuildMeta,
     private val pinCodeManager: PinCodeManager,
+    private val bipeSession: BipeSession, // Bipe
 ) : Presenter<SetupPinState> {
     @Composable
     override fun present(): SetupPinState {
@@ -68,6 +70,8 @@ class SetupPinPresenter(
             if (confirmPinEntry.isComplete()) {
                 if (confirmPinEntry == choosePinEntry) {
                     pinCodeManager.createPinCode(confirmPinEntry.toText())
+                    // Bipe: the app lock PIN is the account PIN (ADR 0057). The lock screen checked the owner before this step.
+                    bipeSession.account.onAppLockPinSet(confirmPinEntry.toText())
                 } else {
                     setupPinFailure = SetupPinFailure.PinsDoNotMatch
                 }

@@ -38,6 +38,7 @@ class OnBoardingNode(
         fun navigateToSignUpFlow()
         fun navigateToSignInFlow(mustChooseAccountProvider: Boolean)
         fun navigateToQrCode()
+        fun navigateToBipeRecovery() // Bipe
         fun navigateToBugReport()
         fun navigateToLoginPassword()
         fun navigateToOAuth(oAuthDetails: OAuthDetails)
@@ -69,6 +70,7 @@ class OnBoardingNode(
             onSignIn = callback::navigateToSignInFlow,
             onCreateAccount = callback::navigateToSignUpFlow,
             onSignInWithQrCode = callback::navigateToQrCode,
+            onBipeRecovery = callback::navigateToBipeRecovery,
             onReportProblem = callback::navigateToBugReport,
             onOAuthDetails = callback::navigateToOAuth,
             onNeedLoginPassword = callback::navigateToLoginPassword,

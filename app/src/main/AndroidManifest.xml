@@ -84,7 +84,7 @@
                 <data android:scheme="@string/login_redirect_scheme" />
             </intent-filter>
             <!--
-              Bipe links: profile (https://bipe.chat/@handle) and invite (https://bipe.chat/convite/CODE).
+              Bipe links: profile (https://bipe.chat/@handle), invite (https://bipe.chat/convite/CODE) and recovery (https://bipe.chat/recuperar/#TOKEN).
               Bipe: replaces the Element web and mobile link filters.
               Matching asset file: https://bipe.chat/.well-known/assetlinks.json (not published yet)
             -->
@@ -99,6 +99,8 @@
                 <data android:host="www.bipe.chat" />
                 <data android:pathPrefix="/@" />
                 <data android:pathPrefix="/convite/" />
+                <!-- Bipe: account recovery link from the e-mail, token in the fragment (ADR 0057). -->
+                <data android:pathPrefix="/recuperar/" />
             </intent-filter>
             <!--
               Bipe: old links on proseio.com.br still open the app (that host redirects to bipe.chat).

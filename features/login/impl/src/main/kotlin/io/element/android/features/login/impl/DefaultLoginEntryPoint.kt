@@ -30,6 +30,7 @@ class DefaultLoginEntryPoint : LoginEntryPoint {
                     accountProvider = params.accountProvider,
                     loginHint = params.loginHint,
                     bipeInviteCode = params.bipeInviteCode,
+                    bipeRecoveryToken = params.bipeRecoveryToken,
                 ),
                 callback,
             )

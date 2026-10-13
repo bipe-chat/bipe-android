@@ -7,6 +7,7 @@
 package io.element.android.libraries.bipe
 
 import com.google.common.truth.Truth.assertWithMessage
+import io.element.android.libraries.bipe.account.BipePin
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -56,6 +57,14 @@ class SharedVectorTest {
             val input = vector.string("input")!!
             val expected = vector.string("problem")?.takeIf { it in localProblems }
             assertWithMessage("localProblem($input)").that(BipeHandle.localProblem(input)?.id).isEqualTo(expected)
+        }
+    }
+
+    @Test
+    fun pins() {
+        for (vector in vectors("pins.json", "cases")) {
+            val input = vector.string("input")!!
+            assertWithMessage("pinProblem($input)").that(BipePin.problem(input)?.id).isEqualTo(vector.string("problem"))
         }
     }
 

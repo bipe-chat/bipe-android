@@ -38,6 +38,7 @@ import io.element.android.features.login.impl.screens.classic.ClassicFlowNode
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderNode
 import io.element.android.features.login.impl.screens.loginpassword.LoginPasswordNode
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingNode
+import io.element.android.features.login.impl.screens.biperecovery.BipeRecoveryNode
 import io.element.android.features.login.impl.screens.bipesignup.BipeSignupNode
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
@@ -47,6 +48,7 @@ import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.inputs
+import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.di.annotations.AppCoroutineScope
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.oauth.api.OAuthAction
@@ -67,6 +69,7 @@ class LoginFlowNode(
     private val appCoroutineScope: CoroutineScope,
     private val elementClassicConnection: ElementClassicConnection,
     private val preferencesEntryPoint: PreferencesEntryPoint,
+    private val bipeDeviceAccount: BipeDeviceAccount, // Bipe
 ) : BaseFlowNode<LoginFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.CheckClassicFlow,
@@ -79,7 +82,11 @@ class LoginFlowNode(
         val accountProvider: String?,
         val loginHint: String?,
         val bipeInviteCode: String? = null, // Bipe
-    ) : NodeInputs
+        val bipeRecoveryToken: String? = null, // Bipe: e-mail recovery link (ADR 0057)
+    ) : NodeInputs {
+        // Bipe: the recovery token is a secret.
+        override fun toString(): String = "Params(accountProvider=$accountProvider, hasRecoveryToken=${bipeRecoveryToken != null})"
+    }
 
     private val callback: LoginEntryPoint.Callback = callback()
     private var activity: Activity? = null
@@ -133,6 +140,12 @@ class LoginFlowNode(
         @Parcelize
         data class BipeSignup(val inviteCode: String? = null) : NavTarget
 
+        // Bipe: get back into a device-first account. linkToken is the token of an e-mail recovery link.
+        @Parcelize
+        data class BipeRecovery(val linkToken: String? = null) : NavTarget {
+            override fun toString(): String = "BipeRecovery(hasLinkToken=${linkToken != null})"
+        }
+
         @Parcelize
         data class LoginPassword(
             val initialLogin: String = "",
@@ -149,8 +162,13 @@ class LoginFlowNode(
                         } else {
                             backstack.replace(NavTarget.OnBoarding(showBackButton = false))
                         }
-                        // Bipe: an invite link opens the sign-up screen on top of onboarding.
-                        inputs<Params>().bipeInviteCode?.let { backstack.push(NavTarget.BipeSignup(inviteCode = it)) }
+                        // Bipe: an invite link opens the sign-up screen on top of onboarding, a recovery link the recovery screen.
+                        val params = inputs<Params>()
+                        params.bipeInviteCode?.let { backstack.push(NavTarget.BipeSignup(inviteCode = it)) }
+                        params.bipeRecoveryToken?.let { backstack.push(NavTarget.BipeRecovery(linkToken = it)) }
+                        if (!allowBackNavigation && params.bipeInviteCode == null && params.bipeRecoveryToken == null) {
+                            bipeStartDeviceAccount()
+                        }
                     }
 
                     override fun navigateToLoginPassword() {
@@ -187,6 +205,10 @@ class LoginFlowNode(
 
                     override fun navigateToQrCode() {
                         backstack.push(NavTarget.QrCode)
+                    }
+
+                    override fun navigateToBipeRecovery() {
+                        backstack.push(NavTarget.BipeRecovery())
                     }
 
                     override fun navigateToBugReport() {
@@ -269,17 +291,17 @@ class LoginFlowNode(
                 createNode<ConfirmAccountProviderNode>(buildContext, plugins = listOf(inputs, callback))
             }
             is NavTarget.BipeSignup -> {
-                val callback = object : BipeSignupNode.Callback {
-                    override fun navigateToOAuth(oAuthDetails: OAuthDetails) {
-                        navigateToMas(oAuthDetails)
-                    }
-
-                    override fun navigateToLoginPassword() {
-                        backstack.push(NavTarget.LoginPassword())
+                val inputs = BipeSignupNode.Inputs(inviteCode = navTarget.inviteCode)
+                createNode<BipeSignupNode>(buildContext, plugins = listOf(inputs))
+            }
+            is NavTarget.BipeRecovery -> {
+                val callback = object : BipeRecoveryNode.Callback {
+                    override fun navigateToQrCode() {
+                        backstack.push(NavTarget.QrCode)
                     }
                 }
-                val inputs = BipeSignupNode.Inputs(inviteCode = navTarget.inviteCode)
-                createNode<BipeSignupNode>(buildContext, plugins = listOf(inputs, callback))
+                val inputs = BipeRecoveryNode.Inputs(linkToken = navTarget.linkToken)
+                createNode<BipeRecoveryNode>(buildContext, plugins = listOf(inputs, callback))
             }
             is NavTarget.LoginPassword -> {
                 val inputs = LoginPasswordNode.Inputs(
@@ -287,6 +309,18 @@ class LoginFlowNode(
                 )
                 createNode<LoginPasswordNode>(buildContext, plugins = listOf(inputs))
             }
+        }
+    }
+
+    /**
+     * Bipe: app start without a session (ADR 0057, ADR 0059). With the hidden password on this device, sign in with no screen.
+     * With a waiting e-mail recovery or a synced recovery token, open the recovery screen (the token needs the PIN).
+     */
+    private fun bipeStartDeviceAccount() = lifecycleScope.launch {
+        val silent = bipeDeviceAccount.signInSilently()
+        if (silent?.isSuccess == true) return@launch
+        if (bipeDeviceAccount.pendingClaim() != null || bipeDeviceAccount.hasRecoveryToken()) {
+            backstack.push(NavTarget.BipeRecovery())
         }
     }
 

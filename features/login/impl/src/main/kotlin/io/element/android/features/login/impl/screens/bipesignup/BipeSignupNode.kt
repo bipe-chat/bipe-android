@@ -16,12 +16,10 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
 import io.element.android.libraries.architecture.NodeInputs
-import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.inputs
-import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.bipe.BipeInviteCode
 
-/** Bipe: invite sign-up through the Bipe API, then sign-in through MAS. */
+/** Bipe: device-first sign-up through the Bipe API, then sign-in with the hidden password (ADR 0057). No browser. */
 @ContributesNode(AppScope::class)
 @AssistedInject
 class BipeSignupNode(
@@ -34,13 +32,7 @@ class BipeSignupNode(
         val inviteCode: String?,
     ) : NodeInputs
 
-    interface Callback : Plugin {
-        fun navigateToOAuth(oAuthDetails: OAuthDetails)
-        fun navigateToLoginPassword()
-    }
-
     private val inputs: Inputs = inputs()
-    private val callback: Callback = callback()
     private val presenter = presenterFactory.create(
         BipeSignupPresenter.Params(inviteCode = inputs.inviteCode?.let(BipeInviteCode::parse))
     )
@@ -51,8 +43,6 @@ class BipeSignupNode(
         BipeSignupView(
             state = state,
             onBackClick = ::navigateUp,
-            onOAuthDetails = callback::navigateToOAuth,
-            onNeedLoginPassword = callback::navigateToLoginPassword,
             modifier = modifier,
         )
     }

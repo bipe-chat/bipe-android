@@ -96,6 +96,8 @@ import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
+import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.groups.BipeQuietGroups
 import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
@@ -712,6 +714,7 @@ class LoggedInFlowNode(
                 LocalMapTilerConfig provides updatedMapTilerConfig,
                 LocalBipeHandleResolver provides bipeSession.handleResolver, // Bipe: @handles in shared UI
                 LocalBipePublicProfiles provides bipeSession.publicProfiles, // Bipe: public profile bios in shared UI
+                LocalBipeAccount provides bipeSession.account, // Bipe: PIN rows in settings (ADR 0057)
             ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an
@@ -726,6 +729,7 @@ class LoggedInFlowNode(
                             BackstackView(transitionHandler = rememberLoggedInFlowTransitionHandler(backstack))
                             if (ftueState is FtueState.Complete) {
                                 PermanentChild(permanentNavModel = permanentNavModel, navTarget = NavTarget.LoggedInPermanent)
+                                BipeRecoveryAlerts(bipeSession.account) // Bipe: recovery alerts on the old devices (ADR 0057)
                             }
                         }
                     }

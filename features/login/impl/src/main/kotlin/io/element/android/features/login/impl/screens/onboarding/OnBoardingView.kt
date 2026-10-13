@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.login.impl.R
@@ -67,6 +68,7 @@ fun OnBoardingView(
     onLearnMoreClick: () -> Unit,
     onReportProblem: () -> Unit,
     modifier: Modifier = Modifier,
+    onBipeRecovery: () -> Unit = {},
 ) {
     val loginView = @Composable {
         LoginModeView(
@@ -95,6 +97,7 @@ fun OnBoardingView(
             onSignIn = onSignIn,
             onCreateAccount = onCreateAccount,
             onReportProblem = onReportProblem,
+            onBipeRecovery = onBipeRecovery,
         )
     }
 
@@ -223,6 +226,7 @@ private fun OnBoardingButtons(
     onSignIn: (mustChooseAccountProvider: Boolean) -> Unit,
     onCreateAccount: () -> Unit,
     onReportProblem: () -> Unit,
+    onBipeRecovery: () -> Unit,
 ) {
     val isLoading by remember(state.loginModeState.loginMode) {
         derivedStateOf {
@@ -271,6 +275,15 @@ private fun OnBoardingButtons(
             TextButton(
                 text = stringResource(id = R.string.screen_onboarding_sign_up),
                 onClick = onCreateAccount,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
+        // Bipe: a device-first account on a new phone (ADR 0057).
+        if (OnBoardingConfig.USES_BIPE_SIGNUP && !state.isAddingAccount) {
+            TextButton(
+                text = stringResource(id = io.element.android.libraries.bipe.R.string.bipe_recovery_title),
+                onClick = onBipeRecovery,
                 modifier = Modifier
                     .fillMaxWidth()
             )

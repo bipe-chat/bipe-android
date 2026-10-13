@@ -1,0 +1,109 @@
+/*
+ * Copyright 2026 Bipe.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+package io.element.android.libraries.bipe.account
+
+import android.content.Context
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
+import io.element.android.libraries.cryptography.api.EncryptionDecryptionService
+import io.element.android.libraries.cryptography.api.EncryptionResult
+import io.element.android.libraries.cryptography.api.SecretKeyRepository
+import io.element.android.libraries.di.annotations.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import timber.log.Timber
+import java.io.File
+
+/** A recovery by email that waits for its delay on this device (ADR 0057). The claim secret proves this device. */
+@Serializable
+data class BipePendingClaim(
+    @SerialName("recovery_id") val recoveryId: String,
+    @SerialName("claim_secret") val claimSecret: String,
+    @SerialName("purpose") val purposeId: String,
+    @SerialName("ready_at") val readyAtMillis: Long,
+) {
+    override fun toString(): String = "BipePendingClaim($recoveryId)"
+}
+
+@Serializable
+internal data class BipeVaultData(
+    /** The account whose hidden password is in [password]. */
+    @SerialName("user_id") val userId: String? = null,
+    /** The hidden MAS password (ADR 0059: this device only). Never shown, never logged. */
+    @SerialName("password") val password: String? = null,
+    /** The recovery token when no synced store is available (F-Droid build). */
+    @SerialName("local_token") val localToken: String? = null,
+    @SerialName("claim") val claim: BipePendingClaim? = null,
+    /** Matrix ID to the time (ms) this device signed in to it. Older recoveries are not alerts for this device. */
+    @SerialName("signed_in_at") val signedInAt: Map<String, Long> = emptyMap(),
+    /** Recovery IDs the user answered with "It was me" on this device. */
+    @SerialName("dismissed") val dismissedRecoveries: List<String> = emptyList(),
+) {
+    override fun toString(): String = "BipeVaultData"
+}
+
+/**
+ * Device-only secrets of device-first accounts: one file in `noBackupFilesDir`, encrypted with an Android Keystore key.
+ * Android excludes that folder from cloud backup and from device-to-device transfer, and the key cannot leave the device.
+ */
+@SingleIn(AppScope::class)
+@Inject
+class BipeAccountVault(
+    @ApplicationContext private val context: Context,
+    private val secretKeyRepository: SecretKeyRepository,
+    private val encryptionDecryptionService: EncryptionDecryptionService,
+) {
+    private val mutex = Mutex()
+    private val json = Json { ignoreUnknownKeys = true }
+    private val file: File get() = File(context.noBackupFilesDir, FILE_NAME)
+
+    internal suspend fun read(): BipeVaultData = mutex.withLock { load() }
+
+    internal suspend fun update(transform: (BipeVaultData) -> BipeVaultData) = mutex.withLock {
+        save(transform(load()))
+    }
+
+    private suspend fun load(): BipeVaultData = withContext(Dispatchers.IO) {
+        if (!file.exists()) return@withContext BipeVaultData()
+        try {
+            val key = secretKeyRepository.getOrCreateKey(KEY_ALIAS, false)
+            val bytes = encryptionDecryptionService.decrypt(key, EncryptionResult.fromBase64(file.readText()))
+            json.decodeFromString(BipeVaultData.serializer(), bytes.decodeToString())
+        } catch (error: Exception) {
+            // A lost Keystore key (e.g. after a device reset) makes the file unreadable. Start empty.
+            Timber.e(error, "Bipe vault unreadable, starting empty")
+            file.delete()
+            BipeVaultData()
+        }
+    }
+
+    private suspend fun save(data: BipeVaultData) = withContext(Dispatchers.IO) {
+        if (data == BipeVaultData()) {
+            file.delete()
+            return@withContext
+        }
+        val key = secretKeyRepository.getOrCreateKey(KEY_ALIAS, false)
+        val encrypted = encryptionDecryptionService.encrypt(key, json.encodeToString(BipeVaultData.serializer(), data).encodeToByteArray())
+        val tmp = File(file.parentFile, "$FILE_NAME.tmp")
+        tmp.writeText(encrypted.toBase64())
+        if (!tmp.renameTo(file)) {
+            file.delete()
+            tmp.renameTo(file)
+        }
+    }
+
+    private companion object {
+        const val FILE_NAME = "bipe-account"
+        const val KEY_ALIAS = "bipe.SECRET_KEY_ALIAS_ACCOUNT"
+    }
+}

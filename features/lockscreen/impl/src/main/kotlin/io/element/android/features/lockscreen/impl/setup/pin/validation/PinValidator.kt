@@ -11,6 +11,7 @@ package io.element.android.features.lockscreen.impl.setup.pin.validation
 import dev.zacsweers.metro.Inject
 import io.element.android.features.lockscreen.impl.LockScreenConfig
 import io.element.android.features.lockscreen.impl.pin.model.PinEntry
+import io.element.android.libraries.bipe.account.BipePin
 
 @Inject
 class PinValidator(private val lockScreenConfig: LockScreenConfig) {
@@ -21,7 +22,8 @@ class PinValidator(private val lockScreenConfig: LockScreenConfig) {
 
     fun isPinValid(pinEntry: PinEntry): Result {
         val pinAsText = pinEntry.toText()
-        val isForbidden = lockScreenConfig.forbiddenPinCodes.any { it == pinAsText }
+        // Bipe: the shared PIN rule of ADR 0057 (bipe-shared registries/accounts.json).
+        val isForbidden = lockScreenConfig.forbiddenPinCodes.any { it == pinAsText } || BipePin.problem(pinAsText) != null
         return if (isForbidden) {
             Result.Invalid(SetupPinFailure.ForbiddenPin)
         } else {

@@ -293,6 +293,9 @@ dependencies {
     // location feature.
     "gplayImplementation"(libs.maplibre.compose.location.runtime.gms)
 
+    // Bipe: Block Store for the recovery token (ADR 0057). F-Droid keeps the token on the device only.
+    "gplayImplementation"(projects.libraries.bipeblockstore)
+
     implementation(libs.appyx.core)
     implementation(libs.androidx.splash)
     implementation(libs.androidx.core)
