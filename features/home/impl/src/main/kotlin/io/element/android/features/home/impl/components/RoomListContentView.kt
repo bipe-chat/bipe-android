@@ -53,7 +53,7 @@ import io.element.android.libraries.designsystem.theme.components.HorizontalDivi
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
-import io.element.android.libraries.proseio.ui.ProseioRequestsRow
+import io.element.android.libraries.bipe.ui.BipeRequestsRow
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 
@@ -205,8 +205,8 @@ private fun RoomsView(
     } else {
         RoomsViewList(
             state = state,
-            // Proseio: the Pedidos row opens the requests filter. Hidden while any filter is on.
-            onRequestsClick = if (state.proseioRequestCount > 0 && !hasAnyFilterSelected) {
+            // Bipe: the Pedidos row opens the requests filter. Hidden while any filter is on.
+            onRequestsClick = if (state.bipeRequestCount > 0 && !hasAnyFilterSelected) {
                 { filtersState.eventSink(RoomListFiltersEvent.ToggleFilter(RoomListFilter.Invites)) }
             } else {
                 null
@@ -286,7 +286,7 @@ private fun RoomsViewList(
 
         if (onRequestsClick != null) {
             item {
-                ProseioRequestsRow(count = state.proseioRequestCount, onClick = onRequestsClick)
+                BipeRequestsRow(count = state.bipeRequestCount, onClick = onRequestsClick)
                 HorizontalDivider()
             }
         }

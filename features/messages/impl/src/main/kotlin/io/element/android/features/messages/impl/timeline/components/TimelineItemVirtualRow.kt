@@ -31,7 +31,7 @@ import io.element.android.features.messages.impl.timeline.model.virtual.Timeline
 import io.element.android.features.messages.impl.timeline.model.virtual.TimelineItemTypingNotificationModel
 import io.element.android.features.messages.impl.typing.TypingNotificationView
 import io.element.android.libraries.matrix.api.core.EventId
-import io.element.android.libraries.proseio.ui.ProseioMissedSummaryView
+import io.element.android.libraries.bipe.ui.BipeMissedSummaryView
 import timber.log.Timber
 
 @Composable
@@ -45,9 +45,9 @@ fun TimelineItemVirtualRow(
         when (virtual.model) {
             is TimelineItemDaySeparatorModel -> TimelineItemDaySeparatorView(virtual.model)
             TimelineItemReadMarkerModel -> Column {
-                // Proseio: proseio#98
-                timelineRoomInfo.proseioMissedSummary?.let { summary ->
-                    ProseioMissedSummaryView(
+                // Bipe: proseio#98
+                timelineRoomInfo.bipeMissedSummary?.let { summary ->
+                    BipeMissedSummaryView(
                         summary = summary,
                         onLineClick = { eventId -> eventSink(TimelineEvent.FocusOnEventFromMissedSummary(EventId(eventId))) },
                     )

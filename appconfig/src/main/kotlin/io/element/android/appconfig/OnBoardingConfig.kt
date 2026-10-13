@@ -12,6 +12,6 @@ object OnBoardingConfig {
     /** Whether the user can create an account using the app. */
     const val CAN_CREATE_ACCOUNT = true
 
-    /** Proseio: "Create account" opens the Proseio sign-up (API, then MAS login), even with the server locked. */
-    const val USES_PROSEIO_SIGNUP = true
+    /** Bipe: "Create account" opens the Bipe sign-up (API, then MAS login), even with the server locked. */
+    const val USES_BIPE_SIGNUP = true
 }

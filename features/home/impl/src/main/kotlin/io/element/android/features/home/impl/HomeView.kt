@@ -69,7 +69,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
-import io.element.android.libraries.proseio.tabs.ProseioTabBadges
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.coroutines.launch
 
@@ -90,7 +90,7 @@ fun HomeView(
     acceptDeclineInviteView: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     leaveRoomView: @Composable () -> Unit,
-    // Proseio: the Você tab content (ADR 0053), built by the node.
+    // Bipe: the Você tab content (ADR 0053), built by the node.
     youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit = { _, _ -> },
 ) {
     val state: RoomListState = homeState.roomListState
@@ -196,7 +196,7 @@ private fun HomeScaffold(
 
     val roomsLazyListState = rememberLazyListState()
     val spacesLazyListState = rememberLazyListState()
-    val proseioGroupsLazyListState = rememberLazyListState() // Proseio
+    val bipeGroupsLazyListState = rememberLazyListState() // Bipe
 
     Scaffold(
         modifier = modifier,
@@ -236,14 +236,14 @@ private fun HomeScaffold(
                 // navigation bar, so the floating toolbar has to apply the bottom inset itself to avoid overlapping it.
                 modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
                 currentHomeNavigationBarItem = state.currentHomeNavigationBarItem,
-                proseioBadges = state.proseioBadges,
+                bipeBadges = state.bipeBadges,
                 onItemClick = { item ->
                     // scroll to top if selecting the same item
                     if (item == state.currentHomeNavigationBarItem) {
                         val lazyListStateTarget = when (item) {
                             HomeNavigationBarItem.Chats -> roomsLazyListState
                             HomeNavigationBarItem.Spaces -> spacesLazyListState
-                            HomeNavigationBarItem.Groups -> proseioGroupsLazyListState
+                            HomeNavigationBarItem.Groups -> bipeGroupsLazyListState
                             HomeNavigationBarItem.You -> null
                         } ?: return@HomeBottomBar
                         coroutineScope.launch {
@@ -258,7 +258,7 @@ private fun HomeScaffold(
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },
-                // Proseio: Você has no floating action button.
+                // Bipe: Você has no floating action button.
                 floatingActionButton = if (state.currentHomeNavigationBarItem == HomeNavigationBarItem.You) {
                     null
                 } else {
@@ -270,7 +270,7 @@ private fun HomeScaffold(
                             HomeNavigationBarItem.Spaces -> {
                                 HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space)
                             }
-                            // Proseio: a new group starts from the same screen as a new chat.
+                            // Bipe: a new group starts from the same screen as a new chat.
                             HomeNavigationBarItem.Groups -> {
                                 HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
                             }
@@ -301,14 +301,14 @@ private fun HomeScaffold(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 when (state.currentHomeNavigationBarItem) {
-                    // Proseio: Conversas and Grupos use the same room list with a fixed category (ADR 0053).
+                    // Bipe: Conversas and Grupos use the same room list with a fixed category (ADR 0053).
                     HomeNavigationBarItem.Chats, HomeNavigationBarItem.Groups -> {
                         RoomListContentView(
                             contentState = roomListState.contentState,
                             filtersState = roomListState.filtersState,
                             spaceFiltersState = roomListState.spaceFiltersState,
                             lazyListState = if (state.currentHomeNavigationBarItem == HomeNavigationBarItem.Groups) {
-                                proseioGroupsLazyListState
+                                bipeGroupsLazyListState
                             } else {
                                 roomsLazyListState
                             },
@@ -342,7 +342,7 @@ private fun HomeScaffold(
                             onExploreClick = {},
                         )
                     }
-                    // Proseio: Você (ADR 0053)
+                    // Bipe: Você (ADR 0053)
                     HomeNavigationBarItem.You -> {
                         youTabView(
                             lazyColumnContentPadding + contentPadding,
@@ -376,7 +376,7 @@ private fun HomeFloatingActionButton(
 @Composable
 private fun HomeBottomBar(
     currentHomeNavigationBarItem: HomeNavigationBarItem,
-    proseioBadges: ProseioTabBadges,
+    bipeBadges: BipeTabBadges,
     onItemClick: (HomeNavigationBarItem) -> Unit,
     modifier: Modifier = Modifier,
     floatingActionButton: (@Composable () -> Unit)?,
@@ -386,15 +386,15 @@ private fun HomeBottomBar(
         modifier = modifier
             .zIndex(1f),
     ) {
-        HomeNavigationBarItem.proseioVisibleItems.forEachIndexed { index, item ->
+        HomeNavigationBarItem.bipeVisibleItems.forEachIndexed { index, item ->
             if (index > 0) {
                 HorizontalFloatingToolbarSeparator()
             }
             val isSelected = currentHomeNavigationBarItem == item
-            // Proseio: badge counts (ADR 0053)
+            // Bipe: badge counts (ADR 0053)
             val badge = when (item) {
-                HomeNavigationBarItem.Chats -> proseioBadges.chats
-                HomeNavigationBarItem.Groups -> proseioBadges.groups
+                HomeNavigationBarItem.Chats -> bipeBadges.chats
+                HomeNavigationBarItem.Groups -> bipeBadges.groups
                 HomeNavigationBarItem.Spaces,
                 HomeNavigationBarItem.You -> 0L
             }

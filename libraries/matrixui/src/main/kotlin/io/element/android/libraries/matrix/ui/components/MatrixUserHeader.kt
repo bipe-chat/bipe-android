@@ -32,7 +32,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.getBestName
-import io.element.android.libraries.proseio.ui.proseioDisplayText
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 
 @Composable
 fun MatrixUserHeader(
@@ -61,7 +61,7 @@ fun MatrixUserHeader(
             // Name
             Text(
                 modifier = Modifier.clipToBounds(),
-                text = if (matrixUser.displayName.isNullOrEmpty()) proseioDisplayText(matrixUser.userId.value) else matrixUser.getBestName(), // Proseio
+                text = if (matrixUser.displayName.isNullOrEmpty()) bipeDisplayText(matrixUser.userId.value) else matrixUser.getBestName(), // Bipe
                 maxLines = 1,
                 style = ElementTheme.typography.fontHeadingMdRegular,
                 overflow = TextOverflow.Ellipsis,
@@ -70,7 +70,7 @@ fun MatrixUserHeader(
             // Id
             if (matrixUser.displayName.isNullOrEmpty().not()) {
                 Text(
-                    text = proseioDisplayText(matrixUser.userId.value), // Proseio
+                    text = bipeDisplayText(matrixUser.userId.value), // Bipe
                     style = ElementTheme.typography.fontBodyMdRegular,
                     color = ElementTheme.colors.textSecondary,
                     maxLines = 1,

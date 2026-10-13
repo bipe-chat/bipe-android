@@ -44,8 +44,8 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.model.toText
-import io.element.android.libraries.proseio.ui.ProseioPublicBio
-import io.element.android.libraries.proseio.ui.proseioDisplayText
+import io.element.android.libraries.bipe.ui.BipePublicBio
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -108,13 +108,13 @@ fun UserProfileHeaderSection(
         }
         Text(
             modifier = Modifier.niceClickable { onUserIdClick() },
-            text = proseioDisplayText(userId.value), // Proseio: "@handle" when known
+            text = bipeDisplayText(userId.value), // Bipe: "@handle" when known
             style = ElementTheme.typography.fontBodyLgRegular,
             color = ElementTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(12.dp))
-        ProseioPublicBio(userId.value) // Proseio: the public profile bio, when published
+        BipePublicBio(userId.value) // Bipe: the public profile bio, when published
         when (verificationState) {
             UserProfileVerificationState.UNKNOWN, UserProfileVerificationState.UNVERIFIED -> Unit
             UserProfileVerificationState.VERIFIED -> {
@@ -132,7 +132,7 @@ fun UserProfileHeaderSection(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(CommonStrings.crypto_identity_change_profile_pin_violation, userName ?: proseioDisplayText(userId.value)),
+                    text = stringResource(CommonStrings.crypto_identity_change_profile_pin_violation, userName ?: bipeDisplayText(userId.value)),
                     color = ElementTheme.colors.textCriticalPrimary,
                     style = ElementTheme.typography.fontBodyMdMedium,
                 )

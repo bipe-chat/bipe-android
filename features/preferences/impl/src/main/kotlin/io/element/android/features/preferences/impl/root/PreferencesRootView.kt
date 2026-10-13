@@ -72,12 +72,12 @@ import io.element.android.libraries.emoji.api.picker.NoOpEmojiPickerRenderer
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.matrix.ui.model.getAvatarData
-import io.element.android.libraries.proseio.ProseioTrustProfile
-import io.element.android.libraries.proseio.handle.ProseioHandleRow
-import io.element.android.libraries.proseio.handle.ProseioInvitesRow
-import io.element.android.libraries.proseio.handle.ProseioPublicProfileRow
-import io.element.android.libraries.proseio.selfchat.ProseioSelfChatRow
-import io.element.android.libraries.proseio.ui.ProseioTrustProfileSection
+import io.element.android.libraries.bipe.BipeTrustProfile
+import io.element.android.libraries.bipe.handle.BipeHandleRow
+import io.element.android.libraries.bipe.handle.BipeInvitesRow
+import io.element.android.libraries.bipe.handle.BipePublicProfileRow
+import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
+import io.element.android.libraries.bipe.ui.BipeTrustProfileSection
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -106,18 +106,18 @@ fun PreferencesRootView(
     onSignOutClick: () -> Unit,
     onDeactivateClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onProseioHandleClick: () -> Unit = {},
-    onProseioInvitesClick: () -> Unit = {},
-    onProseioPublicProfileClick: () -> Unit = {},
-    // Proseio: the Você tab (ADR 0053) shows this screen without its top bar, with the self-chat row first.
-    proseioTabContentPadding: PaddingValues? = null,
-    onProseioSelfChatClick: (() -> Unit)? = null,
+    onBipeHandleClick: () -> Unit = {},
+    onBipeInvitesClick: () -> Unit = {},
+    onBipePublicProfileClick: () -> Unit = {},
+    // Bipe: the Você tab (ADR 0053) shows this screen without its top bar, with the self-chat row first.
+    bipeTabContentPadding: PaddingValues? = null,
+    onBipeSelfChatClick: (() -> Unit)? = null,
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
 
     Box(modifier = modifier) {
         val pageContent: @Composable ColumnScope.() -> Unit = {
-            onProseioSelfChatClick?.let { ProseioSelfChatRow(onClick = it) } // Proseio
+            onBipeSelfChatClick?.let { BipeSelfChatRow(onClick = it) } // Bipe
             UserPreferences(
                 modifier = Modifier
                     .testTag(TestTags.settingsUserProfile)
@@ -126,19 +126,19 @@ fun PreferencesRootView(
                     },
                 matrixUser = state.myUser,
             )
-            // Proseio: the trust profile card, then the handle, public profile and invites rows.
-            ProseioTrustProfileSection(
-                profile = ProseioTrustProfile.create(
+            // Bipe: the trust profile card, then the handle, public profile and invites rows.
+            BipeTrustProfileSection(
+                profile = BipeTrustProfile.create(
                     displayName = state.myUser.displayName,
                     hasAvatar = state.myUser.avatarUrl != null,
-                    handle = state.proseioHandle,
+                    handle = state.bipeHandle,
                 ),
                 onEditProfileClick = { onEditProfileClick(state.myUser) },
-                onHandleClick = onProseioHandleClick,
+                onHandleClick = onBipeHandleClick,
             )
-            ProseioHandleRow(handle = state.proseioHandle, onClick = onProseioHandleClick) // Proseio
-            ProseioPublicProfileRow(enabled = state.proseioPublicProfileEnabled, onClick = onProseioPublicProfileClick) // Proseio
-            ProseioInvitesRow(onClick = onProseioInvitesClick) // Proseio
+            BipeHandleRow(handle = state.bipeHandle, onClick = onBipeHandleClick) // Bipe
+            BipePublicProfileRow(enabled = state.bipePublicProfileEnabled, onClick = onBipePublicProfileClick) // Bipe
+            BipeInvitesRow(onClick = onBipeInvitesClick) // Bipe
             if (state.userStatusState != null) {
                 UserStatusSection(
                     userStatusState = state.userStatusState,
@@ -192,13 +192,13 @@ fun PreferencesRootView(
                 }
             )
         }
-        if (proseioTabContentPadding != null) {
-            // Proseio: the Você tab. The home screen has the top bar and the snackbar host.
+        if (bipeTabContentPadding != null) {
+            // Bipe: the Você tab. The home screen has the top bar and the snackbar host.
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(proseioTabContentPadding),
+                    .padding(bipeTabContentPadding),
                 content = pageContent,
             )
         } else {

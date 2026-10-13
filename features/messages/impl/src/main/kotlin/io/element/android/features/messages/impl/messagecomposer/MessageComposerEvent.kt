@@ -29,12 +29,12 @@ sealed interface MessageComposerEvent {
         data object Location : PickAttachmentSource
         data object Poll : PickAttachmentSource
 
-        /** Proseio: sticker picker (ADR 0029). */
+        /** Bipe: sticker picker (ADR 0029). */
         data object Sticker : PickAttachmentSource
     }
 
-    /** Proseio: sticker picker events (ADR 0029). */
-    data class SendSticker(val sticker: io.element.android.libraries.proseio.stickers.Sticker) : MessageComposerEvent
+    /** Bipe: sticker picker events (ADR 0029). */
+    data class SendSticker(val sticker: io.element.android.libraries.bipe.stickers.Sticker) : MessageComposerEvent
     data object RetryStickers : MessageComposerEvent
     data class ImportStickers(val uris: List<android.net.Uri>) : MessageComposerEvent
     data class MakeSticker(val photo: android.net.Uri) : MessageComposerEvent

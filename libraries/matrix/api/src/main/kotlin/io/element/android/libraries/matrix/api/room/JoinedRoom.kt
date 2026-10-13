@@ -90,7 +90,7 @@ interface JoinedRoom : BaseRoom {
     suspend fun typingNotice(isTyping: Boolean): Result<Unit>
 
     /**
-     * Proseio: send a raw event. `m.sticker` needs it (ADR 0033): the SDK has no typed sticker send.
+     * Bipe: send a raw event. `m.sticker` needs it (ADR 0033): the SDK has no typed sticker send.
      * The SDK encrypts it in encrypted rooms. It skips the send queue, so there is no local echo or retry.
      */
     suspend fun sendRaw(eventType: String, contentJson: String): Result<Unit>

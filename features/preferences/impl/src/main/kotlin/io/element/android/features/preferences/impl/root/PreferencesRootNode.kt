@@ -42,9 +42,9 @@ class PreferencesRootNode(
         fun navigateToMediaSettings()
         fun navigateToLocationSettings()
         fun navigateToLabs()
-        fun navigateToProseioHandle() // Proseio
-        fun navigateToProseioInvites() // Proseio
-        fun navigateToProseioPublicProfile() // Proseio
+        fun navigateToBipeHandle() // Bipe
+        fun navigateToBipeInvites() // Bipe
+        fun navigateToBipePublicProfile() // Bipe
     }
 
     private val callback: Callback = callback()
@@ -91,9 +91,9 @@ class PreferencesRootNode(
             onEditProfileClick = callback::navigateToUserProfile,
             onSignOutClick = callback::startSignOutFlow,
             onDeactivateClick = callback::startAccountDeactivationFlow,
-            onProseioHandleClick = callback::navigateToProseioHandle,
-            onProseioInvitesClick = callback::navigateToProseioInvites,
-            onProseioPublicProfileClick = callback::navigateToProseioPublicProfile,
+            onBipeHandleClick = callback::navigateToBipeHandle,
+            onBipeInvitesClick = callback::navigateToBipeInvites,
+            onBipePublicProfileClick = callback::navigateToBipePublicProfile,
         )
     }
 }

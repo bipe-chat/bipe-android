@@ -19,7 +19,7 @@ import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.ui.R
-import io.element.android.libraries.proseio.ui.proseioDisplayText
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 
 data class InviteSender(
     val userId: UserId,
@@ -29,8 +29,8 @@ data class InviteSender(
 ) {
     @Composable
     fun annotatedString(): AnnotatedString {
-        // Proseio: "@handle" in place of the Matrix ID when known.
-        return stringResource(R.string.screen_invites_invited_you, displayName, proseioDisplayText(userId.value)).let { text ->
+        // Bipe: "@handle" in place of the Matrix ID when known.
+        return stringResource(R.string.screen_invites_invited_you, displayName, bipeDisplayText(userId.value)).let { text ->
             val senderNameStart = stringResource(R.string.screen_invites_invited_you).indexOf($$"%1$s")
             AnnotatedString(
                 text = text,

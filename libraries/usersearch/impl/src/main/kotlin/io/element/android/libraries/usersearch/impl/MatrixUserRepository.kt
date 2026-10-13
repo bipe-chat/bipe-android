@@ -14,9 +14,9 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.MatrixPatterns
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
-import io.element.android.libraries.proseio.ProseioHandle
-import io.element.android.libraries.proseio.api.ProseioApiException
-import io.element.android.libraries.proseio.di.ProseioSession
+import io.element.android.libraries.bipe.BipeHandle
+import io.element.android.libraries.bipe.api.BipeApiException
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.usersearch.api.UserListDataSource
 import io.element.android.libraries.usersearch.api.UserRepository
 import io.element.android.libraries.usersearch.api.UserSearchResult
@@ -33,7 +33,7 @@ import java.util.Locale
 class MatrixUserRepository(
     private val client: MatrixClient,
     private val dataSource: UserListDataSource,
-    private val proseioSession: ProseioSession,
+    private val bipeSession: BipeSession,
 ) : UserRepository {
     override fun search(query: String): Flow<UserSearchResultState> = flow {
         val shouldQueryProfile = MatrixPatterns.isUserId(query) && !client.isMe(UserId(query))
@@ -56,13 +56,13 @@ class MatrixUserRepository(
     private suspend fun fetchSearchResults(query: String, shouldQueryProfile: Boolean): UserSearchResultState = coroutineScope {
         // Debounce
         delay(DEBOUNCE_TIME_MILLIS)
-        // Proseio: exact @handle lookup next to the directory search. The match goes first.
-        val proseioLookUp = async { proseioLookUp(query) }
+        // Bipe: exact @handle lookup next to the directory search. The match goes first.
+        val bipeLookUp = async { bipeLookUp(query) }
         val directoryResults = dataSource
             .search(query, MAXIMUM_SEARCH_RESULTS)
             .filter { !client.isMe(it.userId) }
             .map { UserSearchResult(it) }
-        val lookUp = proseioLookUp.await()
+        val lookUp = bipeLookUp.await()
         val handleUser = lookUp?.user
         val results = (listOfNotNull(handleUser?.let { UserSearchResult(it) }) + directoryResults.filter { it.matrixUser.userId != handleUser?.userId })
             .toMutableList()
@@ -80,25 +80,25 @@ class MatrixUserRepository(
         UserSearchResultState(
             results = results,
             isSearching = false,
-            proseioHandleNotFound = lookUp?.takeIf { it.user == null }?.handle,
+            bipeHandleNotFound = lookUp?.takeIf { it.user == null }?.handle,
         )
     }
 
-    /** Proseio: a valid handle from the query, and its holder (null when nobody holds it). */
-    private data class ProseioLookUp(val handle: String, val user: MatrixUser?)
+    /** Bipe: a valid handle from the query, and its holder (null when nobody holds it). */
+    private data class BipeLookUp(val handle: String, val user: MatrixUser?)
 
-    /** Proseio: exact handle lookup. Null when the query is not a handle, is the user's own handle, or the lookup failed. */
-    private suspend fun proseioLookUp(query: String): ProseioLookUp? {
-        val handle = ProseioHandle.sanitize(query).lowercase(Locale.ROOT)
-        if (ProseioHandle.localProblem(handle) != null) return null
+    /** Bipe: exact handle lookup. Null when the query is not a handle, is the user's own handle, or the lookup failed. */
+    private suspend fun bipeLookUp(query: String): BipeLookUp? {
+        val handle = BipeHandle.sanitize(query).lowercase(Locale.ROOT)
+        if (BipeHandle.localProblem(handle) != null) return null
         val userId = try {
-            proseioSession.handleResolver.userId(forHandle = handle)
-        } catch (error: ProseioApiException) {
-            Timber.e(error, "Proseio handle lookup failed")
+            bipeSession.handleResolver.userId(forHandle = handle)
+        } catch (error: BipeApiException) {
+            Timber.e(error, "Bipe handle lookup failed")
             return null
-        } ?: return ProseioLookUp(handle, user = null)
+        } ?: return BipeLookUp(handle, user = null)
         if (client.isMe(UserId(userId))) return null
-        return ProseioLookUp(handle, dataSource.getProfile(UserId(userId)) ?: MatrixUser(UserId(userId)))
+        return BipeLookUp(handle, dataSource.getProfile(UserId(userId)) ?: MatrixUser(UserId(userId)))
     }
 
     companion object {

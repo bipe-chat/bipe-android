@@ -246,7 +246,7 @@ class ConfigureRoomPresenter(
                     CreateRoomParameters(
                         name = config.roomName,
                         topic = config.topic,
-                        isEncrypted = true, // Proseio: every room is encrypted, public ones too (docs/security.md rule 13)
+                        isEncrypted = true, // Bipe: every room is encrypted, public ones too (docs/security.md rule 13)
                         isDirect = false,
                         visibility = RoomVisibility.Public,
                         joinRuleOverride = config.visibilityState.joinRuleItem.toJoinRule()
@@ -263,7 +263,7 @@ class ConfigureRoomPresenter(
                     CreateRoomParameters(
                         name = config.roomName,
                         topic = config.topic,
-                        isEncrypted = true, // Proseio: never unencrypted, whatever the homeserver advertises (docs/security.md rule 13)
+                        isEncrypted = true, // Bipe: never unencrypted, whatever the homeserver advertises (docs/security.md rule 13)
                         isDirect = false,
                         visibility = RoomVisibility.Private,
                         historyVisibilityOverride = RoomHistoryVisibility.Invited,

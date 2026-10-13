@@ -14,7 +14,7 @@ import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.announcement.test.FakeAnnouncementService
 import io.element.android.features.home.impl.FakeDateTimeObserver
-import io.element.android.features.home.impl.aProseioSelfChat
+import io.element.android.features.home.impl.aBipeSelfChat
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
 import io.element.android.features.home.impl.filters.RoomListFiltersState
@@ -70,7 +70,7 @@ import io.element.android.libraries.matrix.test.sync.FakeSyncService
 import io.element.android.libraries.matrix.test.verification.FakeSessionVerificationService
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.preferences.test.InMemorySessionPreferencesStore
-import io.element.android.libraries.proseio.selfchat.ProseioSelfChat
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.push.api.battery.aBatteryOptimizationState
 import io.element.android.libraries.push.api.notifications.NotificationCleaner
 import io.element.android.libraries.push.test.notifications.FakeNotificationCleaner
@@ -726,7 +726,7 @@ class RoomListPresenterTest {
         announcementService: AnnouncementService = FakeAnnouncementService(),
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         markRoomAsRead: MarkRoomAsRead? = null,
-        proseioSelfChat: ProseioSelfChat = aProseioSelfChat(client),
+        bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -759,6 +759,6 @@ class RoomListPresenterTest {
         announcementService = announcementService,
         coldStartWatcher = FakeAnalyticsColdStartWatcher(),
         featureFlagService = featureFlagService,
-        proseioSelfChat = proseioSelfChat,
+        bipeSelfChat = bipeSelfChat,
     )
 }

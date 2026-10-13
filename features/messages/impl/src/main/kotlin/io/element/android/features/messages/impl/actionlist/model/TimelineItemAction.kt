@@ -12,7 +12,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import io.element.android.libraries.designsystem.icons.CompoundDrawables
 import io.element.android.libraries.ui.strings.CommonStrings
-import io.element.android.libraries.proseio.R as ProseioR
+import io.element.android.libraries.bipe.R as BipeR
 
 enum class TimelineItemAction(
     @StringRes val titleRes: Int,
@@ -38,8 +38,8 @@ enum class TimelineItemAction(
     Pin(CommonStrings.action_pin, CompoundDrawables.ic_compound_pin),
     Unpin(CommonStrings.action_unpin, CompoundDrawables.ic_compound_unpin),
 
-    /** Proseio: add a sticker to "Meus stickers" (ADR 0029). */
-    SaveSticker(ProseioR.string.proseio_action_save_sticker, CompoundDrawables.ic_compound_sticker),
+    /** Bipe: add a sticker to "Meus stickers" (ADR 0029). */
+    SaveSticker(BipeR.string.proseio_action_save_sticker, CompoundDrawables.ic_compound_sticker),
 
     // Note: these actions are not used in UI for now
     RetrySending(CommonStrings.action_retry, CompoundDrawables.ic_compound_send_solid),

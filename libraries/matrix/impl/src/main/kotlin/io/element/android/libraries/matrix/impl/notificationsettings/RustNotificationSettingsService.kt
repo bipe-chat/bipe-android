@@ -148,7 +148,7 @@ class RustNotificationSettingsService(
         notificationSettings.await().getRawPushRules()
     }
 
-    // Proseio: proseio#97
+    // Bipe: proseio#97
     override suspend fun setNotifyOverrideRule(ruleId: String, eventTypePattern: String): Result<Unit> = withContext(dispatchers.io) {
         runCatchingExceptions {
             notificationSettings.await().setCustomPushRule(

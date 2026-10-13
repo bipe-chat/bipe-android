@@ -47,22 +47,22 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
     is PreferencesEntryPoint.InitialTarget.NotificationSettings -> PreferencesFlowNode.NavTarget.NotificationSettings
     PreferencesEntryPoint.InitialTarget.NotificationTroubleshoot -> PreferencesFlowNode.NavTarget.TroubleshootNotifications
     PreferencesEntryPoint.InitialTarget.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
-    // Proseio: the Você tab rows (ADR 0053)
-    is PreferencesEntryPoint.InitialTarget.ProseioEditProfile -> PreferencesFlowNode.NavTarget.UserProfile(matrixUser)
-    is PreferencesEntryPoint.InitialTarget.ProseioScreen -> when (screen) {
-        PreferencesEntryPoint.ProseioSettingsScreen.Analytics -> PreferencesFlowNode.NavTarget.AnalyticsSettings
-        PreferencesEntryPoint.ProseioSettingsScreen.About -> PreferencesFlowNode.NavTarget.About
-        PreferencesEntryPoint.ProseioSettingsScreen.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
-        PreferencesEntryPoint.ProseioSettingsScreen.LockScreen -> PreferencesFlowNode.NavTarget.LockScreenSettings
-        PreferencesEntryPoint.ProseioSettingsScreen.Media -> PreferencesFlowNode.NavTarget.MediaSettings
-        PreferencesEntryPoint.ProseioSettingsScreen.Location -> PreferencesFlowNode.NavTarget.LocationSettings
-        PreferencesEntryPoint.ProseioSettingsScreen.Labs -> PreferencesFlowNode.NavTarget.Labs
-        PreferencesEntryPoint.ProseioSettingsScreen.ModerationAndSafety -> PreferencesFlowNode.NavTarget.ModerationAndSafety
-        PreferencesEntryPoint.ProseioSettingsScreen.Notifications -> PreferencesFlowNode.NavTarget.NotificationSettings
-        PreferencesEntryPoint.ProseioSettingsScreen.SignOut -> PreferencesFlowNode.NavTarget.SignOut
-        PreferencesEntryPoint.ProseioSettingsScreen.AccountDeactivation -> PreferencesFlowNode.NavTarget.AccountDeactivation
-        PreferencesEntryPoint.ProseioSettingsScreen.Handle -> PreferencesFlowNode.NavTarget.ProseioHandle
-        PreferencesEntryPoint.ProseioSettingsScreen.Invites -> PreferencesFlowNode.NavTarget.ProseioInvites
-        PreferencesEntryPoint.ProseioSettingsScreen.PublicProfile -> PreferencesFlowNode.NavTarget.ProseioPublicProfile
+    // Bipe: the Você tab rows (ADR 0053)
+    is PreferencesEntryPoint.InitialTarget.BipeEditProfile -> PreferencesFlowNode.NavTarget.UserProfile(matrixUser)
+    is PreferencesEntryPoint.InitialTarget.BipeScreen -> when (screen) {
+        PreferencesEntryPoint.BipeSettingsScreen.Analytics -> PreferencesFlowNode.NavTarget.AnalyticsSettings
+        PreferencesEntryPoint.BipeSettingsScreen.About -> PreferencesFlowNode.NavTarget.About
+        PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
+        PreferencesEntryPoint.BipeSettingsScreen.LockScreen -> PreferencesFlowNode.NavTarget.LockScreenSettings
+        PreferencesEntryPoint.BipeSettingsScreen.Media -> PreferencesFlowNode.NavTarget.MediaSettings
+        PreferencesEntryPoint.BipeSettingsScreen.Location -> PreferencesFlowNode.NavTarget.LocationSettings
+        PreferencesEntryPoint.BipeSettingsScreen.Labs -> PreferencesFlowNode.NavTarget.Labs
+        PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety -> PreferencesFlowNode.NavTarget.ModerationAndSafety
+        PreferencesEntryPoint.BipeSettingsScreen.Notifications -> PreferencesFlowNode.NavTarget.NotificationSettings
+        PreferencesEntryPoint.BipeSettingsScreen.SignOut -> PreferencesFlowNode.NavTarget.SignOut
+        PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> PreferencesFlowNode.NavTarget.AccountDeactivation
+        PreferencesEntryPoint.BipeSettingsScreen.Handle -> PreferencesFlowNode.NavTarget.BipeHandle
+        PreferencesEntryPoint.BipeSettingsScreen.Invites -> PreferencesFlowNode.NavTarget.BipeInvites
+        PreferencesEntryPoint.BipeSettingsScreen.PublicProfile -> PreferencesFlowNode.NavTarget.BipePublicProfile
     }
 }

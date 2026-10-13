@@ -84,8 +84,8 @@
                 <data android:scheme="@string/login_redirect_scheme" />
             </intent-filter>
             <!--
-              Proseio links: profile (https://proseio.com.br/@handle) and invite (https://proseio.com.br/convite/CODE).
-              Proseio: replaces the Element web and mobile link filters.
+              Bipe links: profile (https://proseio.com.br/@handle) and invite (https://proseio.com.br/convite/CODE).
+              Bipe: replaces the Element web and mobile link filters.
               Matching asset file: https://proseio.com.br/.well-known/assetlinks.json (not published yet)
             -->
             <intent-filter android:autoVerify="true">

@@ -18,6 +18,6 @@ data class UserSearchResult(
 data class UserSearchResultState(
     val results: List<UserSearchResult>,
     val isSearching: Boolean,
-    /** Proseio: the handle (without "@") in the query when it is a valid handle that nobody holds. */
-    val proseioHandleNotFound: String? = null,
+    /** Bipe: the handle (without "@") in the query when it is a valid handle that nobody holds. */
+    val bipeHandleNotFound: String? = null,
 )

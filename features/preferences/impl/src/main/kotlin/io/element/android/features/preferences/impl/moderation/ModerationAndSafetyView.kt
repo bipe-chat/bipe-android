@@ -36,7 +36,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.matrix.api.media.MediaPreviewValue
-import io.element.android.libraries.proseio.R as ProseioR
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.ui.strings.CommonStrings
 
 /**
@@ -103,8 +103,8 @@ private fun PresenceSection(state: ModerationAndSafetyState) {
                 Text(text = stringResource(id = R.string.screen_advanced_settings_share_presence))
             },
             supportingContent = {
-                // Proseio: read receipts are not part of this toggle (ADR 0050)
-                Text(text = stringResource(id = ProseioR.string.proseio_settings_share_presence_footer))
+                // Bipe: read receipts are not part of this toggle (ADR 0050)
+                Text(text = stringResource(id = BipeR.string.proseio_settings_share_presence_footer))
             },
             trailingContent = ListItemContent.Switch(
                 checked = state.isSharePresenceEnabled,

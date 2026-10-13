@@ -63,7 +63,7 @@ class DefaultSessionPreferencesStore(
     override suspend fun setSharePresence(enabled: Boolean) {
         update(sharePresenceKey, enabled)
         // Also update all the other settings
-        // Proseio: read receipts are not part of this toggle (ADR 0050)
+        // Bipe: read receipts are not part of this toggle (ADR 0050)
         setSendTypingNotifications(enabled)
         setRenderTypingNotifications(enabled)
     }
@@ -73,11 +73,11 @@ class DefaultSessionPreferencesStore(
     }
 
     override suspend fun setSendPublicReadReceipts(enabled: Boolean) = update(sendPublicReadReceiptsKey, enabled)
-    // Proseio: receipts are always public, whatever an older build stored (ADR 0050)
+    // Bipe: receipts are always public, whatever an older build stored (ADR 0050)
     override fun isSendPublicReadReceiptsEnabled(): Flow<Boolean> = flowOf(true)
 
     override suspend fun setRenderReadReceipts(enabled: Boolean) = update(renderReadReceiptsKey, enabled)
-    // Proseio: receipts of other people are always shown (ADR 0050)
+    // Bipe: receipts of other people are always shown (ADR 0050)
     override fun isRenderReadReceiptsEnabled(): Flow<Boolean> = flowOf(true)
 
     override suspend fun setSendTypingNotifications(enabled: Boolean) = update(sendTypingNotificationsKey, enabled)

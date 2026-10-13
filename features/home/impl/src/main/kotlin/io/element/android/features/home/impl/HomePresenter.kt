@@ -33,8 +33,8 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.indicator.api.IndicatorService
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.sync.SyncService
-import io.element.android.libraries.proseio.selfchat.ProseioSelfChat
-import io.element.android.libraries.proseio.tabs.ProseioTabBadges
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.combine
@@ -54,7 +54,7 @@ class HomePresenter(
     private val sessionStore: SessionStore,
     private val announcementService: AnnouncementService,
     private val featureFlagService: FeatureFlagService,
-    private val proseioSelfChat: ProseioSelfChat,
+    private val bipeSelfChat: BipeSelfChat,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -107,23 +107,23 @@ class HomePresenter(
             // Force a refresh of the profile
             client.getUserProfile()
         }
-        // Proseio: Conversas lists direct chats and Grupos lists groups (ADR 0053). Você keeps the last category.
+        // Bipe: Conversas lists direct chats and Grupos lists groups (ADR 0053). Você keeps the last category.
         LaunchedEffect(currentHomeNavigationBarItem) {
             when (currentHomeNavigationBarItem) {
-                HomeNavigationBarItem.Chats -> roomListState.eventSink(RoomListEvent.ProseioShowGroups(false))
-                HomeNavigationBarItem.Groups -> roomListState.eventSink(RoomListEvent.ProseioShowGroups(true))
+                HomeNavigationBarItem.Chats -> roomListState.eventSink(RoomListEvent.BipeShowGroups(false))
+                HomeNavigationBarItem.Groups -> roomListState.eventSink(RoomListEvent.BipeShowGroups(true))
                 HomeNavigationBarItem.Spaces,
                 HomeNavigationBarItem.You -> Unit
             }
         }
-        // Proseio: the tab badges count all rooms, not only the rooms of the filtered list. The self-chat ID comes
+        // Bipe: the tab badges count all rooms, not only the rooms of the filtered list. The self-chat ID comes
         // from account data, so the room lists and the badges can leave it out.
-        LaunchedEffect(Unit) { proseioSelfChat.refresh() }
-        val proseioBadges by remember {
-            combine(client.roomListService.allRooms.summaries, proseioSelfChat.roomId) { summaries, selfChatRoomId ->
-                ProseioTabBadges.from(summaries, selfChatRoomId)
+        LaunchedEffect(Unit) { bipeSelfChat.refresh() }
+        val bipeBadges by remember {
+            combine(client.roomListService.allRooms.summaries, bipeSelfChat.roomId) { summaries, selfChatRoomId ->
+                BipeTabBadges.from(summaries, selfChatRoomId)
             }.distinctUntilChanged()
-        }.collectAsState(ProseioTabBadges.NONE)
+        }.collectAsState(BipeTabBadges.NONE)
         // Avatar indicator
         val showAvatarIndicator by indicatorService.showRoomListTopBarIndicator()
 
@@ -153,7 +153,7 @@ class HomePresenter(
             canReportBug = canReportBug,
             showMultiAccountAnnouncement = showMultiAccountAnnouncement,
             eventSink = ::handleEvent,
-            proseioBadges = proseioBadges,
+            bipeBadges = bipeBadges,
         )
     }
 }

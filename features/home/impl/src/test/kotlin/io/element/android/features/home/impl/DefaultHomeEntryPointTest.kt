@@ -45,7 +45,7 @@ class DefaultHomeEntryPointTest : RobolectricTest() {
                 sessionCoroutineScope = backgroundScope,
                 preferencesRootPresenter = lazy { lambdaError() },
                 emojiPickerRenderer = NoOpEmojiPickerRenderer,
-                proseioSelfChat = aProseioSelfChat(),
+                bipeSelfChat = aBipeSelfChat(),
                 snackbarDispatcher = SnackbarDispatcher(),
             )
         }

@@ -32,7 +32,7 @@ import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.sync.FakeSyncService
-import io.element.android.libraries.proseio.selfchat.ProseioSelfChat
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
 import io.element.android.libraries.sessionstorage.test.aSessionData
@@ -258,7 +258,7 @@ internal fun createHomePresenter(
     sessionStore: SessionStore = InMemorySessionStore(),
     announcementService: AnnouncementService = FakeAnnouncementService(),
     featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
-    proseioSelfChat: ProseioSelfChat = aProseioSelfChat(client),
+    bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
 ) = HomePresenter(
     client = client,
     syncService = syncService,
@@ -270,5 +270,5 @@ internal fun createHomePresenter(
     sessionStore = sessionStore,
     announcementService = announcementService,
     featureFlagService = featureFlagService,
-    proseioSelfChat = proseioSelfChat,
+    bipeSelfChat = bipeSelfChat,
 )

@@ -95,7 +95,7 @@ import io.element.android.libraries.matrix.ui.messages.reply.map
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
-import io.element.android.libraries.proseio.stickers.StickerPackRepository
+import io.element.android.libraries.bipe.stickers.StickerPackRepository
 import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
@@ -108,7 +108,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import io.element.android.libraries.proseio.R as ProseioR
+import io.element.android.libraries.bipe.R as BipeR
 
 @AssistedInject
 class MessagesPresenter(
@@ -453,16 +453,16 @@ class MessagesPresenter(
         }
     }
 
-    /** Proseio: downloads the sticker and adds it to "Meus stickers" (ADR 0029). The same file twice is kept once. */
+    /** Bipe: downloads the sticker and adds it to "Meus stickers" (ADR 0029). The same file twice is kept once. */
     private suspend fun handleSaveSticker(targetEvent: TimelineItem.Event) {
         val content = targetEvent.content as? TimelineItemStickerContent ?: return
         val source = content.preferredMediaSource ?: return
         mediaLoader.loadMediaContent(source)
             .flatMap { stickerPackRepository.addSticker(it) }
-            .onSuccess { snackbarDispatcher.post(SnackbarMessage(ProseioR.string.proseio_sticker_saved)) }
+            .onSuccess { snackbarDispatcher.post(SnackbarMessage(BipeR.string.proseio_sticker_saved)) }
             .onFailure {
                 Timber.e(it, "Sticker save failed")
-                snackbarDispatcher.post(SnackbarMessage(ProseioR.string.proseio_sticker_save_failed))
+                snackbarDispatcher.post(SnackbarMessage(BipeR.string.proseio_sticker_save_failed))
             }
     }
 

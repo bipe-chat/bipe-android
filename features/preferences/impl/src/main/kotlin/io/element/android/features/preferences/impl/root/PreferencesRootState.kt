@@ -33,10 +33,10 @@ data class PreferencesRootState(
     val showDeveloperSettings: Boolean,
     val showLabsItem: Boolean,
     val snackbarMessage: SnackbarMessage?,
-    // Proseio: the user's handle without "@", or null when there is none (or it is not loaded yet).
-    val proseioHandle: String? = null,
-    // Proseio: whether the public profile is on (ADR 0041), or null while it is not loaded.
-    val proseioPublicProfileEnabled: Boolean? = null,
+    // Bipe: the user's handle without "@", or null when there is none (or it is not loaded yet).
+    val bipeHandle: String? = null,
+    // Bipe: whether the public profile is on (ADR 0041), or null while it is not loaded.
+    val bipePublicProfileEnabled: Boolean? = null,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 

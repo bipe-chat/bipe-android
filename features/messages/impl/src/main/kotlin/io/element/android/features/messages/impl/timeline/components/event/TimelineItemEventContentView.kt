@@ -60,8 +60,8 @@ import io.element.android.libraries.matrix.ui.media.contentvalidation.InvalidCon
 import io.element.android.libraries.matrix.ui.media.contentvalidation.NotFoundContentView
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectOverallState
 import io.element.android.libraries.matrix.ui.media.contentvalidation.rememberEventContentValidationState
-import io.element.android.libraries.proseio.ui.ProseioScamWarningView
-import io.element.android.libraries.proseio.ui.ProseioVoiceTranscriptView
+import io.element.android.libraries.bipe.ui.BipeScamWarningView
+import io.element.android.libraries.bipe.ui.BipeVoiceTranscriptView
 import io.element.android.libraries.textcomposer.ElementRichTextEditorStyle
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayout
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
@@ -144,14 +144,14 @@ fun TimelineItemEventContentView(
                     content = content,
                     onContentLayoutChange = calculatedOnContentLayoutChange,
                 )
-                // Proseio: the scam warning card goes under the text. The timestamp then sits below the card.
-                is TimelineItemTextContent if content.proseioScamWarning != null -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Bipe: the scam warning card goes under the text. The timestamp then sits below the card.
+                is TimelineItemTextContent if content.bipeScamWarning != null -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     TimelineItemTextView(
                         content = content,
                         onLinkClick = onLinkClick,
                         onLinkLongClick = onLinkLongClick,
                     )
-                    ProseioScamWarningView(kind = content.proseioScamWarning)
+                    BipeScamWarningView(kind = content.bipeScamWarning)
                 }
                 is TimelineItemTextBasedContent -> TimelineItemTextView(
                     content = content,
@@ -234,19 +234,19 @@ fun TimelineItemEventContentView(
                 )
                 is TimelineItemVoiceContent -> {
                     val presenter: Presenter<VoiceMessageState> = presenterFactories.rememberPresenter(content)
-                    // Proseio: the transcript (caption, ADR 0023) and its scam warning under the player.
+                    // Bipe: the transcript (caption, ADR 0023) and its scam warning under the player.
                     // With either one, the timestamp sits below them instead of beside the player.
                     val transcript = content.caption?.takeIf { it.isNotBlank() }
-                    val hasProseioContent = transcript != null || content.proseioScamWarning != null
+                    val hasBipeContent = transcript != null || content.bipeScamWarning != null
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         TimelineItemVoiceView(
                             state = presenter.present(),
                             content = content,
-                            onContentLayoutChange = if (hasProseioContent) { _ -> } else calculatedOnContentLayoutChange,
+                            onContentLayoutChange = if (hasBipeContent) { _ -> } else calculatedOnContentLayoutChange,
                             contentValidationValue = overallValidationState,
                         )
-                        transcript?.let { ProseioVoiceTranscriptView(text = it) }
-                        content.proseioScamWarning?.let { ProseioScamWarningView(kind = it) }
+                        transcript?.let { BipeVoiceTranscriptView(text = it) }
+                        content.bipeScamWarning?.let { BipeScamWarningView(kind = it) }
                     }
                 }
                 is TimelineItemRtcNotificationContent -> error("This shouldn't be rendered as the content of a bubble")

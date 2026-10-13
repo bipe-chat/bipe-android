@@ -28,8 +28,8 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.permalink.PermalinkBuilder
-import io.element.android.libraries.proseio.ProseioProfileLink
-import io.element.android.libraries.proseio.ui.proseioHandle
+import io.element.android.libraries.bipe.BipeProfileLink
+import io.element.android.libraries.bipe.ui.bipeHandle
 import io.element.android.services.analytics.api.AnalyticsService
 
 @ContributesNode(RoomScope::class)
@@ -61,11 +61,11 @@ class RoomMemberDetailsNode(
     @Composable
     override fun View(modifier: Modifier) {
         val context = LocalContext.current
-        // Proseio: share proseio.com.br/@handle when the handle is known.
-        val proseioProfileLink = proseioHandle(inputs.roomMemberId.value)?.let(ProseioProfileLink::url)
+        // Bipe: share proseio.com.br/@handle when the handle is known.
+        val bipeProfileLink = bipeHandle(inputs.roomMemberId.value)?.let(BipeProfileLink::url)
 
         fun onShareUser() {
-            userProfileNodeHelper.onShareUser(context, permalinkBuilder, proseioProfileLink)
+            userProfileNodeHelper.onShareUser(context, permalinkBuilder, bipeProfileLink)
         }
 
         fun navigateToRoom(roomId: RoomId) {

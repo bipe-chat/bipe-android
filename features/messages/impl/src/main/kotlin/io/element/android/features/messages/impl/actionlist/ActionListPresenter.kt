@@ -230,7 +230,7 @@ class DefaultActionListPresenter(
                     add(TimelineItemAction.Pin)
                 }
             }
-            // Proseio: save a sticker to "Meus stickers" (ADR 0029).
+            // Bipe: save a sticker to "Meus stickers" (ADR 0029).
             if (timelineItem.content is TimelineItemStickerContent && timelineItem.isRemote) {
                 add(TimelineItemAction.SaveSticker)
             }

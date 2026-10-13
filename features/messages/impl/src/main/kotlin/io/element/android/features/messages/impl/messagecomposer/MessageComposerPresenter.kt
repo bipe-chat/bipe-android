@@ -76,7 +76,7 @@ import io.element.android.libraries.mediaviewer.api.local.LocalMediaFactory
 import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
-import io.element.android.libraries.proseio.stickers.StickerPackRepository
+import io.element.android.libraries.bipe.stickers.StickerPackRepository
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.slashcommands.api.SlashCommand
 import io.element.android.libraries.slashcommands.api.SlashCommandService

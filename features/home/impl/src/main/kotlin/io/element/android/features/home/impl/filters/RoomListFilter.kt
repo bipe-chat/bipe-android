@@ -10,7 +10,7 @@ package io.element.android.features.home.impl.filters
 
 import io.element.android.features.home.impl.R
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter as MatrixRoomListFilter
-import io.element.android.libraries.proseio.R as ProseioR
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Enum class representing the different filters that can be applied to the room list.
@@ -21,7 +21,7 @@ enum class RoomListFilter(val stringResource: Int) {
     People(R.string.screen_roomlist_filter_people),
     Rooms(R.string.screen_roomlist_filter_rooms),
     Favourites(R.string.screen_roomlist_filter_favourites),
-    Invites(ProseioR.string.proseio_requests_title); // Proseio: invites are message requests (Pedidos).
+    Invites(BipeR.string.proseio_requests_title); // Bipe: invites are message requests (Pedidos).
 
     val incompatibleFilters: Set<RoomListFilter>
         get() = when (this) {

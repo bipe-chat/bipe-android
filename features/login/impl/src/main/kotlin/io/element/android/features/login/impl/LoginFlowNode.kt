@@ -38,7 +38,7 @@ import io.element.android.features.login.impl.screens.classic.ClassicFlowNode
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderNode
 import io.element.android.features.login.impl.screens.loginpassword.LoginPasswordNode
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingNode
-import io.element.android.features.login.impl.screens.proseiosignup.ProseioSignupNode
+import io.element.android.features.login.impl.screens.bipesignup.BipeSignupNode
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.BackstackView
@@ -78,7 +78,7 @@ class LoginFlowNode(
     data class Params(
         val accountProvider: String?,
         val loginHint: String?,
-        val proseioInviteCode: String? = null, // Proseio
+        val bipeInviteCode: String? = null, // Bipe
     ) : NodeInputs
 
     private val callback: LoginEntryPoint.Callback = callback()
@@ -129,9 +129,9 @@ class LoginFlowNode(
         @Parcelize
         data object ChooseAccountProvider : NavTarget
 
-        // Proseio: invite sign-up. inviteCode is a normalised code from an invite link.
+        // Bipe: invite sign-up. inviteCode is a normalised code from an invite link.
         @Parcelize
-        data class ProseioSignup(val inviteCode: String? = null) : NavTarget
+        data class BipeSignup(val inviteCode: String? = null) : NavTarget
 
         @Parcelize
         data class LoginPassword(
@@ -149,8 +149,8 @@ class LoginFlowNode(
                         } else {
                             backstack.replace(NavTarget.OnBoarding(showBackButton = false))
                         }
-                        // Proseio: an invite link opens the sign-up screen on top of onboarding.
-                        inputs<Params>().proseioInviteCode?.let { backstack.push(NavTarget.ProseioSignup(inviteCode = it)) }
+                        // Bipe: an invite link opens the sign-up screen on top of onboarding.
+                        inputs<Params>().bipeInviteCode?.let { backstack.push(NavTarget.BipeSignup(inviteCode = it)) }
                     }
 
                     override fun navigateToLoginPassword() {
@@ -167,8 +167,8 @@ class LoginFlowNode(
                 val callback = object : OnBoardingNode.Callback {
                     override fun navigateToSignUpFlow() {
                         backstack.push(
-                            if (OnBoardingConfig.USES_PROSEIO_SIGNUP) {
-                                NavTarget.ProseioSignup()
+                            if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+                                NavTarget.BipeSignup()
                             } else {
                                 NavTarget.ConfirmAccountProvider(isAccountCreation = true)
                             }
@@ -268,8 +268,8 @@ class LoginFlowNode(
                 }
                 createNode<ConfirmAccountProviderNode>(buildContext, plugins = listOf(inputs, callback))
             }
-            is NavTarget.ProseioSignup -> {
-                val callback = object : ProseioSignupNode.Callback {
+            is NavTarget.BipeSignup -> {
+                val callback = object : BipeSignupNode.Callback {
                     override fun navigateToOAuth(oAuthDetails: OAuthDetails) {
                         navigateToMas(oAuthDetails)
                     }
@@ -278,8 +278,8 @@ class LoginFlowNode(
                         backstack.push(NavTarget.LoginPassword())
                     }
                 }
-                val inputs = ProseioSignupNode.Inputs(inviteCode = navTarget.inviteCode)
-                createNode<ProseioSignupNode>(buildContext, plugins = listOf(inputs, callback))
+                val inputs = BipeSignupNode.Inputs(inviteCode = navTarget.inviteCode)
+                createNode<BipeSignupNode>(buildContext, plugins = listOf(inputs, callback))
             }
             is NavTarget.LoginPassword -> {
                 val inputs = LoginPasswordNode.Inputs(

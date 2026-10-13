@@ -10,7 +10,7 @@ package io.element.android.features.messages.impl.timeline.model.event
 
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.media.MediaSource
-import io.element.android.libraries.proseio.ScamWarningKind
+import io.element.android.libraries.bipe.ScamWarningKind
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Duration
 
@@ -28,8 +28,8 @@ data class TimelineItemVoiceContent(
     override val fileExtension: String,
     override val mimeType: String,
     val waveform: ImmutableList<Float>,
-    // Proseio: caution card when the incoming transcript (the caption, ADR 0023) looks like a scam pattern.
-    val proseioScamWarning: ScamWarningKind? = null,
+    // Bipe: caution card when the incoming transcript (the caption, ADR 0023) looks like a scam pattern.
+    val bipeScamWarning: ScamWarningKind? = null,
 ) : TimelineItemEventContentWithAttachment {
     override val type: String = "TimelineItemAudioContent"
 }

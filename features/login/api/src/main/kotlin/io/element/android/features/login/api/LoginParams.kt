@@ -19,6 +19,6 @@ import kotlinx.parcelize.Parcelize
 data class LoginParams(
     val accountProvider: String,
     val loginHint: String?,
-    // Proseio: normalised code from a proseio.com.br/convite/ link. Opens the sign-up screen.
-    val proseioInviteCode: String? = null,
+    // Bipe: normalised code from a proseio.com.br/convite/ link. Opens the sign-up screen.
+    val bipeInviteCode: String? = null,
 ) : Parcelable

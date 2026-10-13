@@ -23,10 +23,10 @@ class KonsistLicenseTest {
          \*/
         """.trimIndent().toRegex()
 
-    // Proseio: files Proseio adds carry its own AGPL header.
-    private val proseioLicense = """
+    // Bipe: files Bipe adds carry its own AGPL header.
+    private val bipeLicense = """
         /\*
-         \* Copyright 20\d\d Proseio\.
+         \* Copyright 20\d\d Bipe\.
          \*
          \* SPDX-License-Identifier: AGPL-3.0-only
          \*/
@@ -47,7 +47,7 @@ class KonsistLicenseTest {
                 assertThat(it).isNotEmpty()
             }
             .assertTrue {
-                publicLicense.containsMatchIn(it.text) || proseioLicense.containsMatchIn(it.text)
+                publicLicense.containsMatchIn(it.text) || bipeLicense.containsMatchIn(it.text)
             }
     }
 
@@ -64,7 +64,7 @@ class KonsistLicenseTest {
             }
             .assertTrue {
                 it.text.count("Element Creations Ltd.") == 1 ||
-                    (it.text.count("Element Creations Ltd.") == 0 && proseioLicense.containsMatchIn(it.text))
+                    (it.text.count("Element Creations Ltd.") == 0 && bipeLicense.containsMatchIn(it.text))
             }
     }
 }

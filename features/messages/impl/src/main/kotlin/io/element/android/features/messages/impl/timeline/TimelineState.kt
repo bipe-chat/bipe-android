@@ -21,7 +21,7 @@ import io.element.android.libraries.matrix.api.core.UniqueId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.room.tombstone.PredecessorRoom
 import io.element.android.libraries.matrix.api.timeline.Timeline
-import io.element.android.libraries.proseio.ui.ProseioMissedSummary
+import io.element.android.libraries.bipe.ui.BipeMissedSummary
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -92,8 +92,8 @@ data class TimelineRoomInfo(
     val pinnedEventIds: ImmutableList<EventId>,
     val typingNotificationState: TypingNotificationState,
     val predecessorRoom: PredecessorRoom?,
-    // Proseio: proseio#98
-    val proseioMissedSummary: ProseioMissedSummary? = null,
+    // Bipe: proseio#98
+    val bipeMissedSummary: BipeMissedSummary? = null,
 )
 
 /**

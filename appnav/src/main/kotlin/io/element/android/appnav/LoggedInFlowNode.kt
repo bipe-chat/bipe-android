@@ -96,10 +96,10 @@ import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
-import io.element.android.libraries.proseio.di.ProseioSession
-import io.element.android.libraries.proseio.groups.ProseioQuietGroups
-import io.element.android.libraries.proseio.ui.LocalProseioHandleResolver
-import io.element.android.libraries.proseio.ui.LocalProseioPublicProfiles
+import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
+import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.ui.common.nodes.EmptyState
 import io.element.android.libraries.ui.common.nodes.emptyNode
@@ -144,7 +144,7 @@ class LoggedInFlowNode(
     private val roomDirectoryEntryPoint: RoomDirectoryEntryPoint,
     private val shareEntryPoint: ShareEntryPoint,
     private val matrixClient: MatrixClient,
-    private val proseioSession: ProseioSession,
+    private val bipeSession: BipeSession,
     private val sendingQueue: SendQueues,
     private val nativeCallHost: NativeCallHost,
     private val incomingVerificationEntryPoint: IncomingVerificationEntryPoint,
@@ -214,7 +214,7 @@ class LoggedInFlowNode(
                 appNavigationStateService.onNavigateToSession(id, matrixClient.sessionId)
                 loggedInFlowProcessor.observeEvents(sessionCoroutineScope)
                 mediaPreviewConfigMigration()
-                sessionCoroutineScope.launch { ProseioQuietGroups(matrixClient.notificationSettingsService).run() } // Proseio: proseio#97
+                sessionCoroutineScope.launch { BipeQuietGroups(matrixClient.notificationSettingsService).run() } // Bipe: proseio#97
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }
@@ -338,12 +338,12 @@ class LoggedInFlowNode(
                         backstack.push(NavTarget.Settings())
                     }
 
-                    // Proseio: the Você tab rows (ADR 0053)
-                    override fun proseioNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) {
+                    // Bipe: the Você tab rows (ADR 0053)
+                    override fun bipeNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) {
                         backstack.push(NavTarget.Settings(initialTarget))
                     }
 
-                    override fun proseioNavigateToLinkNewDevice() {
+                    override fun bipeNavigateToLinkNewDevice() {
                         backstack.push(NavTarget.LinkNewDevice)
                     }
 
@@ -493,7 +493,7 @@ class LoggedInFlowNode(
                         }
                     }
 
-                    // Proseio
+                    // Bipe
                     override fun navigateToUserProfile(userId: UserId) {
                         backstack.push(NavTarget.UserProfile(userId))
                     }
@@ -710,8 +710,8 @@ class LoggedInFlowNode(
         ) {
             CompositionLocalProvider(
                 LocalMapTilerConfig provides updatedMapTilerConfig,
-                LocalProseioHandleResolver provides proseioSession.handleResolver, // Proseio: @handles in shared UI
-                LocalProseioPublicProfiles provides proseioSession.publicProfiles, // Proseio: public profile bios in shared UI
+                LocalBipeHandleResolver provides bipeSession.handleResolver, // Bipe: @handles in shared UI
+                LocalBipePublicProfiles provides bipeSession.publicProfiles, // Bipe: public profile bios in shared UI
             ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an

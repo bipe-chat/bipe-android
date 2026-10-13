@@ -27,7 +27,7 @@ dependencies {
     allFeaturesApi(project)
 
     implementation(projects.libraries.core)
-    implementation(projects.libraries.proseio) // Proseio
+    implementation(projects.libraries.bipe) // Bipe
     implementation(projects.libraries.accountselect.api)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)

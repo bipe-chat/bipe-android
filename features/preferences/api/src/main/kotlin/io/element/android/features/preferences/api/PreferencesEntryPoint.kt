@@ -34,17 +34,17 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
         @Parcelize
         data object DeveloperSettings : InitialTarget
 
-        /** Proseio: a settings screen opened from a row of the Você tab (ADR 0053). */
+        /** Bipe: a settings screen opened from a row of the Você tab (ADR 0053). */
         @Parcelize
-        data class ProseioScreen(val screen: ProseioSettingsScreen) : InitialTarget
+        data class BipeScreen(val screen: BipeSettingsScreen) : InitialTarget
 
-        /** Proseio: the edit profile screen opened from the Você tab (ADR 0053). */
+        /** Bipe: the edit profile screen opened from the Você tab (ADR 0053). */
         @Parcelize
-        data class ProseioEditProfile(val matrixUser: MatrixUser) : InitialTarget
+        data class BipeEditProfile(val matrixUser: MatrixUser) : InitialTarget
     }
 
-    /** Proseio: the settings screens that the Você tab rows open (ADR 0053). */
-    enum class ProseioSettingsScreen {
+    /** Bipe: the settings screens that the Você tab rows open (ADR 0053). */
+    enum class BipeSettingsScreen {
         Analytics,
         About,
         DeveloperSettings,
@@ -78,7 +78,7 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
         fun navigateToRoomNotificationSettings(roomId: RoomId)
         fun navigateToEvent(roomId: RoomId, eventId: EventId)
 
-        /** Proseio: another user's profile, e.g. someone who joined through the user's invite. */
+        /** Bipe: another user's profile, e.g. someone who joined through the user's invite. */
         fun navigateToUserProfile(userId: UserId) = Unit
     }
 

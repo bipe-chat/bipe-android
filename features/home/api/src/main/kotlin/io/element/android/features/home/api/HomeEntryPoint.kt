@@ -35,10 +35,10 @@ interface HomeEntryPoint : FeatureEntryPoint {
         fun navigateToBugReport()
         fun navigateToAddAccount()
 
-        /** Proseio: opens a settings screen from a row of the Você tab (ADR 0053). */
-        fun proseioNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) = navigateToSettings()
+        /** Bipe: opens a settings screen from a row of the Você tab (ADR 0053). */
+        fun bipeNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) = navigateToSettings()
 
-        /** Proseio: the "link new device" row of the Você tab (ADR 0053). */
-        fun proseioNavigateToLinkNewDevice() = Unit
+        /** Bipe: the "link new device" row of the Você tab (ADR 0053). */
+        fun bipeNavigateToLinkNewDevice() = Unit
     }
 }

@@ -36,7 +36,7 @@ dependencies {
     implementation(projects.features.roomcall.api)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.core)
-    implementation(projects.libraries.proseio)
+    implementation(projects.libraries.bipe)
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.matrixui)

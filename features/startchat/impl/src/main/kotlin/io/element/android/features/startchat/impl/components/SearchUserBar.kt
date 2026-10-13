@@ -51,7 +51,7 @@ fun SearchUserBar(
     modifier: Modifier = Modifier,
     showBackButton: Boolean = true,
     placeHolderTitle: String = stringResource(CommonStrings.common_search_for_someone),
-    noResultsText: String? = null, // Proseio
+    noResultsText: String? = null, // Bipe
 ) {
     val columnState = rememberLazyListState()
 

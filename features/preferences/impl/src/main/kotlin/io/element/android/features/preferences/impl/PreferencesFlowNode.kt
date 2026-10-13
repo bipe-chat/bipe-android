@@ -49,9 +49,9 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
-import io.element.android.libraries.proseio.handle.ProseioHandleNode
-import io.element.android.libraries.proseio.invites.ProseioInvitesNode
-import io.element.android.libraries.proseio.profile.ProseioPublicProfileNode
+import io.element.android.libraries.bipe.handle.BipeHandleNode
+import io.element.android.libraries.bipe.invites.BipeInvitesNode
+import io.element.android.libraries.bipe.profile.BipePublicProfileNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -135,13 +135,13 @@ class PreferencesFlowNode(
         data object OssLicenses : NavTarget
 
         @Parcelize
-        data object ProseioHandle : NavTarget
+        data object BipeHandle : NavTarget
 
         @Parcelize
-        data object ProseioInvites : NavTarget
+        data object BipeInvites : NavTarget
 
         @Parcelize
-        data object ProseioPublicProfile : NavTarget
+        data object BipePublicProfile : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -182,16 +182,16 @@ class PreferencesFlowNode(
                         backstack.push(NavTarget.Labs)
                     }
 
-                    override fun navigateToProseioHandle() {
-                        backstack.push(NavTarget.ProseioHandle)
+                    override fun navigateToBipeHandle() {
+                        backstack.push(NavTarget.BipeHandle)
                     }
 
-                    override fun navigateToProseioInvites() {
-                        backstack.push(NavTarget.ProseioInvites)
+                    override fun navigateToBipeInvites() {
+                        backstack.push(NavTarget.BipeInvites)
                     }
 
-                    override fun navigateToProseioPublicProfile() {
-                        backstack.push(NavTarget.ProseioPublicProfile)
+                    override fun navigateToBipePublicProfile() {
+                        backstack.push(NavTarget.BipePublicProfile)
                     }
 
                     override fun navigateToBugReport() {
@@ -251,7 +251,7 @@ class PreferencesFlowNode(
             NavTarget.Labs -> {
                 val callback = object : LabsNode.Callback {
                     override fun onDone() {
-                        // Proseio: the Você tab can open this screen as the first one (ADR 0053).
+                        // Bipe: the Você tab can open this screen as the first one (ADR 0053).
                         if (backstack.canPop()) backstack.pop() else navigateUp()
                     }
                 }
@@ -268,24 +268,24 @@ class PreferencesFlowNode(
             NavTarget.LocationSettings -> {
                 createNode<LocationSettingsNode>(buildContext)
             }
-            NavTarget.ProseioHandle -> {
-                createNode<ProseioHandleNode>(buildContext)
+            NavTarget.BipeHandle -> {
+                createNode<BipeHandleNode>(buildContext)
             }
-            NavTarget.ProseioInvites -> {
-                val callback = object : ProseioInvitesNode.Callback {
+            NavTarget.BipeInvites -> {
+                val callback = object : BipeInvitesNode.Callback {
                     override fun navigateToUserProfile(userId: String) {
                         callback.navigateToUserProfile(UserId(userId))
                     }
                 }
-                createNode<ProseioInvitesNode>(buildContext, listOf(callback))
+                createNode<BipeInvitesNode>(buildContext, listOf(callback))
             }
-            NavTarget.ProseioPublicProfile -> {
-                val callback = object : ProseioPublicProfileNode.Callback {
+            NavTarget.BipePublicProfile -> {
+                val callback = object : BipePublicProfileNode.Callback {
                     override fun navigateToHandle() {
-                        backstack.push(NavTarget.ProseioHandle)
+                        backstack.push(NavTarget.BipeHandle)
                     }
                 }
-                createNode<ProseioPublicProfileNode>(buildContext, listOf(callback))
+                createNode<BipePublicProfileNode>(buildContext, listOf(callback))
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {
@@ -384,7 +384,7 @@ class PreferencesFlowNode(
                 val inputs = EditUserProfileNode.Inputs(navTarget.matrixUser)
                 val callback = object : EditUserProfileNode.Callback {
                     override fun onDone() {
-                        // Proseio: the Você tab can open this screen as the first one (ADR 0053).
+                        // Bipe: the Você tab can open this screen as the first one (ADR 0053).
                         if (backstack.canPop()) backstack.pop() else navigateUp()
                     }
                 }

@@ -52,7 +52,7 @@ sealed interface TimelineEvent {
     data class NavigateToPredecessorOrSuccessorRoom(val roomId: RoomId) : TimelineItemEvent
 
     /**
-     * Proseio (proseio#98): a line in the "O que você perdeu" block was tapped.
+     * Bipe (proseio#98): a line in the "O que você perdeu" block was tapped.
      */
     data class FocusOnEventFromMissedSummary(val eventId: EventId) : TimelineItemEvent
 

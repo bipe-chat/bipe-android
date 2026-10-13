@@ -22,12 +22,12 @@ android {
     defaultConfig {
         buildConfigFieldStr(
             name = "URL_POLICY",
-            // Proseio: no Element fallbacks in FOSS builds.
+            // Bipe: no Element fallbacks in FOSS builds.
             value = BuildTimeConfig.URL_POLICY ?: "",
         )
         buildConfigFieldStr(
             name = "BUG_REPORT_URL",
-            // Proseio: empty disables rageshake. Never send logs to Element.
+            // Bipe: empty disables rageshake. Never send logs to Element.
             value = BuildTimeConfig.BUG_REPORT_URL ?: "",
         )
         buildConfigFieldStr(

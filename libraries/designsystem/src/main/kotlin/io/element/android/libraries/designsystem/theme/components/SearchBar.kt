@@ -68,7 +68,7 @@ fun <T> SearchBar(
     activeBarColors: SearchBarColors = ElementSearchBarDefaults.activeColors(),
     contentPrefix: @Composable ColumnScope.() -> Unit = {},
     contentSuffix: @Composable ColumnScope.() -> Unit = {},
-    // Proseio: replaces "No results" when the caller knows why, e.g. a handle nobody holds.
+    // Bipe: replaces "No results" when the caller knows why, e.g. a handle nobody holds.
     noResultsText: String? = null,
     resultHandler: @Composable ColumnScope.(T) -> Unit = {},
 ) {

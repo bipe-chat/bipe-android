@@ -113,7 +113,7 @@ fun ElementTheme(
     val darkTheme = theme.isDark()
     val currentCompoundColor = when {
         darkTheme -> if (theme == Theme.Black) {
-            // Proseio: copy() breaks dex verification with the Proseio tokens, see BlackThemeSemanticColors.kt
+            // Bipe: copy() breaks dex verification with the Bipe tokens, see BlackThemeSemanticColors.kt
             compoundDark.toBlackTheme()
         } else {
             compoundDark

@@ -10,7 +10,7 @@ package io.element.android.features.messages.impl.timeline.model.event
 
 import io.element.android.libraries.htmlrenderer.api.DocumentNode
 import io.element.android.libraries.matrix.ui.messages.toPlainText
-import io.element.android.libraries.proseio.ScamWarningKind
+import io.element.android.libraries.bipe.ScamWarningKind
 import org.jsoup.nodes.Document
 
 data class TimelineItemTextContent(
@@ -19,8 +19,8 @@ data class TimelineItemTextContent(
     override val formattedBody: CharSequence,
     override val isEdited: Boolean,
     override val messageTree: DocumentNode? = null,
-    // Proseio: caution card for incoming text that looks like a scam pattern.
-    val proseioScamWarning: ScamWarningKind? = null,
+    // Bipe: caution card for incoming text that looks like a scam pattern.
+    val bipeScamWarning: ScamWarningKind? = null,
 ) : TimelineItemTextBasedContent {
     override val type: String = "TimelineItemTextContent"
     override val plainText: String = htmlDocument?.toPlainText() ?: body

@@ -132,7 +132,7 @@ fun HomeTopBar(
                         }
                     }
                     HomeNavigationBarItem.Spaces -> null
-                    // Proseio: Grupos and Você (ADR 0053)
+                    // Bipe: Grupos and Você (ADR 0053)
                     HomeNavigationBarItem.Groups,
                     HomeNavigationBarItem.You -> stringResource(selectedNavigationItem.labelRes)
                 }
@@ -159,7 +159,7 @@ fun HomeTopBar(
                 )
             },
             actions = {
-                if (selectedNavigationItem.isProseioRoomList) { // Proseio: search on Conversas and Grupos
+                if (selectedNavigationItem.isBipeRoomList) { // Bipe: search on Conversas and Grupos
                     RoomListMenuItems(
                         onToggleSearch = onToggleSearch,
                         onMenuActionClick = onMenuActionClick,

@@ -31,7 +31,7 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.user.toMatrixUser
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
-import io.element.android.libraries.proseio.di.ProseioSession
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
@@ -54,7 +54,7 @@ class PreferencesRootPresenter(
     private val preferencesAccountPresenter: Presenter<PreferencesAccountState>,
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
-    private val proseioSession: ProseioSession,
+    private val bipeSession: BipeSession,
 ) : Presenter<PreferencesRootState> {
     @Composable
     override fun present(): PreferencesRootState {
@@ -139,12 +139,12 @@ class PreferencesRootPresenter(
             }
         }
 
-        // Proseio: the handle row. The resolver looks the handle up and emits when it arrives.
-        val proseioHandles by proseioSession.handleResolver.handles.collectAsState()
-        val proseioHandle = remember(proseioHandles) { proseioSession.handleResolver.handle(matrixClient.sessionId.value) }
-        // Proseio: on or off for the public profile row. The profile screen stores every change it saves.
-        val proseioMyProfile by proseioSession.publicProfiles.myProfile.collectAsState()
-        LaunchedEffect(Unit) { proseioSession.publicProfiles.refreshMine() }
+        // Bipe: the handle row. The resolver looks the handle up and emits when it arrives.
+        val bipeHandles by bipeSession.handleResolver.handles.collectAsState()
+        val bipeHandle = remember(bipeHandles) { bipeSession.handleResolver.handle(matrixClient.sessionId.value) }
+        // Bipe: on or off for the public profile row. The profile screen stores every change it saves.
+        val bipeMyProfile by bipeSession.publicProfiles.myProfile.collectAsState()
+        LaunchedEffect(Unit) { bipeSession.publicProfiles.refreshMine() }
 
         return PreferencesRootState(
             myUser = matrixUser.value,
@@ -160,8 +160,8 @@ class PreferencesRootPresenter(
             showDeveloperSettings = showDeveloperSettings,
             showLabsItem = showLabsItem,
             snackbarMessage = snackbarMessage,
-            proseioHandle = proseioHandle,
-            proseioPublicProfileEnabled = proseioMyProfile?.enabled,
+            bipeHandle = bipeHandle,
+            bipePublicProfileEnabled = bipeMyProfile?.enabled,
             eventSink = ::handleEvent,
         )
     }

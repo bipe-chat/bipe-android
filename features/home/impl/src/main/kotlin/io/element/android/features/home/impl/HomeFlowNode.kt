@@ -67,7 +67,7 @@ import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
-import io.element.android.libraries.proseio.selfchat.ProseioSelfChat
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -82,7 +82,7 @@ import kotlinx.parcelize.Parcelize
 import timber.log.Timber
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
-import io.element.android.libraries.proseio.R as ProseioR
+import io.element.android.libraries.bipe.R as BipeR
 
 @ContributesNode(SessionScope::class)
 @AssistedInject
@@ -99,10 +99,10 @@ class HomeFlowNode(
     private val changeRoomMemberRolesEntryPoint: ChangeRoomMemberRolesEntryPoint,
     private val leaveRoomRenderer: LeaveRoomRenderer,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
-    // Proseio: the Você tab (ADR 0053)
+    // Bipe: the Você tab (ADR 0053)
     private val preferencesRootPresenter: Lazy<PreferencesRootPresenter>,
     private val emojiPickerRenderer: EmojiPickerRenderer,
-    private val proseioSelfChat: ProseioSelfChat,
+    private val bipeSelfChat: BipeSelfChat,
     private val snackbarDispatcher: SnackbarDispatcher,
 ) : BaseFlowNode<HomeFlowNode.NavTarget>(
     backstack = BackStack(
@@ -171,28 +171,28 @@ class HomeFlowNode(
         }
     }
 
-    // Proseio: opens the self-chat, or creates it on first use (ADR 0053).
-    private var proseioSelfChatJob: Job? = null
+    // Bipe: opens the self-chat, or creates it on first use (ADR 0053).
+    private var bipeSelfChatJob: Job? = null
 
-    private fun openProseioSelfChat(name: String, navigateToRoom: (RoomId, EventId?) -> Unit) {
-        if (proseioSelfChatJob?.isActive == true) return
-        proseioSelfChatJob = sessionCoroutineScope.launch {
-            proseioSelfChat.openOrCreate(name).fold(
+    private fun openBipeSelfChat(name: String, navigateToRoom: (RoomId, EventId?) -> Unit) {
+        if (bipeSelfChatJob?.isActive == true) return
+        bipeSelfChatJob = sessionCoroutineScope.launch {
+            bipeSelfChat.openOrCreate(name).fold(
                 onSuccess = { roomId -> navigateToRoom(roomId, null) },
                 onFailure = {
-                    Timber.e(it, "Proseio self-chat: open failed")
-                    snackbarDispatcher.post(SnackbarMessage(ProseioR.string.proseio_self_chat_error))
+                    Timber.e(it, "Bipe self-chat: open failed")
+                    snackbarDispatcher.post(SnackbarMessage(BipeR.string.proseio_self_chat_error))
                 },
             )
         }
     }
 
-    private fun openProseioSettings(screen: PreferencesEntryPoint.ProseioSettingsScreen) {
-        callback.proseioNavigateToSettings(PreferencesEntryPoint.InitialTarget.ProseioScreen(screen))
+    private fun openBipeSettings(screen: PreferencesEntryPoint.BipeSettingsScreen) {
+        callback.bipeNavigateToSettings(PreferencesEntryPoint.InitialTarget.BipeScreen(screen))
     }
 
     @Composable
-    private fun ProseioYouTab(
+    private fun BipeYouTab(
         contentPadding: PaddingValues,
         modifier: Modifier,
         navigateToRoom: (RoomId, EventId?) -> Unit,
@@ -200,34 +200,34 @@ class HomeFlowNode(
         val youState = preferencesRootPresenter.value.present()
         val activity = requireNotNull(LocalActivity.current)
         val isDark = !ElementTheme.isLightTheme
-        val selfChatName = stringResource(ProseioR.string.proseio_self_chat_title)
+        val selfChatName = stringResource(BipeR.string.proseio_self_chat_title)
         PreferencesRootView(
             state = youState,
             emojiPickerRenderer = emojiPickerRenderer,
             modifier = modifier,
             onBackClick = {},
             onAddAccountClick = callback::navigateToAddAccount,
-            onOpenAnalytics = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Analytics) },
-            onOpenLockScreenSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.LockScreen) },
-            onOpenAbout = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.About) },
-            onOpenDeveloperSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.DeveloperSettings) },
-            onOpenMediaSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Media) },
-            onOpenLocationSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Location) },
-            onOpenLabs = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Labs) },
-            onEditProfileClick = { callback.proseioNavigateToSettings(PreferencesEntryPoint.InitialTarget.ProseioEditProfile(it)) },
+            onOpenAnalytics = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Analytics) },
+            onOpenLockScreenSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.LockScreen) },
+            onOpenAbout = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.About) },
+            onOpenDeveloperSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings) },
+            onOpenMediaSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Media) },
+            onOpenLocationSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Location) },
+            onOpenLabs = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Labs) },
+            onEditProfileClick = { callback.bipeNavigateToSettings(PreferencesEntryPoint.InitialTarget.BipeEditProfile(it)) },
             onSecureBackupClick = callback::navigateToSetUpRecovery,
             onManageAccountClick = { url -> activity.openUrlInChromeCustomTab(null, darkTheme = isDark, url = url) },
-            onLinkNewDeviceClick = callback::proseioNavigateToLinkNewDevice,
+            onLinkNewDeviceClick = callback::bipeNavigateToLinkNewDevice,
             onOpenRageShake = callback::navigateToBugReport,
-            onModerationAndSafetyClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.ModerationAndSafety) },
-            onOpenNotificationSettings = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Notifications) },
-            onSignOutClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.SignOut) },
-            onDeactivateClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.AccountDeactivation) },
-            onProseioHandleClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Handle) },
-            onProseioInvitesClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.Invites) },
-            onProseioPublicProfileClick = { openProseioSettings(PreferencesEntryPoint.ProseioSettingsScreen.PublicProfile) },
-            proseioTabContentPadding = contentPadding,
-            onProseioSelfChatClick = { openProseioSelfChat(selfChatName, navigateToRoom) },
+            onModerationAndSafetyClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety) },
+            onOpenNotificationSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Notifications) },
+            onSignOutClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.SignOut) },
+            onDeactivateClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation) },
+            onBipeHandleClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Handle) },
+            onBipeInvitesClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Invites) },
+            onBipePublicProfileClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.PublicProfile) },
+            bipeTabContentPadding = contentPadding,
+            onBipeSelfChatClick = { openBipeSelfChat(selfChatName, navigateToRoom) },
         )
     }
 
@@ -297,7 +297,7 @@ class HomeFlowNode(
             HomeView(
                 homeState = state,
                 onRoomClick = ::navigateToRoom,
-                // Proseio: the avatar opens the Você tab, which holds the settings (ADR 0053).
+                // Bipe: the avatar opens the Você tab, which holds the settings (ADR 0053).
                 onSettingsClick = { state.eventSink(HomeEvent.SelectHomeNavigationBarItem(HomeNavigationBarItem.You)) },
                 onAddAccountClick = callback::navigateToAddAccount,
                 onStartChatClick = callback::navigateToCreateRoom,
@@ -325,7 +325,7 @@ class HomeFlowNode(
                     )
                 },
                 youTabView = { contentPadding, tabModifier ->
-                    ProseioYouTab(contentPadding = contentPadding, modifier = tabModifier, navigateToRoom = ::navigateToRoom)
+                    BipeYouTab(contentPadding = contentPadding, modifier = tabModifier, navigateToRoom = ::navigateToRoom)
                 },
             )
         }

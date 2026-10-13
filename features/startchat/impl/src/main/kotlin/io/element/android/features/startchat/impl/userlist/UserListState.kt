@@ -23,8 +23,8 @@ data class UserListState(
     val isSearchActive: Boolean,
     val selectionMode: SelectionMode,
     val recentDirectRooms: ImmutableList<RecentDirectRoom>,
-    // Proseio: the handle in the query when nobody holds it ("Ninguém usa @x no Proseio").
-    val proseioHandleNotFound: String? = null,
+    // Bipe: the handle in the query when nobody holds it ("Ninguém usa @x no Bipe").
+    val bipeHandleNotFound: String? = null,
     val eventSink: (UserListEvent) -> Unit,
 ) {
     val isMultiSelectionEnabled = selectionMode == SelectionMode.Multiple

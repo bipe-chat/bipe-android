@@ -28,5 +28,5 @@ object NotificationConfig {
     const val SHOW_QUICK_REPLY_ACTION = true
 
     @ColorInt
-    val NOTIFICATION_ACCENT_COLOR: Int = "#FF80307B".toColorInt() // Proseio: açaí brand plum, proseio-tokens acai.1100 light
+    val NOTIFICATION_ACCENT_COLOR: Int = "#FF80307B".toColorInt() // Bipe: açaí brand plum, proseio-tokens acai.1100 light
 }

@@ -578,7 +578,7 @@ private fun MessagesViewContent(
             onCreatePollClick = onCreatePollClick,
             enableTextFormatting = state.enableTextFormatting,
         )
-        // Proseio: sticker picker (ADR 0029).
+        // Bipe: sticker picker (ADR 0029).
         StickerPickerBottomSheet(
             state = state.composerState.stickerPicker,
             roomId = state.roomId.value,

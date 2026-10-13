@@ -57,7 +57,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.VoiceMessageT
 import io.element.android.libraries.matrix.api.timeline.item.event.getDisambiguatedDisplayName
 import io.element.android.libraries.matrix.ui.messages.toHtmlDocument
 import io.element.android.libraries.mediaviewer.api.util.FileExtensionExtractor
-import io.element.android.libraries.proseio.ScamDetector
+import io.element.android.libraries.bipe.ScamDetector
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import org.jsoup.nodes.Document
@@ -122,8 +122,8 @@ class TimelineItemContentMessageFactory(
                     } else {
                         null
                     },
-                    // Proseio: scam pattern check for incoming text, cached by event ID.
-                    proseioScamWarning = if (!isOutgoing && eventId != null) ScamDetector.warningKind(body, eventId.value) else null,
+                    // Bipe: scam pattern check for incoming text, cached by event ID.
+                    bipeScamWarning = if (!isOutgoing && eventId != null) ScamDetector.warningKind(body, eventId.value) else null,
                 )
             }
             is ImageMessageType -> {
@@ -259,8 +259,8 @@ class TimelineItemContentMessageFactory(
                     waveform = messageType.details?.waveform?.toImmutableList() ?: persistentListOf(),
                     formattedFileSize = fileSizeFormatter.format(messageType.info?.size ?: 0),
                     fileExtension = fileExtensionExtractor.extractFromName(messageType.filename),
-                    // Proseio: the scam detector reads incoming transcripts too (ADR 0023).
-                    proseioScamWarning = messageType.caption
+                    // Bipe: the scam detector reads incoming transcripts too (ADR 0023).
+                    bipeScamWarning = messageType.caption
                         ?.takeIf { !isOutgoing && eventId != null }
                         ?.let { ScamDetector.warningKind(it.trimEnd(), eventId!!.value) },
                 )
