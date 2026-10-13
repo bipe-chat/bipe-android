@@ -53,7 +53,10 @@ import io.element.android.libraries.designsystem.R as DesignSystemR
 @Composable
 fun BipeWelcomeView(modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val showLogo = maxHeight >= 480.dp
+        // iOS hides the logo only in compact height (landscape). Here the buttons below take part of the
+        // screen, so the logo shrinks first and hides only when the space is very short.
+        val showLogo = maxHeight >= 360.dp
+        val logoSize = if (maxHeight >= 560.dp) 96.dp else 72.dp
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -68,10 +71,10 @@ fun BipeWelcomeView(modifier: Modifier = Modifier) {
                     painter = painterResource(id = DesignSystemR.drawable.bipe_logo),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(96.dp)
+                        .size(logoSize)
                         .shadow(
                             elevation = 16.dp,
-                            shape = RoundedCornerShape(21.dp),
+                            shape = RoundedCornerShape(logoSize * 0.22f),
                             ambientColor = ElementTheme.colors.bgAccentRest,
                             spotColor = ElementTheme.colors.bgAccentRest,
                         ),
