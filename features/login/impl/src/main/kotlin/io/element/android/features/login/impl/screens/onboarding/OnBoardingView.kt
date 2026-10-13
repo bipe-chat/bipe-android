@@ -11,24 +11,18 @@ package io.element.android.features.login.impl.screens.onboarding
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
@@ -37,8 +31,8 @@ import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.login.LoginModeEvent
 import io.element.android.features.login.impl.login.LoginModeView
 import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.designsystem.atomic.atoms.ElementLogoAtom
-import io.element.android.libraries.designsystem.atomic.atoms.ElementLogoAtomSize
+import io.element.android.libraries.bipe.ui.BipeWelcomeView
+import io.element.android.libraries.bipe.ui.bipeWelcomeBackground
 import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMolecule
 import io.element.android.libraries.designsystem.atomic.pages.FlowStepPage
 import io.element.android.libraries.designsystem.atomic.pages.OnBoardingPage
@@ -133,8 +127,9 @@ private fun AddFirstAccountScaffold(
     modifier: Modifier = Modifier,
 ) {
     OnBoardingPage(
-        modifier = modifier,
-        renderBackground = state.onBoardingLogoResId == null,
+        // Bipe: açaí background instead of Element's onboarding artwork.
+        modifier = modifier.bipeWelcomeBackground(),
+        renderBackground = false,
         content = {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -144,7 +139,7 @@ private fun AddFirstAccountScaffold(
                         onBoardingLogoResId = state.onBoardingLogoResId,
                     )
                 } else {
-                    OnBoardingContent(state = state)
+                    OnBoardingContent()
                 }
                 if (state.showDeveloperSettings) {
                     IconButton(
@@ -197,51 +192,10 @@ private fun AddOtherAccountScaffold(
     )
 }
 
+// Bipe: logo, promise and value points instead of Element's logo and welcome text.
 @Composable
-private fun OnBoardingContent(state: OnBoardingState) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = BiasAlignment(
-                horizontalBias = 0f,
-                verticalBias = -0.4f
-            )
-        ) {
-            ElementLogoAtom(
-                size = ElementLogoAtomSize.Large,
-                modifier = Modifier.padding(top = ElementLogoAtomSize.Large.shadowRadius / 2)
-            )
-        }
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = BiasAlignment(
-                horizontalBias = 0f,
-                verticalBias = 0.6f
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.screen_onboarding_welcome_title),
-                    color = ElementTheme.colors.textPrimary,
-                    style = ElementTheme.typography.fontHeadingLgBold,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(id = R.string.screen_onboarding_welcome_message, state.productionApplicationName),
-                    color = ElementTheme.colors.textPrimary,
-                    style = ElementTheme.typography.fontBodyLgRegular,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
-    }
+private fun OnBoardingContent() {
+    BipeWelcomeView()
 }
 
 @Composable

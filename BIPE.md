@@ -46,6 +46,10 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 | Accent colour | Compound tokens | Açaí from `../proseio-tokens`: `./tools/compound/import_bipe_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
 | App links | `app/src/main/AndroidManifest.xml` | `bipe.chat` (and www) paths `/@` and `/convite/`. Old `proseio.com.br` links still open the app (second filter, no autoVerify). Element hosts removed. |
 
+## Welcome screen
+
+- `BipeWelcomeView` and `Modifier.bipeWelcomeBackground` (libraries/bipe) replace Element's logo, welcome text and `onboarding_bg` artwork in `OnBoardingView`. Copy: `bipe_onboarding_*` in proseio-shared. iOS: `BipeWelcomeView`.
+
 ## Groups MVP (proseio/docs/groups.md, ADR 0026)
 
 - **Quiet by default (#97):** `BipeQuietGroups` (libraries/bipe) runs from `LoggedInFlowNode` when the session starts. Group default becomes mentions and keywords; the override rule `chat.bipe.poll_start` (`*.poll.start`) makes new polls notify. It waits for Synapse `msc4028_push_encrypted_events`. Android needs no extra entitlement to drop pushes, unlike iOS.
