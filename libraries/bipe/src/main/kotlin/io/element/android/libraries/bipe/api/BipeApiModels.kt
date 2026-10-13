@@ -273,6 +273,12 @@ internal data class EmailRecoveryRequest(@SerialName("email") val email: String)
     override fun toString(): String = "EmailRecoveryRequest"
 }
 
+/** `PUT /v1/me/email`. [lang] is `pt` or `en`. */
+@Serializable
+internal data class EmailRequest(@SerialName("email") val email: String, @SerialName("lang") val lang: String) {
+    override fun toString(): String = "EmailRequest"
+}
+
 /** Exactly one of [pin] and [newPin]. */
 @Serializable
 internal data class EmailRecoveryConfirmRequest(

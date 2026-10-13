@@ -30,6 +30,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import java.time.Instant
+import java.util.Locale
 
 /** Client for the Bipe API. Contract: bipe-shared/api/openapi.yaml. */
 class BipeApiClient internal constructor(private val service: BipeApiService) {
@@ -50,6 +51,16 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     /** `POST /v1/me/device-first`. Moves a beta account to a hidden password. Needs a PIN first. */
     suspend fun moveToDeviceFirst(accessToken: String): BipeCredentials = call { service.moveToDeviceFirst(bearer(accessToken)) }
+
+    /** `PUT /v1/me/email`. HTTP 202: the server sends a link to confirm the address; it stays pending until then. */
+    suspend fun setRecoveryEmail(email: String, accessToken: String) {
+        checked { service.setRecoveryEmail(bearer(accessToken), EmailRequest(email, emailLanguage())) }
+    }
+
+    /** `DELETE /v1/me/email`. Removes the verified and the pending address. */
+    suspend fun removeRecoveryEmail(accessToken: String) {
+        checked { service.removeRecoveryEmail(bearer(accessToken)) }
+    }
 
     /** `POST /v1/me/recoveries/{recoveryId}/cancel`. An old device cancels a waiting recovery. */
     suspend fun cancelRecovery(recoveryId: String, accessToken: String) {
@@ -115,6 +126,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     suspend fun setMyHandle(handle: String, accessToken: String): BipeMyHandle =
         call { service.setMyHandle(bearer(accessToken), SetHandleRequest(handle)) }
 
+    /** `DELETE /v1/me/handle` (ADR 0066). Allowed at any time; the cooldown stays. */
+    suspend fun removeMyHandle(accessToken: String): BipeMyHandle = call { service.removeMyHandle(bearer(accessToken)) }
+
     // Public profiles (ADR 0041)
 
     /** `GET /v1/profiles/{handle}`. No auth. HTTP 404 for "no such handle" and "profile off" alike. */
@@ -136,6 +150,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     companion object {
         private val JPEG = "image/jpeg".toMediaType()
+
+        /** The `lang` for emails Bipe sends: English for an English device, else Portuguese (the app's fallback). Same rule as iOS. */
+        fun emailLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
 
         /**
          * [baseUrl] is the API root, e.g. `https://api.bipe.net.br`.
@@ -219,6 +236,12 @@ internal interface BipeApiService {
     @POST("v1/me/device-first")
     suspend fun moveToDeviceFirst(@Header("Authorization") authorization: String): Response<BipeCredentials>
 
+    @PUT("v1/me/email")
+    suspend fun setRecoveryEmail(@Header("Authorization") authorization: String, @Body request: EmailRequest): Response<Unit>
+
+    @DELETE("v1/me/email")
+    suspend fun removeRecoveryEmail(@Header("Authorization") authorization: String): Response<Unit>
+
     @POST("v1/me/recoveries/{recoveryId}/cancel")
     suspend fun cancelRecovery(@Header("Authorization") authorization: String, @Path("recoveryId") recoveryId: String): Response<Unit>
 
@@ -266,6 +289,9 @@ internal interface BipeApiService {
 
     @PUT("v1/me/handle")
     suspend fun setMyHandle(@Header("Authorization") authorization: String, @Body request: SetHandleRequest): Response<BipeMyHandle>
+
+    @DELETE("v1/me/handle")
+    suspend fun removeMyHandle(@Header("Authorization") authorization: String): Response<BipeMyHandle>
 
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>

@@ -19,6 +19,7 @@ import io.element.android.features.preferences.test.FakePreferencesEntryPoint
 import io.element.android.libraries.oauth.test.FakeOAuthActionFlow
 import io.element.android.tests.testutils.lambda.lambdaError
 import io.element.android.tests.testutils.node.TestParentNode
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -42,6 +43,7 @@ class DefaultLoginEntryPointTest {
                 appCoroutineScope = backgroundScope,
                 elementClassicConnection = FakeElementClassicConnection(),
                 preferencesEntryPoint = FakePreferencesEntryPoint(),
+                bipeDeviceAccount = mockk(relaxed = true), // Bipe: device-first sign-in (ADR 0057), not used by this test
             )
         }
         val callback = object : LoginEntryPoint.Callback {

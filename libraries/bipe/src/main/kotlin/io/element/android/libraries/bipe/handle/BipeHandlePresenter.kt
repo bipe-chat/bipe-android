@@ -47,6 +47,7 @@ class BipeHandlePresenter(
         var handleStatus by remember { mutableStateOf<BipeHandleStatus>(BipeHandleStatus.Empty) }
         var handleError by remember { mutableStateOf<String?>(null) }
         var saveAction by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
+        var removeAction by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
 
         fun apply(myHandle: BipeMyHandle) {
             currentHandle = myHandle.handle
@@ -107,6 +108,21 @@ class BipeHandlePresenter(
                     }
                 }
                 BipeHandleEvent.ClearError -> saveAction = AsyncAction.Uninitialized
+                BipeHandleEvent.AskRemove -> removeAction = AsyncAction.ConfirmingNoParams
+                BipeHandleEvent.CancelRemove -> removeAction = AsyncAction.Uninitialized
+                BipeHandleEvent.Remove -> coroutineScope.launch {
+                    isLoading = true
+                    removeAction = AsyncAction.Loading
+                    try {
+                        apply(withTokenRetry { token -> bipeSession.apiClient.removeMyHandle(token) })
+                        removeAction = AsyncAction.Success(Unit)
+                    } catch (error: BipeApiException) {
+                        Timber.e(error, "Bipe handle removal failed")
+                        removeAction = AsyncAction.Failure(Exception(error.localizedMessage(stringProvider)))
+                    } finally {
+                        isLoading = false
+                    }
+                }
             }
         }
 
@@ -118,6 +134,7 @@ class BipeHandlePresenter(
             handleStatus = handleStatus,
             handleError = handleError,
             saveAction = saveAction,
+            removeAction = removeAction,
             now = Instant.now(),
             eventSink = ::handleEvent,
         )

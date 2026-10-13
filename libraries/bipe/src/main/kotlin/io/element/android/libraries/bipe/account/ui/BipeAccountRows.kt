@@ -43,7 +43,8 @@ private sealed interface PinDialog {
  * Settings rows of the device-first account (ADR 0057), under the handle and invite rows:
  * - beta account: "Create your PIN", which also moves the account to a hidden password;
  * - blocked PIN: the blocked state; a new PIN unblocks it;
- * - else: "Change PIN" after a biometric check (or the phone's screen lock).
+ * - else: "Change PIN" after a biometric check (or the phone's screen lock);
+ * - then the recovery email rows ([BipeRecoveryEmailRows]).
  */
 @Composable
 fun BipeAccountRows(account: BipeAccountSession) {
@@ -97,6 +98,7 @@ fun BipeAccountRows(account: BipeAccountSession) {
             onClick = ::startChange,
         )
     }
+    BipeRecoveryEmailRows(account, current)
 
     when (val shown = dialog) {
         null -> Unit

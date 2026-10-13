@@ -77,6 +77,20 @@ class BipeAccountSession(
         Unit
     }
 
+    /** Adds or changes the recovery email. The address stays pending until the user opens the link the server sends. */
+    suspend fun setRecoveryEmail(email: String): Result<Unit> = runCatchingExceptions {
+        BipeApiClient.withTokenRetry(accessToken) { apiClient.setRecoveryEmail(email, it) }
+        refresh()
+        Unit
+    }.onFailure { Timber.e(it, "Bipe: recovery email not saved") }
+
+    /** Removes the verified and the pending recovery email. */
+    suspend fun removeRecoveryEmail(): Result<Unit> = runCatchingExceptions {
+        BipeApiClient.withTokenRetry(accessToken) { apiClient.removeRecoveryEmail(it) }
+        refresh()
+        Unit
+    }.onFailure { Timber.e(it, "Bipe: recovery email not removed") }
+
     /** "Cancel, it was not me": stops a waiting recovery. */
     suspend fun cancelRecovery(recovery: BipeRecovery): Result<Unit> = runCatchingExceptions {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.cancelRecovery(recovery.id, it) }

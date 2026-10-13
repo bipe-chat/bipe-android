@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.seconds
 internal fun aLockScreenConfig(
     isPinMandatory: Boolean = false,
     forbiddenPinCodes: Set<String> = emptySet(),
-    pinSize: Int = 4,
+    pinSize: Int = 8, // Bipe: the account PIN (ADR 0057)
     maxPinCodeAttemptsBeforeLogout: Int = 3,
     gracePeriod: Duration = 3.seconds,
     isStrongBiometricsEnabled: Boolean = true,

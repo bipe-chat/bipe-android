@@ -24,10 +24,15 @@ data class BipeHandleState(
     val handleError: String?,
     /** Save request. Failure carries the localised message. */
     val saveAction: AsyncAction<Unit>,
+    /** Removal request (ADR 0066). [AsyncAction.Confirming] while the confirmation dialog shows. Failure carries the localised message. */
+    val removeAction: AsyncAction<Unit>,
     val now: Instant,
     val eventSink: (BipeHandleEvent) -> Unit,
 ) {
     val isInCooldown: Boolean get() = changeableAt?.isAfter(now) == true
+
+    /** A removal is allowed at any time, also during the cooldown. */
+    val canRemove: Boolean get() = !isLoading && currentHandle != null
 
     val canSave: Boolean
         get() {
@@ -44,4 +49,7 @@ sealed interface BipeHandleEvent {
     data class UpdateHandle(val input: String) : BipeHandleEvent
     data object Save : BipeHandleEvent
     data object ClearError : BipeHandleEvent
+    data object AskRemove : BipeHandleEvent
+    data object Remove : BipeHandleEvent
+    data object CancelRemove : BipeHandleEvent
 }

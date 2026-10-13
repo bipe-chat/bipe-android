@@ -15,6 +15,7 @@ import io.element.android.features.messages.impl.FakeMessagesNavigator
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureEvent
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureState
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.aResolveVerifiedUserSendFailureState
+import io.element.android.features.messages.impl.fixtures.aBipeSession
 import io.element.android.features.messages.impl.fixtures.aMessageEvent
 import io.element.android.features.messages.impl.fixtures.aTimelineItemsFactoryCreator
 import io.element.android.features.messages.impl.timeline.components.MessageShieldData
@@ -2113,6 +2114,7 @@ class TimelinePresenterTest {
             timelineProtectionPresenter = timelineProtectionPresenter,
             clipboardHelper = clipboardHelper,
             toastHelper = toastHelper,
+            bipeSession = aBipeSession(backgroundScope),
         )
     }
 }

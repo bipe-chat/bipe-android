@@ -18,19 +18,25 @@ import io.element.android.features.lockscreen.impl.pin.model.assertEmpty
 import io.element.android.features.lockscreen.impl.pin.model.assertText
 import io.element.android.features.lockscreen.impl.setup.pin.validation.PinValidator
 import io.element.android.features.lockscreen.impl.setup.pin.validation.SetupPinFailure
+import io.element.android.libraries.bipe.account.BipeAccountSession
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.tests.testutils.awaitLastSequentialItem
 import io.element.android.tests.testutils.consumeItemsUntilPredicate
 import io.element.android.tests.testutils.test
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class SetupPinPresenterTest {
-    private val forbiddenPin = "1234"
-    private val halfCompletePin = "12"
-    private val completePin = "1235"
-    private val mismatchedPin = "1236"
+    // Bipe: 8-digit PINs that pass the shared PIN rule (ADR 0057), except the forbidden one.
+    private val forbiddenPin = "12345678"
+    private val halfCompletePin = "7391"
+    private val completePin = "73914862"
+    private val mismatchedPin = "40817352"
 
     @Test
     fun `present - complete flow`() = runTest {
@@ -119,7 +125,14 @@ class SetupPinPresenterTest {
             lockScreenConfig = lockScreenConfig,
             pinValidator = PinValidator(lockScreenConfig),
             buildMeta = aBuildMeta(),
-            pinCodeManager = pinCodeManager
+            pinCodeManager = pinCodeManager,
+            bipeSession = aBipeSession(),
         )
+    }
+
+    // Bipe: the presenter sends a new PIN to the server (ADR 0057). The fake accepts it.
+    private fun aBipeSession(): BipeSession {
+        val account = mockk<BipeAccountSession> { coEvery { onAppLockPinSet(any()) } returns Result.success(Unit) }
+        return mockk { every { this@mockk.account } returns account }
     }
 }

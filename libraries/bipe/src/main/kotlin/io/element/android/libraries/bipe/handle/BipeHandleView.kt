@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.handle
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,7 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
+import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.modifiers.clearFocusOnTap
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -110,7 +112,18 @@ fun BipeHandleView(
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
                 onValueChange = { state.eventSink(BipeHandleEvent.UpdateHandle(it)) },
             )
-            state.currentHandle?.let { handle -> ProfileLinkSection(handle) }
+            state.currentHandle?.let { handle ->
+                // Bipe ADR 0066: removal is allowed at any time, also during the cooldown.
+                TextButton(
+                    text = stringResource(R.string.bipe_handle_remove),
+                    leadingIcon = IconSource.Vector(CompoundIcons.Delete()),
+                    destructive = true,
+                    enabled = state.canRemove,
+                    onClick = { state.eventSink(BipeHandleEvent.AskRemove) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                ProfileLinkSection(handle)
+            }
         }
 
         AsyncActionView(
@@ -118,6 +131,26 @@ fun BipeHandleView(
             onSuccess = { onSaveSuccess() },
             errorMessage = { it.message.orEmpty() },
             onErrorDismiss = { state.eventSink(BipeHandleEvent.ClearError) },
+        )
+        val context = LocalContext.current
+        AsyncActionView(
+            async = state.removeAction,
+            onSuccess = {
+                Toast.makeText(context, R.string.bipe_handle_remove_done, Toast.LENGTH_SHORT).show()
+                onSaveSuccess()
+            },
+            confirmationDialog = {
+                ConfirmationDialog(
+                    title = stringResource(R.string.bipe_handle_remove),
+                    content = stringResource(R.string.bipe_handle_remove_body, state.currentHandle.orEmpty()),
+                    submitText = stringResource(R.string.bipe_handle_remove),
+                    destructiveSubmit = true,
+                    onSubmitClick = { state.eventSink(BipeHandleEvent.Remove) },
+                    onDismiss = { state.eventSink(BipeHandleEvent.CancelRemove) },
+                )
+            },
+            errorMessage = { it.message.orEmpty() },
+            onErrorDismiss = { state.eventSink(BipeHandleEvent.CancelRemove) },
         )
     }
 }
@@ -184,6 +217,7 @@ internal fun BipeHandleViewPreview() = ElementPreview {
             handleStatus = BipeHandleStatus.Empty,
             handleError = null,
             saveAction = AsyncAction.Uninitialized,
+            removeAction = AsyncAction.Uninitialized,
             now = Instant.EPOCH,
             eventSink = {},
         ),

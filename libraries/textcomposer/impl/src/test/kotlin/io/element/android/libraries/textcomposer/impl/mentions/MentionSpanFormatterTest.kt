@@ -9,6 +9,8 @@
 package io.element.android.libraries.textcomposer.impl.mentions
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.libraries.bipe.BipeHandleResolver
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.matrix.api.core.toRoomIdOrAlias
 import io.element.android.libraries.matrix.test.AN_EVENT_ID
 import io.element.android.libraries.matrix.test.A_ROOM_ALIAS
@@ -20,8 +22,12 @@ import io.element.android.libraries.matrix.ui.messages.RoomMemberProfilesCache
 import io.element.android.libraries.matrix.ui.messages.RoomNamesCache
 import io.element.android.libraries.textcomposer.mentions.DefaultMentionSpanFormatter
 import io.element.android.libraries.textcomposer.mentions.MentionType
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import kotlin.coroutines.EmptyCoroutineContext
 
 class MentionSpanFormatterTest {
     private val roomMemberProfilesCache = RoomMemberProfilesCache()
@@ -29,7 +35,14 @@ class MentionSpanFormatterTest {
     private val formatter = DefaultMentionSpanFormatter(
         roomMemberProfilesCache = roomMemberProfilesCache,
         roomNamesCache = roomNamesCache,
+        bipeSession = aBipeSession(),
     )
+
+    // Bipe: @handle pills. The server name matches no test user, so the resolver knows no handle and sends no request.
+    private fun aBipeSession(): BipeSession {
+        val resolver = BipeHandleResolver(apiClient = mockk(), serverName = "bipe.invalid", scope = CoroutineScope(EmptyCoroutineContext), accessToken = { null })
+        return mockk { every { handleResolver } returns resolver }
+    }
 
     @Test
     fun `formatDisplayText - formats user mention with empty cache`() = runTest {

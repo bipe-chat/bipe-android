@@ -20,6 +20,7 @@ import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.messages.impl.fixtures.aBipeSession
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemTextBasedContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemTextContent
 import io.element.android.features.messages.impl.utils.FakeMentionSpanFormatter
@@ -151,6 +152,7 @@ class TimelineTextViewTest : RobolectricTest() {
             theme = mentionSpanTheme,
             roomMemberProfilesCache = RoomMemberProfilesCache(),
             roomNamesCache = RoomNamesCache(),
+            bipeSession = aBipeSession(),
         )
     }
 

@@ -24,7 +24,6 @@ import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.sessionstorage.api.observer.SessionListener
 import io.element.android.libraries.sessionstorage.api.observer.SessionObserver
 import timber.log.Timber
-import java.util.Locale
 
 /**
  * Device-first accounts on this device (ADR 0057, ADR 0059): sign-up, sign-in with the hidden password, and the recovery
@@ -65,7 +64,7 @@ class BipeDeviceAccount(
      */
     suspend fun signUp(request: BipeSignupRequest, pin: String): Result<BipeSignupResponse> = runCatchingExceptions {
         require(request.password == null) { "Device-first sign-up sends no password" }
-        val response = apiClient.signup(request.copy(pin = pin, lang = appLanguage()))
+        val response = apiClient.signup(request.copy(pin = pin, lang = BipeApiClient.emailLanguage()))
         val password = response.password ?: throw BipeApiException.UnexpectedResponse(statusCode = 201)
         val token = response.recoveryToken ?: throw BipeApiException.UnexpectedResponse(statusCode = 201)
         Timber.i("Bipe device-first account created: ${response.userId}")
@@ -191,8 +190,6 @@ class BipeDeviceAccount(
     }
 
     internal val lock: BipeAppLock get() = appLock
-
-    private fun appLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
 
     private companion object {
         const val MAX_DISMISSED = 50
