@@ -10,52 +10,25 @@ import org.gradle.api.JavaVersion
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 /**
- * Version codes are quite sensitive, because there is a mix between bundle and APKs.
- * Max versionCode allowed by the PlayStore (for information):
- * 2_100_000_000
+ * Bipe (ADR 0072): the version name and the build number come from bipe-shared/product/version.json,
+ * through the generated BipeVersion.kt. iOS uses the same build number. Element's CalVer version code
+ * and its release script are not used.
  *
- * Also note that the versionCode is multiplied by 10 in app/build.gradle.kts:
+ * Max versionCode allowed by the PlayStore: 2_100_000_000.
+ * The versionCode is multiplied by 10 in app/build.gradle.kts:
  * ```
  * output.versionCode.set((output.versionCode.orNull ?: 0) * 10 + abiCode)
  * ```
- * We are using a CalVer-like approach to version the application. The version code is calculated as follows:
- * - 2 digits for the year
- * - 2 digits for the month
- * - 1 (or 2) digits for the release number
- * Note that the version codes need to be greater than the ones calculated for the previous releases, so we use
- * year on 4 digits for this internal value.
- * So for instance, the first release of Jan 2025 will have:
- * - the version name: 25.01.0
- * - the version code: 20250100a (202_501_00a) where `a` stands for the architecture code
+ * so build 7 gives 70 for an AAB and 7a for an APK, where `a` stands for the architecture code.
  */
-
-/**
- * Year of the version on 2 digits.
- * Do not update this value. it is updated by the release script.
- */
-private const val versionYear = 26
-
-/**
- * Month of the version on 2 digits. Value must be in [1,12].
- * Do not update this value. it is updated by the release script.
- */
-private const val versionMonth = 10
-
-/**
- * Release number in the month. Value must be in [0,99].
- * Do not update this value. it is updated by the release script.
- */
-private const val versionReleaseNumber = 1
-
 object Versions {
     /**
-     * Base version code that will be set in the Android Manifest.
+     * Base version code that will be set in the Android Manifest: the shared build number.
      * The value will be modified at build time to add the ABI code when APK are build.
      * AAB will have a ABI code of 0.
-     * See comment above for the calculation method.
      */
-    const val VERSION_CODE = (2000 + versionYear) * 10_000 + versionMonth * 100 + versionReleaseNumber
-    val VERSION_NAME = "$versionYear.${versionMonth.toString().padStart(2, '0')}.$versionReleaseNumber"
+    const val VERSION_CODE = BipeVersion.BUILD
+    val VERSION_NAME = BipeVersion.NAME
 
     /**
      * Compile SDK version. Must be updated when a new Android version is released.

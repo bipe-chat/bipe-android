@@ -34,6 +34,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 | What | Where | Value |
 |---|---|---|
+| Version name, build number | `plugins/src/main/kotlin/BipeVersion.kt` (generated), read by `Versions.kt` | From `bipe-shared/product/version.json` (ADR 0072). `versionCode` = build × 10 + ABI code. iOS uses the same build number. Before each tester upload: `node tools/bump-build.mjs` in bipe-shared, then commit and push bipe-shared, bipe-ios and this repo. Element's `tools/release/release.sh` is not used. |
 | Application ID, name | `plugins/src/main/kotlin/config/BuildTimeConfig.kt` | `chat.bipe.app` (debug adds `.debug`, nightly `.nightly`), "Bipe" (ADR 0054) |
 | OAuth redirect scheme | `BuildTimeConfig.METADATA_HOST_REVERSED` | `chat.bipe.app` (debug `chat.bipe.app.debug`) |
 | OAuth client, logo, terms, privacy URLs | `BuildTimeConfig.URL_*` | `https://bipe.chat/...` (MAS requires them on the client URI host) |
