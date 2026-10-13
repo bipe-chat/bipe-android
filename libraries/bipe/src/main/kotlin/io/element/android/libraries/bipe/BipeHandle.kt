@@ -63,11 +63,15 @@ object BipeHandle {
     /** Trims whitespace and a leading "@" the user may type. */
     fun sanitize(input: String): String = input.trim().removePrefix("@")
 
-    /** Length and character checks only. `null` means the server must decide. */
+    /**
+     * Length and character checks only, the same as a lookup. `null` means the server must decide.
+     * An owned handle may be shorter than HANDLE_MIN_LENGTH (ADR 0065); the server decides who may claim it.
+     */
     fun localProblem(handle: String): BipeHandleProblem? {
         // JS `length` and Kotlin `length` both count UTF-16 units. The pattern is ASCII-only, so non-ASCII input fails it anyway.
-        if (handle.length < BipeRegistries.HANDLE_MIN_LENGTH) return BipeHandleProblem.TOO_SHORT
+        if (handle.length < BipeRegistries.HANDLE_OWNER_MIN_LENGTH) return BipeHandleProblem.TOO_SHORT
         if (handle.length > BipeRegistries.HANDLE_MAX_LENGTH) return BipeHandleProblem.TOO_LONG
+        if (handle.length < BipeRegistries.HANDLE_MIN_LENGTH && handle !in BipeRegistries.ownedHandles) return BipeHandleProblem.TOO_SHORT
         if (!pattern.containsMatchIn(handle)) return BipeHandleProblem.INVALID_CHARACTERS
         return null
     }

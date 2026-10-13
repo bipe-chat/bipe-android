@@ -424,6 +424,12 @@ object BipeRegistries {
     const val HANDLE_MAX_LENGTH = 30
     const val HANDLE_PATTERN = "^[a-z0-9](?:[a-z0-9_]|\\.(?!\\.))*[a-z0-9_]\$"
 
+    /** Owned handles (ADR 0065): only these may be shorter than [HANDLE_MIN_LENGTH], down to [HANDLE_OWNER_MIN_LENGTH]. */
+    const val HANDLE_OWNER_MIN_LENGTH = 2
+    val ownedHandles: Set<String> = setOf(
+        "mz",
+    )
+
     /** Public profile rules (ADR 0041). Lengths count code points. The server is the authority. */
     const val PROFILE_NAME_MAX_LENGTH = 50
     const val PROFILE_BIO_MAX_LENGTH = 160
