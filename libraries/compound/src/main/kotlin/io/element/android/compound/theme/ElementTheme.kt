@@ -39,7 +39,6 @@ import io.element.android.compound.tokens.generated.SemanticColors
 import io.element.android.compound.tokens.generated.TypographyTokens
 import io.element.android.compound.tokens.generated.compoundColorsDark
 import io.element.android.compound.tokens.generated.compoundColorsLight
-import io.element.android.compound.tokens.generated.internal.DarkColorTokens
 
 /**
  * Inspired from https://medium.com/@lucasyujideveloper/54cbcbde1ace
@@ -114,10 +113,8 @@ fun ElementTheme(
     val darkTheme = theme.isDark()
     val currentCompoundColor = when {
         darkTheme -> if (theme == Theme.Black) {
-            compoundDark.copy(
-                bgCanvasDefault = Color.Black,
-                separatorSecondary = DarkColorTokens.colorGray400,
-            )
+            // Proseio: copy() breaks dex verification with the Proseio tokens, see ProseioBlackSemanticColors.kt
+            compoundDark.toBlackTheme()
         } else {
             compoundDark
         }
