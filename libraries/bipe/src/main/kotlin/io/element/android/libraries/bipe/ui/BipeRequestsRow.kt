@@ -55,12 +55,12 @@ fun BipeRequestsRow(
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(R.string.proseio_requests_title),
+                text = stringResource(R.string.bipe_requests_title),
                 style = ElementTheme.typography.fontBodyLgMedium,
                 color = ElementTheme.colors.textPrimary,
             )
             Text(
-                text = stringResource(R.string.proseio_requests_row_body),
+                text = stringResource(R.string.bipe_requests_row_body),
                 style = ElementTheme.typography.fontBodyMdRegular,
                 color = ElementTheme.colors.textSecondary,
             )
@@ -103,12 +103,12 @@ fun BipeUnverifiedRequestCard(modifier: Modifier = Modifier) {
         )
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                text = stringResource(R.string.proseio_banner_unverified_title),
+                text = stringResource(R.string.bipe_banner_unverified_title),
                 style = ElementTheme.typography.fontBodyMdMedium,
                 color = ElementTheme.colors.textTrustNeutral,
             )
             Text(
-                text = stringResource(R.string.proseio_request_unverified_body),
+                text = stringResource(R.string.bipe_request_unverified_body),
                 style = ElementTheme.typography.fontBodySmRegular,
                 color = ElementTheme.colors.textTrustNeutral,
             )

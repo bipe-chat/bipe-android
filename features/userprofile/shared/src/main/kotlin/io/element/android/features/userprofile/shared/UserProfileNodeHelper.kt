@@ -29,7 +29,7 @@ class UserProfileNodeHelper(
         fun startVerifyUserFlow(userId: UserId)
     }
 
-    /** [bipeProfileLink] (proseio.com.br/@handle) replaces the matrix.to permalink when the handle is known. */
+    /** [bipeProfileLink] (bipe.chat/@handle) replaces the matrix.to permalink when the handle is known. */
     fun onShareUser(
         context: Context,
         permalinkBuilder: PermalinkBuilder,

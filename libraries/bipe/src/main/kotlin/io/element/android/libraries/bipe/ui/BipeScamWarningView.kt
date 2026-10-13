@@ -53,7 +53,7 @@ fun BipeScamWarningView(
         )
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                text = stringResource(R.string.proseio_scam_warning_title),
+                text = stringResource(R.string.bipe_scam_warning_title),
                 style = ElementTheme.typography.fontBodySmMedium,
                 color = ElementTheme.colors.textTrustCaution,
             )

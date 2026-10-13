@@ -10,11 +10,11 @@ import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 
 /** Bipe servers. Same values as AppSettings on iOS. */
 object BipeConfig {
-    const val SERVER_NAME = "proseio.com.br"
-    const val HOMESERVER_BASE_URL = "https://matrix.proseio.com.br"
+    const val SERVER_NAME = "bipe.net.br"
+    const val HOMESERVER_BASE_URL = "https://matrix.bipe.net.br"
 
     /** Bipe API (sign-up, handles, invites). Contract: proseio-shared/api/openapi.yaml. */
-    const val API_BASE_URL = "https://api.proseio.com.br"
+    const val API_BASE_URL = "https://api.bipe.net.br"
 
     /** The only account provider. Closed federation: the server picker is hidden. */
     val accountProvider = AccountProvider.Managed(

@@ -53,7 +53,7 @@ import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeMyProfile
-import io.element.android.libraries.proseio.generated.ProseioRegistries
+import io.element.android.libraries.bipe.generated.BipeRegistries
 
 /** "Perfil público" (ADR 0041): toggle, name, bio and photo of the public profile, and its link. */
 @Composable
@@ -75,11 +75,11 @@ fun BipePublicProfileView(
         modifier = modifier.clearFocusOnTap(focusManager),
         topBar = {
             TopAppBar(
-                titleStr = stringResource(R.string.proseio_settings_public_profile),
+                titleStr = stringResource(R.string.bipe_settings_public_profile),
                 navigationIcon = { BackButton(onClick = onBackClick) },
                 actions = {
                     TextButton(
-                        text = stringResource(R.string.proseio_public_profile_save),
+                        text = stringResource(R.string.bipe_public_profile_save),
                         enabled = state.canSave,
                         onClick = ::save,
                     )
@@ -100,14 +100,14 @@ fun BipePublicProfileView(
             }
             Column {
                 PreferenceSwitch(
-                    title = stringResource(R.string.proseio_public_profile_toggle),
+                    title = stringResource(R.string.bipe_public_profile_toggle),
                     isChecked = state.enabled && !state.needsHandle,
                     enabled = !state.isLoading && !state.needsHandle,
                     onCheckedChange = { state.eventSink(BipePublicProfileEvent.SetEnabled(it)) },
                 )
                 Text(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(R.string.proseio_public_profile_footer),
+                    text = stringResource(R.string.bipe_public_profile_footer),
                     style = ElementTheme.typography.fontBodySmRegular,
                     color = ElementTheme.colors.textSecondary,
                 )
@@ -122,7 +122,7 @@ fun BipePublicProfileView(
             val nameProblem = state.problem?.takeIf { it.isNameProblem }
             TextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                label = stringResource(R.string.proseio_public_profile_name),
+                label = stringResource(R.string.bipe_public_profile_name),
                 value = state.name,
                 supportingText = nameProblem?.let { stringResource(it.messageRes, *it.messageArgs) },
                 validity = if (nameProblem != null) TextFieldValidity.Invalid else TextFieldValidity.None,
@@ -134,15 +134,15 @@ fun BipePublicProfileView(
             val bioProblem = state.problem?.takeIf { it.isBioProblem }
             TextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                label = stringResource(R.string.proseio_public_profile_bio),
+                label = stringResource(R.string.bipe_public_profile_bio),
                 value = state.bio,
-                placeholder = stringResource(R.string.proseio_public_profile_bio_placeholder),
+                placeholder = stringResource(R.string.bipe_public_profile_bio_placeholder),
                 supportingText = bioProblem?.let { stringResource(it.messageRes, *it.messageArgs) }
-                    ?: "${state.bio.codePointCount(0, state.bio.length)}/${ProseioRegistries.PROFILE_BIO_MAX_LENGTH}",
+                    ?: "${state.bio.codePointCount(0, state.bio.length)}/${BipeRegistries.PROFILE_BIO_MAX_LENGTH}",
                 validity = if (bioProblem != null) TextFieldValidity.Invalid else TextFieldValidity.None,
                 enabled = !state.isLoading,
                 minLines = 3,
-                maxLines = ProseioRegistries.PROFILE_BIO_MAX_LINES + 1,
+                maxLines = BipeRegistries.PROFILE_BIO_MAX_LINES + 1,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 onValueChange = { state.eventSink(BipePublicProfileEvent.UpdateBio(it)) },
             )
@@ -175,12 +175,12 @@ private fun NeedsHandleSection(onHandleClick: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = stringResource(R.string.proseio_public_profile_needs_handle),
+            text = stringResource(R.string.bipe_public_profile_needs_handle),
             style = ElementTheme.typography.fontBodyMdRegular,
             color = ElementTheme.colors.textPrimary,
         )
         OutlinedButton(
-            text = stringResource(R.string.proseio_settings_handle),
+            text = stringResource(R.string.bipe_settings_handle),
             leadingIcon = IconSource.Vector(CompoundIcons.Mention()),
             size = ButtonSize.Medium,
             onClick = onHandleClick,
@@ -214,7 +214,7 @@ private fun PhotoSection(
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
-                text = stringResource(R.string.proseio_public_profile_photo_change),
+                text = stringResource(R.string.bipe_public_profile_photo_change),
                 leadingIcon = IconSource.Vector(CompoundIcons.Image()),
                 size = ButtonSize.Medium,
                 enabled = enabled,
@@ -222,7 +222,7 @@ private fun PhotoSection(
             )
             if (saved.hasPhoto) {
                 TextButton(
-                    text = stringResource(R.string.proseio_public_profile_photo_remove),
+                    text = stringResource(R.string.bipe_public_profile_photo_remove),
                     leadingIcon = IconSource.Vector(CompoundIcons.Delete()),
                     size = ButtonSize.Medium,
                     destructive = true,
@@ -241,7 +241,7 @@ private fun ShareButton(url: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        text = stringResource(R.string.proseio_public_profile_share),
+        text = stringResource(R.string.bipe_public_profile_share),
         leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
         onClick = {
             context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = url)

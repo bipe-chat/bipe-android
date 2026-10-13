@@ -24,9 +24,9 @@ fun BipeHandleRow(
     onClick: () -> Unit,
 ) {
     ListItem(
-        content = { Text(stringResource(R.string.proseio_settings_handle)) },
+        content = { Text(stringResource(R.string.bipe_settings_handle)) },
         supportingContent = {
-            Text(handle?.let { "@$it" } ?: stringResource(R.string.proseio_settings_handle_none))
+            Text(handle?.let { "@$it" } ?: stringResource(R.string.bipe_settings_handle_none))
         },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Mention())),
         onClick = onClick,
@@ -40,10 +40,10 @@ fun BipePublicProfileRow(
     onClick: () -> Unit,
 ) {
     ListItem(
-        content = { Text(stringResource(R.string.proseio_settings_public_profile)) },
+        content = { Text(stringResource(R.string.bipe_settings_public_profile)) },
         supportingContent = enabled?.let {
             {
-                Text(stringResource(if (it) R.string.proseio_public_profile_on else R.string.proseio_public_profile_off))
+                Text(stringResource(if (it) R.string.bipe_public_profile_on else R.string.bipe_public_profile_off))
             }
         },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Public())),
@@ -55,7 +55,7 @@ fun BipePublicProfileRow(
 @Composable
 fun BipeInvitesRow(onClick: () -> Unit) {
     ListItem(
-        content = { Text(stringResource(R.string.proseio_invites_title)) },
+        content = { Text(stringResource(R.string.bipe_invites_title)) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
         onClick = onClick,
     )

@@ -119,7 +119,7 @@ class BipePublicProfilePresenter(
                             throw error
                         } catch (error: Exception) {
                             Timber.w(error, "Bipe profile photo encoding failed")
-                            photoAction = AsyncAction.Failure(Exception(stringProvider.getString(R.string.proseio_public_profile_photo_invalid)))
+                            photoAction = AsyncAction.Failure(Exception(stringProvider.getString(R.string.bipe_public_profile_photo_invalid)))
                             return@launch
                         }
                         photoAction = try {
@@ -153,7 +153,7 @@ class BipePublicProfilePresenter(
                     saveAction = try {
                         val update = BipeProfileUpdate(enabled = enabled, name = name, bio = bio)
                         apply(withTokenRetry { token -> apiClient.setMyProfile(update, token) }, resetForm = true)
-                        snackbarDispatcher.post(SnackbarMessage(R.string.proseio_public_profile_saved))
+                        snackbarDispatcher.post(SnackbarMessage(R.string.bipe_public_profile_saved))
                         AsyncAction.Success(Unit)
                     } catch (error: BipeApiException) {
                         Timber.e(error, "Bipe public profile save failed")

@@ -49,7 +49,7 @@ fun AboutView(
             onClick = onOpenSourceLicensesClick,
         )
         // Bipe: name the steward (ADR 0040).
-        ListSupportingText(text = stringResource(BipeR.string.proseio_about_steward))
+        ListSupportingText(text = stringResource(BipeR.string.bipe_about_steward))
     }
 }
 

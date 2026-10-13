@@ -54,7 +54,7 @@ class BipeHandleResolver(
 
     // Matrix ID to handle
 
-    /** `true` for a user ID on the Bipe server, e.g. `@k7q2m9x4tp:proseio.com.br`. */
+    /** `true` for a user ID on the Bipe server, e.g. `@k7q2m9x4tp:bipe.net.br`. */
     fun isBipeUserId(userId: String): Boolean = userId.startsWith("@") && userId.endsWith(":$serverName")
 
     /** The cached handle (without "@"). Queues a lookup when the cache has no fresh value. */

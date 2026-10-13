@@ -39,7 +39,7 @@ enum class TimelineItemAction(
     Unpin(CommonStrings.action_unpin, CompoundDrawables.ic_compound_unpin),
 
     /** Bipe: add a sticker to "Meus stickers" (ADR 0029). */
-    SaveSticker(BipeR.string.proseio_action_save_sticker, CompoundDrawables.ic_compound_sticker),
+    SaveSticker(BipeR.string.bipe_action_save_sticker, CompoundDrawables.ic_compound_sticker),
 
     // Note: these actions are not used in UI for now
     RetrySending(CommonStrings.action_retry, CompoundDrawables.ic_compound_send_solid),

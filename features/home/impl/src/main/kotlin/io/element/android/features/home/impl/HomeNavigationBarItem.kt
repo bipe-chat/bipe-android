@@ -18,7 +18,7 @@ enum class HomeNavigationBarItem(
     val labelRes: Int,
 ) {
     Chats(
-        labelRes = BipeR.string.proseio_tab_chats // Bipe: "Conversas"
+        labelRes = BipeR.string.bipe_tab_chats // Bipe: "Conversas"
     ),
     Spaces(
         labelRes = R.string.screen_home_tab_spaces
@@ -26,10 +26,10 @@ enum class HomeNavigationBarItem(
 
     // Bipe: Grupos and Você (ADR 0053). Chats is Conversas. Spaces stays in the code but is not shown.
     Groups(
-        labelRes = BipeR.string.proseio_tab_groups
+        labelRes = BipeR.string.bipe_tab_groups
     ),
     You(
-        labelRes = BipeR.string.proseio_tab_you
+        labelRes = BipeR.string.bipe_tab_you
     );
 
     @Composable

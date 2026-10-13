@@ -60,7 +60,7 @@ class UserProfileNode(
     @Composable
     override fun View(modifier: Modifier) {
         val context = LocalContext.current
-        // Bipe: share proseio.com.br/@handle when the handle is known.
+        // Bipe: share bipe.chat/@handle when the handle is known.
         val bipeProfileLink = bipeHandle(inputs.userId.value)?.let(BipeProfileLink::url)
 
         fun onShareUser() {

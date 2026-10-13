@@ -7,20 +7,20 @@
 package io.element.android.libraries.bipe
 
 import androidx.annotation.StringRes
-import io.element.android.libraries.proseio.generated.ProseioRegistries
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import java.util.regex.Pattern
 
 /** The scam pattern a message looks like (security.md rule 9). Friction, not protection. */
 enum class ScamWarningKind(val id: String, @StringRes val messageRes: Int) {
-    PIX_CODE("pixCode", R.string.proseio_scam_warning_pix_code),
-    BOLETO("boleto", R.string.proseio_scam_warning_boleto),
-    PIX_KEY("pixKey", R.string.proseio_scam_warning_pix_key),
-    DELIVERY_FEE("deliveryFee", R.string.proseio_scam_warning_delivery_fee),
-    LOOKALIKE_LINK("lookalikeLink", R.string.proseio_scam_warning_lookalike_link),
-    BANK_ALERT("bankAlert", R.string.proseio_scam_warning_bank_alert),
-    RECEIPT("receipt", R.string.proseio_scam_warning_receipt),
-    NEW_NUMBER("newNumber", R.string.proseio_scam_warning_new_number),
-    URGENCY("urgency", R.string.proseio_scam_warning_urgency);
+    PIX_CODE("pixCode", R.string.bipe_scam_warning_pix_code),
+    BOLETO("boleto", R.string.bipe_scam_warning_boleto),
+    PIX_KEY("pixKey", R.string.bipe_scam_warning_pix_key),
+    DELIVERY_FEE("deliveryFee", R.string.bipe_scam_warning_delivery_fee),
+    LOOKALIKE_LINK("lookalikeLink", R.string.bipe_scam_warning_lookalike_link),
+    BANK_ALERT("bankAlert", R.string.bipe_scam_warning_bank_alert),
+    RECEIPT("receipt", R.string.bipe_scam_warning_receipt),
+    NEW_NUMBER("newNumber", R.string.bipe_scam_warning_new_number),
+    URGENCY("urgency", R.string.bipe_scam_warning_urgency);
 
     companion object {
         fun fromId(id: String): ScamWarningKind? = entries.firstOrNull { it.id == id }
@@ -42,10 +42,10 @@ object ScamDetector {
         // The reference matches phrases on the normalised message without homoglyph folding.
         // String.contains compares UTF-16 units, like JS `includes`.
         val normalized = NameNormalizer.normalize(message, homoglyphs = emptyMap())
-        for (phrase in ProseioRegistries.urgencyPhrases) {
+        for (phrase in BipeRegistries.urgencyPhrases) {
             if (normalized.contains(phrase)) ids.add("urgency:$phrase")
         }
-        for (keyword in ProseioRegistries.receiptKeywords) {
+        for (keyword in BipeRegistries.receiptKeywords) {
             if (normalized.contains(keyword)) ids.add("receipt:$keyword")
         }
         return ids
@@ -85,7 +85,7 @@ object ScamDetector {
                 ScamWarningKind.PIX_CODE -> "pixCopyPastePatterns" in groups
                 ScamWarningKind.BOLETO -> "boletoPatterns" in groups
                 // A phone number or e-mail alone is normal chat. Warn only when the message also talks about Pix.
-                ScamWarningKind.PIX_KEY -> "pixKeyPatterns" in groups && containsAny(normalized, ProseioRegistries.pixKeyContextWords)
+                ScamWarningKind.PIX_KEY -> "pixKeyPatterns" in groups && containsAny(normalized, BipeRegistries.pixKeyContextWords)
                 // The fake-delivery fee scam: a link, and the message talks about a held parcel and a fee.
                 ScamWarningKind.DELIVERY_FEE -> hosts.isNotEmpty() && deliveryWordLists.all { containsAny(normalized, it) }
                 // A link that copies a bank, government or company address, also when spelled with homoglyphs.
@@ -94,7 +94,7 @@ object ScamDetector {
                 ScamWarningKind.BANK_ALERT -> hosts.isNotEmpty() && bankAlertWordLists.all { containsAny(normalized, it) }
                 ScamWarningKind.RECEIPT -> "receipt" in groups
                 // The falso parente opener. On Bipe it says new account, which is normal chat without a family term or urgency.
-                ScamWarningKind.NEW_NUMBER -> phrases.any { it in ProseioRegistries.newNumberPhrases } || isNewAccountOpener(normalized, phrases)
+                ScamWarningKind.NEW_NUMBER -> phrases.any { it in BipeRegistries.newNumberPhrases } || isNewAccountOpener(normalized, phrases)
                 ScamWarningKind.URGENCY -> phrases.isNotEmpty()
             }
         }
@@ -109,7 +109,7 @@ object ScamDetector {
     /** Every link host in the message. Must match proseio-shared `linkHosts`. */
     fun linkHosts(message: String): List<LinkHost> {
         val plain = NameNormalizer.normalize(message, homoglyphs = emptyMap())
-        val folded = NameNormalizer.normalize(message, homoglyphs = ProseioRegistries.hostHomoglyphs)
+        val folded = NameNormalizer.normalize(message, homoglyphs = BipeRegistries.hostHomoglyphs)
         // proseio-shared validates that host folding keeps every UTF-16 index. An empty plain host is never official.
         val aligned = plain.length == folded.length
         return linkExpressions.flatMap { expression ->
@@ -132,14 +132,14 @@ object ScamDetector {
     private val warningCache = HashMap<String, CachedWarning>()
 
     /** proseio-shared validates that the priority lists every kind once, so `mapNotNull` drops nothing. */
-    private val warningKindPriority = ProseioRegistries.scamWarningKindPriority.mapNotNull(ScamWarningKind::fromId)
+    private val warningKindPriority = BipeRegistries.scamWarningKindPriority.mapNotNull(ScamWarningKind::fromId)
 
     private val compiledPatterns: List<CompiledPattern> by lazy {
         val groups = listOf(
-            "pixKeyPatterns" to ProseioRegistries.pixKeyPatterns,
-            "pixCopyPastePatterns" to ProseioRegistries.pixCopyPastePatterns,
-            "boletoPatterns" to ProseioRegistries.boletoPatterns,
-            "linkPatterns" to ProseioRegistries.linkPatterns,
+            "pixKeyPatterns" to BipeRegistries.pixKeyPatterns,
+            "pixCopyPastePatterns" to BipeRegistries.pixCopyPastePatterns,
+            "boletoPatterns" to BipeRegistries.boletoPatterns,
+            "linkPatterns" to BipeRegistries.linkPatterns,
         )
         // UNICODE_CHARACTER_CLASS makes `\s` match Unicode spaces, as in V8 and ICU. The registries use explicit
         // ASCII classes for digits and letters, so the flag changes nothing else.
@@ -154,32 +154,32 @@ object ScamDetector {
     }
 
     private val linkExpressions: List<Pattern> by lazy {
-        ProseioRegistries.linkPatterns.mapNotNull { runCatching { Pattern.compile(it.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull() }
+        BipeRegistries.linkPatterns.mapNotNull { runCatching { Pattern.compile(it.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull() }
     }
 
     private val bankAlertWordLists = listOf(
-        ProseioRegistries.bankAlertSubjectWords,
-        ProseioRegistries.bankAlertThreatWords,
+        BipeRegistries.bankAlertSubjectWords,
+        BipeRegistries.bankAlertThreatWords,
     )
 
     /** True when the host copies a brand: its folded form names a brand and its plain form is not that brand's domain. */
     private fun isLookalike(host: LinkHost): Boolean {
         val squashed = host.folded.replace(".", "").replace("-", "")
-        if (ProseioRegistries.lookalikeBrandTokens.none { squashed.contains(it) }) return false
-        return ProseioRegistries.officialDomains.none { host.plain == it || host.plain.endsWith(".$it") }
+        if (BipeRegistries.lookalikeBrandTokens.none { squashed.contains(it) }) return false
+        return BipeRegistries.officialDomains.none { host.plain == it || host.plain.endsWith(".$it") }
     }
 
     private val deliveryWordLists = listOf(
-        ProseioRegistries.deliveryParcelWords,
-        ProseioRegistries.deliveryHoldWords,
-        ProseioRegistries.deliveryFeeWords,
+        BipeRegistries.deliveryParcelWords,
+        BipeRegistries.deliveryHoldWords,
+        BipeRegistries.deliveryFeeWords,
     )
 
     private fun containsAny(normalized: String, words: List<String>): Boolean = words.any { normalized.contains(it) }
 
     private fun isNewAccountOpener(normalized: String, phrases: List<String>): Boolean =
-        containsAny(normalized, ProseioRegistries.newAccountPhrases) &&
-            (phrases.isNotEmpty() || containsWord(normalized, ProseioRegistries.familyTerms))
+        containsAny(normalized, BipeRegistries.newAccountPhrases) &&
+            (phrases.isNotEmpty() || containsWord(normalized, BipeRegistries.familyTerms))
 
     /**
      * True when the normalised text has one of [terms] as a whole word: each run of characters outside [0-9a-z]

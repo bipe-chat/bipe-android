@@ -6,16 +6,20 @@
 
 package io.element.android.libraries.bipe
 
-import io.element.android.libraries.proseio.generated.ProseioRegistries
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import java.net.URI
 import java.util.Locale
 
 /**
- * Profile links: `https://proseio.com.br/@handle`. The web page there falls back to the store;
- * the app opens it as an app link.
+ * Profile links: `https://bipe.chat/@handle`. The web page there falls back to the store;
+ * the app opens it as an app link. Links on the old host `proseio.com.br` still parse: it redirects to `bipe.chat`.
  */
 object BipeProfileLink {
-    const val HOST = "proseio.com.br"
+    const val HOST = "bipe.chat"
+
+    /** Old host, kept so shared old links still open. It redirects to [HOST]. */
+    private const val LEGACY_HOST = "proseio.com.br"
+    private val acceptedHosts = setOf(HOST, "www.$HOST", LEGACY_HOST, "www.$LEGACY_HOST")
 
     fun url(handle: String): String? =
         runCatching { URI("https", HOST, "/@$handle", null).toASCIIString() }.getOrNull()
@@ -41,18 +45,18 @@ object BipeProfileLink {
     internal fun bipePathComponents(url: String): List<String>? {
         val uri = runCatching { URI(url) }.getOrNull() ?: return null
         val host = uri.host?.lowercase(Locale.ROOT)
-        if (uri.scheme != "https" || (host != HOST && host != "www.$HOST")) return null
+        if (uri.scheme != "https" || host !in acceptedHosts) return null
         return uri.path.orEmpty().split('/').filter { it.isNotEmpty() }
     }
 }
 
 /**
- * Invite links: `https://proseio.com.br/convite/XXXX-XXXX-XXXX`. The web page there explains how to install;
+ * Invite links: `https://bipe.chat/convite/XXXX-XXXX-XXXX`. The web page there explains how to install;
  * the app opens it as an app link and pre-fills the sign-up code.
  */
 object BipeInviteLink {
     /** Rule: proseio-shared/registries/invite-codes.json (generated). Cases: test-vectors/invite-codes.json. */
-    private val pattern = Regex(ProseioRegistries.INVITE_CODE_PATTERN)
+    private val pattern = Regex(BipeRegistries.INVITE_CODE_PATTERN)
 
     /** The invite code in a link, normalised, or `null` when the URL is not an invite link. */
     fun code(url: String): String? {
@@ -63,7 +67,7 @@ object BipeInviteLink {
 
     /** `XXXX-XXXX-XXXX` from anything a user typed or pasted: a code, an invite link or a whole message. `null` when it holds no code. */
     fun normalizedCode(raw: String): String? {
-        val text = raw.take(ProseioRegistries.INVITE_CODE_MAX_INPUT_LENGTH).uppercase(Locale.ROOT)
+        val text = raw.take(BipeRegistries.INVITE_CODE_MAX_INPUT_LENGTH).uppercase(Locale.ROOT)
         val match = pattern.find(text) ?: return null
         return match.groupValues.drop(1).joinToString("-")
     }

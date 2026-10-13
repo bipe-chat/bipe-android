@@ -42,7 +42,7 @@ fun BipeVoiceTranscriptView(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            text = stringResource(R.string.proseio_voice_transcript_title),
+            text = stringResource(R.string.bipe_voice_transcript_title),
             style = ElementTheme.typography.fontBodyXsMedium,
             color = ElementTheme.colors.textSecondary,
         )
@@ -55,7 +55,7 @@ fun BipeVoiceTranscriptView(
         )
         if (text.length > COLLAPSE_THRESHOLD) {
             Text(
-                text = stringResource(if (isExpanded) R.string.proseio_action_show_less else R.string.proseio_action_show_more),
+                text = stringResource(if (isExpanded) R.string.bipe_action_show_less else R.string.bipe_action_show_more),
                 style = ElementTheme.typography.fontBodySmMedium,
                 color = ElementTheme.colors.textActionAccent,
                 modifier = Modifier.clickable { isExpanded = !isExpanded },

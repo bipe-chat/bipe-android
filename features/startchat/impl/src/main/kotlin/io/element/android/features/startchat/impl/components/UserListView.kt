@@ -59,7 +59,7 @@ fun UserListView(
                 .padding(contentPaddingValues),
             queryState = state.searchQuery,
             resultState = state.searchResults,
-            noResultsText = state.bipeHandleNotFound?.let { stringResource(BipeR.string.proseio_start_chat_handle_not_found, it) },
+            noResultsText = state.bipeHandleNotFound?.let { stringResource(BipeR.string.bipe_start_chat_handle_not_found, it) },
             selectedUsers = state.selectedUsers,
             active = state.isSearchActive,
             showLoader = state.showSearchLoader,

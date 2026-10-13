@@ -181,7 +181,7 @@ class HomeFlowNode(
                 onSuccess = { roomId -> navigateToRoom(roomId, null) },
                 onFailure = {
                     Timber.e(it, "Bipe self-chat: open failed")
-                    snackbarDispatcher.post(SnackbarMessage(BipeR.string.proseio_self_chat_error))
+                    snackbarDispatcher.post(SnackbarMessage(BipeR.string.bipe_self_chat_error))
                 },
             )
         }
@@ -200,7 +200,7 @@ class HomeFlowNode(
         val youState = preferencesRootPresenter.value.present()
         val activity = requireNotNull(LocalActivity.current)
         val isDark = !ElementTheme.isLightTheme
-        val selfChatName = stringResource(BipeR.string.proseio_self_chat_title)
+        val selfChatName = stringResource(BipeR.string.bipe_self_chat_title)
         PreferencesRootView(
             state = youState,
             emojiPickerRenderer = emojiPickerRenderer,

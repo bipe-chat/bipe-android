@@ -51,6 +51,6 @@ class BipeQuietGroups(
     }
 
     private companion object {
-        const val POLL_RULE_ID = "br.com.proseio.poll_start"
+        const val POLL_RULE_ID = "chat.bipe.poll_start"
     }
 }

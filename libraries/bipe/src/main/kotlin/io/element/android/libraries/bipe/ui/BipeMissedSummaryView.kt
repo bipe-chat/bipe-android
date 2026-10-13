@@ -65,7 +65,7 @@ fun BipeMissedSummaryView(
             .border(0.5.dp, ElementTheme.colors.borderInteractiveSecondary, shape)
     ) {
         Text(
-            text = stringResource(R.string.proseio_group_missed_title),
+            text = stringResource(R.string.bipe_group_missed_title),
             style = ElementTheme.typography.fontBodySmMedium,
             color = ElementTheme.colors.textActionAccent,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -96,7 +96,7 @@ fun BipeMissedSummaryView(
         }
         HorizontalDivider()
         Text(
-            text = stringResource(R.string.proseio_group_missed_more, summary.otherCount.toString()),
+            text = stringResource(R.string.bipe_group_missed_more, summary.otherCount.toString()),
             style = ElementTheme.typography.fontBodySmRegular,
             color = ElementTheme.colors.textSecondary,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -106,9 +106,9 @@ fun BipeMissedSummaryView(
 
 @Composable
 private fun lineTitle(line: BipeMissedSummary.Line): String = when (line.kind) {
-    BipeMissedSummary.Kind.MENTION -> stringResource(R.string.proseio_group_missed_mention, line.senderName)
-    BipeMissedSummary.Kind.REPLY -> stringResource(R.string.proseio_group_missed_reply, line.senderName)
-    BipeMissedSummary.Kind.POLL -> stringResource(R.string.proseio_group_missed_poll, line.text)
+    BipeMissedSummary.Kind.MENTION -> stringResource(R.string.bipe_group_missed_mention, line.senderName)
+    BipeMissedSummary.Kind.REPLY -> stringResource(R.string.bipe_group_missed_reply, line.senderName)
+    BipeMissedSummary.Kind.POLL -> stringResource(R.string.bipe_group_missed_poll, line.text)
 }
 
 @PreviewsDayNight

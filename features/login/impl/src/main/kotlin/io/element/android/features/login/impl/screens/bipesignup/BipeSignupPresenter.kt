@@ -90,7 +90,7 @@ class BipeSignupPresenter(
             if (preview.valid) {
                 inviterHandle = preview.inviterHandle
             } else {
-                inviteCodeError = stringProvider.getString(R.string.proseio_error_invite_invalid)
+                inviteCodeError = stringProvider.getString(R.string.bipe_error_invite_invalid)
             }
         }
 

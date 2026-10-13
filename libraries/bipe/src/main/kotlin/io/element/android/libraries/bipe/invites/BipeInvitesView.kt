@@ -49,15 +49,15 @@ fun BipeInvitesView(
     modifier: Modifier = Modifier,
 ) {
     PreferencePage(
-        title = stringResource(R.string.proseio_invites_title),
+        title = stringResource(R.string.bipe_invites_title),
         onBackClick = onBackClick,
         modifier = modifier,
     ) {
         ListItem(
-            content = { Text(stringResource(R.string.proseio_invites_available, state.available.toString())) },
+            content = { Text(stringResource(R.string.bipe_invites_available, state.available.toString())) },
         )
         ListItem(
-            content = { Text(stringResource(R.string.proseio_invites_create)) },
+            content = { Text(stringResource(R.string.bipe_invites_create)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Plus())),
             enabled = state.canCreate,
             onClick = { state.eventSink(BipeInvitesEvent.Create) },
@@ -65,7 +65,7 @@ fun BipeInvitesView(
         ListSupportingText(text = footer(state))
         HorizontalDivider()
         if (state.invites.isEmpty() && !state.isLoading) {
-            ListItem(content = { Text(stringResource(R.string.proseio_invites_empty)) })
+            ListItem(content = { Text(stringResource(R.string.bipe_invites_empty)) })
         }
         for (invite in state.invites) {
             InviteRow(invite = invite, state = state, onUserClick = onUserClick)
@@ -81,10 +81,10 @@ fun BipeInvitesView(
 
 @Composable
 private fun footer(state: BipeInvitesState): String {
-    if (state.isLoading || state.available > 0) return stringResource(R.string.proseio_invites_explainer)
-    val noneLeft = stringResource(R.string.proseio_invites_none_left)
+    if (state.isLoading || state.available > 0) return stringResource(R.string.bipe_invites_explainer)
+    val noneLeft = stringResource(R.string.bipe_invites_none_left)
     val next = state.nextAvailableAt ?: return noneLeft
-    return "$noneLeft ${stringResource(R.string.proseio_invites_next, formatDate(next, withTime = true))}"
+    return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
 }
 
 @Composable
@@ -98,7 +98,7 @@ private fun InviteRow(
         BipeInviteStatus.PENDING -> Column {
             ListItem(
                 content = { Text(statusTitle) },
-                supportingContent = { Text(stringResource(R.string.proseio_invites_expires, formatDate(invite.expiresAt, withTime = false))) },
+                supportingContent = { Text(stringResource(R.string.bipe_invites_expires, formatDate(invite.expiresAt, withTime = false))) },
                 leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Time())),
             )
             Row(
@@ -107,7 +107,7 @@ private fun InviteRow(
             ) {
                 state.shareUrls[invite.id]?.let { url ->
                     val context = LocalContext.current
-                    val message = stringResource(R.string.proseio_invites_share_message, url)
+                    val message = stringResource(R.string.bipe_invites_share_message, url)
                     OutlinedButton(
                         text = stringResource(CommonStrings.action_share),
                         size = ButtonSize.Medium,
@@ -116,7 +116,7 @@ private fun InviteRow(
                     )
                 }
                 TextButton(
-                    text = stringResource(R.string.proseio_invites_revoke),
+                    text = stringResource(R.string.bipe_invites_revoke),
                     size = ButtonSize.Medium,
                     destructive = true,
                     onClick = { state.eventSink(BipeInvitesEvent.Revoke(invite.id)) },
@@ -141,10 +141,10 @@ private fun InviteRow(
 
 private val BipeInviteStatus.titleRes: Int
     get() = when (this) {
-        BipeInviteStatus.PENDING -> R.string.proseio_invites_status_pending
-        BipeInviteStatus.USED -> R.string.proseio_invites_status_used
-        BipeInviteStatus.EXPIRED -> R.string.proseio_invites_status_expired
-        BipeInviteStatus.REVOKED -> R.string.proseio_invites_status_revoked
+        BipeInviteStatus.PENDING -> R.string.bipe_invites_status_pending
+        BipeInviteStatus.USED -> R.string.bipe_invites_status_used
+        BipeInviteStatus.EXPIRED -> R.string.bipe_invites_status_expired
+        BipeInviteStatus.REVOKED -> R.string.bipe_invites_status_revoked
     }
 
 private fun formatDate(instant: Instant, withTime: Boolean): String {

@@ -11,7 +11,7 @@ import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.bipe.api.BipeMyProfile
 import io.element.android.libraries.bipe.api.BipePublicProfile
-import io.element.android.libraries.proseio.generated.ProseioRegistries
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,20 +40,20 @@ enum class BipeProfileProblem(val id: String) {
     @get:StringRes
     val messageRes: Int
         get() = when (this) {
-            NAME_EMPTY -> R.string.proseio_public_profile_name_empty
-            NAME_TOO_LONG -> R.string.proseio_public_profile_name_too_long
-            NAME_RESERVED -> R.string.proseio_warning_reserved_name
-            BIO_TOO_LONG -> R.string.proseio_public_profile_bio_too_long
-            BIO_TOO_MANY_LINES -> R.string.proseio_public_profile_bio_too_many_lines
-            NO_HANDLE -> R.string.proseio_public_profile_needs_handle
+            NAME_EMPTY -> R.string.bipe_public_profile_name_empty
+            NAME_TOO_LONG -> R.string.bipe_public_profile_name_too_long
+            NAME_RESERVED -> R.string.bipe_warning_reserved_name
+            BIO_TOO_LONG -> R.string.bipe_public_profile_bio_too_long
+            BIO_TOO_MANY_LINES -> R.string.bipe_public_profile_bio_too_many_lines
+            NO_HANDLE -> R.string.bipe_public_profile_needs_handle
         }
 
     /** Format arguments for [messageRes]: the limit from registries/profiles.json. */
     val messageArgs: Array<Any>
         get() = when (this) {
-            NAME_TOO_LONG -> arrayOf(ProseioRegistries.PROFILE_NAME_MAX_LENGTH.toString())
-            BIO_TOO_LONG -> arrayOf(ProseioRegistries.PROFILE_BIO_MAX_LENGTH.toString())
-            BIO_TOO_MANY_LINES -> arrayOf(ProseioRegistries.PROFILE_BIO_MAX_LINES.toString())
+            NAME_TOO_LONG -> arrayOf(BipeRegistries.PROFILE_NAME_MAX_LENGTH.toString())
+            BIO_TOO_LONG -> arrayOf(BipeRegistries.PROFILE_BIO_MAX_LENGTH.toString())
+            BIO_TOO_MANY_LINES -> arrayOf(BipeRegistries.PROFILE_BIO_MAX_LINES.toString())
             else -> emptyArray()
         }
 
@@ -72,11 +72,11 @@ object BipeProfileRules {
     fun problem(name: String, bio: String): BipeProfileProblem? {
         val trimmedName = NameNormalizer.trimJavaScript(name)
         if (trimmedName.isEmpty()) return BipeProfileProblem.NAME_EMPTY
-        if (trimmedName.codePointCount(0, trimmedName.length) > ProseioRegistries.PROFILE_NAME_MAX_LENGTH) return BipeProfileProblem.NAME_TOO_LONG
+        if (trimmedName.codePointCount(0, trimmedName.length) > BipeRegistries.PROFILE_NAME_MAX_LENGTH) return BipeProfileProblem.NAME_TOO_LONG
         if (NameNormalizer.reservedCategory(trimmedName) != null) return BipeProfileProblem.NAME_RESERVED
         val trimmedBio = NameNormalizer.trimJavaScript(bio)
-        if (trimmedBio.codePointCount(0, trimmedBio.length) > ProseioRegistries.PROFILE_BIO_MAX_LENGTH) return BipeProfileProblem.BIO_TOO_LONG
-        if (trimmedBio.split("\n").size > ProseioRegistries.PROFILE_BIO_MAX_LINES) return BipeProfileProblem.BIO_TOO_MANY_LINES
+        if (trimmedBio.codePointCount(0, trimmedBio.length) > BipeRegistries.PROFILE_BIO_MAX_LENGTH) return BipeProfileProblem.BIO_TOO_LONG
+        if (trimmedBio.split("\n").size > BipeRegistries.PROFILE_BIO_MAX_LINES) return BipeProfileProblem.BIO_TOO_MANY_LINES
         return null
     }
 

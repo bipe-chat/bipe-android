@@ -9,7 +9,7 @@ package io.element.android.libraries.bipe
 import androidx.annotation.StringRes
 import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.api.BipeApiException
-import io.element.android.libraries.proseio.generated.ProseioRegistries
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -31,18 +31,18 @@ enum class BipeHandleProblem(val id: String) {
     @get:StringRes
     val messageRes: Int
         get() = when (this) {
-            TOO_SHORT -> R.string.proseio_handle_too_short
-            TOO_LONG -> R.string.proseio_handle_too_long
-            INVALID_CHARACTERS -> R.string.proseio_handle_invalid_characters
-            RESERVED -> R.string.proseio_handle_reserved
-            TAKEN -> R.string.proseio_handle_taken
+            TOO_SHORT -> R.string.bipe_handle_too_short
+            TOO_LONG -> R.string.bipe_handle_too_long
+            INVALID_CHARACTERS -> R.string.bipe_handle_invalid_characters
+            RESERVED -> R.string.bipe_handle_reserved
+            TAKEN -> R.string.bipe_handle_taken
         }
 
     /** Format arguments for [messageRes]. */
     val messageArgs: Array<Any>
         get() = when (this) {
-            TOO_SHORT -> arrayOf(ProseioRegistries.HANDLE_MIN_LENGTH.toString())
-            TOO_LONG -> arrayOf(ProseioRegistries.HANDLE_MAX_LENGTH.toString())
+            TOO_SHORT -> arrayOf(BipeRegistries.HANDLE_MIN_LENGTH.toString())
+            TOO_LONG -> arrayOf(BipeRegistries.HANDLE_MAX_LENGTH.toString())
             else -> emptyArray()
         }
 
@@ -58,7 +58,7 @@ enum class BipeHandleProblem(val id: String) {
  * reserved names and lookalikes are checked there through the availability endpoint.
  */
 object BipeHandle {
-    private val pattern = Regex(ProseioRegistries.HANDLE_PATTERN)
+    private val pattern = Regex(BipeRegistries.HANDLE_PATTERN)
 
     /** Trims whitespace and a leading "@" the user may type. */
     fun sanitize(input: String): String = input.trim().removePrefix("@")
@@ -66,8 +66,8 @@ object BipeHandle {
     /** Length and character checks only. `null` means the server must decide. */
     fun localProblem(handle: String): BipeHandleProblem? {
         // JS `length` and Kotlin `length` both count UTF-16 units. The pattern is ASCII-only, so non-ASCII input fails it anyway.
-        if (handle.length < ProseioRegistries.HANDLE_MIN_LENGTH) return BipeHandleProblem.TOO_SHORT
-        if (handle.length > ProseioRegistries.HANDLE_MAX_LENGTH) return BipeHandleProblem.TOO_LONG
+        if (handle.length < BipeRegistries.HANDLE_MIN_LENGTH) return BipeHandleProblem.TOO_SHORT
+        if (handle.length > BipeRegistries.HANDLE_MAX_LENGTH) return BipeHandleProblem.TOO_LONG
         if (!pattern.containsMatchIn(handle)) return BipeHandleProblem.INVALID_CHARACTERS
         return null
     }
@@ -106,8 +106,8 @@ sealed interface BipeHandleStatus {
     /** Footer text for the handle field. [defaultText] shows when there is nothing to report. */
     fun footer(defaultText: String, stringProvider: StringProvider): String = when (this) {
         Empty, Unknown -> defaultText
-        Checking -> stringProvider.getString(R.string.proseio_handle_checking)
-        Available -> stringProvider.getString(R.string.proseio_handle_available)
+        Checking -> stringProvider.getString(R.string.bipe_handle_checking)
+        Available -> stringProvider.getString(R.string.bipe_handle_available)
         is Problem -> problem.localizedMessage(stringProvider)
     }
 }

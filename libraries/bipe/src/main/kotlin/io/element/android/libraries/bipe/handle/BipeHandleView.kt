@@ -73,7 +73,7 @@ fun BipeHandleView(
         modifier = modifier.clearFocusOnTap(focusManager),
         topBar = {
             TopAppBar(
-                titleStr = stringResource(R.string.proseio_settings_handle),
+                titleStr = stringResource(R.string.bipe_settings_handle),
                 navigationIcon = { BackButton(onClick = onBackClick) },
                 actions = {
                     TextButton(
@@ -96,9 +96,9 @@ fun BipeHandleView(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
-                label = stringResource(R.string.proseio_settings_handle),
+                label = stringResource(R.string.bipe_settings_handle),
                 value = state.handleInput,
-                placeholder = stringResource(R.string.proseio_handle_placeholder),
+                placeholder = stringResource(R.string.bipe_handle_placeholder),
                 supportingText = footer(state),
                 validity = when {
                     state.handleError != null || state.handleStatus is BipeHandleStatus.Problem -> TextFieldValidity.Invalid
@@ -130,13 +130,13 @@ private fun footer(state: BipeHandleState): String {
         val formatted = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)
             .withZone(ZoneId.systemDefault())
             .format(changeableAt)
-        return stringResource(R.string.proseio_handle_cooldown_until, formatted)
+        return stringResource(R.string.bipe_handle_cooldown_until, formatted)
     }
-    val defaultText = stringResource(R.string.proseio_handle_screen_footer)
+    val defaultText = stringResource(R.string.bipe_handle_screen_footer)
     return when (val status = state.handleStatus) {
         BipeHandleStatus.Empty, BipeHandleStatus.Unknown -> defaultText
-        BipeHandleStatus.Checking -> stringResource(R.string.proseio_handle_checking)
-        BipeHandleStatus.Available -> stringResource(R.string.proseio_handle_available)
+        BipeHandleStatus.Checking -> stringResource(R.string.bipe_handle_checking)
+        BipeHandleStatus.Available -> stringResource(R.string.bipe_handle_available)
         is BipeHandleStatus.Problem -> stringResource(status.problem.messageRes, *status.problem.messageArgs)
     }
 }
@@ -157,13 +157,13 @@ private fun ProfileLinkSection(handle: String) {
             modifier = Modifier.widthIn(max = 220.dp),
         )
         Text(
-            text = stringResource(R.string.proseio_profile_qr_footer),
+            text = stringResource(R.string.bipe_profile_qr_footer),
             style = ElementTheme.typography.fontBodySmRegular,
             color = ElementTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
         )
         OutlinedButton(
-            text = stringResource(R.string.proseio_profile_share),
+            text = stringResource(R.string.bipe_profile_share),
             leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
             onClick = {
                 context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = url)

@@ -17,14 +17,14 @@ import io.element.android.libraries.androidutils.bitmap.resizeToMax
 import io.element.android.libraries.androidutils.bitmap.rotateToExifMetadataOrientation
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.di.annotations.ApplicationContext
-import io.element.android.libraries.proseio.generated.ProseioRegistries
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 /**
  * Re-encodes a picked image for `PUT /v1/me/profile/photo` (ADR 0041): JPEG, at most
- * [ProseioRegistries.PROFILE_PHOTO_MAX_PIXELS] on each side and [ProseioRegistries.PROFILE_PHOTO_MAX_BYTES].
+ * [BipeRegistries.PROFILE_PHOTO_MAX_PIXELS] on each side and [BipeRegistries.PROFILE_PHOTO_MAX_BYTES].
  * It lowers the quality until the photo fits, then the size. The output has no EXIF; the server strips metadata as well.
  */
 @Inject
@@ -34,7 +34,7 @@ class BipeProfilePhotoEncoder(
 ) {
     /** @throws IllegalStateException when the image cannot be read or cannot fit the limits. */
     suspend fun encode(uri: Uri): ByteArray = withContext(dispatchers.io) {
-        val maxPixels = ProseioRegistries.PROFILE_PHOTO_MAX_PIXELS
+        val maxPixels = BipeRegistries.PROFILE_PHOTO_MAX_PIXELS
         val orientation = open(uri).use { input ->
             ExifInterface(input).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
         }
@@ -54,7 +54,7 @@ class BipeProfilePhotoEncoder(
         while (bitmap.width >= MIN_SIDE && bitmap.height >= MIN_SIDE) {
             for (quality in QUALITIES) {
                 val bytes = compress(bitmap, quality)
-                if (bytes.size <= ProseioRegistries.PROFILE_PHOTO_MAX_BYTES) return bytes
+                if (bytes.size <= BipeRegistries.PROFILE_PHOTO_MAX_BYTES) return bytes
             }
             bitmap = Bitmap.createScaledBitmap(bitmap, (bitmap.width * SHRINK_FACTOR).toInt(), (bitmap.height * SHRINK_FACTOR).toInt(), true)
         }

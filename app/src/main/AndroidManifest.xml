@@ -84,9 +84,9 @@
                 <data android:scheme="@string/login_redirect_scheme" />
             </intent-filter>
             <!--
-              Bipe links: profile (https://proseio.com.br/@handle) and invite (https://proseio.com.br/convite/CODE).
+              Bipe links: profile (https://bipe.chat/@handle) and invite (https://bipe.chat/convite/CODE).
               Bipe: replaces the Element web and mobile link filters.
-              Matching asset file: https://proseio.com.br/.well-known/assetlinks.json (not published yet)
+              Matching asset file: https://bipe.chat/.well-known/assetlinks.json (not published yet)
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -95,7 +95,24 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="https" />
+                <data android:host="bipe.chat" />
+                <data android:host="www.bipe.chat" />
+                <data android:pathPrefix="/@" />
+                <data android:pathPrefix="/convite/" />
+            </intent-filter>
+            <!--
+              Bipe: old links on proseio.com.br still open the app (that host redirects to bipe.chat).
+              No autoVerify: the old host does not publish assetlinks.json, and one failing host would block verification of the filter above.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
                 <data android:host="proseio.com.br" />
+                <data android:host="www.proseio.com.br" />
                 <data android:pathPrefix="/@" />
                 <data android:pathPrefix="/convite/" />
             </intent-filter>

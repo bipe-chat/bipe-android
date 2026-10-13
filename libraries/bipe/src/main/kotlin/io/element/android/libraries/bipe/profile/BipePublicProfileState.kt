@@ -41,7 +41,7 @@ data class BipePublicProfileState(
             saveAction !is AsyncAction.Loading &&
             photoAction !is AsyncAction.Loading
 
-    /** `https://proseio.com.br/@handle`, only while the saved profile is on. */
+    /** `https://bipe.chat/@handle`, only while the saved profile is on. */
     val shareUrl: String? get() = saved?.takeIf { it.enabled }?.handle?.let(BipeProfileLink::url)
 }
 

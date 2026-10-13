@@ -6,8 +6,8 @@
 
 package io.element.android.libraries.bipe
 
-import io.element.android.libraries.proseio.generated.ProseioRegistries
-import io.element.android.libraries.proseio.generated.ReservedNameCategory
+import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.bipe.generated.ReservedNameCategory
 import java.text.Normalizer
 import java.util.Locale
 
@@ -20,7 +20,7 @@ object NameNormalizer {
      * NFKD, strip combining marks, lowercase, fold homoglyphs, collapse whitespace, trim.
      * Pass an empty [homoglyphs] map to skip folding (scam phrase matching does this).
      */
-    fun normalize(input: String, homoglyphs: Map<Int, String> = ProseioRegistries.homoglyphs): String {
+    fun normalize(input: String, homoglyphs: Map<Int, String> = BipeRegistries.homoglyphs): String {
         val decomposed = Normalizer.normalize(input, Normalizer.Form.NFKD)
         val stripped = StringBuilder(decomposed.length)
         decomposed.codePoints().forEach { codePoint ->
@@ -49,7 +49,7 @@ object NameNormalizer {
 
     /** Category of a reserved display name, or `null` when the name is free to use. */
     fun reservedCategory(displayName: String): ReservedNameCategory? =
-        ProseioRegistries.reservedNames[normalize(displayName)]
+        BipeRegistries.reservedNames[normalize(displayName)]
 
     /** JS `String.prototype.trim()`: strips the same whitespace set as JS, not Kotlin's [String.trim] set. */
     fun trimJavaScript(input: String): String {

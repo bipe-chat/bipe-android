@@ -113,7 +113,7 @@ class BipeSelfChat(
 
     companion object {
         /** Global account data type. Shared with iOS: do not change. */
-        const val EVENT_TYPE = "br.com.proseio.self_chat"
+        const val EVENT_TYPE = "chat.bipe.self_chat"
 
         private val ROOM_LIST_TIMEOUT = 10.seconds
         private val json = Json { ignoreUnknownKeys = true }

@@ -459,10 +459,10 @@ class MessagesPresenter(
         val source = content.preferredMediaSource ?: return
         mediaLoader.loadMediaContent(source)
             .flatMap { stickerPackRepository.addSticker(it) }
-            .onSuccess { snackbarDispatcher.post(SnackbarMessage(BipeR.string.proseio_sticker_saved)) }
+            .onSuccess { snackbarDispatcher.post(SnackbarMessage(BipeR.string.bipe_sticker_saved)) }
             .onFailure {
                 Timber.e(it, "Sticker save failed")
-                snackbarDispatcher.post(SnackbarMessage(BipeR.string.proseio_sticker_save_failed))
+                snackbarDispatcher.post(SnackbarMessage(BipeR.string.bipe_sticker_save_failed))
             }
     }
 

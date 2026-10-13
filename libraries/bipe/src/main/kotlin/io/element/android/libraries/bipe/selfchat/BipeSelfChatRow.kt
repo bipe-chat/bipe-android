@@ -21,8 +21,8 @@ import io.element.android.libraries.bipe.R
 @Composable
 fun BipeSelfChatRow(onClick: () -> Unit) {
     ListItem(
-        content = { Text(stringResource(R.string.proseio_self_chat_title)) },
-        supportingContent = { Text(stringResource(R.string.proseio_self_chat_subtitle)) },
+        content = { Text(stringResource(R.string.bipe_self_chat_title)) },
+        supportingContent = { Text(stringResource(R.string.bipe_self_chat_subtitle)) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Edit())),
         onClick = onClick,
     )

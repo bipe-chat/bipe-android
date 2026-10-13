@@ -145,7 +145,7 @@ private fun AttachmentSourcePickerMenu(
         ListItem(
             modifier = Modifier.clickable { state.eventSink(MessageComposerEvent.PickAttachmentSource.Sticker) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Sticker())),
-            content = { Text(stringResource(io.element.android.libraries.bipe.R.string.proseio_action_stickers)) },
+            content = { Text(stringResource(io.element.android.libraries.bipe.R.string.bipe_action_stickers)) },
         )
         if (enableTextFormatting) {
             ListItem(

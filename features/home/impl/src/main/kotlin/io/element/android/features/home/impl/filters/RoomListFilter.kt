@@ -21,7 +21,7 @@ enum class RoomListFilter(val stringResource: Int) {
     People(R.string.screen_roomlist_filter_people),
     Rooms(R.string.screen_roomlist_filter_rooms),
     Favourites(R.string.screen_roomlist_filter_favourites),
-    Invites(BipeR.string.proseio_requests_title); // Bipe: invites are message requests (Pedidos).
+    Invites(BipeR.string.bipe_requests_title); // Bipe: invites are message requests (Pedidos).
 
     val incompatibleFilters: Set<RoomListFilter>
         get() = when (this) {

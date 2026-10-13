@@ -119,11 +119,11 @@ internal fun StickerPickerBottomSheet(
     }
     if (showImportHelp) {
         ConfirmationDialog(
-            title = stringResource(BipeR.string.proseio_stickers_import_action),
+            title = stringResource(BipeR.string.bipe_stickers_import_action),
             content = listOf(
-                stringResource(BipeR.string.proseio_stickers_import_help),
-                stringResource(BipeR.string.proseio_stickers_import_help_folder_android),
-                stringResource(BipeR.string.proseio_stickers_import_note),
+                stringResource(BipeR.string.bipe_stickers_import_help),
+                stringResource(BipeR.string.bipe_stickers_import_help_folder_android),
+                stringResource(BipeR.string.bipe_stickers_import_note),
             ).joinToString("\n\n"),
             submitText = stringResource(CommonStrings.action_choose_file),
             onSubmitClick = {
@@ -168,20 +168,20 @@ private fun StickerPickerContent(
 ) {
     Column(modifier = Modifier.navigationBarsPadding()) {
         Text(
-            text = stringResource(BipeR.string.proseio_stickers_title),
+            text = stringResource(BipeR.string.bipe_stickers_title),
             style = ElementTheme.typography.fontHeadingSmMedium,
             color = ElementTheme.colors.textPrimary,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
             TextButton(
-                text = stringResource(BipeR.string.proseio_stickers_from_photo),
+                text = stringResource(BipeR.string.bipe_stickers_from_photo),
                 size = ButtonSize.Medium,
                 enabled = state != StickerPickerState.Loading,
                 onClick = onMakeFromPhotoClick,
             )
             TextButton(
-                text = stringResource(BipeR.string.proseio_stickers_import_action),
+                text = stringResource(BipeR.string.bipe_stickers_import_action),
                 size = ButtonSize.Medium,
                 enabled = state != StickerPickerState.Loading,
                 onClick = onImportClick,
@@ -201,14 +201,14 @@ private fun StickerPickerContent(
                 CircularProgressIndicator()
             }
             StickerPickerState.Failed -> Message(
-                title = stringResource(BipeR.string.proseio_stickers_error_load),
+                title = stringResource(BipeR.string.bipe_stickers_error_load),
                 body = null,
                 onRetryClick = onRetryClick,
             )
             is StickerPickerState.Loaded -> if (state.packs.isEmpty()) {
                 Message(
-                    title = stringResource(BipeR.string.proseio_stickers_empty_title),
-                    body = stringResource(BipeR.string.proseio_stickers_empty_body),
+                    title = stringResource(BipeR.string.bipe_stickers_empty_title),
+                    body = stringResource(BipeR.string.bipe_stickers_empty_body),
                     onRetryClick = null,
                 )
             } else {
@@ -248,7 +248,7 @@ private fun StickerGrid(
 
 @Composable
 private fun StickerCell(sticker: Sticker, onStickerClick: (Sticker) -> Unit) {
-    val description = stringResource(BipeR.string.proseio_a11y_sticker_send, sticker.body)
+    val description = stringResource(BipeR.string.bipe_a11y_sticker_send, sticker.body)
     AsyncImage(
         model = MediaRequestData(MediaSource(sticker.url), MediaRequestData.Kind.Thumbnail(240L)),
         contentDescription = null,
@@ -291,19 +291,19 @@ private fun Message(title: String, body: String?, onRetryClick: (() -> Unit)?) {
 
 @Composable
 private fun importNoticeText(notice: StickerImportNotice): String = when (notice) {
-    is StickerImportNotice.Added -> stringResource(BipeR.string.proseio_stickers_import_done, notice.count.toString())
-    StickerImportNotice.NoneNew -> stringResource(BipeR.string.proseio_stickers_import_none)
-    StickerImportNotice.Failed -> stringResource(BipeR.string.proseio_stickers_import_failed)
+    is StickerImportNotice.Added -> stringResource(BipeR.string.bipe_stickers_import_done, notice.count.toString())
+    StickerImportNotice.NoneNew -> stringResource(BipeR.string.bipe_stickers_import_none)
+    StickerImportNotice.Failed -> stringResource(BipeR.string.bipe_stickers_import_failed)
 }
 
 @Composable
 private fun packTitle(pack: StickerPack, roomId: String): String = when (val source = pack.source) {
-    StickerPack.Source.User -> stringResource(BipeR.string.proseio_stickers_pack_personal)
+    StickerPack.Source.User -> stringResource(BipeR.string.bipe_stickers_pack_personal)
     is StickerPack.Source.Room -> pack.displayName
         ?: if (source.roomId == roomId) {
-            stringResource(BipeR.string.proseio_stickers_pack_room)
+            stringResource(BipeR.string.bipe_stickers_pack_room)
         } else {
-            stringResource(BipeR.string.proseio_stickers_title)
+            stringResource(BipeR.string.bipe_stickers_title)
         }
 }
 
@@ -319,7 +319,7 @@ internal fun StickerPickerContentPreview() = ElementPreview {
         ).forEach { state ->
             StickerPickerContent(
                 state = state,
-                roomId = "!room:proseio.com.br",
+                roomId = "!room:bipe.net.br",
                 onStickerClick = {},
                 onRetryClick = {},
                 onImportClick = {},

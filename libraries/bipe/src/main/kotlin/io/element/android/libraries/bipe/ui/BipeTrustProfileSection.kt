@@ -60,7 +60,7 @@ fun BipeTrustProfileSection(
                 }
             }
         }
-        ListSupportingText(text = stringResource(R.string.proseio_trust_footer))
+        ListSupportingText(text = stringResource(R.string.bipe_trust_footer))
     }
 }
 
@@ -75,13 +75,13 @@ private fun Header(profile: BipeTrustProfile) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.proseio_trust_title),
+                text = stringResource(R.string.bipe_trust_title),
                 style = ElementTheme.typography.fontHeadingSmMedium,
                 color = ElementTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = stringResource(R.string.proseio_trust_progress, profile.completedCount.toString(), profile.totalCount.toString()),
+                text = stringResource(R.string.bipe_trust_progress, profile.completedCount.toString(), profile.totalCount.toString()),
                 style = ElementTheme.typography.fontBodySmMedium,
                 color = ElementTheme.colors.textSecondary,
             )
@@ -108,7 +108,7 @@ private fun StepRow(step: BipeTrustProfile.Step) {
         trailingContent = if (step.status == Status.COMING_SOON) {
             ListItemContent.Custom {
                 Text(
-                    text = stringResource(R.string.proseio_trust_coming_soon),
+                    text = stringResource(R.string.bipe_trust_coming_soon),
                     style = ElementTheme.typography.fontBodyXsMedium,
                     color = ElementTheme.colors.textSecondary,
                     modifier = Modifier
@@ -124,27 +124,27 @@ private fun StepRow(step: BipeTrustProfile.Step) {
 
 private val StepId.titleRes: Int
     get() = when (this) {
-        StepId.ACCOUNT -> R.string.proseio_trust_step_account
-        StepId.PROFILE -> R.string.proseio_trust_step_profile
-        StepId.EMAIL -> R.string.proseio_trust_step_email
-        StepId.PIX -> R.string.proseio_trust_step_pix
-        StepId.GOVBR -> R.string.proseio_trust_step_govbr
+        StepId.ACCOUNT -> R.string.bipe_trust_step_account
+        StepId.PROFILE -> R.string.bipe_trust_step_profile
+        StepId.EMAIL -> R.string.bipe_trust_step_email
+        StepId.PIX -> R.string.bipe_trust_step_pix
+        StepId.GOVBR -> R.string.bipe_trust_step_govbr
     }
 
 private val StepId.bodyRes: Int
     get() = when (this) {
-        StepId.ACCOUNT -> R.string.proseio_trust_step_account_body
-        StepId.PROFILE -> R.string.proseio_trust_step_profile_body
-        StepId.EMAIL -> R.string.proseio_trust_step_email_body
-        StepId.PIX -> R.string.proseio_trust_step_pix_body
-        StepId.GOVBR -> R.string.proseio_trust_step_govbr_body
+        StepId.ACCOUNT -> R.string.bipe_trust_step_account_body
+        StepId.PROFILE -> R.string.bipe_trust_step_profile_body
+        StepId.EMAIL -> R.string.bipe_trust_step_email_body
+        StepId.PIX -> R.string.bipe_trust_step_pix_body
+        StepId.GOVBR -> R.string.bipe_trust_step_govbr_body
     }
 
 private val ProfileItem.actionRes: Int
     get() = when (this) {
-        ProfileItem.DISPLAY_NAME -> R.string.proseio_trust_step_profile_add_name
-        ProfileItem.HANDLE -> R.string.proseio_trust_step_profile_add_handle
-        ProfileItem.AVATAR -> R.string.proseio_trust_step_profile_add_photo
+        ProfileItem.DISPLAY_NAME -> R.string.bipe_trust_step_profile_add_name
+        ProfileItem.HANDLE -> R.string.bipe_trust_step_profile_add_handle
+        ProfileItem.AVATAR -> R.string.bipe_trust_step_profile_add_photo
     }
 
 @PreviewsDayNight

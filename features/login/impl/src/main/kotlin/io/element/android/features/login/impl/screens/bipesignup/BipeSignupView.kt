@@ -64,7 +64,7 @@ fun BipeSignupView(
         modifier = modifier.clearFocusOnTap(focusManager),
         topBar = {
             TopAppBar(
-                titleStr = stringResource(R.string.proseio_signup_title),
+                titleStr = stringResource(R.string.bipe_signup_title),
                 navigationIcon = { BackButton(onClick = onBackClick) },
             )
         },
@@ -81,23 +81,23 @@ fun BipeSignupView(
             IconTitleSubtitleMolecule(
                 modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),
                 iconStyle = BigIcon.Style.Default(CompoundIcons.UserProfileSolid()),
-                title = stringResource(R.string.proseio_signup_title),
-                subTitle = state.inviterHandle?.let { stringResource(R.string.proseio_signup_invited_by, it) }
-                    ?: stringResource(R.string.proseio_signup_header),
+                title = stringResource(R.string.bipe_signup_title),
+                subTitle = state.inviterHandle?.let { stringResource(R.string.bipe_signup_invited_by, it) }
+                    ?: stringResource(R.string.bipe_signup_header),
             )
             TextField(
-                label = stringResource(R.string.proseio_signup_display_name),
+                label = stringResource(R.string.bipe_signup_display_name),
                 value = state.displayName,
-                supportingText = stringResource(R.string.proseio_signup_display_name_footer),
+                supportingText = stringResource(R.string.bipe_signup_display_name_footer),
                 enabled = fieldsEnabled,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
                 onValueChange = { eventSink(BipeSignupEvent.UpdateDisplayName(it)) },
             )
             TextField(
-                label = stringResource(R.string.proseio_signup_email),
+                label = stringResource(R.string.bipe_signup_email),
                 value = state.email,
-                supportingText = state.emailError ?: stringResource(R.string.proseio_signup_email_footer),
+                supportingText = state.emailError ?: stringResource(R.string.bipe_signup_email_footer),
                 validity = if (state.emailError != null) TextFieldValidity.Invalid else TextFieldValidity.None,
                 enabled = fieldsEnabled,
                 singleLine = true,
@@ -105,10 +105,10 @@ fun BipeSignupView(
                 onValueChange = { eventSink(BipeSignupEvent.UpdateEmail(it)) },
             )
             TextField(
-                label = stringResource(R.string.proseio_signup_password),
+                label = stringResource(R.string.bipe_signup_password),
                 value = state.password,
                 supportingText = state.passwordError
-                    ?: stringResource(R.string.proseio_signup_password_footer, BipeSignupRules.PASSWORD_MIN_LENGTH.toString()),
+                    ?: stringResource(R.string.bipe_signup_password_footer, BipeSignupRules.PASSWORD_MIN_LENGTH.toString()),
                 validity = if (state.passwordError != null) TextFieldValidity.Invalid else TextFieldValidity.None,
                 enabled = fieldsEnabled,
                 singleLine = true,
@@ -117,9 +117,9 @@ fun BipeSignupView(
                 onValueChange = { eventSink(BipeSignupEvent.UpdatePassword(it)) },
             )
             TextField(
-                label = stringResource(R.string.proseio_signup_password_confirm),
+                label = stringResource(R.string.bipe_signup_password_confirm),
                 value = state.passwordConfirmation,
-                supportingText = if (state.passwordMismatch) stringResource(R.string.proseio_signup_password_mismatch) else null,
+                supportingText = if (state.passwordMismatch) stringResource(R.string.bipe_signup_password_mismatch) else null,
                 validity = if (state.passwordMismatch) TextFieldValidity.Invalid else TextFieldValidity.None,
                 enabled = fieldsEnabled,
                 singleLine = true,
@@ -128,9 +128,9 @@ fun BipeSignupView(
                 onValueChange = { eventSink(BipeSignupEvent.UpdatePasswordConfirmation(it)) },
             )
             TextField(
-                label = stringResource(R.string.proseio_signup_handle),
+                label = stringResource(R.string.bipe_signup_handle),
                 value = state.handle,
-                placeholder = stringResource(R.string.proseio_handle_placeholder),
+                placeholder = stringResource(R.string.bipe_handle_placeholder),
                 supportingText = state.handleError ?: handleFooter(state.handleStatus),
                 validity = when {
                     state.handleError != null || state.handleStatus is BipeHandleStatus.Problem -> TextFieldValidity.Invalid
@@ -143,9 +143,9 @@ fun BipeSignupView(
                 onValueChange = { eventSink(BipeSignupEvent.UpdateHandle(it)) },
             )
             val inviteCodeFooter = state.inviteCodeError
-                ?: if (state.isInviteCodeAcceptable) null else stringResource(R.string.proseio_error_invite_invalid)
+                ?: if (state.isInviteCodeAcceptable) null else stringResource(R.string.bipe_error_invite_invalid)
             TextField(
-                label = stringResource(R.string.proseio_signup_invite_code),
+                label = stringResource(R.string.bipe_signup_invite_code),
                 value = state.inviteCodeInput,
                 placeholder = "XXXX-XXXX-XXXX",
                 supportingText = inviteCodeFooter,
@@ -159,7 +159,7 @@ fun BipeSignupView(
                 text = if (state.isAccountCreated) {
                     stringResource(CommonStrings.action_continue)
                 } else {
-                    stringResource(R.string.proseio_signup_submit)
+                    stringResource(R.string.bipe_signup_submit)
                 },
                 enabled = state.canSubmit,
                 onClick = ::submit,
@@ -187,8 +187,8 @@ fun BipeSignupView(
 
 @Composable
 private fun handleFooter(status: BipeHandleStatus): String = when (status) {
-    BipeHandleStatus.Empty, BipeHandleStatus.Unknown -> stringResource(R.string.proseio_signup_handle_footer)
-    BipeHandleStatus.Checking -> stringResource(R.string.proseio_handle_checking)
-    BipeHandleStatus.Available -> stringResource(R.string.proseio_handle_available)
+    BipeHandleStatus.Empty, BipeHandleStatus.Unknown -> stringResource(R.string.bipe_signup_handle_footer)
+    BipeHandleStatus.Checking -> stringResource(R.string.bipe_handle_checking)
+    BipeHandleStatus.Available -> stringResource(R.string.bipe_handle_available)
     is BipeHandleStatus.Problem -> stringResource(status.problem.messageRes, *status.problem.messageArgs)
 }

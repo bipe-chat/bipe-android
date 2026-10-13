@@ -94,7 +94,7 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
         private val JPEG = "image/jpeg".toMediaType()
 
         /**
-         * [baseUrl] is the API root, e.g. `https://api.proseio.com.br`.
+         * [baseUrl] is the API root, e.g. `https://api.bipe.net.br`.
          * [callFactory] must not log bodies or headers: requests carry passwords and access tokens.
          */
         fun create(callFactory: Call.Factory, json: Json, baseUrl: String): BipeApiClient {
@@ -256,25 +256,25 @@ sealed class BipeApiException(cause: Throwable? = null) : Exception(cause) {
     /** User-facing message (pt-BR / en). */
     fun localizedMessage(stringProvider: StringProvider): String = when (this) {
         is Server -> when (code) {
-            BipeApiErrorCode.INVITE_INVALID -> stringProvider.getString(R.string.proseio_error_invite_invalid)
-            BipeApiErrorCode.INVITE_QUOTA_EXHAUSTED -> stringProvider.getString(R.string.proseio_error_invite_quota)
-            BipeApiErrorCode.EMAIL_TAKEN -> stringProvider.getString(R.string.proseio_error_email_taken)
-            BipeApiErrorCode.PASSWORD_WEAK -> stringProvider.getString(R.string.proseio_error_password_weak)
+            BipeApiErrorCode.INVITE_INVALID -> stringProvider.getString(R.string.bipe_error_invite_invalid)
+            BipeApiErrorCode.INVITE_QUOTA_EXHAUSTED -> stringProvider.getString(R.string.bipe_error_invite_quota)
+            BipeApiErrorCode.EMAIL_TAKEN -> stringProvider.getString(R.string.bipe_error_email_taken)
+            BipeApiErrorCode.PASSWORD_WEAK -> stringProvider.getString(R.string.bipe_error_password_weak)
             BipeApiErrorCode.HANDLE_TAKEN -> BipeHandleProblem.TAKEN.localizedMessage(stringProvider)
             BipeApiErrorCode.HANDLE_INVALID ->
                 (reason?.let(BipeHandleProblem::fromId) ?: BipeHandleProblem.INVALID_CHARACTERS).localizedMessage(stringProvider)
-            BipeApiErrorCode.HANDLE_COOLDOWN -> stringProvider.getString(R.string.proseio_error_handle_cooldown)
+            BipeApiErrorCode.HANDLE_COOLDOWN -> stringProvider.getString(R.string.bipe_error_handle_cooldown)
             BipeApiErrorCode.PROFILE_INVALID ->
-                reason?.let(BipeProfileProblem::fromId)?.localizedMessage(stringProvider) ?: stringProvider.getString(R.string.proseio_error_generic)
-            BipeApiErrorCode.PHOTO_INVALID -> stringProvider.getString(R.string.proseio_public_profile_photo_invalid)
-            BipeApiErrorCode.RATE_LIMITED -> stringProvider.getString(R.string.proseio_error_rate_limited)
-            BipeApiErrorCode.UNAUTHORIZED -> stringProvider.getString(R.string.proseio_error_unauthorized)
+                reason?.let(BipeProfileProblem::fromId)?.localizedMessage(stringProvider) ?: stringProvider.getString(R.string.bipe_error_generic)
+            BipeApiErrorCode.PHOTO_INVALID -> stringProvider.getString(R.string.bipe_public_profile_photo_invalid)
+            BipeApiErrorCode.RATE_LIMITED -> stringProvider.getString(R.string.bipe_error_rate_limited)
+            BipeApiErrorCode.UNAUTHORIZED -> stringProvider.getString(R.string.bipe_error_unauthorized)
             // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).
             BipeApiErrorCode.ATTESTATION_INVALID,
             BipeApiErrorCode.BAD_REQUEST, BipeApiErrorCode.NOT_FOUND, BipeApiErrorCode.INTERNAL ->
-                stringProvider.getString(R.string.proseio_error_generic)
+                stringProvider.getString(R.string.bipe_error_generic)
         }
-        is Network -> stringProvider.getString(R.string.proseio_error_network)
-        is UnexpectedResponse -> stringProvider.getString(R.string.proseio_error_generic)
+        is Network -> stringProvider.getString(R.string.bipe_error_network)
+        is UnexpectedResponse -> stringProvider.getString(R.string.bipe_error_generic)
     }
 }

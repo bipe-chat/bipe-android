@@ -104,7 +104,7 @@ private fun PresenceSection(state: ModerationAndSafetyState) {
             },
             supportingContent = {
                 // Bipe: read receipts are not part of this toggle (ADR 0050)
-                Text(text = stringResource(id = BipeR.string.proseio_settings_share_presence_footer))
+                Text(text = stringResource(id = BipeR.string.bipe_settings_share_presence_footer))
             },
             trailingContent = ListItemContent.Switch(
                 checked = state.isSharePresenceEnabled,
