@@ -7,81 +7,77 @@
 package io.element.android.features.login.impl.screens.bipesignup
 
 import io.element.android.libraries.architecture.AsyncAction
-import io.element.android.libraries.bipe.BipeHandleStatus
 import io.element.android.libraries.bipe.BipeInviteCode
 import io.element.android.libraries.bipe.BipeSignupRules
 import io.element.android.libraries.bipe.account.ui.BipeNewPinState
 
-/** Steps of the device-first sign-up (ADR 0057). */
+/**
+ * One question per screen (ADR 0057, bipe-chat/bipe#196, port of BipeSignupStep on iOS). The @ and the recovery e-mail
+ * come later (bipe-chat/bipe#200, bipe-chat/bipe#202).
+ */
 enum class BipeSignupStep {
-    /** Name, optional @, invite code, optional e-mail. */
-    FORM,
+    /** Only without a code from a link. Sign-up is invite-only (bipe ADR 0072). */
+    INVITE,
+    NAME,
 
-    /** The 8-digit PIN, typed twice. */
+    /** The 8-digit PIN. A whole, acceptable PIN moves on by itself. */
     PIN,
 
-    /** No e-mail given: "If you lose your phone", with "Add an email" and "Not now". */
-    FALLBACK,
+    /** The same PIN again. A match creates the account. */
+    PIN_CONFIRMATION,
 }
 
 /** Port of BipeSignupScreenViewState on iOS. Never log this class: it holds the PIN. */
 data class BipeSignupState(
     val step: BipeSignupStep,
+    /** [BipeSignupStep.INVITE] without a code from a link, else [BipeSignupStep.NAME]. */
+    val firstStep: BipeSignupStep,
     val displayName: String,
-    val email: String,
-    val handle: String,
     val inviteCodeInput: String,
-    val handleStatus: BipeHandleStatus,
-    val emailError: String?,
-    val handleError: String?,
     val inviteCodeError: String?,
     val inviterHandle: String?,
+    /** "Não tenho convite" was tapped. */
+    val showsNoInviteHelp: Boolean,
     val pinState: BipeNewPinState,
-    /** The fallback step shows the e-mail field. */
-    val isFallbackEmailOpen: Boolean,
-    /** `false` in the F-Droid build: the recovery token does not sync with the Google account. */
-    val isTokenSynced: Boolean,
+    /** Shown on the PIN step: a weak PIN from the server. */
+    val pinError: String?,
+    /** The second PIN did not match the first. */
+    val pinMismatch: Boolean,
     /** Account creation and sign-in. Failure carries the localised message. */
     val createAction: AsyncAction<Unit>,
     val eventSink: (BipeSignupEvent) -> Unit,
 ) {
     val inviteCode: BipeInviteCode? get() = BipeInviteCode.parse(inviteCodeInput)
 
-    val isInviteCodeAcceptable: Boolean get() = inviteCodeInput.isBlank() || inviteCode != null
+    val inviteCodeFooterIsInvalid: Boolean get() = inviteCodeError != null || (inviteCodeInput.isNotBlank() && inviteCode == null)
 
-    /** Blank, or a plausible address. */
-    val isEmailAcceptable: Boolean get() = email.isBlank() || BipeSignupRules.isPlausibleEmail(email.trim())
+    val canContinueFromInvite: Boolean get() = inviteCode != null && inviteCodeError == null
 
-    val canContinueForm: Boolean
+    val canContinueFromName: Boolean
         get() {
             val name = displayName.trim()
-            return name.isNotEmpty() &&
-                name.length <= BipeSignupRules.DISPLAY_NAME_MAX_LENGTH &&
-                isEmailAcceptable &&
-                !handleStatus.isBlocking &&
-                isInviteCodeAcceptable &&
-                inviteCodeError == null
+            return name.isNotEmpty() && name.length <= BipeSignupRules.DISPLAY_NAME_MAX_LENGTH
         }
+
+    /** The back button opens the step before, or leaves the screen on the first step. */
+    val hasPreviousStep: Boolean get() = step.ordinal > firstStep.ordinal
 
     override fun toString(): String = "BipeSignupState(step=$step)"
 }
 
 sealed interface BipeSignupEvent {
     data class UpdateDisplayName(val value: String) : BipeSignupEvent
-    data class UpdateEmail(val value: String) : BipeSignupEvent {
-        override fun toString() = "UpdateEmail"
-    }
-    data class UpdateHandle(val value: String) : BipeSignupEvent
     data class UpdateInviteCode(val value: String) : BipeSignupEvent
+    data class UpdatePin(val value: String) : BipeSignupEvent {
+        override fun toString() = "UpdatePin"
+    }
+    data class UpdatePinConfirmation(val value: String) : BipeSignupEvent {
+        override fun toString() = "UpdatePinConfirmation"
+    }
 
-    /** Next step, or create the account on the last one. */
-    data object Continue : BipeSignupEvent
-
-    /** Fallback step: show the e-mail field. */
-    data object OpenFallbackEmail : BipeSignupEvent
-
-    /** Fallback step: "Not now". Creates the account without an e-mail. */
-    data object SkipFallback : BipeSignupEvent
+    data object ContinueFromInvite : BipeSignupEvent
+    data object ShowNoInviteHelp : BipeSignupEvent
+    data object ContinueFromName : BipeSignupEvent
 
     /** Back one step. */
     data object Back : BipeSignupEvent

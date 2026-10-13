@@ -48,6 +48,7 @@ import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
+import io.element.android.features.login.impl.R as LoginR
 
 /** Getting back into the account on a new phone (ADR 0057, ADR 0059). */
 @Composable
@@ -56,6 +57,7 @@ fun BipeRecoveryView(
     onBackClick: () -> Unit,
     onSignInWithQrCode: () -> Unit,
     modifier: Modifier = Modifier,
+    onSignInManually: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val isLoading = state.action is AsyncAction.Loading
@@ -78,7 +80,7 @@ fun BipeRecoveryView(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (state.mode) {
-                BipeRecoveryMode.CHOOSE -> ChooseContent(state, isLoading, onSignInWithQrCode)
+                BipeRecoveryMode.CHOOSE -> ChooseContent(state, isLoading, onSignInWithQrCode, onSignInManually)
                 BipeRecoveryMode.LINK_PIN -> LinkPinContent(state, isLoading)
                 BipeRecoveryMode.LINK_NEW_PIN -> LinkNewPinContent(state, isLoading)
                 BipeRecoveryMode.WAITING -> WaitingContent(state)
@@ -104,7 +106,12 @@ private fun Body(text: String) {
 }
 
 @Composable
-private fun ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, onSignInWithQrCode: () -> Unit) {
+private fun ChooseContent(
+    state: BipeRecoveryScreenState,
+    isLoading: Boolean,
+    onSignInWithQrCode: () -> Unit,
+    onSignInManually: () -> Unit,
+) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
@@ -175,6 +182,16 @@ private fun ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, on
                 .padding(bottom = 16.dp),
         )
     }
+    // Beta accounts made before ADR 0057 still sign in with their e-mail and password (as on iOS).
+    HorizontalDivider()
+    TextButton(
+        text = stringResource(LoginR.string.screen_onboarding_sign_in_manually),
+        enabled = !isLoading,
+        onClick = onSignInManually,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+    )
 }
 
 @Composable

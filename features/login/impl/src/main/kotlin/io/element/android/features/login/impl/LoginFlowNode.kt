@@ -33,13 +33,13 @@ import io.element.android.features.login.api.LoginEntryPoint
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
 import io.element.android.features.login.impl.classic.ElementClassicConnection
 import io.element.android.features.login.impl.qrcode.QrCodeLoginFlowNode
+import io.element.android.features.login.impl.screens.biperecovery.BipeRecoveryNode
+import io.element.android.features.login.impl.screens.bipesignup.BipeSignupNode
 import io.element.android.features.login.impl.screens.chooseaccountprovider.ChooseAccountProviderNode
 import io.element.android.features.login.impl.screens.classic.ClassicFlowNode
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderNode
 import io.element.android.features.login.impl.screens.loginpassword.LoginPasswordNode
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingNode
-import io.element.android.features.login.impl.screens.biperecovery.BipeRecoveryNode
-import io.element.android.features.login.impl.screens.bipesignup.BipeSignupNode
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.BackstackView
@@ -49,12 +49,16 @@ import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.inputs
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
+import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.di.annotations.AppCoroutineScope
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.oauth.api.OAuthAction
 import io.element.android.libraries.oauth.api.OAuthActionFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
@@ -70,6 +74,7 @@ class LoginFlowNode(
     private val elementClassicConnection: ElementClassicConnection,
     private val preferencesEntryPoint: PreferencesEntryPoint,
     private val bipeDeviceAccount: BipeDeviceAccount, // Bipe
+    private val bipeApiClient: BipeApiClient, // Bipe
 ) : BaseFlowNode<LoginFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.CheckClassicFlow,
@@ -93,6 +98,10 @@ class LoginFlowNode(
     private var darkTheme: Boolean = false
 
     private var externalAppStarted = false
+
+    // Bipe (bipe-chat/bipe#195): the code from an invite link stays until sign-in, so backing out of sign-up keeps it.
+    private var bipePendingInviteCode: String? = null
+    private val bipeInviterHandle = MutableStateFlow<String?>(null)
 
     override fun onBuilt() {
         super.onBuilt()
@@ -164,7 +173,11 @@ class LoginFlowNode(
                         }
                         // Bipe: an invite link opens the sign-up screen on top of onboarding, a recovery link the recovery screen.
                         val params = inputs<Params>()
-                        params.bipeInviteCode?.let { backstack.push(NavTarget.BipeSignup(inviteCode = it)) }
+                        params.bipeInviteCode?.let {
+                            bipePendingInviteCode = it
+                            bipeLoadInviter(it)
+                            backstack.push(NavTarget.BipeSignup(inviteCode = it))
+                        }
                         params.bipeRecoveryToken?.let { backstack.push(NavTarget.BipeRecovery(linkToken = it)) }
                         if (!allowBackNavigation && params.bipeInviteCode == null && params.bipeRecoveryToken == null) {
                             bipeStartDeviceAccount()
@@ -186,7 +199,7 @@ class LoginFlowNode(
                     override fun navigateToSignUpFlow() {
                         backstack.push(
                             if (OnBoardingConfig.USES_BIPE_SIGNUP) {
-                                NavTarget.BipeSignup()
+                                NavTarget.BipeSignup(inviteCode = bipePendingInviteCode)
                             } else {
                                 NavTarget.ConfirmAccountProvider(isAccountCreation = true)
                             }
@@ -210,6 +223,8 @@ class LoginFlowNode(
                     override fun navigateToBipeRecovery() {
                         backstack.push(NavTarget.BipeRecovery())
                     }
+
+                    override val bipeInviterHandle: StateFlow<String?> = this@LoginFlowNode.bipeInviterHandle
 
                     override fun navigateToBugReport() {
                         callback.navigateToBugReport()
@@ -299,6 +314,10 @@ class LoginFlowNode(
                     override fun navigateToQrCode() {
                         backstack.push(NavTarget.QrCode)
                     }
+
+                    override fun navigateToManualSignIn() {
+                        backstack.push(NavTarget.ConfirmAccountProvider(isAccountCreation = false))
+                    }
                 }
                 val inputs = BipeRecoveryNode.Inputs(linkToken = navTarget.linkToken)
                 createNode<BipeRecoveryNode>(buildContext, plugins = listOf(inputs, callback))
@@ -321,6 +340,22 @@ class LoginFlowNode(
         if (silent?.isSuccess == true) return@launch
         if (bipeDeviceAccount.pendingClaim() != null || bipeDeviceAccount.hasRecoveryToken()) {
             backstack.push(NavTarget.BipeRecovery())
+        }
+    }
+
+    /** Bipe: names the inviter on the onboarding screen. A code that no longer works is dropped. */
+    private fun bipeLoadInviter(code: String) = lifecycleScope.launch {
+        val preview = try {
+            bipeApiClient.invitePreview(code)
+        } catch (_: BipeApiException) {
+            return@launch
+        }
+        if (bipePendingInviteCode != code) return@launch
+        if (preview.valid) {
+            bipeInviterHandle.value = preview.inviterHandle
+        } else {
+            bipePendingInviteCode = null
+            bipeInviterHandle.value = null
         }
     }
 
