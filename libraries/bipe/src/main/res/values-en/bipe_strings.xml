@@ -212,9 +212,10 @@
     <string name="bipe_self_chat_title">Notes</string>
     <string name="bipe_self_chat_subtitle">Messages only you can see</string>
     <string name="bipe_self_chat_error">Couldn\'t open your notes. Try again.</string>
+    <string name="bipe_onboarding_welcome">Bipe is here.</string>
     <string name="bipe_onboarding_title">Know who you\'re talking to.</string>
     <string name="bipe_onboarding_point_scam">A warning when a message looks like a scam.</string>
-    <string name="bipe_onboarding_point_handle">People find you by your @ without seeing your number.</string>
+    <string name="bipe_onboarding_point_brazil">Data and servers stay in Brazil, under Brazilian law.</string>
     <string name="bipe_onboarding_point_no_ads">No ads. Your data isn\'t for sale.</string>
     <string name="bipe_signup_device_header">To create an account, you only need your name. The @ and the email are optional.</string>
     <string name="bipe_signup_email_optional">Email (optional)</string>

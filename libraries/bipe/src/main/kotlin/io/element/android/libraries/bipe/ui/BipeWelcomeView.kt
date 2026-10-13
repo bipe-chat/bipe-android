@@ -47,7 +47,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.R as DesignSystemR
 
 /**
- * Bipe's welcome content on the onboarding screen: the logo, the promise and three value points.
+ * Bipe's welcome content on the onboarding screen: the logo, the welcome line, the promise and three value points.
  * iOS: `BipeWelcomeView`.
  */
 @Composable
@@ -82,6 +82,13 @@ fun BipeWelcomeView(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(32.dp))
             }
             Text(
+                text = stringResource(R.string.bipe_onboarding_welcome),
+                style = ElementTheme.typography.fontBodyLgMedium,
+                color = ElementTheme.colors.textPrimary,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
                 text = stringResource(R.string.bipe_onboarding_title),
                 style = ElementTheme.typography.fontHeadingXlBold,
                 color = ElementTheme.colors.textPrimary,
@@ -91,14 +98,26 @@ fun BipeWelcomeView(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(32.dp))
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 BipeWelcomePoint(CompoundIcons.Shield(), stringResource(R.string.bipe_onboarding_point_scam))
-                BipeWelcomePoint(CompoundIcons.Mention(), stringResource(R.string.bipe_onboarding_point_handle))
+                BipeWelcomePoint(CompoundIcons.LocationPin(), stringResource(R.string.bipe_onboarding_point_brazil))
                 BipeWelcomePoint(CompoundIcons.Block(), stringResource(R.string.bipe_onboarding_point_no_ads))
             }
         }
     }
 }
 
-/** Bipe's onboarding background: a soft açaí wash from the top over the canvas colour. Replaces Element's artwork. */
+/**
+ * Bipe's onboarding background: an açaí wash from the top over the canvas colour. Replaces Element's artwork.
+ * Works in light, dark and high contrast through Compound tokens.
+ *
+ * Wash spec (same numbers in iOS `BipeWelcomeBackground`, ElementX BipeWelcomeView.swift):
+ * - Base: bgCanvasDefault, full screen, behind the system bars (edge-to-edge, transparent bars).
+ * - Vertical gradient over the full screen height, top to bottom:
+ *   gradientSubtleStop1 at 0, stop2 at 0.2, stop3 at 0.4, stop4 at 0.55, stop5 at 0.7,
+ *   and stop5 with alpha 0 at 0.85.
+ * - The end stop is stop5 with alpha 0, not gradientSubtleStop6 (transparent black). Skia interpolates
+ *   unpremultiplied colours, so a fade to transparent black darkens the last segment here. With one RGB at both
+ *   ends of the last segment, premultiplied and unpremultiplied interpolation give the same pixels.
+ */
 @Composable
 fun Modifier.bipeWelcomeBackground(): Modifier {
     val colors = ElementTheme.colors
@@ -107,11 +126,11 @@ fun Modifier.bipeWelcomeBackground(): Modifier {
         .background(
             Brush.verticalGradient(
                 0f to colors.gradientSubtleStop1,
-                0.12f to colors.gradientSubtleStop2,
-                0.25f to colors.gradientSubtleStop3,
-                0.38f to colors.gradientSubtleStop4,
-                0.5f to colors.gradientSubtleStop5,
-                0.65f to colors.gradientSubtleStop6,
+                0.2f to colors.gradientSubtleStop2,
+                0.4f to colors.gradientSubtleStop3,
+                0.55f to colors.gradientSubtleStop4,
+                0.7f to colors.gradientSubtleStop5,
+                0.85f to colors.gradientSubtleStop5.copy(alpha = 0f),
             )
         )
 }
