@@ -517,4 +517,19 @@ object BipeRegistries {
     const val PHONE_MAX_INPUT_LENGTH = 64
     const val PHONE_INTERNATIONAL_MIN_DIGITS = 8
     const val PHONE_INTERNATIONAL_MAX_DIGITS = 15
+
+    /**
+     * Device-first accounts (ADR 0057, ADR 0059; registries/accounts.json). Check PINs with the rule there;
+     * test-vectors/pins.json has the cases. The server is the authority.
+     */
+    const val PIN_LENGTH = 8
+    const val PIN_MAX_WRONG_TRIES = 5
+    const val PIN_DATE_YEAR_MIN = 1900
+    const val PIN_DATE_YEAR_MAX = 2099
+    const val RECOVERY_DELAY_HOURS_EMAIL = 24
+    const val RECOVERY_DELAY_HOURS_GUARDIAN = 24
+    const val RECOVERY_DELAY_HOURS_CPF = 72
+    const val GUARDIAN_APPROVALS_MAX = 2
+    const val RECOVERY_LINK_MINUTES = 60
+    const val EMAIL_VERIFY_LINK_HOURS = 24
 }
