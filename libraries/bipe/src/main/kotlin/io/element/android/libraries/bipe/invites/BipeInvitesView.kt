@@ -10,7 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -28,12 +33,14 @@ import io.element.android.libraries.designsystem.theme.components.HorizontalDivi
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.ListSupportingText
+import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
 import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeInvite
 import io.element.android.libraries.bipe.api.BipeInviteStatus
+import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
 import java.time.ZoneId
@@ -108,12 +115,22 @@ private fun InviteRow(
                 state.shareUrls[invite.id]?.let { url ->
                     val context = LocalContext.current
                     val message = stringResource(R.string.bipe_invites_share_message, url)
+                    var showQrCode by rememberSaveable { mutableStateOf(false) }
                     OutlinedButton(
                         text = stringResource(CommonStrings.action_share),
                         size = ButtonSize.Medium,
                         leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
                         onClick = { context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = message) },
                     )
+                    OutlinedButton(
+                        text = stringResource(R.string.bipe_invites_qr_action),
+                        size = ButtonSize.Medium,
+                        leadingIcon = IconSource.Vector(CompoundIcons.QrCode()),
+                        onClick = { showQrCode = true },
+                    )
+                    if (showQrCode) {
+                        InviteQrCodeSheet(url = url, shareText = message, onDismiss = { showQrCode = false })
+                    }
                 }
                 TextButton(
                     text = stringResource(R.string.bipe_invites_revoke),
@@ -135,6 +152,22 @@ private fun InviteRow(
             content = { Text(statusTitle) },
             supportingContent = { Text(formatDate(invite.createdAt, withTime = false)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Close())),
+        )
+    }
+}
+
+/** The invite link as a QR code. Scanned with the camera, it opens sign-up with the code, or the invite page when the app is missing. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InviteQrCodeSheet(url: String, shareText: String, onDismiss: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, scrollable = true) {
+        BipeQrCodeContent(
+            url = url,
+            title = stringResource(R.string.bipe_invites_qr_title),
+            footer = stringResource(R.string.bipe_invites_qr_footer),
+            shareText = shareText,
+            shareLabel = stringResource(CommonStrings.action_share),
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
         )
     }
 }
