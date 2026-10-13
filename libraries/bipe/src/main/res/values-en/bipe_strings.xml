@@ -16,9 +16,9 @@
     <string name="bipe_warning_receipt_image">Image, not a payment receipt.</string>
     <string name="bipe_warning_reserved_name">This name is reserved for verified organisations.</string>
     <string name="bipe_warning_not_your_contact">Not your contact %1$s.</string>
-    <string name="bipe_device_approval_never_for_others">Bipe never asks you to approve someone else\'s login.</string>
+    <string name="bipe_device_approval_never_for_others">Bipe never asks you to approve someone else\'s phone.</string>
     <string name="bipe_badge_verified_contact">Confirmed in person</string>
-    <string name="bipe_badge_suspended_body">This account signed in on a new device. Verification comes back when the person confirms their identity there.</string>
+    <string name="bipe_badge_suspended_body">This account signed in on a new device. The seal comes back when the person verifies again on that device.</string>
     <string name="bipe_warning_nickname_confirm_title">Confirm who this is</string>
     <string name="bipe_warning_nickname_confirm_body">You saved this contact as %1$s. The account is verified as %2$s. Is it the same person?</string>
     <string name="bipe_action_nickname_confirm_yes">Yes, same person</string>
@@ -76,11 +76,11 @@
     <string name="bipe_messaging_contacts">Contacts only</string>
     <string name="bipe_messaging_contacts_body">People in a group or chat with you, people you invited and whoever invited you.</string>
     <string name="bipe_error_invite_invalid">This invite is not valid or was already used.</string>
-    <string name="bipe_error_email_taken">An account with this email already exists. Sign in with it.</string>
+    <string name="bipe_error_email_taken">This email is already on another Bipe account. Use a different email.</string>
     <string name="bipe_error_password_weak">This password is too weak. Pick a longer or less obvious one.</string>
     <string name="bipe_error_handle_cooldown">You changed your username recently. Try again later.</string>
     <string name="bipe_error_rate_limited">Too many tries. Wait a bit and try again.</string>
-    <string name="bipe_error_unauthorized">Your session expired. Sign out and sign in again.</string>
+    <string name="bipe_error_unauthorized">Your account left this device. Get back into your account to continue.</string>
     <string name="bipe_error_network">Cannot reach Bipe. Check your connection and try again.</string>
     <string name="bipe_error_generic">Something went wrong. Try again.</string>
     <string name="bipe_error_attestation_invalid">We couldn\'t confirm this is the official Bipe app. Update the app and try again.</string>
@@ -139,7 +139,7 @@
     <string name="bipe_public_profile_off">Off</string>
     <string name="bipe_public_profile_toggle">Show my public profile</string>
     <string name="bipe_public_profile_footer">Anyone who opens your link sees the name, photo and bio you put here. Nobody can find your profile by search. You can turn it off any time.</string>
-    <string name="bipe_public_profile_needs_handle">Choose a username first. Your profile link uses it.</string>
+    <string name="bipe_public_profile_needs_handle">Choose a username first. Your profile link uses your @.</string>
     <string name="bipe_public_profile_name">Name</string>
     <string name="bipe_public_profile_bio">Bio</string>
     <string name="bipe_public_profile_bio_placeholder">Say a little about yourself</string>
@@ -157,9 +157,9 @@
     <string name="bipe_trust_step_email">Email confirmed</string>
     <string name="bipe_trust_step_email_body">Open a link we send to your email.</string>
     <string name="bipe_trust_step_pix">Pix</string>
-    <string name="bipe_trust_step_pix_body">A R$0.01 Pix from your bank account confirms your name.</string>
+    <string name="bipe_trust_step_pix_body">A R$ 0.01 Pix from your bank account verifies your name.</string>
     <string name="bipe_trust_step_govbr">gov.br</string>
-    <string name="bipe_trust_step_govbr_body">A signature with your gov.br account confirms your name.</string>
+    <string name="bipe_trust_step_govbr_body">A signature with your gov.br account verifies your name.</string>
     <string name="bipe_trust_coming_soon">Coming soon</string>
     <string name="bipe_invites_next">Next invite on %1$s</string>
     <string name="bipe_voice_transcript_title">Transcript</string>
@@ -196,7 +196,7 @@
     <string name="bipe_sticker_save_failed">The sticker was not saved. Try again.</string>
     <string name="bipe_stickers_from_photo">Make from a photo</string>
     <string name="bipe_contacts_title">Contacts on Bipe</string>
-    <string name="bipe_contacts_intro">See which of your contacts are already on Bipe. Numbers are only compared on the server and are not stored.</string>
+    <string name="bipe_contacts_intro">See which of your contacts are already on Bipe. The server only compares the numbers and stores none of them.</string>
     <string name="bipe_contacts_allow">Allow access to contacts</string>
     <string name="bipe_contacts_denied">Bipe has no access to your contacts. You can allow it in iPhone Settings.</string>
     <string name="bipe_contacts_open_settings">Open Settings</string>
@@ -220,7 +220,7 @@
     <string name="bipe_signup_device_header">To create an account, you only need your name. The @ and the email are optional.</string>
     <string name="bipe_signup_email_optional">Email (optional)</string>
     <string name="bipe_signup_email_optional_footer">Only used to get back into your account if you lose your phone. Nobody else sees it.</string>
-    <string name="bipe_signup_device_success">Account created. It stays on this phone, with no login.</string>
+    <string name="bipe_signup_device_success">Account created. It stays on this phone.</string>
     <string name="bipe_pin_create_title">Create your PIN</string>
     <string name="bipe_pin_create_body">Pick a PIN with %1$s digits, like your bank PIN. It locks the app and protects getting back into your account.</string>
     <string name="bipe_pin_confirm_title">Enter the PIN again</string>
@@ -277,8 +277,8 @@
     <string name="bipe_recovery_pin_ready">Done. Your new PIN works now.</string>
     <string name="bipe_recovery_history_note">To see your old messages, approve this phone on an old device or use your recovery key.</string>
     <string name="bipe_recovery_cancelled">Getting back into the account was cancelled on one of your devices.</string>
-    <string name="bipe_error_recovery_invalid">This request no longer works. Start again.</string>
-    <string name="bipe_recovery_alert_title">Request to get into your account</string>
+    <string name="bipe_error_recovery_invalid">You can\'t continue from here anymore. Start again.</string>
+    <string name="bipe_recovery_alert_title">Your account is moving to a new device</string>
     <string name="bipe_recovery_alert_email">Someone used your recovery email to move your account to another device. If it was not you, cancel now. If nobody cancels, the account opens on that device on %1$s.</string>
     <string name="bipe_recovery_alert_guardian">Your guardians approved moving your account to another device. If it was not you, cancel now. If nobody cancels, the account opens on that device on %1$s.</string>
     <string name="bipe_recovery_alert_cpf">Someone verified your CPF to move your account to another device. If it was not you, cancel now. If nobody cancels, the account opens on that device on %1$s.</string>
