@@ -35,13 +35,14 @@ fun BipePinField(
     error: String?,
     enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Done,
+    hint: String? = null,
 ) {
     TextField(
         value = value,
         onValueChange = { onValueChange(BipePin.sanitizeInput(it)) },
         label = label,
         placeholder = "•".repeat(BipePin.LENGTH),
-        supportingText = error,
+        supportingText = error ?: hint,
         validity = if (error != null) TextFieldValidity.Invalid else TextFieldValidity.None,
         enabled = enabled,
         singleLine = true,
@@ -86,6 +87,7 @@ fun BipeNewPinFields(state: BipeNewPinState, enabled: Boolean = true) {
             label = stringResource(R.string.bipe_pin_confirm_title),
             error = if (state.isMismatch) stringResource(R.string.bipe_pin_mismatch) else null,
             enabled = enabled,
+            hint = stringResource(R.string.bipe_pin_never_asked),
         )
     }
 }
@@ -128,6 +130,14 @@ fun BipeEnterPinDialog(
         onSubmit = { onSubmit(pin) },
         onDismissRequest = onDismiss,
     ) {
-        item { BipePinField(value = pin, onValueChange = { pin = it }, label = null, error = error) }
+        item {
+            BipePinField(
+                value = pin,
+                onValueChange = { pin = it },
+                label = null,
+                error = error,
+                hint = stringResource(R.string.bipe_pin_never_asked),
+            )
+        }
     }
 }

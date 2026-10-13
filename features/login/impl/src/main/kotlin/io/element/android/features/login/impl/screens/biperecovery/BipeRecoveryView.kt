@@ -120,6 +120,7 @@ private fun ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, on
             label = stringResource(R.string.bipe_pin_enter_title),
             error = state.pinError,
             enabled = !isLoading,
+            hint = stringResource(R.string.bipe_pin_never_asked),
         )
         Button(
             text = stringResource(CommonStrings.action_continue),
@@ -191,6 +192,7 @@ private fun LinkPinContent(state: BipeRecoveryScreenState, isLoading: Boolean) {
         label = null,
         error = state.pinError,
         enabled = !isLoading,
+        hint = stringResource(R.string.bipe_pin_never_asked),
     )
     Button(
         text = stringResource(CommonStrings.action_continue),
