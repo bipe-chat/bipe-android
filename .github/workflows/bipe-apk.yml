@@ -4,7 +4,8 @@
 # Output: a signed universal APK and its SHA-256 as the workflow artifact bipe-apk-<version>-<build>, kept 7 days.
 # Nothing is published on GitHub. The Magalu server pulls the newest artifact with a read-only token and serves it
 # at https://bipe.chat/baixar/android/bipe.apk (bipe-infra k8s/bipe/apk-pull.yaml).
-# Secrets: BIPE_ANDROID_KEYSTORE_B64 (PKCS12, base64), BIPE_ANDROID_STOREPASSWORD, BIPE_ANDROID_KEYALIAS.
+# Secrets: BIPE_ANDROID_KEYSTORE_B64 (PKCS12, base64), BIPE_ANDROID_STOREPASSWORD. The key alias is not secret:
+# as a secret, GitHub masks every "bipe" in the logs.
 name: Bipe APK
 
 on:
@@ -63,7 +64,7 @@ jobs:
         working-directory: bipe-android
         env:
           BIPE_ANDROID_STOREPASSWORD: ${{ secrets.BIPE_ANDROID_STOREPASSWORD }}
-          BIPE_ANDROID_KEYALIAS: ${{ secrets.BIPE_ANDROID_KEYALIAS }}
+          BIPE_ANDROID_KEYALIAS: bipe
         run: ./gradlew --no-daemon --max-workers=4 assembleGplayRelease
       - name: Verify signature
         id: apk
