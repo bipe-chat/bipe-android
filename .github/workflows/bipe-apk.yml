@@ -74,7 +74,11 @@ jobs:
           mkdir -p "$dir"
           name="bipe-${{ steps.version.outputs.name }}-${{ steps.version.outputs.build }}.apk"
           cp "$apk" "$dir/$name"
-          "$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"/apksigner verify --print-certs "$dir/$name" | grep -E "Signer #1 certificate (DN|SHA-256)"
+          ls -l app/build/outputs/apk/gplay/release/
+          bt="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          echo "apksigner from $bt"
+          "$bt/apksigner" verify --verbose --print-certs "$dir/$name" | tee "$RUNNER_TEMP/verify.txt"
+          grep -q "CN=Bipe" "$RUNNER_TEMP/verify.txt"
           (cd "$dir" && sha256sum "$name" > "$name.sha256")
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
