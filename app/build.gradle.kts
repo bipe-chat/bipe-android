@@ -98,6 +98,15 @@ android {
             )
             storePassword = environmentOrGradleValue("ELEMENT_ANDROID_NIGHTLY_STOREPASSWORD", "signing.element.nightly.storePassword")
         }
+        // Bipe release key (bipe#43). Only from the environment: the GitHub workflow bipe-apk.yml writes the
+        // PKCS12 keystore from a secret. Without it, release builds keep the debug key.
+        register("bipe") {
+            storeFile = System.getenv("BIPE_ANDROID_STOREFILE")?.ifBlank { null }?.let { file(it) }
+            storePassword = System.getenv("BIPE_ANDROID_STOREPASSWORD")
+            keyAlias = System.getenv("BIPE_ANDROID_KEYALIAS")
+            keyPassword = System.getenv("BIPE_ANDROID_STOREPASSWORD")
+            storeType = "pkcs12"
+        }
     }
 
     val baseAppName = BuildTimeConfig.APPLICATION_NAME
@@ -124,7 +133,11 @@ android {
                 "login_redirect_scheme",
                 oAuthRedirectSchemeBase,
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (System.getenv("BIPE_ANDROID_STOREFILE").isNullOrBlank()) {
+                signingConfigs.getByName("debug")
+            } else {
+                signingConfigs.getByName("bipe")
+            }
 
             optimization {
                 enable = true

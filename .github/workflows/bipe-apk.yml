@@ -1,0 +1,88 @@
+# Bipe Android tester build (bipe#43). Replaces the manual tar-copy builds on mini4p.
+# Runs when the shared build number changes (node tools/bump-build.mjs in bipe-shared writes
+# BipeVersion.kt) or by hand: gh workflow run bipe-apk.yml -R bipe-chat/bipe-android
+# Output: a signed universal APK and its SHA-256 as the workflow artifact bipe-apk-<version>-<build>, kept 7 days.
+# Nothing is published on GitHub. The Magalu server pulls the newest artifact with a read-only token and serves it
+# at https://bipe.chat/baixar/android/bipe.apk (bipe-infra k8s/bipe/apk-pull.yaml).
+# Secrets: BIPE_ANDROID_KEYSTORE_B64 (PKCS12, base64), BIPE_ANDROID_STOREPASSWORD, BIPE_ANDROID_KEYALIAS.
+name: Bipe APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - plugins/src/main/kotlin/BipeVersion.kt
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bipe-apk
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: bipe-android
+      # Shared test vectors (ADR 0031 rule 4) at the current bipe-shared main, next to the app.
+      - uses: actions/checkout@v4
+        with:
+          repository: bipe-chat/bipe-shared
+          path: bipe-shared
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Version
+        id: version
+        working-directory: bipe-android
+        run: |
+          v=$(sed -nE 's/.*const val NAME *= *"([^"]+)".*/\1/p' plugins/src/main/kotlin/BipeVersion.kt)
+          b=$(sed -nE 's/.*const val BUILD *= *([0-9]+).*/\1/p' plugins/src/main/kotlin/BipeVersion.kt)
+          test -n "$v" && test -n "$b"
+          echo "name=$v" >> "$GITHUB_OUTPUT"
+          echo "build=$b" >> "$GITHUB_OUTPUT"
+          echo "tag=bipe-apk-$v-$b" >> "$GITHUB_OUTPUT"
+      - name: Shared vectors
+        working-directory: bipe-android
+        run: ./gradlew --no-daemon --max-workers=4 :libraries:bipe:testDebugUnitTest
+      - name: Keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.BIPE_ANDROID_KEYSTORE_B64 }}
+        run: |
+          test -n "$KEYSTORE_B64"
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/bipe.p12"
+          echo "BIPE_ANDROID_STOREFILE=$RUNNER_TEMP/bipe.p12" >> "$GITHUB_ENV"
+      - name: Build
+        working-directory: bipe-android
+        env:
+          BIPE_ANDROID_STOREPASSWORD: ${{ secrets.BIPE_ANDROID_STOREPASSWORD }}
+          BIPE_ANDROID_KEYALIAS: ${{ secrets.BIPE_ANDROID_KEYALIAS }}
+        run: ./gradlew --no-daemon --max-workers=4 assembleGplayRelease
+      - name: Verify signature
+        id: apk
+        working-directory: bipe-android
+        run: |
+          apk=app/build/outputs/apk/gplay/release/app-gplay-universal-release.apk
+          dir="$RUNNER_TEMP/out"
+          mkdir -p "$dir"
+          name="bipe-${{ steps.version.outputs.name }}-${{ steps.version.outputs.build }}.apk"
+          cp "$apk" "$dir/$name"
+          "$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"/apksigner verify --print-certs "$dir/$name" | grep -E "Signer #1 certificate (DN|SHA-256)"
+          (cd "$dir" && sha256sum "$name" > "$name.sha256")
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.tag }}
+          path: ${{ steps.apk.outputs.dir }}
+          retention-days: 7
+          if-no-files-found: error
+      - name: Remove keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/bipe.p12"
