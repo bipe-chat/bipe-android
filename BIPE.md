@@ -22,9 +22,9 @@ This repo is Bipe's Android app: a fork of Element X Android (AGPL-3.0). Upstrea
 ./gradlew assembleGplayDebug
 ```
 
-The dev Mac has no JDK or Android SDK. Build on **mini4p** (Tailscale `mini-4p`), which has JDK 21 in `~/opt/jdk-21` and the SDK in `~/Library/Android/sdk` (platform 37.0, build-tools 37.0.0). It has no GitHub access: copy the tree over (`git ls-files -co --exclude-standard | tar`), make it a local git repo (the build reads git for BuildConfig), add `local.properties`, then `JAVA_HOME=~/opt/jdk-21/Contents/Home ./gradlew assembleGplayDebug`. First green build: 12 October 2026.
+The dev Mac has no JDK or Android SDK. Build on **mini4p** (Tailscale `mini-4p`), which has JDK 21 in `~/opt/jdk-21` and the SDK in `~/Library/Android/sdk` (platform 37.0, build-tools 37.0.0). It has no GitHub access: copy the tree over (`git ls-files -co --exclude-standard | tar`), make it a local git repo (the build reads git for BuildConfig), add `local.properties`, then `JAVA_HOME=~/opt/jdk-21/Contents/Home ./gradlew assembleGplayDebug`. First green build: 12 October 2026. The tar copy adds files but never deletes them, so files removed in the repo stay on mini4p (13 Oct 2026: old `.webp` launcher icons next to the new `.png` ones broke `packageDebugResources` with "Duplicate resources"). Build in a fresh directory, for example `~/Dev/Bipe/bipe-android-qr`.
 
-Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVectorTest.kt` reads `../bipe-shared/test-vectors` directly. Not run yet either.
+Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVectorTest.kt` reads `../bipe-shared/test-vectors` directly. On mini4p that is `~/Dev/Bipe/bipe-shared`, a copy that does not update by itself. Copy the current bipe-shared over before each test run (`git ls-files | tar`, same as the app tree). A stale copy fails or passes against old vectors without telling you: on 13 October 2026 it still had the Proseio vectors and no `pins.json`. Gradle does not track the vector files as test inputs, so run `:libraries:bipe:cleanTestDebugUnitTest` first, or it reuses the old result. Use `--no-daemon --max-workers=4` (the daemon hangs at packaging). First green run: 13 October 2026, 7 of 7.
 
 ```bash
 ./gradlew :libraries:bipe:testDebugUnitTest
@@ -34,6 +34,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 | What | Where | Value |
 |---|---|---|
+| Version name, build number | `plugins/src/main/kotlin/BipeVersion.kt` (generated), read by `Versions.kt` | From `bipe-shared/product/version.json` (ADR 0088). `versionCode` = build × 10 + ABI code. iOS uses the same build number. Before each tester upload: `node tools/bump-build.mjs` in bipe-shared, then commit and push bipe-shared, bipe-ios and this repo. Element's `tools/release/release.sh` is not used. |
 | Application ID, name | `plugins/src/main/kotlin/config/BuildTimeConfig.kt` | `chat.bipe.app` (debug adds `.debug`, nightly `.nightly`), "Bipe" (ADR 0054) |
 | OAuth redirect scheme | `BuildTimeConfig.METADATA_HOST_REVERSED` | `chat.bipe.app` (debug `chat.bipe.app.debug`) |
 | OAuth client, logo, terms, privacy URLs | `BuildTimeConfig.URL_*` | `https://bipe.chat/...` (MAS requires them on the client URI host) |

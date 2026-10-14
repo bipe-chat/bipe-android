@@ -15,22 +15,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
@@ -39,17 +34,16 @@ import io.element.android.libraries.designsystem.modifiers.clearFocusOnTap
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.IconSource
-import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Scaffold
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TextFieldValidity
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
+import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.bipe.BipeHandleStatus
 import io.element.android.libraries.bipe.BipeProfileLink
 import io.element.android.libraries.bipe.R
-import io.element.android.libraries.qrcode.QrCodeImage
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
 import java.time.ZoneId
@@ -178,31 +172,12 @@ private fun footer(state: BipeHandleState): String {
 @Composable
 private fun ProfileLinkSection(handle: String) {
     val url = BipeProfileLink.url(handle) ?: return
-    val context = LocalContext.current
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        QrCodeImage(
-            data = url,
-            forceMaxBrightness = false,
-            modifier = Modifier.widthIn(max = 220.dp),
-        )
-        Text(
-            text = stringResource(R.string.bipe_profile_qr_footer),
-            style = ElementTheme.typography.fontBodySmRegular,
-            color = ElementTheme.colors.textSecondary,
-            textAlign = TextAlign.Center,
-        )
-        OutlinedButton(
-            text = stringResource(R.string.bipe_profile_share),
-            leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
-            onClick = {
-                context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = url)
-            },
-        )
-    }
+    BipeQrCodeContent(
+        url = url,
+        footer = stringResource(R.string.bipe_profile_qr_footer),
+        shareText = url,
+        shareLabel = stringResource(R.string.bipe_profile_share),
+    )
 }
 
 @PreviewsDayNight
