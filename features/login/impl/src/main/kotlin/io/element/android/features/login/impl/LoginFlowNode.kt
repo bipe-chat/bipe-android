@@ -319,6 +319,8 @@ class LoginFlowNode(
     private fun bipeStartDeviceAccount() = lifecycleScope.launch {
         val silent = bipeDeviceAccount.signInSilently()
         if (silent?.isSuccess == true) return@launch
+        // A sign-up whose answer never arrived (ADR 0094): the account exists, so finish it instead of showing the form.
+        if (bipeDeviceAccount.resumePendingSignup()?.isSuccess == true) return@launch
         if (bipeDeviceAccount.pendingClaim() != null || bipeDeviceAccount.hasRecoveryToken()) {
             backstack.push(NavTarget.BipeRecovery())
         }

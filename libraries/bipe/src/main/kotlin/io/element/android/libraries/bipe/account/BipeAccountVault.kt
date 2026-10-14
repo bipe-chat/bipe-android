@@ -35,6 +35,18 @@ data class BipePendingClaim(
     override fun toString(): String = "BipePendingClaim($recoveryId)"
 }
 
+/**
+ * A sign-up whose credentials are not stored yet (ADR 0094). The key makes a retry return the same account. The PIN is the
+ * one the first try sent, so the app lock gets the PIN the account really has.
+ */
+@Serializable
+internal data class BipePendingSignup(
+    @SerialName("key") val key: String,
+    @SerialName("pin") val pin: String? = null,
+) {
+    override fun toString(): String = "BipePendingSignup"
+}
+
 @Serializable
 internal data class BipeVaultData(
     /** The account whose hidden password is in [password]. */
@@ -48,6 +60,7 @@ internal data class BipeVaultData(
     @SerialName("signed_in_at") val signedInAt: Map<String, Long> = emptyMap(),
     /** Recovery IDs the user answered with "It was me" on this device. */
     @SerialName("dismissed") val dismissedRecoveries: List<String> = emptyList(),
+    @SerialName("pending_signup") val pendingSignup: BipePendingSignup? = null,
 ) {
     override fun toString(): String = "BipeVaultData"
 }

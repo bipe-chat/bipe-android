@@ -34,9 +34,18 @@ data class BipeSignupRequest(
     @SerialName("lang") val lang: String? = null,
     @SerialName("handle") val handle: String? = null,
     @SerialName("display_name") val displayName: String? = null,
+    /** Same key on a retry: the same account (ADR 0094). From the pending sign-up in the vault. */
+    @SerialName("signup_key") val signupKey: String? = null,
 ) {
-    /** Never prints the PIN, the password or the email. */
+    /** Never prints the PIN, the password, the email or the key. */
     override fun toString(): String = "BipeSignupRequest"
+}
+
+@Serializable
+data class BipeSignupResumeRequest(
+    @SerialName("signup_key") val signupKey: String,
+) {
+    override fun toString(): String = "BipeSignupResumeRequest"
 }
 
 @Serializable

@@ -23,7 +23,10 @@ import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.sessionstorage.api.observer.SessionListener
 import io.element.android.libraries.sessionstorage.api.observer.SessionObserver
+import android.util.Base64
+import kotlinx.coroutines.delay
 import timber.log.Timber
+import java.security.SecureRandom
 
 /**
  * Device-first accounts on this device (ADR 0057, ADR 0059): sign-up, sign-in with the hidden password, and the recovery
@@ -64,14 +67,82 @@ class BipeDeviceAccount(
      */
     suspend fun signUp(request: BipeSignupRequest, pin: String): Result<BipeSignupResponse> = runCatchingExceptions {
         require(request.password == null) { "Device-first sign-up sends no password" }
-        val response = apiClient.signup(request.copy(pin = pin, lang = BipeApiClient.emailLanguage()))
+        // Stored before the first request goes out, so a lost answer can be fetched again (ADR 0094).
+        val pending = pendingSignup(pin)
+        val accountPin = pending.pin ?: pin
+        val response = try {
+            signupRetryingLostAnswers(request.copy(pin = accountPin, lang = BipeApiClient.emailLanguage(), signupKey = pending.key))
+        } catch (error: BipeApiException.Server) {
+            if (!error.isSignupInProgress) {
+                // The server answered and made nothing, so the next try takes the PIN from the form again.
+                vault.update { data -> data.copy(pendingSignup = data.pendingSignup?.copy(pin = null)) }
+            }
+            throw error
+        }
         val password = response.password ?: throw BipeApiException.UnexpectedResponse(statusCode = 201)
         val token = response.recoveryToken ?: throw BipeApiException.UnexpectedResponse(statusCode = 201)
         Timber.i("Bipe device-first account created: ${response.userId}")
         storeCredentials(BipeCredentials(response.userId, password, token))
-        signIn(response.userId, password, pin).getOrThrow()
+        signIn(response.userId, password, accountPin).getOrThrow()
+        vault.update { it.copy(pendingSignup = null) }
         response
     }
+
+    /**
+     * Finishes a sign-up whose answer never reached this device (ADR 0094). `null` when there is nothing to finish.
+     * The account PIN of the first try becomes the app lock PIN.
+     */
+    suspend fun resumePendingSignup(): Result<SessionId>? {
+        val pending = vault.read().pendingSignup ?: return null
+        val response = try {
+            apiClient.resumeSignup(pending.key)
+        } catch (error: BipeApiException) {
+            if ((error as? BipeApiException.Server)?.code == BipeApiErrorCode.NOT_FOUND) vault.update { it.copy(pendingSignup = null) }
+            Timber.w("Bipe: could not resume a pending sign-up: $error")
+            return null
+        }
+        val password = response.password ?: return null
+        val token = response.recoveryToken ?: return null
+        Timber.i("Bipe: finishing the sign-up of ${response.userId}")
+        storeCredentials(BipeCredentials(response.userId, password, token))
+        return signIn(response.userId, password, pending.pin).onSuccess { vault.update { it.copy(pendingSignup = null) } }
+    }
+
+    private suspend fun pendingSignup(pin: String): BipePendingSignup {
+        vault.read().pendingSignup?.let { pending ->
+            if (pending.pin != null) return pending
+            return pending.copy(pin = pin).also { updated -> vault.update { it.copy(pendingSignup = updated) } }
+        }
+        val bytes = ByteArray(32).also { SecureRandom().nextBytes(it) }
+        val pending = BipePendingSignup(Base64.encodeToString(bytes, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP), pin)
+        vault.update { it.copy(pendingSignup = pending) }
+        return pending
+    }
+
+    /**
+     * Mobile data drops often. A try without an answer may still have made the account, and the same key returns it, so a
+     * few quiet retries are safe (ADR 0094).
+     */
+    private suspend fun signupRetryingLostAnswers(request: BipeSignupRequest): BipeSignupResponse {
+        var attempt = 0
+        while (true) {
+            attempt++
+            try {
+                return apiClient.signup(request)
+            } catch (error: BipeApiException) {
+                val retryable = when (error) {
+                    is BipeApiException.Network, is BipeApiException.UnexpectedResponse -> true
+                    is BipeApiException.Server -> error.isSignupInProgress || error.code == BipeApiErrorCode.INTERNAL
+                }
+                if (!retryable || attempt >= 4) throw error
+                Timber.i("Bipe sign-up try $attempt got no answer, trying again")
+                delay(2_000L * attempt)
+            }
+        }
+    }
+
+    private val BipeApiException.Server.isSignupInProgress: Boolean
+        get() = code == BipeApiErrorCode.RATE_LIMITED && reason == "signup_in_progress"
 
     /** Keeps new credentials: the password on this device, the token in the synced store. */
     suspend fun storeCredentials(credentials: BipeCredentials) {
@@ -99,7 +170,10 @@ class BipeDeviceAccount(
         val userId = data.userId ?: return null
         val password = data.password ?: return null
         Timber.i("Bipe: silent sign-in for $userId")
-        return signIn(userId, password, pin = null)
+        // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for the app lock.
+        return signIn(userId, password, pin = data.pendingSignup?.pin).onSuccess {
+            if (data.pendingSignup != null) vault.update { it.copy(pendingSignup = null) }
+        }
     }
 
     /** `true` when the synced store has a recovery token (e.g. a new phone with the same Google account). */
