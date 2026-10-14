@@ -74,17 +74,17 @@ object ScamDetector {
     }
 
     /**
-     * Picks the most actionable warning from [matchIds] output.
+     * Picks the most actionable warning from [matchIds] output. Kinds in [skipping] are passed over.
      * Must match bipe-shared/test-vectors/scam-warnings.json.
      */
-    fun warningKind(matchIds: List<String>, message: String): ScamWarningKind? {
+    fun warningKind(matchIds: List<String>, message: String, skipping: Set<ScamWarningKind> = emptySet()): ScamWarningKind? {
         val groups = matchIds.map { it.substringBefore(':') }.toSet()
         val phrases = matchIds.filter { it.startsWith(URGENCY_PREFIX) }.map { it.removePrefix(URGENCY_PREFIX) }
         val normalized = NameNormalizer.normalize(message, homoglyphs = emptyMap())
         val hosts = linkHosts(message)
 
         return warningKindPriority.firstOrNull { kind ->
-            when (kind) {
+            kind !in skipping && when (kind) {
                 // A threat with a payment demand (sextortion, "I know where you live"). A threat alone is not this kind.
                 ScamWarningKind.EXTORTION -> containsAny(normalized, BipeRegistries.extortionThreatPhrases) &&
                     containsAny(normalized, BipeRegistries.extortionDemandWords)

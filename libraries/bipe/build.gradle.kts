@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.biometric)
     implementation(libs.coil.compose)
+    implementation(libs.zxing.cpp) // "Conferir no Bipe": QR codes in shared images
     implementation(projects.appconfig)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)

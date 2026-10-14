@@ -13,12 +13,14 @@ import android.os.Parcelable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.core.navigation.NavElements
 import com.bumble.appyx.core.navigation.NavKey
 import com.bumble.appyx.core.node.Node
+import com.bumble.appyx.core.node.node
 import com.bumble.appyx.core.plugin.Plugin
 import com.bumble.appyx.core.state.MutableSavedStateMap
 import com.bumble.appyx.core.state.SavedStateMap
@@ -55,6 +57,9 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.rememberDelegateTransitionHandler
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.waitForChildAttached
+import io.element.android.libraries.bipe.PixCheck
+import io.element.android.libraries.bipe.pix.BipePixCheckView
+import io.element.android.libraries.bipe.pix.BipePixShareReader
 import io.element.android.libraries.core.coroutine.withPreviousValue
 import io.element.android.libraries.deeplink.api.DeeplinkData
 import io.element.android.libraries.di.annotations.AppCoroutineScope
@@ -112,6 +117,7 @@ class RootFlowNode(
     private val analyticsService: AnalyticsService,
     private val analyticsColdStartWatcher: AnalyticsColdStartWatcher,
     private val incomingVerificationRequestObserver: IncomingVerificationRequestObserver,
+    private val bipePixShareReader: BipePixShareReader, // Bipe: bipe ADR 0091
     @AppCoroutineScope private val appCoroutineScope: CoroutineScope,
 ) : BaseFlowNode<RootFlowNode.NavTarget>(
     backstack = BackStack(
@@ -367,6 +373,12 @@ class RootFlowNode(
 
         @Parcelize data object BugReport : NavTarget
 
+        // Bipe: "Conferir no Bipe" (bipe ADR 0091). pixText is the shared text or QR text that holds the Pix.
+        @Parcelize data class BipePixCheck(
+            val shareIntentData: ShareIntentData,
+            val pixText: String,
+        ) : NavTarget
+
         @Parcelize data class OtherAccountIncomingVerificationRequest(
             val sessionId: SessionId,
             val verificationRequest: VerificationRequest.Incoming,
@@ -375,6 +387,17 @@ class RootFlowNode(
 
     override fun resolve(navTarget: NavTarget, buildContext: BuildContext): Node {
         return when (navTarget) {
+            is NavTarget.BipePixCheck -> node(buildContext) { modifier ->
+                BipePixCheckView(
+                    check = remember(navTarget.pixText) { PixCheck.check(navTarget.pixText) },
+                    onClose = { backstack.pop() },
+                    onSendToChat = {
+                        backstack.pop()
+                        lifecycleScope.launch { continueIncomingShare(navTarget.shareIntentData) }
+                    },
+                    modifier = modifier,
+                )
+            }
             is NavTarget.LoggedInFlow -> {
                 val matrixClient = matrixSessionCache.getOrNull(navTarget.sessionId)
                     ?: return emptyNode(buildContext).also {
@@ -536,6 +559,24 @@ class RootFlowNode(
     }
 
     private suspend fun onIncomingShare(shareIntentData: ShareIntentData) {
+        // Bipe: a shared Pix code or key gets checked first (bipe ADR 0091). It needs no account.
+        val pixText = when (shareIntentData) {
+            is ShareIntentData.PlainText -> bipePixShareReader.pixText(shareIntentData.content, emptyList())
+            is ShareIntentData.Uris -> bipePixShareReader.pixText(
+                shareIntentData.text,
+                shareIntentData.uris.filter { it.mimeType.startsWith("image/") }.map { it.uri },
+            )
+        }
+        if (pixText != null) {
+            val latestSessionId = sessionStore.getLatestSessionId()
+            if (latestSessionId == null) switchToNotLoggedInFlow(null) else attachSession(latestSessionId)
+            backstack.push(NavTarget.BipePixCheck(shareIntentData, pixText))
+            return
+        }
+        continueIncomingShare(shareIntentData)
+    }
+
+    private suspend fun continueIncomingShare(shareIntentData: ShareIntentData) {
         // Is there a session already?
         val latestSessionId = sessionStore.getLatestSessionId()
         if (latestSessionId == null) {

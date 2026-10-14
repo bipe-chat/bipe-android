@@ -63,6 +63,43 @@ class SharedVectorTest {
         }
     }
 
+    @Test
+    fun pixCheck() {
+        val vectors = vectors("pix-check.json", "vectors")
+        assertWithMessage("pix-check.json is empty").that(vectors).isNotEmpty()
+        for (vector in vectors) {
+            val text = vector.string("text")!!
+            val label = "pixCheck(${text.take(40)})"
+            val result = PixCheck.check(text)
+            val expected = vector["code"]?.takeUnless { it is JsonNull }?.jsonObject
+            if (expected == null) {
+                assertWithMessage("$label code").that(result.code).isNull()
+            } else {
+                val code = result.code
+                assertWithMessage("$label code").that(code).isNotNull()
+                code!!
+                assertWithMessage("$label status").that(code.status.id).isEqualTo(expected.string("status"))
+                if (code.status != PixCheck.Status.MALFORMED) {
+                    assertWithMessage("$label dynamic").that(code.dynamic.toString()).isEqualTo(expected.string("dynamic"))
+                    assertWithMessage("$label singleUse").that(code.singleUse.toString()).isEqualTo(expected.string("singleUse"))
+                    assertWithMessage("$label key").that(code.key).isEqualTo(expected.string("key"))
+                    assertWithMessage("$label keyType").that(code.keyType?.id).isEqualTo(expected.string("keyType"))
+                    assertWithMessage("$label url").that(code.url).isEqualTo(expected.string("url"))
+                    assertWithMessage("$label name").that(code.name).isEqualTo(expected.string("name"))
+                    assertWithMessage("$label city").that(code.city).isEqualTo(expected.string("city"))
+                    assertWithMessage("$label amount").that(code.amount).isEqualTo(expected.string("amount"))
+                    assertWithMessage("$label txid").that(code.txid).isEqualTo(expected.string("txid"))
+                    assertWithMessage("$label info").that(code.info).isEqualTo(expected.string("info"))
+                }
+            }
+            val keys = vector.getValue("keys").jsonArray.map { it.jsonObject }
+            assertWithMessage("$label keys").that(result.keys.map { it.value }).isEqualTo(keys.map { it.string("value") })
+            assertWithMessage("$label key types").that(result.keys.map { key -> key.types.map { it.id } })
+                .isEqualTo(keys.map { key -> key.getValue("types").jsonArray.map { it.jsonPrimitive.content } })
+            assertWithMessage("$label warning").that(result.warning?.id).isEqualTo(vector.string("warning"))
+        }
+    }
+
     /** The client checks length and characters only. Reserved names and lookalikes are the server's call. */
     @Test
     fun handles() {

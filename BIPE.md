@@ -89,6 +89,11 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - **Self-chat ("Anotações"):** `BipeSelfChat` (libraries/bipe). The room ID is in global account data `chat.bipe.self_chat`, content `{"room_id": "..."}`, the same as iOS. It opens the stored room when the user is joined, else creates an encrypted private room with no invites. The room does not show in Conversas or Grupos.
 - **Search** stays in the top bar on Conversas and Grupos.
 
+## "Conferir no Bipe" (bipe ADR 0091, bipe#294)
+
+- **Share target:** Element's share intent. `RootFlowNode.onIncomingShare` asks `BipePixShareReader` (libraries/bipe, `pix/`) for shared text, or the QR codes in shared images (zxing-cpp, the reader Element uses for login QR). When it finds a Pix code or key it pushes `NavTarget.BipePixCheck` with `BipePixCheckView`, also with no account. "Enviar para uma conversa" continues to Element's share flow (`continueIncomingShare`). Close goes back to the app, not to the sharing app.
+- **Logic:** `PixCheck` (BR Code TLV, CRC-16, key types, keys in the text, the rule 9 warning without `PIX_CODE` and `PIX_KEY`). Cases: `bipe-shared/test-vectors/pix-check.json` in `SharedVectorTest`.
+
 ## Not done
 
 - **Firebase:** `libraries/pushproviders/firebase/src/*/res/values/firebase.xml` still holds Element's Firebase project (`vector-alpha`). FCM cannot work with the Bipe application ID until Bipe has its own Firebase project.

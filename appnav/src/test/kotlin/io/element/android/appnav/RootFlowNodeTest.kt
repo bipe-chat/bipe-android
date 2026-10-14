@@ -191,6 +191,7 @@ class RootFlowNodeTest : RobolectricTest() {
                 matrixSessionCache = matrixSessionCache,
                 appForegroundStateService = FakeAppForegroundStateService(),
             ),
+            bipePixShareReader = { _, _ -> null },
             appCoroutineScope = backgroundScope,
         )
     }
