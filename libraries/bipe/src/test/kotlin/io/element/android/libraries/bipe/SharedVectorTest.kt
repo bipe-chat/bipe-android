@@ -8,11 +8,14 @@ package io.element.android.libraries.bipe
 
 import com.google.common.truth.Truth.assertWithMessage
 import io.element.android.libraries.bipe.account.BipePin
+import io.element.android.libraries.bipe.generated.BipeTrustFacts
+import io.element.android.libraries.bipe.generated.BipeTrustInput
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -22,6 +25,17 @@ import java.io.File
 
 /** Every case in bipe-shared/test-vectors must pass (ADR 0031, rule 4). iOS runs the same files. */
 class SharedVectorTest {
+    @Test
+    fun trustFacts() {
+        val cases = vectors("trust-facts.json", "vectors")
+        assertWithMessage("trust vectors").that(cases).isNotEmpty()
+        for (vector in cases) {
+            val input = Json.decodeFromJsonElement<BipeTrustInput>(vector.getValue("input"))
+            val expected = Json.decodeFromJsonElement<BipeTrustFacts>(vector.getValue("expected"))
+            assertWithMessage("trust facts ${vector.string("name")}").that(BipeTrustFacts.evaluate(input)).isEqualTo(expected)
+        }
+    }
+
     @Test
     fun normalization() {
         for (vector in vectors("normalization.json", "vectors")) {
