@@ -128,14 +128,20 @@ private fun FormStep(state: BipeSignupState) {
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Next),
         onValueChange = { eventSink(BipeSignupEvent.UpdateHandle(it)) },
     )
+    // Never "opcional" when the server requires an invite (ADR 0072): an empty field says why a code is needed.
+    val inviteCodeIsError = state.inviteCodeError != null || state.isInviteCodeMalformed
     val inviteCodeFooter = state.inviteCodeError
-        ?: if (state.isInviteCodeAcceptable) null else stringResource(R.string.bipe_error_invite_invalid)
+        ?: when {
+            state.isInviteCodeMalformed -> stringResource(R.string.bipe_error_invite_invalid)
+            state.inviteCodeInput.isBlank() && state.isInviteRequired -> stringResource(R.string.bipe_signup_invite_required)
+            else -> null
+        }
     TextField(
-        label = stringResource(R.string.bipe_signup_invite_code),
+        label = stringResource(if (state.isInviteRequired) R.string.bipe_signup_invite_code else R.string.bipe_signup_invite_code_optional),
         value = state.inviteCodeInput,
         placeholder = "XXXX-XXXX-XXXX",
         supportingText = inviteCodeFooter,
-        validity = if (inviteCodeFooter != null) TextFieldValidity.Invalid else TextFieldValidity.None,
+        validity = if (inviteCodeIsError) TextFieldValidity.Invalid else TextFieldValidity.None,
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false, imeAction = ImeAction.Next),
         onValueChange = { eventSink(BipeSignupEvent.UpdateInviteCode(it)) },

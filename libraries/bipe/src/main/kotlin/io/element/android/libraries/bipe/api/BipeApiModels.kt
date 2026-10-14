@@ -41,6 +41,12 @@ data class BipeSignupRequest(
     override fun toString(): String = "BipeSignupRequest"
 }
 
+/** The server's sign-up mode. An app that cannot read it assumes [inviteRequired] is `true`. */
+@Serializable
+data class BipeSignupConfig(
+    @SerialName("invite_required") val inviteRequired: Boolean,
+)
+
 @Serializable
 data class BipeSignupResumeRequest(
     @SerialName("signup_key") val signupKey: String,

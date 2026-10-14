@@ -39,6 +39,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `POST /v1/signup`. No auth. */
     suspend fun signup(request: BipeSignupRequest): BipeSignupResponse = call { service.signup(request) }
 
+    /** `GET /v1/signup/config`. No auth. The sign-up mode (ADR 0072). */
+    suspend fun signupConfig(): BipeSignupConfig = call { service.signupConfig() }
+
     /** `POST /v1/signup/resume`. No auth. The answer of an earlier sign-up with this key (ADR 0094); `not_found` when none. */
     suspend fun resumeSignup(signupKey: String): BipeSignupResponse = call { service.resumeSignup(BipeSignupResumeRequest(signupKey)) }
 
@@ -229,6 +232,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 internal interface BipeApiService {
     @POST("v1/signup")
     suspend fun signup(@Body request: BipeSignupRequest): Response<BipeSignupResponse>
+
+    @GET("v1/signup/config")
+    suspend fun signupConfig(): Response<BipeSignupConfig>
 
     @POST("v1/signup/resume")
     suspend fun resumeSignup(@Body request: BipeSignupResumeRequest): Response<BipeSignupResponse>

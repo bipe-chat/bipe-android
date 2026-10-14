@@ -74,6 +74,16 @@ class BipeSignupPresenter(
         var isFallbackEmailOpen by remember { mutableStateOf(false) }
         val pinState = remember { BipeNewPinState() }
         var createAction by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
+        var isInviteRequired by remember { mutableStateOf(true) }
+
+        // An error keeps the default: an invite is required (ADR 0072).
+        LaunchedEffect(Unit) {
+            isInviteRequired = try {
+                apiClient.signupConfig().inviteRequired
+            } catch (_: BipeApiException) {
+                true
+            }
+        }
 
         // Validity and the inviter's handle, each time the field holds a whole code.
         val inviteCode = BipeInviteCode.parse(inviteCodeInput)
@@ -199,6 +209,7 @@ class BipeSignupPresenter(
             isFallbackEmailOpen = isFallbackEmailOpen,
             isTokenSynced = deviceAccount.isTokenSynced,
             createAction = createAction,
+            isInviteRequired = isInviteRequired,
             eventSink = ::handleEvent,
         )
     }
