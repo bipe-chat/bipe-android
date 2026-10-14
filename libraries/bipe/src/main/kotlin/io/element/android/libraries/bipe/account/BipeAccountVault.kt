@@ -80,24 +80,45 @@ class BipeAccountVault(
     private val json = Json { ignoreUnknownKeys = true }
     private val file: File get() = File(context.noBackupFilesDir, FILE_NAME)
 
-    internal suspend fun read(): BipeVaultData = mutex.withLock { load() }
+    internal suspend fun read(): BipeVaultData = mutex.withLock { load() ?: BipeVaultData() }
 
+    /** Skips the write when the file cannot be read now: writing over it would erase the hidden password. */
     internal suspend fun update(transform: (BipeVaultData) -> BipeVaultData) = mutex.withLock {
-        save(transform(load()))
+        val current = load()
+        if (current == null) {
+            Timber.e("Bipe vault: not written, the file cannot be read now")
+            return@withLock
+        }
+        save(transform(current))
     }
 
-    private suspend fun load(): BipeVaultData = withContext(Dispatchers.IO) {
+    /** `null` when the file exists but cannot be read now (a Keystore error that may pass). */
+    private suspend fun load(): BipeVaultData? = withContext(Dispatchers.IO) {
         if (!file.exists()) return@withContext BipeVaultData()
         try {
             val key = secretKeyRepository.getOrCreateKey(KEY_ALIAS, false)
             val bytes = encryptionDecryptionService.decrypt(key, EncryptionResult.fromBase64(file.readText()))
             json.decodeFromString(BipeVaultData.serializer(), bytes.decodeToString())
         } catch (error: Exception) {
-            // A lost Keystore key (e.g. after a device reset) makes the file unreadable. Start empty.
-            Timber.e(error, "Bipe vault unreadable, starting empty")
-            file.delete()
-            BipeVaultData()
+            if (error.isKeyLost()) {
+                // A lost Keystore key (e.g. after a device reset) makes the file unreadable for good. Start empty.
+                Timber.e(error, "Bipe vault key lost, starting empty")
+                file.delete()
+                BipeVaultData()
+            } else {
+                Timber.e(error, "Bipe vault unreadable now; kept")
+                null
+            }
         }
+    }
+
+    /** Only these mean the file can never be read again. Other Keystore errors happen on some phones and pass. */
+    private fun Throwable.isKeyLost(): Boolean = generateSequence(this) { it.cause }.any {
+        it is javax.crypto.AEADBadTagException ||
+            it is android.security.keystore.KeyPermanentlyInvalidatedException ||
+            it is java.security.UnrecoverableKeyException ||
+            it is kotlinx.serialization.SerializationException ||
+            it is IllegalArgumentException
     }
 
     private suspend fun save(data: BipeVaultData) = withContext(Dispatchers.IO) {

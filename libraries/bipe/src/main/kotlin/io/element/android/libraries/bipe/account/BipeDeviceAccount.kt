@@ -73,8 +73,9 @@ class BipeDeviceAccount(
         val response = try {
             signupRetryingLostAnswers(request.copy(pin = accountPin, lang = BipeApiClient.emailLanguage(), signupKey = pending.key))
         } catch (error: BipeApiException.Server) {
-            if (!error.isSignupInProgress) {
-                // The server answered and made nothing, so the next try takes the PIN from the form again.
+            if (error.code != BipeApiErrorCode.RATE_LIMITED && error.code != BipeApiErrorCode.INTERNAL) {
+                // A field error: the server made nothing, so the next try takes the PIN from the form again.
+                // A limit or a server failure proves nothing, so the PIN of the first try stays.
                 vault.update { data -> data.copy(pendingSignup = data.pendingSignup?.copy(pin = null)) }
             }
             throw error
