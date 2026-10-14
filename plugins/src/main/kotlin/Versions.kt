@@ -74,8 +74,8 @@ object Versions {
 
     // Perform some checks on the values to avoid releasing with bad values
     init {
-        require(versionMonth in 1..12) { "versionMonth must be in [1,12]" }
-        require(versionReleaseNumber in 0..99) { "versionReleaseNumber must be in [0,99]" }
+        // Bipe: the Play Store maximum is 2_100_000_000, and app/build.gradle.kts multiplies the code by 10.
+        require(VERSION_CODE in 1..210_000_000) { "VERSION_CODE must be in [1,210000000]" }
         require(BUILD_TOOLS_VERSION.startsWith(COMPILE_SDK.toString())) { "When updating COMPILE_SDK, please also update BUILD_TOOLS_VERSION" }
     }
 }

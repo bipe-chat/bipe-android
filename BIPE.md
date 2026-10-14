@@ -109,26 +109,31 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 ## Differences from iOS (ADR 0031)
 
-Each line is a deliberate difference with its reason. A difference not listed here is a bug.
+Each line is a difference with its reason. A difference not listed here is a bug. The table is generated from `bipe-shared/product/parity.json` (ADR 0092): change it there, then run `node tools/parity.mjs --write` in bipe-shared.
+
+<!-- parity:differences (generated from bipe-shared/product/parity.json by tools/parity.mjs --write; do not edit) -->
 
 | Area | Android | iOS | Reason |
 |---|---|---|---|
-| Dev application ID | `chat.bipe.app.debug` | `chat.bipe.app.dev` | Element's build-type suffix on each platform |
+| Dev app ID | `chat.bipe.app.debug` | `chat.bipe.app.dev` | Element's build-type suffix on each platform |
 | OAuth redirect | `<application id>:/` | `<bundle id>:/oauth/callback` | Element's default per platform; both are reverse-domain private-use schemes |
 | Push | FCM through Sygnal; UnifiedPush optional | APNs through Sygnal | OS push channel (#89, #90, #91) |
-| Sign-up attestation | None yet | App Attest | Play Integrity not built (#92). **Gap** |
+| Sign-up attestation | None yet | App Attest | Play Integrity not built on Android (#92) **Gap** |
 | Synced recovery token | Block Store (gplay); none in the F-Droid build | iCloud Keychain | Platform credential store (ADR 0059). F-Droid has no Google Play services |
-| App lock | Element's lock screen, 8-digit PIN, biometric option | | Element X lock screen per platform |
-| Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | | `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
+| App lock | Element's lock screen, 8-digit account PIN, biometric option | Element's lock screen, the account PIN, biometrics on | Element X lock screen per platform |
+| Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
-| Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81). **Gap** |
-| Help links | Still point to element.io | Hidden | Not done on Android. **Gap** |
-| App icon | Element's icon | Placeholder açaí bubble | Not done on Android. **Gap** |
-| Sticker from a photo | Subject cut-out (Vision) | Centred square crop | Cut-out needs ML Kit, not decided |
-| Sticker import | Chat export ZIP or files | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | iOS apps cannot read WhatsApp's files |
-| Signed-device isolation | Fixed on | User preference, default on | Undecided (#102) |
-| Language fallback | en for other device languages | pt-BR | Undecided (#102) |
-| Handle lookup | Every user search | Start chat only | Undecided (#102) |
-| Unencrypted room option | Removed | Still offered | Not done on iOS (#78). **Gap** |
-| Search | Search button in the top bar of Conversas and Grupos | Search tab | Platform idiom: Android has no search-tab pattern (ADR 0053) |
+| Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
+| Help links | Still point to element.io | Hidden | Not done on Android (#205) **Gap** |
+| Unencrypted room option | Removed | Still offered | Not done on iOS (#78) **Gap** |
+| Sign-up form | Name, then PIN | One form | Not done on iOS (#196) **Gap** |
+| bipe.chat/@handle link | Opens the app, goes nowhere | Opens the profile | Not done on Android (#299) **Gap** |
+| Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |
+| Sticker import | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | Chat export ZIP or files | iOS apps cannot read WhatsApp's files |
+| Signed-device isolation | Fixed on | User preference, default on | Undecided (#102) **Undecided** |
+| Language fallback | Bipe strings pt-BR, Element strings en | pt-BR for other device languages | Undecided (#102) **Undecided** |
+| Handle lookup | Every user search | Start chat only | Undecided (#102) **Undecided** |
+| Search | Search button in the top bar of Conversas and Grupos | Search tab (iOS 26+), inline before iOS 26 | Platform idiom (ADR 0053) |
 | Quiet groups "done" marker | The poll rule in the account's push rules (once per account) | A flag on the device (once per device) | Android has no per-session store in libraries/bipe; same result for the user |
+
+<!-- /parity:differences -->
