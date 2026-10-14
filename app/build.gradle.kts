@@ -81,6 +81,10 @@ android {
         }
     }
 
+    // Bipe CI (bipe-apk.yml) passes the runner's NDK version, so release builds strip the native libraries.
+    // Without an NDK, AGP packs them unstripped and the APK more than doubles in size.
+    System.getenv("BIPE_NDK_VERSION")?.ifBlank { null }?.let { ndkVersion = it }
+
     signingConfigs {
         getByName("debug") {
             keyAlias = "androiddebugkey"

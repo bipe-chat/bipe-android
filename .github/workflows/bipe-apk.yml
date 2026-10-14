@@ -1,7 +1,8 @@
 # Bipe Android tester build (bipe#43). Replaces the manual tar-copy builds on mini4p.
 # Runs when the shared build number changes (node tools/bump-build.mjs in bipe-shared writes
 # BipeVersion.kt) or by hand: gh workflow run bipe-apk.yml -R bipe-chat/bipe-android
-# Output: a signed universal APK and its SHA-256 as the workflow artifact bipe-apk-<version>-<build>, kept 7 days.
+# Output: the signed arm64-v8a APK (bipe-<version>-<build>.apk, what almost every phone takes) and the universal APK
+# (bipe-<version>-<build>-universal.apk), each with its SHA-256, as the workflow artifact bipe-apk-<version>-<build>, kept 7 days.
 # Nothing is published on GitHub. The Magalu server pulls the newest artifact with a read-only token and serves it
 # at https://bipe.chat/baixar/android/bipe.apk (bipe-infra k8s/bipe/apk-pull.yaml).
 # Secrets: BIPE_ANDROID_KEYSTORE_B64 (PKCS12, base64), BIPE_ANDROID_STOREPASSWORD. The key alias is not secret:
@@ -60,6 +61,10 @@ jobs:
           test -n "$KEYSTORE_B64"
           printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/bipe.p12"
           echo "BIPE_ANDROID_STOREFILE=$RUNNER_TEMP/bipe.p12" >> "$GITHUB_ENV"
+      - name: NDK for stripping native libraries
+        run: |
+          test -d "$ANDROID_NDK_LATEST_HOME"
+          echo "BIPE_NDK_VERSION=$(basename "$ANDROID_NDK_LATEST_HOME")" >> "$GITHUB_ENV"
       - name: Build
         working-directory: bipe-android
         env:
@@ -70,17 +75,20 @@ jobs:
         id: apk
         working-directory: bipe-android
         run: |
-          apk=app/build/outputs/apk/gplay/release/app-gplay-universal-release.apk
+          src=app/build/outputs/apk/gplay/release
+          ls -l "$src"
           dir="$RUNNER_TEMP/out"
           mkdir -p "$dir"
-          name="bipe-${{ steps.version.outputs.name }}-${{ steps.version.outputs.build }}.apk"
-          cp "$apk" "$dir/$name"
-          ls -l app/build/outputs/apk/gplay/release/
+          base="bipe-${{ steps.version.outputs.name }}-${{ steps.version.outputs.build }}"
+          cp "$src/app-gplay-arm64-v8a-release.apk" "$dir/$base.apk"
+          cp "$src/app-gplay-universal-release.apk" "$dir/$base-universal.apk"
           bt="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
-          echo "apksigner from $bt"
-          "$bt/apksigner" verify --verbose --print-certs "$dir/$name" | tee "$RUNNER_TEMP/verify.txt"
-          grep -q "CN=Bipe" "$RUNNER_TEMP/verify.txt"
-          (cd "$dir" && sha256sum "$name" > "$name.sha256")
+          for f in "$dir"/*.apk; do
+            "$bt/apksigner" verify --print-certs "$f" | tee "$RUNNER_TEMP/verify.txt"
+            grep -q "CN=Bipe" "$RUNNER_TEMP/verify.txt"
+            (cd "$dir" && sha256sum "$(basename "$f")" > "$(basename "$f").sha256")
+          done
+          ls -l "$dir"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
