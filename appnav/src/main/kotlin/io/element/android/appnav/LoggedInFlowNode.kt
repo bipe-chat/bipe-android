@@ -65,6 +65,7 @@ import io.element.android.features.location.api.live.ActiveLiveLocationShareMana
 import io.element.android.features.networkmonitor.api.NetworkMonitor
 import io.element.android.features.networkmonitor.api.NetworkStatus
 import io.element.android.features.networkmonitor.api.ui.ConnectivityIndicatorContainer
+import io.element.android.features.preferences.api.ClearCacheUseCase
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.roomdirectory.api.RoomDescription
 import io.element.android.features.roomdirectory.api.RoomDirectoryEntryPoint
@@ -80,6 +81,7 @@ import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.waitForChildAttached
 import io.element.android.libraries.architecture.waitForNavTargetAttached
+import io.element.android.libraries.bipe.threads.BipeThreadsCacheRebuild
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
@@ -172,6 +174,7 @@ class LoggedInFlowNode(
     private val activeLiveLocationShareManager: ActiveLiveLocationShareManager,
     private val customMapTilerConfigProvider: CustomMapTilerConfigProvider,
     private val loggedInEventProcessorFactory: LoggedInEventProcessor.Factory,
+    private val clearCacheUseCase: ClearCacheUseCase, // Bipe
 ) : BaseFlowNode<LoggedInFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Placeholder,
@@ -223,6 +226,8 @@ class LoggedInFlowNode(
                 loggedInFlowProcessor.observeEvents(sessionCoroutineScope)
                 mediaPreviewConfigMigration()
                 sessionCoroutineScope.launch { BipeQuietGroups(matrixClient.notificationSettingsService).run() } // Bipe: bipe#97
+                // Bipe: not the session scope, clearing the cache destroys the client and cancels it.
+                if (BipeThreadsCacheRebuild.takePending(context, matrixClient.sessionId.value)) lifecycleScope.launch { clearCacheUseCase() }
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }

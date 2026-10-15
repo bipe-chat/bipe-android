@@ -28,6 +28,7 @@ dependencies {
 
     implementation(projects.libraries.core)
     implementation(projects.libraries.bipe) // Bipe
+    implementation(projects.features.preferences.api) // Bipe
     implementation(projects.libraries.accountselect.api)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)

@@ -23,6 +23,7 @@ dependencies {
     implementation(projects.features.announcement.api)
     implementation(projects.features.migration.api)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe) // Bipe
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.preferences.api)
     implementation(libs.androidx.datastore.preferences)

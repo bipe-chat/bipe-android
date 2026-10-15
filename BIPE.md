@@ -90,6 +90,11 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 - `BipeWelcomeView` and `Modifier.bipeWelcomeBackground` (libraries/bipe) replace Element's logo, welcome text and `onboarding_bg` artwork in `OnBoardingView`. Copy: `bipe_onboarding_*` in bipe-shared. iOS: `BipeWelcomeView`.
 
+## Threads and galleries on by default (15 Oct 2026)
+
+- `FeatureFlags.Threads` and `FeatureFlags.SendGalleryMessages` default to on and are finished, so they are not in Labs and an old Labs opt-out is ignored.
+- The session cache is built differently with threads on. `AppMigration11` marks the sessions of an existing install in `BipeThreadsCacheRebuild` (libraries/bipe). `LoggedInFlowNode` clears each marked session's cache once with `ClearCacheUseCase`, the path the Labs toggle used. The interface moved to `features/preferences/api` for this. iOS skips the clear for users who had threads on in Labs; Android clears once for every existing session.
+
 ## Groups MVP (bipe/docs/groups.md, ADR 0026)
 
 - **Quiet by default (#97):** `BipeQuietGroups` (libraries/bipe) runs from `LoggedInFlowNode` when the session starts. Group default becomes mentions and keywords; the override rule `chat.bipe.poll_start` (`*.poll.start`) makes new polls notify. It waits for Synapse `msc4028_push_encrypted_events`. Android needs no extra entitlement to drop pushes, unlike iOS.
