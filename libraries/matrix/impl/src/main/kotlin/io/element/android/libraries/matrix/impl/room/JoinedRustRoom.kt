@@ -307,9 +307,8 @@ class JoinedRustRoom(
     }
 
     override suspend fun sendRaw(eventType: String, contentJson: String): Result<Unit> = withContext(roomDispatcher) {
-        runCatchingExceptions {
+        runCatchingExceptions<Unit> {
             innerRoom.sendRaw(eventType, contentJson)
-            Unit
         }
     }
 

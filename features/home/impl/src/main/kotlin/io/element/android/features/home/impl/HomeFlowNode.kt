@@ -194,8 +194,8 @@ class HomeFlowNode(
     @Composable
     private fun BipeYouTab(
         contentPadding: PaddingValues,
-        modifier: Modifier,
         navigateToRoom: (RoomId, EventId?) -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         val youState = preferencesRootPresenter.value.present()
         val activity = requireNotNull(LocalActivity.current)

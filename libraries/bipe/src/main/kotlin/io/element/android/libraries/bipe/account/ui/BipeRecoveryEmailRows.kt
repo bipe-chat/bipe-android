@@ -59,8 +59,14 @@ internal fun BipeRecoveryEmailRows(
     val hasEmail = status.email != null || status.emailPending != null
 
     val lines = buildList {
-        status.email?.let { add(it); add(stringResource(R.string.bipe_email_confirmed)) }
-        status.emailPending?.let { add(it); add(stringResource(R.string.bipe_email_pending)) }
+        status.email?.let {
+            add(it)
+            add(stringResource(R.string.bipe_email_confirmed))
+        }
+        status.emailPending?.let {
+            add(it)
+            add(stringResource(R.string.bipe_email_pending))
+        }
         sentTo?.let { add(stringResource(R.string.bipe_email_sent, it)) }
         if (!hasEmail && sentTo == null) add(stringResource(R.string.bipe_fallback_reminder))
     }

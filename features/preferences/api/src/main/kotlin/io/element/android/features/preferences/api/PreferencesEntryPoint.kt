@@ -79,7 +79,7 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
         fun navigateToEvent(roomId: RoomId, eventId: EventId)
 
         /** Bipe: another user's profile, e.g. someone who joined through the user's invite. */
-        fun navigateToUserProfile(userId: UserId) = Unit
+        fun navigateToUserProfile(userId: UserId) {}
     }
 
     fun createAppDeveloperSettingsNode(

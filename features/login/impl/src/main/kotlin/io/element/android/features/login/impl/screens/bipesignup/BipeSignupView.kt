@@ -9,6 +9,7 @@ package io.element.android.features.login.impl.screens.bipesignup
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -97,7 +98,7 @@ fun BipeSignupView(
 }
 
 @Composable
-private fun FormStep(state: BipeSignupState) {
+private fun ColumnScope.FormStep(state: BipeSignupState) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),
@@ -173,7 +174,7 @@ private fun EmailField(state: BipeSignupState) {
 }
 
 @Composable
-private fun PinStep(state: BipeSignupState, isLoading: Boolean) {
+private fun ColumnScope.PinStep(state: BipeSignupState, isLoading: Boolean) {
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),
         iconStyle = BigIcon.Style.Default(CompoundIcons.LockSolid()),
@@ -193,7 +194,7 @@ private fun PinStep(state: BipeSignupState, isLoading: Boolean) {
 }
 
 @Composable
-private fun FallbackStep(state: BipeSignupState, isLoading: Boolean) {
+private fun ColumnScope.FallbackStep(state: BipeSignupState, isLoading: Boolean) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),

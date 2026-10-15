@@ -32,7 +32,7 @@ data class HomeState(
     val showMultiAccountAnnouncement: Boolean,
     val eventSink: (HomeEvent) -> Unit,
     // Bipe: tab bar badges (ADR 0053)
-    val bipeBadges: BipeTabBadges = BipeTabBadges.NONE,
+    val bipeBadges: BipeTabBadges,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem.isBipeRoomList && roomListState.displayFilters // Bipe: Conversas and Grupos

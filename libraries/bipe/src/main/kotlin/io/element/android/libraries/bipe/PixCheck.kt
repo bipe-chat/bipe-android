@@ -24,7 +24,12 @@ data class PixCheck(
     enum class Status(val id: String) { VALID("valid"), BAD_CRC("badCrc"), MALFORMED("malformed") }
 
     enum class KeyType(val id: String) {
-        CPF("cpf"), CNPJ("cnpj"), PHONE("phone"), EMAIL("email"), RANDOM("random"), UNKNOWN("unknown");
+        CPF("cpf"),
+        CNPJ("cnpj"),
+        PHONE("phone"),
+        EMAIL("email"),
+        RANDOM("random"),
+        UNKNOWN("unknown");
 
         companion object {
             fun fromId(id: String): KeyType? = entries.firstOrNull { it.id == id }

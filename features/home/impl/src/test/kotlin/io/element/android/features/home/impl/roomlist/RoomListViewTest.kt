@@ -314,6 +314,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
             onDeclineInviteAndBlockUser = onDeclineInviteAndBlockUser,
             onReportRoomClick = onReportRoomClick,
             acceptDeclineInviteView = {},
+            youTabView = { _, _ -> },
             leaveRoomView = {},
         )
     }

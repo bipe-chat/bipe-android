@@ -39,6 +39,6 @@ interface HomeEntryPoint : FeatureEntryPoint {
         fun bipeNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) = navigateToSettings()
 
         /** Bipe: the "link new device" row of the Você tab (ADR 0053). */
-        fun bipeNavigateToLinkNewDevice() = Unit
+        fun bipeNavigateToLinkNewDevice() {}
     }
 }

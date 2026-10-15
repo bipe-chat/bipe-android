@@ -49,7 +49,7 @@ data class BipeSignupState(
 ) {
     val inviteCode: BipeInviteCode? get() = BipeInviteCode.parse(inviteCodeInput)
 
-    val isInviteCodeAcceptable: Boolean get() = inviteCode != null || (inviteCodeInput.isBlank() && !isInviteRequired)
+    val isInviteCodeAcceptable: Boolean get() = inviteCode != null || inviteCodeInput.isBlank() && !isInviteRequired
 
     /** A typed code that is not a code. An empty field is not an error, even when an invite is required. */
     val isInviteCodeMalformed: Boolean get() = inviteCodeInput.isNotBlank() && inviteCode == null
