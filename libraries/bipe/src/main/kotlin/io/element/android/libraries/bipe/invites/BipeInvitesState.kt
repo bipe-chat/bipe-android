@@ -9,6 +9,7 @@ package io.element.android.libraries.bipe.invites
 import androidx.compose.runtime.Immutable
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.api.BipeInvite
+import io.element.android.libraries.bipe.api.BipeInviteStatus
 import java.time.Instant
 
 /** Port of BipeInvitesScreenViewState on iOS. */
@@ -26,15 +27,31 @@ data class BipeInvitesState(
     val joinedUserTitles: Map<String, String>,
     /** Create and revoke requests. Failure carries the localised message. */
     val action: AsyncAction<Unit>,
+    /** Set to open the system share sheet for this invite link once. */
+    val shareSheetUrl: String?,
+    /** Set to show this invite link as a QR code. */
+    val qrCodeUrl: String?,
     val eventSink: (BipeInvitesEvent) -> Unit,
 ) {
     val canCreate: Boolean get() = !isLoading && available > 0
+
+    val joinedInvites: List<BipeInvite> get() = invites.filter { it.status == BipeInviteStatus.USED && it.joinedUserId != null }
+
+    /** Expired and cancelled invites are left out: they have no action and only push the useful rows down. */
+    val pendingInvites: List<BipeInvite> get() = invites.filter { it.status == BipeInviteStatus.PENDING }
 
     override fun toString(): String = "BipeInvitesState(available=$available, invites=${invites.size})"
 }
 
 sealed interface BipeInvitesEvent {
-    data object Create : BipeInvitesEvent
+    /** Creates an invite and opens the share sheet. */
+    data object InviteByLink : BipeInvitesEvent
+    /** Creates an invite and shows its QR code. */
+    data object InviteInPerson : BipeInvitesEvent
+    data class Share(val inviteId: String) : BipeInvitesEvent
+    data class ShowQrCode(val inviteId: String) : BipeInvitesEvent
     data class Revoke(val inviteId: String) : BipeInvitesEvent
+    data object ShareSheetOpened : BipeInvitesEvent
+    data object DismissQrCode : BipeInvitesEvent
     data object ClearError : BipeInvitesEvent
 }

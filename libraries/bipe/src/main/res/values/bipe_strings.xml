@@ -118,7 +118,13 @@
     <string name="bipe_invites_available">Convites disponíveis: %1$s</string>
     <string name="bipe_invites_explainer">Cada convite vale para uma pessoa, por 30 dias. Convide quem você conhece.</string>
     <string name="bipe_invites_create">Criar convite</string>
-    <string name="bipe_invites_share_message">Entra no Bipe comigo: %1$s</string>
+    <string name="bipe_invites_invite_someone">Convidar alguém</string>
+    <string name="bipe_invites_show_qr">Mostrar QR code</string>
+    <string name="bipe_invites_joined_header">Entraram com seu convite</string>
+    <string name="bipe_invites_pending_header">Ainda não usados</string>
+    <string name="bipe_invites_link">Link de convite</string>
+    <string name="bipe_invites_other_device">Criado em outro aparelho. Compartilhe por lá.</string>
+    <string name="bipe_invites_share_message">Entra no Bipe comigo. Lá os dados ficam no Brasil: %1$s</string>
     <string name="bipe_invites_none_left">Você usou todos os seus convites.</string>
     <string name="bipe_invites_empty">Você ainda não convidou ninguém.</string>
     <string name="bipe_invites_expires">Vale até %1$s</string>
@@ -218,6 +224,9 @@
     <string name="bipe_tab_agenda">Agenda</string>
     <string name="bipe_tab_groups">Grupos</string>
     <string name="bipe_tab_you">Você</string>
+    <string name="bipe_groups_empty_title">Nenhum grupo ainda</string>
+    <string name="bipe_groups_empty_body">Seus grupos aparecem aqui. Crie um para conversar com várias pessoas de uma vez.</string>
+    <string name="bipe_groups_empty_action">Criar grupo</string>
     <string name="bipe_self_chat_title">Anotações</string>
     <string name="bipe_self_chat_subtitle">Mensagens que só você vê</string>
     <string name="bipe_self_chat_error">Não deu para abrir suas anotações. Tente de novo.</string>

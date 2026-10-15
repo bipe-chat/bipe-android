@@ -8,13 +8,14 @@ package io.element.android.libraries.bipe.invites
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,29 +26,28 @@ import io.element.android.libraries.androidutils.system.startSharePlainTextInten
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeInvite
-import io.element.android.libraries.bipe.api.BipeInviteStatus
 import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.list.ListItemContent
+import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
-import io.element.android.libraries.designsystem.theme.components.ButtonSize
-import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
+import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
+import io.element.android.libraries.designsystem.theme.components.ListItemStyle
 import io.element.android.libraries.designsystem.theme.components.ListSupportingText
 import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
 import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Port of BipeInvitesScreen on iOS: personal invites, their status and the share link. */
+/** Port of BipeInvitesScreen on iOS: one-tap invite, people who joined, then invites not used yet. */
 @Composable
 fun BipeInvitesView(
     state: BipeInvitesState,
@@ -55,28 +55,39 @@ fun BipeInvitesView(
     onUserClick: (userId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var selectedPendingInvite by remember { mutableStateOf<BipeInvite?>(null) }
     PreferencePage(
         title = stringResource(R.string.bipe_invites_title),
         onBackClick = onBackClick,
         modifier = modifier,
     ) {
-        ListItem(
-            content = { Text(stringResource(R.string.bipe_invites_available, state.available.toString())) },
-        )
-        ListItem(
-            content = { Text(stringResource(R.string.bipe_invites_create)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Plus())),
-            enabled = state.canCreate,
-            onClick = { state.eventSink(BipeInvitesEvent.Create) },
-        )
+        InviteButtons(state)
         ListSupportingText(text = footer(state))
-        HorizontalDivider()
-        if (state.invites.isEmpty() && !state.isLoading) {
-            ListItem(content = { Text(stringResource(R.string.bipe_invites_empty)) })
+        JoinedSection(state, onUserClick)
+        PendingSection(state, onInviteClick = { selectedPendingInvite = it })
+    }
+    selectedPendingInvite?.let { invite ->
+        PendingInviteActionsSheet(
+            invite = invite,
+            hasLink = state.shareUrls.containsKey(invite.id),
+            eventSink = state.eventSink,
+            onDismiss = { selectedPendingInvite = null },
+        )
+    }
+    state.shareSheetUrl?.let { url ->
+        val context = LocalContext.current
+        val message = stringResource(R.string.bipe_invites_share_message, url)
+        LaunchedEffect(url) {
+            context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = message)
+            state.eventSink(BipeInvitesEvent.ShareSheetOpened)
         }
-        for (invite in state.invites) {
-            InviteRow(invite = invite, state = state, onUserClick = onUserClick)
-        }
+    }
+    state.qrCodeUrl?.let { url ->
+        InviteQrCodeSheet(
+            url = url,
+            shareText = stringResource(R.string.bipe_invites_share_message, url),
+            onDismiss = { state.eventSink(BipeInvitesEvent.DismissQrCode) },
+        )
     }
     AsyncActionView(
         async = state.action,
@@ -87,60 +98,52 @@ fun BipeInvitesView(
 }
 
 @Composable
-private fun footer(state: BipeInvitesState): String {
-    if (state.isLoading || state.available > 0) return stringResource(R.string.bipe_invites_explainer)
-    val noneLeft = stringResource(R.string.bipe_invites_none_left)
-    val next = state.nextAvailableAt ?: return noneLeft
-    return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
+private fun InviteButtons(state: BipeInvitesState) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Button(
+            text = stringResource(R.string.bipe_invites_invite_someone),
+            leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
+            enabled = state.canCreate,
+            onClick = { state.eventSink(BipeInvitesEvent.InviteByLink) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedButton(
+            text = stringResource(R.string.bipe_invites_show_qr),
+            leadingIcon = IconSource.Vector(CompoundIcons.QrCode()),
+            enabled = state.canCreate,
+            onClick = { state.eventSink(BipeInvitesEvent.InviteInPerson) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 @Composable
-private fun InviteRow(
-    invite: BipeInvite,
-    state: BipeInvitesState,
-    onUserClick: (String) -> Unit,
-) {
-    val statusTitle = stringResource(invite.status.titleRes)
-    when (invite.status) {
-        BipeInviteStatus.PENDING -> Column {
-            ListItem(
-                content = { Text(statusTitle) },
-                supportingContent = { Text(stringResource(R.string.bipe_invites_expires, formatDate(invite.expiresAt, withTime = false))) },
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Time())),
-            )
-            Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                state.shareUrls[invite.id]?.let { url ->
-                    val context = LocalContext.current
-                    val message = stringResource(R.string.bipe_invites_share_message, url)
-                    var showQrCode by rememberSaveable { mutableStateOf(false) }
-                    OutlinedButton(
-                        text = stringResource(CommonStrings.action_share),
-                        size = ButtonSize.Medium,
-                        leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
-                        onClick = { context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = message) },
-                    )
-                    OutlinedButton(
-                        text = stringResource(R.string.bipe_invites_qr_action),
-                        size = ButtonSize.Medium,
-                        leadingIcon = IconSource.Vector(CompoundIcons.QrCode()),
-                        onClick = { showQrCode = true },
-                    )
-                    if (showQrCode) {
-                        InviteQrCodeSheet(url = url, shareText = message, onDismiss = { showQrCode = false })
-                    }
-                }
-                TextButton(
-                    text = stringResource(R.string.bipe_invites_revoke),
-                    size = ButtonSize.Medium,
-                    destructive = true,
-                    onClick = { state.eventSink(BipeInvitesEvent.Revoke(invite.id)) },
-                )
-            }
-        }
-        BipeInviteStatus.USED -> invite.joinedUserId?.let { userId ->
+private fun footer(state: BipeInvitesState): String {
+    val explainer = stringResource(R.string.bipe_invites_explainer)
+    if (state.isLoading) return explainer
+    if (state.available <= 0) {
+        val noneLeft = stringResource(R.string.bipe_invites_none_left)
+        val next = state.nextAvailableAt ?: return noneLeft
+        return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
+    }
+    // A large count means nothing to the person, so it shows only when few invites are left.
+    if (state.available > LOW_INVITE_COUNT) return explainer
+    return "$explainer ${stringResource(R.string.bipe_invites_available, state.available.toString())}"
+}
+
+private const val LOW_INVITE_COUNT = 5
+
+@Composable
+private fun JoinedSection(state: BipeInvitesState, onUserClick: (String) -> Unit) {
+    val joinedInvites = state.joinedInvites
+    if (joinedInvites.isEmpty()) return
+    PreferenceCategory(title = "${stringResource(R.string.bipe_invites_joined_header)} (${joinedInvites.size})") {
+        val statusTitle = stringResource(R.string.bipe_invites_status_used)
+        for (invite in joinedInvites) {
+            val userId = invite.joinedUserId ?: continue
             ListItem(
                 content = { Text(state.joinedUserTitles[userId] ?: userId) },
                 supportingContent = { Text(statusTitle) },
@@ -148,10 +151,65 @@ private fun InviteRow(
                 onClick = { onUserClick(userId) },
             )
         }
-        BipeInviteStatus.EXPIRED, BipeInviteStatus.REVOKED -> ListItem(
-            content = { Text(statusTitle) },
-            supportingContent = { Text(formatDate(invite.createdAt, withTime = false)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Close())),
+    }
+}
+
+@Composable
+private fun PendingSection(state: BipeInvitesState, onInviteClick: (BipeInvite) -> Unit) {
+    val pendingInvites = state.pendingInvites
+    if (pendingInvites.isEmpty()) return
+    PreferenceCategory(title = stringResource(R.string.bipe_invites_pending_header)) {
+        for (invite in pendingInvites) {
+            val expiry = stringResource(R.string.bipe_invites_expires, formatDate(invite.expiresAt, withTime = false))
+            val otherDevice = stringResource(R.string.bipe_invites_other_device)
+            val description = if (state.shareUrls.containsKey(invite.id)) expiry else "$expiry. $otherDevice"
+            ListItem(
+                content = { Text(stringResource(R.string.bipe_invites_link)) },
+                supportingContent = { Text(description) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Time())),
+                onClick = { onInviteClick(invite) },
+            )
+        }
+    }
+}
+
+/** Android counterpart of the iOS confirmation dialog: Share, QR code and Cancel invite. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PendingInviteActionsSheet(
+    invite: BipeInvite,
+    hasLink: Boolean,
+    eventSink: (BipeInvitesEvent) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss, scrollable = false) {
+        // Links live only on the device that made them; the server keeps a hash of the code.
+        if (hasLink) {
+            ListItem(
+                content = { Text(stringResource(CommonStrings.action_share)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ShareAndroid())),
+                onClick = {
+                    onDismiss()
+                    eventSink(BipeInvitesEvent.Share(invite.id))
+                },
+            )
+            ListItem(
+                content = { Text(stringResource(R.string.bipe_invites_qr_action)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.QrCode())),
+                onClick = {
+                    onDismiss()
+                    eventSink(BipeInvitesEvent.ShowQrCode(invite.id))
+                },
+            )
+        }
+        ListItem(
+            content = { Text(stringResource(R.string.bipe_invites_revoke)) },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Delete())),
+            style = ListItemStyle.Destructive,
+            onClick = {
+                onDismiss()
+                eventSink(BipeInvitesEvent.Revoke(invite.id))
+            },
         )
     }
 }
@@ -171,14 +229,6 @@ private fun InviteQrCodeSheet(url: String, shareText: String, onDismiss: () -> U
         )
     }
 }
-
-private val BipeInviteStatus.titleRes: Int
-    get() = when (this) {
-        BipeInviteStatus.PENDING -> R.string.bipe_invites_status_pending
-        BipeInviteStatus.USED -> R.string.bipe_invites_status_used
-        BipeInviteStatus.EXPIRED -> R.string.bipe_invites_status_expired
-        BipeInviteStatus.REVOKED -> R.string.bipe_invites_status_revoked
-    }
 
 private fun formatDate(instant: Instant, withTime: Boolean): String {
     val formatter = if (withTime) {
@@ -202,6 +252,8 @@ internal fun BipeInvitesViewPreview() = ElementPreview {
             shareUrls = emptyMap(),
             joinedUserTitles = emptyMap(),
             action = AsyncAction.Uninitialized,
+            shareSheetUrl = null,
+            qrCodeUrl = null,
             eventSink = {},
         ),
         onBackClick = {},

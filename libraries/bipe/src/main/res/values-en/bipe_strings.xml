@@ -118,7 +118,13 @@
     <string name="bipe_invites_available">Invites available: %1$s</string>
     <string name="bipe_invites_explainer">Each invite works for one person and lasts 30 days. Invite people you know.</string>
     <string name="bipe_invites_create">Create invite</string>
-    <string name="bipe_invites_share_message">Join me on Bipe: %1$s</string>
+    <string name="bipe_invites_invite_someone">Invite someone</string>
+    <string name="bipe_invites_show_qr">Show QR code</string>
+    <string name="bipe_invites_joined_header">Joined with your invites</string>
+    <string name="bipe_invites_pending_header">Not used yet</string>
+    <string name="bipe_invites_link">Invite link</string>
+    <string name="bipe_invites_other_device">Made on another device. Share it from there.</string>
+    <string name="bipe_invites_share_message">Join me on Bipe. Our data stays in Brazil there: %1$s</string>
     <string name="bipe_invites_none_left">You have used all your invites.</string>
     <string name="bipe_invites_empty">You have not invited anyone yet.</string>
     <string name="bipe_invites_expires">Valid until %1$s</string>
@@ -218,6 +224,9 @@
     <string name="bipe_tab_agenda">Agenda</string>
     <string name="bipe_tab_groups">Groups</string>
     <string name="bipe_tab_you">You</string>
+    <string name="bipe_groups_empty_title">No groups yet</string>
+    <string name="bipe_groups_empty_body">Your groups show up here. Create one to talk with several people at once.</string>
+    <string name="bipe_groups_empty_action">Create group</string>
     <string name="bipe_self_chat_title">Notes</string>
     <string name="bipe_self_chat_subtitle">Messages only you can see</string>
     <string name="bipe_self_chat_error">Couldn\'t open your notes. Try again.</string>
