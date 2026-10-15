@@ -34,6 +34,8 @@ class BipeSession(
 ) {
     private val sessionId = matrixClient.sessionId
 
+    val userId: String get() = sessionId.value
+
     /** The current Matrix access token. The SDK refreshes it and the session store keeps the latest one. */
     val accessToken: suspend () -> String? = { sessionStore.getSession(sessionId.value)?.accessToken }
 
