@@ -9,6 +9,8 @@ permissions: {}
 jobs:
   triage-new-issues:
     runs-on: ubuntu-latest
+    # Skip in forks
+    if: github.repository == 'element-hq/element-x-android'
     steps:
       - uses: actions/add-to-project@5afcf98fcd03f1c2f92c3c83f58ae24323cc57fd # v2
         with:
