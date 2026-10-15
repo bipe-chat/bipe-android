@@ -54,6 +54,7 @@ import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
 import io.element.android.libraries.bipe.ui.BipeRequestsRow
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 
@@ -69,6 +70,7 @@ fun RoomListContentView(
     onConfirmRecoveryKeyClick: () -> Unit,
     onRoomClick: (RoomListRoomSummary) -> Unit,
     onCreateRoomClick: () -> Unit,
+    onBipeCreateGroupClick: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -87,7 +89,7 @@ fun RoomListContentView(
                 eventSink = eventSink,
                 onSetUpRecoveryClick = onSetUpRecoveryClick,
                 onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
-                onCreateRoomClick = onCreateRoomClick,
+                onCreateRoomClick = if (contentState.bipeGroups) onBipeCreateGroupClick else onCreateRoomClick,
             )
         }
         is RoomListContentState.Rooms -> {
@@ -142,10 +144,11 @@ private fun EmptyView(
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
+        // Bipe: the Grupos tab has its own text and a create group button (ADR 0053).
         val text = buildString {
-            append(stringResource(R.string.screen_roomlist_empty_title))
+            append(stringResource(if (state.bipeGroups) BipeR.string.bipe_groups_empty_title else R.string.screen_roomlist_empty_title))
             append("\n")
-            append(stringResource(R.string.screen_roomlist_empty_message))
+            append(stringResource(if (state.bipeGroups) BipeR.string.bipe_groups_empty_body else R.string.screen_roomlist_empty_message))
         }
         EmptyScaffold(
             title = null,
@@ -153,8 +156,8 @@ private fun EmptyView(
             bottomPart = {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    text = stringResource(CommonStrings.action_start_chat),
-                    leadingIcon = IconSource.Vector(CompoundIcons.Chat()),
+                    text = stringResource(if (state.bipeGroups) BipeR.string.bipe_groups_empty_action else CommonStrings.action_start_chat),
+                    leadingIcon = IconSource.Vector(if (state.bipeGroups) CompoundIcons.Plus() else CompoundIcons.Chat()),
                     onClick = onCreateRoomClick,
                 )
             },
@@ -383,6 +386,7 @@ internal fun RoomListContentViewPreview(@PreviewParameter(RoomListContentStatePr
         onConfirmRecoveryKeyClick = {},
         onRoomClick = {},
         onCreateRoomClick = {},
+        onBipeCreateGroupClick = {},
         lazyListState = rememberLazyListState(),
         contentPadding = PaddingValues(0.dp),
     )

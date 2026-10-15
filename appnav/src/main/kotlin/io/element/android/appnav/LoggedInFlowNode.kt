@@ -301,6 +301,10 @@ class LoggedInFlowNode(
         @Parcelize
         data object CreateSpace : NavTarget
 
+        /** Bipe: the create room flow without the start chat screen, from the Grupos empty state. */
+        @Parcelize
+        data object BipeCreateGroup : NavTarget
+
         @Parcelize
         data class SecureBackup(
             val initialElement: SecureBackupEntryPoint.InitialTarget = SecureBackupEntryPoint.InitialTarget.Root
@@ -362,6 +366,10 @@ class LoggedInFlowNode(
 
                     override fun navigateToCreateRoom() {
                         backstack.push(NavTarget.CreateRoom)
+                    }
+
+                    override fun bipeNavigateToCreateGroup() {
+                        backstack.push(NavTarget.BipeCreateGroup)
                     }
 
                     override fun navigateToCreateSpace() {
@@ -545,6 +553,16 @@ class LoggedInFlowNode(
                     buildContext = buildContext,
                     callback = callback,
                 )
+            }
+            is NavTarget.BipeCreateGroup -> {
+                val callback = object : CreateRoomEntryPoint.Callback {
+                    override fun onRoomCreated(roomId: RoomId) {
+                        backstack.replace(NavTarget.Room(roomIdOrAlias = roomId.toRoomIdOrAlias()))
+                    }
+                }
+                createRoomEntryPoint
+                    .builder(parentNode = this, buildContext = buildContext, callback = callback)
+                    .build()
             }
             is NavTarget.CreateSpace -> {
                 val callback = object : CreateRoomEntryPoint.Callback {

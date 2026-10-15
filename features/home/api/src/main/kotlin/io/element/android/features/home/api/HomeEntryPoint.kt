@@ -27,6 +27,9 @@ interface HomeEntryPoint : FeatureEntryPoint {
     interface Callback : Plugin {
         fun navigateToRoom(roomId: RoomId, eventId: EventId?, joinedRoom: JoinedRoom?)
         fun navigateToCreateRoom()
+
+        /** Bipe: opens the create room flow from the Grupos empty state (ADR 0053). */
+        fun bipeNavigateToCreateGroup() = navigateToCreateRoom()
         fun navigateToCreateSpace()
         fun navigateToSettings()
         fun navigateToSetUpRecovery()
