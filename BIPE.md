@@ -28,6 +28,20 @@ Release key: PKCS12, alias `bipe`, certificate SHA-256 `42:0A:A2:32:1A:35:1D:D5:
 
 The manual builds on **mini4p** (Tailscale `mini-4p`, JDK 21 in `~/opt/jdk-21`, tar copy of the tree) are retired for tester builds. They copied files but never deleted them, and their bipe-shared copy went stale without notice (13 October 2026).
 
+### Debug build for a phone on MZ's Mac (mini4p)
+
+MZ's Mac has no JDK. mini4p (`100.114.238.75`) builds, and the phone stays on the Mac's USB. Steps, run from `~/Dev/Bipe` on the Mac:
+
+1. Copy a clean tree of both repos into a new folder on mini4p, named after the commit. A new folder means no stale files. Give tar a file list (`-T`). `git ls-files | xargs tar` splits into several tar streams, and the receiving tar stops after the first one: on 15 October 2026 it copied 5,000 of 11,990 files with no error. Compare the file count on mini4p with `git ls-files | wc -l`.
+2. Copy `local.properties` from `~/Dev/Bipe/bipe-android` on mini4p into the new tree.
+3. Make a snapshot commit in the copy (`git init -b main && git add -A && git commit -m "snapshot <sha>"`). The build reads the git revision (`GitRevisionValueSource`). Without `.git`, configuration fails with `Process 'command 'git'' finished with non-zero exit value 128`.
+4. Build with `JAVA_HOME=~/opt/jdk-21/Contents/Home`: `./gradlew assembleGplayDebug --no-daemon --max-workers=4`.
+5. Copy `app/build/outputs/apk/gplay/debug/app-gplay-arm64-v8a-debug.apk` (about 185 MB) to the Mac with `scp`, compare `shasum -a 256` on both sides, then `adb install -r`. The app installs as `chat.bipe.app.debug`.
+
+```bash
+D=Dev/Bipe/build-$(git -C bipe-android rev-parse --short HEAD); ssh 100.114.238.75 "rm -rf ~/$D && mkdir -p ~/$D/bipe-android ~/$D/bipe-shared"; for r in bipe-android bipe-shared; do (cd $r && git ls-files | while read f; do [ -f "$f" ] && echo "$f"; done > /tmp/$r.list && tar -cf - -T /tmp/$r.list) | ssh 100.114.238.75 "tar -xf - -C ~/$D/$r"; done
+```
+
 Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVectorTest.kt` reads `../bipe-shared/test-vectors` directly. On mini4p that is `~/Dev/Bipe/bipe-shared`, a copy that does not update by itself. Copy the current bipe-shared over before each test run (`git ls-files | tar`, same as the app tree). A stale copy fails or passes against old vectors without telling you: on 13 October 2026 it still had the vectors from before the rename and no `pins.json`. Gradle does not track the vector files as test inputs, so run `:libraries:bipe:cleanTestDebugUnitTest` first, or it reuses the old result. Use `--no-daemon --max-workers=4` (the daemon hangs at packaging). First green run: 13 October 2026, 7 of 7.
 
 ```bash
