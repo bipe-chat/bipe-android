@@ -50,7 +50,6 @@ import io.element.android.libraries.mediaupload.api.MediaPreProcessor
 import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
 import io.element.android.services.analytics.api.AnalyticsService
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
@@ -117,14 +116,8 @@ class ConfigureRoomPresenter(
             }
         }
 
-        var spaces by remember { mutableStateOf<ImmutableList<SpaceRoom>>(persistentListOf()) }
-        LaunchedEffect(Unit) {
-            spaces = matrixClient.spaceService.editableSpaces().getOrElse { emptyList() }.toImmutableList()
-            val parentSpace = spaces.find { it.roomId == initialParentSpaceId }
-            parentSpace?.let {
-                dataStore.setParentSpace(parentSpace = parentSpace, updateVisibility = true)
-            }
-        }
+        // Bipe ADR 0053: no spaces in the create-group screen. No spaces means no picker and no "space members" join rule.
+        val spaces = remember { persistentListOf<SpaceRoom>() }
 
         LaunchedEffect(cameraPermissionState.permissionGranted) {
             if (cameraPermissionState.permissionGranted && pendingPermissionRequest) {
