@@ -43,6 +43,8 @@ class BipeInvitesPresenter(
         var invites by remember { mutableStateOf<List<BipeInvite>>(emptyList()) }
         var shareUrls by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
         var action by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
+        var shareSheetUrl by remember { mutableStateOf<String?>(null) }
+        var qrCodeUrl by remember { mutableStateOf<String?>(null) }
 
         val resolver = bipeSession.handleResolver
         val handles by resolver.handles.collectAsState()
@@ -73,21 +75,36 @@ class BipeInvitesPresenter(
 
         LaunchedEffect(Unit) { load() }
 
+        /** Creates an invite and returns its link, so the caller can open the share sheet or the QR code at once. */
+        suspend fun create(): String? {
+            if (isLoading || available <= 0) return null
+            action = AsyncAction.Loading
+            return try {
+                val created = withTokenRetry { token -> bipeSession.apiClient.createInvite(token) }
+                Timber.i("Bipe invite created $created")
+                shareUrls = shareUrls + (created.id to created.url)
+                load()
+                action = AsyncAction.Uninitialized
+                created.url
+            } catch (error: BipeApiException) {
+                Timber.e(error, "Bipe invite creation failed")
+                show(error)
+                null
+            }
+        }
+
         fun handleEvent(event: BipeInvitesEvent) {
             when (event) {
-                BipeInvitesEvent.Create -> coroutineScope.launch {
-                    action = AsyncAction.Loading
-                    try {
-                        val created = withTokenRetry { token -> bipeSession.apiClient.createInvite(token) }
-                        Timber.i("Bipe invite created $created")
-                        shareUrls = shareUrls + (created.id to created.url)
-                        load()
-                        action = AsyncAction.Uninitialized
-                    } catch (error: BipeApiException) {
-                        Timber.e(error, "Bipe invite creation failed")
-                        show(error)
-                    }
+                BipeInvitesEvent.InviteByLink -> coroutineScope.launch {
+                    create()?.let { shareSheetUrl = it }
                 }
+                BipeInvitesEvent.InviteInPerson -> coroutineScope.launch {
+                    create()?.let { qrCodeUrl = it }
+                }
+                is BipeInvitesEvent.Share -> shareSheetUrl = shareUrls[event.inviteId]
+                is BipeInvitesEvent.ShowQrCode -> qrCodeUrl = shareUrls[event.inviteId]
+                BipeInvitesEvent.ShareSheetOpened -> shareSheetUrl = null
+                BipeInvitesEvent.DismissQrCode -> qrCodeUrl = null
                 is BipeInvitesEvent.Revoke -> coroutineScope.launch {
                     action = AsyncAction.Loading
                     try {
@@ -113,6 +130,8 @@ class BipeInvitesPresenter(
             shareUrls = shareUrls,
             joinedUserTitles = joinedUserTitles,
             action = action,
+            shareSheetUrl = shareSheetUrl,
+            qrCodeUrl = qrCodeUrl,
             eventSink = ::handleEvent,
         )
     }
