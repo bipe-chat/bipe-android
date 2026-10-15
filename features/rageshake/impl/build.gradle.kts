@@ -39,7 +39,6 @@ dependencies {
     implementation(projects.libraries.uiStrings)
     implementation(projects.libraries.sessionStorage.api)
     implementation(projects.libraries.matrix.api)
-    api(libs.squareup.seismic)
     api(projects.features.rageshake.api)
     implementation(libs.androidx.datastore.preferences)
     implementation(platform(libs.network.okhttp.bom))

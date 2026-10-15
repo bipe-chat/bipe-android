@@ -33,7 +33,7 @@ The manual builds on **mini4p** (Tailscale `mini-4p`, JDK 21 in `~/opt/jdk-21`, 
 MZ's Mac has no JDK. mini4p (`100.114.238.75`) builds, and the phone stays on the Mac's USB. Steps, run from `~/Dev/Bipe` on the Mac:
 
 1. Copy a clean tree of both repos into a new folder on mini4p, named after the commit. A new folder means no stale files. Give tar a file list (`-T`). `git ls-files | xargs tar` splits into several tar streams, and the receiving tar stops after the first one: on 15 October 2026 it copied 5,000 of 11,990 files with no error. Compare the file count on mini4p with `git ls-files | wc -l`.
-2. Copy `local.properties` from `~/Dev/Bipe/bipe-android` on mini4p into the new tree.
+2. Write `local.properties` in the new tree: `echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties`. On 15 October 2026 mini4p had no `~/Dev/Bipe/bipe-android` checkout to copy it from.
 3. Make a snapshot commit in the copy (`git init -b main && git add -A && git commit -m "snapshot <sha>"`). The build reads the git revision (`GitRevisionValueSource`). Without `.git`, configuration fails with `Process 'command 'git'' finished with non-zero exit value 128`.
 4. Build with `JAVA_HOME=~/opt/jdk-21/Contents/Home`: `./gradlew assembleGplayDebug --no-daemon --max-workers=4`.
 5. Copy `app/build/outputs/apk/gplay/debug/app-gplay-arm64-v8a-debug.apk` (about 185 MB) to the Mac with `scp`, compare `shasum -a 256` on both sides, then `adb install -r`. The app installs as `chat.bipe.app.debug`.
@@ -61,6 +61,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 | Firebase push gateway | `FirebaseConfig.PUSHER_HTTP_URL` | `https://push.bipe.net.br/_matrix/push/v1/notify` (own Sygnal, never matrix.org) |
 | Pusher app IDs | `BuildTimeConfig.PUSHER_APP_ID_*` | `chat.bipe.app.android.prod` / `.android.dev`. Sygnal must list them. |
 | Telemetry | `plugins/.../DependencyHandleScope.kt` | No Sentry or PostHog (bipe#55): their provider modules and libraries are deleted, every build uses `services:analytics:noop`, and Element Call gets no PostHog or Sentry values. Rageshake URL and app name are empty in `appconfig`, which disables bug reports. |
+| Trimmed libraries (15 Oct 2026) | `features/rageshake/impl`, `features/preferences/impl` | `DefaultRageShake` is a no-op (bug reports are off), so seismic is gone. The developer settings lose the brand colour picker (enterprise builds only), so `io.mhssn:colorpicker` is gone. |
 | Locales | `plugins/.../extension/locales.kt`, `app/src/main/res/xml/locales_config.xml` | pt-BR and en only. Edited by hand: do not re-run the Localazy import. |
 | Accent colour | Compound tokens | Açaí from `../bipe-tokens`: `./tools/compound/import_bipe_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
 | App links | `app/src/main/AndroidManifest.xml` | `bipe.chat` (and www) paths `/@`, `/convite/` and `/recuperar/` (recovery link, token in the fragment). Old `proseio.com.br` links still open the app (second filter, no autoVerify). Element hosts removed. |

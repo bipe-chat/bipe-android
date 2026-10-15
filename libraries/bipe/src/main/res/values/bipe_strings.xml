@@ -218,6 +218,9 @@
     <string name="bipe_tab_agenda">Agenda</string>
     <string name="bipe_tab_groups">Grupos</string>
     <string name="bipe_tab_you">Você</string>
+    <string name="bipe_groups_empty_title">Nenhum grupo ainda</string>
+    <string name="bipe_groups_empty_body">Seus grupos aparecem aqui. Crie um para conversar com várias pessoas de uma vez.</string>
+    <string name="bipe_groups_empty_action">Criar grupo</string>
     <string name="bipe_self_chat_title">Anotações</string>
     <string name="bipe_self_chat_subtitle">Mensagens que só você vê</string>
     <string name="bipe_self_chat_error">Não deu para abrir suas anotações. Tente de novo.</string>

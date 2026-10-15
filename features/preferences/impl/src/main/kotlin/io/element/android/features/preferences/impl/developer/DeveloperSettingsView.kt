@@ -35,8 +35,6 @@ import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.DeviceId
 import io.element.android.libraries.ui.strings.CommonStrings
-import io.mhssn.colorpicker.ColorPickerDialog
-import io.mhssn.colorpicker.ColorPickerType
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -94,14 +92,7 @@ fun DeveloperSettingsView(
 
         if (state.isEnterpriseBuild) {
             PreferenceCategory(title = "Theme") {
-                ListItem(
-                    content = {
-                        Text("Change brand color")
-                    },
-                    onClick = {
-                        state.eventSink(DeveloperSettingsEvent.SetShowColorPicker(true))
-                    }
-                )
+                // Bipe: no color picker package. Enterprise builds are not used.
                 ListItem(
                     content = {
                         Text("Reset brand color")
@@ -168,18 +159,6 @@ fun DeveloperSettingsView(
             )
         }
     }
-    ColorPickerDialog(
-        show = state.showColorPicker,
-        type = ColorPickerType.Classic(
-            showAlphaBar = false,
-        ),
-        onDismissRequest = {
-            state.eventSink(DeveloperSettingsEvent.SetShowColorPicker(false))
-        },
-        onPickedColor = {
-            state.eventSink(DeveloperSettingsEvent.ChangeBrandColor(it))
-        },
-    )
 }
 
 @Composable
