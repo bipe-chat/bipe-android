@@ -46,7 +46,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 | Bipe API | `BipeConfig.API_BASE_URL` | `https://api.bipe.net.br` |
 | Firebase push gateway | `FirebaseConfig.PUSHER_HTTP_URL` | `https://push.bipe.net.br/_matrix/push/v1/notify` (own Sygnal, never matrix.org) |
 | Pusher app IDs | `BuildTimeConfig.PUSHER_APP_ID_*` | `chat.bipe.app.android.prod` / `.android.dev`. Sygnal must list them. |
-| Telemetry | `BuildTimeConfig` | Sentry and PostHog keys stay `null`. Rageshake URL and app name are empty in `appconfig`, which disables bug reports. |
+| Telemetry | `plugins/.../DependencyHandleScope.kt` | No Sentry or PostHog (bipe#55): their provider modules and libraries are deleted, every build uses `services:analytics:noop`, and Element Call gets no PostHog or Sentry values. Rageshake URL and app name are empty in `appconfig`, which disables bug reports. |
 | Locales | `plugins/.../extension/locales.kt`, `app/src/main/res/xml/locales_config.xml` | pt-BR and en only. Edited by hand: do not re-run the Localazy import. |
 | Accent colour | Compound tokens | Açaí from `../bipe-tokens`: `./tools/compound/import_bipe_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
 | App links | `app/src/main/AndroidManifest.xml` | `bipe.chat` (and www) paths `/@`, `/convite/` and `/recuperar/` (recovery link, token in the fragment). Old `proseio.com.br` links still open the app (second filter, no autoVerify). Element hosts removed. |
@@ -134,7 +134,6 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
 | Help links | Still point to element.io | Hidden | Not done on Android (#205) **Gap** |
-| Unencrypted room option | Removed | Still offered | Not done on iOS (#78) **Gap** |
 | Sign-up form | Name, then PIN | One form | Not done on iOS (#196) **Gap** |
 | bipe.chat/@handle link | Opens the app, goes nowhere | Opens the profile | Not done on Android (#299) **Gap** |
 | Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |

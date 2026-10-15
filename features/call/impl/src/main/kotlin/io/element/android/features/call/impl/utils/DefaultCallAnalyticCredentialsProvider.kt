@@ -15,9 +15,10 @@ import io.element.android.libraries.matrix.api.widget.CallAnalyticCredentialsPro
 
 @ContributesBinding(AppScope::class)
 class DefaultCallAnalyticCredentialsProvider : CallAnalyticCredentialsProvider {
-    override val posthogUserId: String? = BuildConfig.POSTHOG_USER_ID.takeIf { it.isNotBlank() }
-    override val posthogApiHost: String? = BuildConfig.POSTHOG_API_HOST.takeIf { it.isNotBlank() }
-    override val posthogApiKey: String? = BuildConfig.POSTHOG_API_KEY.takeIf { it.isNotBlank() }
+    // Bipe: no Sentry or PostHog in Element Call (bipe#55).
+    override val posthogUserId: String? = null
+    override val posthogApiHost: String? = null
+    override val posthogApiKey: String? = null
     override val rageshakeSubmitUrl: String? = BuildConfig.RAGESHAKE_URL.takeIf { it.isNotBlank() }
-    override val sentryDsn: String? = BuildConfig.SENTRY_DSN.takeIf { it.isNotBlank() }
+    override val sentryDsn: String? = null
 }

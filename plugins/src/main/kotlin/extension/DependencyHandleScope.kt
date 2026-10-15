@@ -9,7 +9,6 @@
 package extension
 
 import ModulesConfig
-import config.AnalyticsConfig
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -131,20 +130,8 @@ fun DependencyHandlerScope.allLibrariesImpl() {
 
 fun DependencyHandlerScope.allServicesImpl() {
     implementation(project(":services:analytics:compose"))
-    when (ModulesConfig.analyticsConfig) {
-        AnalyticsConfig.Disabled -> {
-            implementation(project(":services:analytics:noop"))
-        }
-        is AnalyticsConfig.Enabled -> {
-            implementation(project(":services:analytics:impl"))
-            if (ModulesConfig.analyticsConfig.withPosthog) {
-                implementation(project(":services:analyticsproviders:posthog"))
-            }
-            if (ModulesConfig.analyticsConfig.withSentry) {
-                implementation(project(":services:analyticsproviders:sentry"))
-            }
-        }
-    }
+    // Bipe: no Sentry or PostHog (bipe#55). Analytics is always the no-op module.
+    implementation(project(":services:analytics:noop"))
 
     implementation(project(":services:apperror:impl"))
     implementation(project(":services:appnavstate:impl"))

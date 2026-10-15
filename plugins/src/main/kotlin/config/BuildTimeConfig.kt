@@ -24,10 +24,6 @@ object BuildTimeConfig {
     val SERVICES_MAPTILER_APIKEY: String? = null
     val SERVICES_MAPTILER_LIGHT_MAPID: String? = null
     val SERVICES_MAPTILER_DARK_MAPID: String? = null
-    val SERVICES_POSTHOG_HOST: String? = null
-    val SERVICES_POSTHOG_APIKEY: String? = null
-    val SERVICES_SENTRY_DSN: String? = null
-    val SERVICES_SENTRY_DSN_RUST: String? = null
     val BUG_REPORT_URL: String? = null
     val BUG_REPORT_APP_NAME: String? = null
     const val PUSH_CONFIG_INCLUDE_FIREBASE: Boolean = true
