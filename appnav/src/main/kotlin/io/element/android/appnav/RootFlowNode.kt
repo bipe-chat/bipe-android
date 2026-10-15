@@ -525,6 +525,7 @@ class RootFlowNode(
             is ResolvedIntent.Login -> onLoginLink(resolvedIntent.params)
             is ResolvedIntent.OAuth -> onOAuthAction(resolvedIntent.oAuthAction)
             is ResolvedIntent.Permalink -> navigateTo(resolvedIntent.permalinkData)
+            is ResolvedIntent.BipeProfile -> navigateToBipeProfile(resolvedIntent.handle)
             is ResolvedIntent.IncomingShare -> onIncomingShare(resolvedIntent.shareIntentData)
         }
     }
@@ -587,6 +588,17 @@ class RootFlowNode(
             // In case of multiple accounts, the user can switch account from the room select screen.
             attachSession(latestSessionId).attachIncomingShare(shareIntentData)
         }
+    }
+
+    /** Bipe: a `bipe.chat/@handle` link opens that person's profile (bipe#299), like iOS `openBipeHandle`. */
+    private suspend fun navigateToBipeProfile(handle: String) {
+        val latestSessionId = sessionStore.getLatestSessionId()
+        if (latestSessionId == null) {
+            switchToNotLoggedInFlow(null)
+            return
+        }
+        val userId = attachSession(latestSessionId).resolveBipeHandle(handle) ?: return
+        navigateTo(PermalinkData.UserLink(userId))
     }
 
     private suspend fun navigateTo(permalinkData: PermalinkData) {

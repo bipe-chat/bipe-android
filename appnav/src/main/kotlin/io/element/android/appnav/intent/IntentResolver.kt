@@ -14,6 +14,7 @@ import io.element.android.features.login.api.LoginIntentResolver
 import io.element.android.features.login.api.LoginParams
 import io.element.android.features.share.api.ShareIntentData
 import io.element.android.features.share.api.ShareIntentHandler
+import io.element.android.libraries.bipe.BipeProfileLink
 import io.element.android.libraries.deeplink.api.DeeplinkData
 import io.element.android.libraries.deeplink.api.DeeplinkParser
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
@@ -28,6 +29,9 @@ sealed interface ResolvedIntent {
     data class Permalink(val permalinkData: PermalinkData) : ResolvedIntent
     data class Login(val params: LoginParams) : ResolvedIntent
     data class IncomingShare(val shareIntentData: ShareIntentData) : ResolvedIntent
+
+    /** Bipe: a `bipe.chat/@handle` profile link (bipe#299). */
+    data class BipeProfile(val handle: String) : ResolvedIntent
 }
 
 @Inject
@@ -57,6 +61,10 @@ class IntentResolver(
         val mobileLoginData = actionViewData
             ?.let { loginIntentResolver.parse(it) }
         if (mobileLoginData != null) return ResolvedIntent.Login(mobileLoginData)
+
+        // Bipe profile link clicked? (bipe.chat/@handle)
+        val bipeHandle = actionViewData?.let(BipeProfileLink::handle)
+        if (bipeHandle != null) return ResolvedIntent.BipeProfile(bipeHandle)
 
         // External link clicked? (matrix.to, element.io, etc.)
         val permalinkData = actionViewData

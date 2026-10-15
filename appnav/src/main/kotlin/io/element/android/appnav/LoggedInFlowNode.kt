@@ -8,7 +8,9 @@
 
 package io.element.android.appnav
 
+import android.content.Context
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -81,7 +83,9 @@ import io.element.android.libraries.architecture.waitForNavTargetAttached
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.SessionScope
+import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -96,6 +100,7 @@ import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.di.BipeSession
@@ -147,6 +152,7 @@ class LoggedInFlowNode(
     private val shareEntryPoint: ShareEntryPoint,
     private val matrixClient: MatrixClient,
     private val bipeSession: BipeSession,
+    @ApplicationContext private val context: Context,
     private val sendingQueue: SendQueues,
     private val nativeCallHost: NativeCallHost,
     private val incomingVerificationEntryPoint: IncomingVerificationEntryPoint,
@@ -666,6 +672,16 @@ class LoggedInFlowNode(
                 it.roomIdOrAlias == roomIdOrAlias &&
                 it.initialElement == initialElement
         }
+    }
+
+    /** Bipe: the Matrix ID behind a `bipe.chat/@handle` link (bipe#299). Shows a notice when nobody holds the handle. */
+    suspend fun resolveBipeHandle(handle: String): UserId? {
+        val userId = runCatchingExceptions { bipeSession.handleResolver.userId(forHandle = handle) }.getOrNull()
+        if (userId == null) {
+            Timber.i("No user for a Bipe handle link")
+            Toast.makeText(context, context.getString(BipeR.string.bipe_link_handle_not_found, handle), Toast.LENGTH_LONG).show()
+        }
+        return userId?.let(::UserId)
     }
 
     suspend fun attachUser(userId: UserId) {
