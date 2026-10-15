@@ -21,8 +21,8 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.features.enterprise.api.EnterpriseService
+import io.element.android.features.preferences.api.ClearCacheUseCase
 import io.element.android.features.preferences.impl.developer.appsettings.AppDeveloperSettingsState
-import io.element.android.features.preferences.impl.tasks.ClearCacheUseCase
 import io.element.android.features.preferences.impl.tasks.ComputeCacheSizeUseCase
 import io.element.android.features.preferences.impl.tasks.MarkAllRoomsAsRead
 import io.element.android.features.preferences.impl.tasks.VacuumStoresUseCase

@@ -69,9 +69,9 @@ enum class FeatureFlags(
         key = "feature.thread_timeline",
         title = "Threads",
         description = "Renders thread messages as a dedicated timeline. Restarting the app is required for this setting to fully take effect.",
-        defaultValue = { false },
-        isFinished = false,
-        isInLabs = true,
+        // Bipe: on for everyone and out of Labs. Finished, so an old Labs opt-out is ignored.
+        defaultValue = { true },
+        isFinished = true,
     ),
     MultiAccount(
         key = "feature.multi_account",
@@ -137,9 +137,9 @@ enum class FeatureFlags(
         key = "feature.send_gallery_messages",
         title = "Send gallery messages",
         description = "Allow sending multiple media items in a single message.",
-        defaultValue = { false },
-        isFinished = false,
-        isInLabs = true,
+        // Bipe: on for everyone and out of Labs. Finished, so an old Labs opt-out is ignored.
+        defaultValue = { true },
+        isFinished = true,
     ),
     Knock(
         key = "feature.knock",

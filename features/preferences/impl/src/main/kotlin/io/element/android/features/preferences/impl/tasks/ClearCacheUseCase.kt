@@ -12,6 +12,7 @@ import android.content.Context
 import coil3.SingletonImageLoader
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.features.invite.api.SeenInvitesStore
+import io.element.android.features.preferences.api.ClearCacheUseCase
 import io.element.android.features.preferences.impl.DefaultCacheService
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.di.SessionScope
@@ -21,10 +22,6 @@ import io.element.android.libraries.push.api.PushService
 import io.element.android.services.appnavstate.api.ActiveRoomsHolder
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-
-interface ClearCacheUseCase {
-    suspend operator fun invoke()
-}
 
 @ContributesBinding(SessionScope::class)
 class DefaultClearCacheUseCase(
