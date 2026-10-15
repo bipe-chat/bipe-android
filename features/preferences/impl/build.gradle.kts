@@ -85,7 +85,6 @@ dependencies {
     implementation(projects.services.appnavstate.api)
     implementation(projects.services.toolbox.api)
     implementation(libs.coil.compose)
-    implementation(libs.color.picker)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.serialization.json)

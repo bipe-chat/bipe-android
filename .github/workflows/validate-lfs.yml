@@ -9,7 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Validate
     steps:
-      - uses: nschloe/action-cached-lfs-checkout@385a8ecc719e50b8c71af6ab01a624b486b7c3bc # v1.2.5
+      # Bipe: the check reads LFS pointers only. A plain checkout works in the fork, which has no LFS objects.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - run: |
           ./tools/git/validate_lfs.sh

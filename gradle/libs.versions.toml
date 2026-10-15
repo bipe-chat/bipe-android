@@ -145,7 +145,6 @@ coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", ve
 accompanist_permission = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 # Libraries
-squareup_seismic = "com.squareup:seismic:1.0.3"
 
 # network
 network_okhttp_bom = "com.squareup.okhttp3:okhttp-bom:5.5.0"
@@ -225,7 +224,6 @@ zxing_cpp = "io.github.zxing-cpp:android:3.1.1"
 google_zxing = "com.google.zxing:core:3.5.4"
 google_guava = "com.google.guava:guava:33.7.2-android"
 
-color_picker = "io.mhssn:colorpicker:1.0.0"
 
 # main branch can be tested replacing the version with main-SNAPSHOT
 matrix_analytics_events = "com.github.matrix-org:matrix-analytics-events:0.38.0"
