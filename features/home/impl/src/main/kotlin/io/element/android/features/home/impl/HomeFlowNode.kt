@@ -301,6 +301,7 @@ class HomeFlowNode(
                 onSettingsClick = { state.eventSink(HomeEvent.SelectHomeNavigationBarItem(HomeNavigationBarItem.You)) },
                 onAddAccountClick = callback::navigateToAddAccount,
                 onStartChatClick = callback::navigateToCreateRoom,
+                onBipeCreateGroupClick = callback::bipeNavigateToCreateGroup,
                 onCreateSpaceClick = callback::navigateToCreateSpace,
                 onSetUpRecoveryClick = callback::navigateToSetUpRecovery,
                 onConfirmRecoveryKeyClick = callback::navigateToEnterRecoveryKey,

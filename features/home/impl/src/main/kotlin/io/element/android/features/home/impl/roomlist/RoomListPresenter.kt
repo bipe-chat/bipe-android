@@ -199,6 +199,8 @@ class RoomListPresenter(
             showAllActivity,
             showsRequests = io.element.android.features.home.impl.filters.RoomListFilter.Invites in filtersState.selectedFilters(),
             bipeSelfChatRoomId = bipeSelfChatRoomId,
+            bipeShowsGroups = bipeShowsGroups,
+            bipeHasAnyFilterSelected = filtersState.hasAnyFilterSelected || spaceFiltersState is SpaceFiltersState.Selected,
         )
 
         // Bipe: the tab sets the category, so the People and Rooms chips are gone. Pedidos shows on Conversas only.
@@ -276,6 +278,8 @@ class RoomListPresenter(
         showAllActivity: Boolean,
         showsRequests: Boolean,
         bipeSelfChatRoomId: RoomId?,
+        bipeShowsGroups: Boolean,
+        bipeHasAnyFilterSelected: Boolean,
     ): RoomListContentState {
         val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
             roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
@@ -296,6 +300,7 @@ class RoomListPresenter(
         return when {
             showEmpty -> RoomListContentState.Empty(
                 securityBannerState = securityBannerState,
+                bipeGroups = bipeShowsGroups,
             )
             showSkeleton -> RoomListContentState.Skeleton(count = 16)
             else -> {
@@ -309,6 +314,15 @@ class RoomListPresenter(
                     emptyList<RoomListRoomSummary>() to allSummaries
                 } else {
                     allSummaries.partition { it.displayType == RoomSummaryDisplayType.INVITE && it.isDm }
+                }
+
+                // Bipe: numberOfRooms counts every room, not the rooms of the tab. A Grupos tab with no groups
+                // shows its own empty state. With a filter on, the filter empty state shows instead.
+                if (bipeShowsGroups && listed.isEmpty() && !bipeHasAnyFilterSelected) {
+                    return RoomListContentState.Empty(
+                        securityBannerState = securityBannerState,
+                        bipeGroups = true,
+                    )
                 }
 
                 RoomListContentState.Rooms(

@@ -66,6 +66,8 @@ sealed interface RoomListContentState {
     data class Skeleton(val count: Int) : RoomListContentState
     data class Empty(
         val securityBannerState: SecurityBannerState,
+        // Bipe: the Grupos tab shows its own text and a create group button.
+        val bipeGroups: Boolean = false,
     ) : RoomListContentState
 
     data class Rooms(
