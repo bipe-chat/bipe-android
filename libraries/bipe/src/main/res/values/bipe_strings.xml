@@ -215,6 +215,7 @@
     <string name="bipe_phone_not_linked">Seu número ainda não está vinculado, então ninguém te encontra por ele por enquanto.</string>
     <string name="bipe_phone_linked">Seu número está vinculado.</string>
     <string name="bipe_tab_chats">Conversas</string>
+    <string name="bipe_tab_agenda">Agenda</string>
     <string name="bipe_tab_groups">Grupos</string>
     <string name="bipe_tab_you">Você</string>
     <string name="bipe_self_chat_title">Anotações</string>
@@ -345,4 +346,25 @@
     <string name="bipe_pix_check_private">A conferência acontece só no seu celular.</string>
     <string name="bipe_pix_check_send_to_chat">Enviar para uma conversa</string>
     <string name="bipe_pix_check_close">Fechar</string>
+    <string name="bipe_agenda_book">Agendar</string>
+    <string name="bipe_agenda_pick_service">Escolha o serviço</string>
+    <string name="bipe_agenda_pick_person">Com quem?</string>
+    <string name="bipe_agenda_anyone">Qualquer pessoa</string>
+    <string name="bipe_agenda_pick_time">Escolha o horário</string>
+    <string name="bipe_agenda_review_title">Confira o horário</string>
+    <string name="bipe_agenda_confirm">Confirmar</string>
+    <string name="bipe_agenda_duration">%1$s min</string>
+    <string name="bipe_agenda_with">com %1$s</string>
+    <string name="bipe_agenda_cancel_policy">Cancelamento grátis até %1$s antes.</string>
+    <string name="bipe_agenda_hold">A gente guarda este horário por %1$s.</string>
+    <string name="bipe_agenda_card_title">Horário marcado</string>
+    <string name="bipe_agenda_status_confirmed">Confirmado</string>
+    <string name="bipe_agenda_add_to_calendar">Adicionar ao calendário</string>
+    <string name="bipe_agenda_reschedule">Remarcar</string>
+    <string name="bipe_agenda_cancel">Cancelar</string>
+    <string name="bipe_agenda_today">Hoje</string>
+    <string name="bipe_agenda_new">Novo</string>
+    <string name="bipe_agenda_reminder_body">Amanhã às %1$s: %2$s com %3$s. Vai dar certo?</string>
+    <string name="bipe_agenda_reminder_confirm">Confirmo</string>
+    <string name="bipe_agenda_reminder_reschedule">Preciso remarcar</string>
 </resources>

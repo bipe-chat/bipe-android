@@ -215,6 +215,7 @@
     <string name="bipe_phone_not_linked">Your number is not linked yet, so nobody can find you by it for now.</string>
     <string name="bipe_phone_linked">Your number is linked.</string>
     <string name="bipe_tab_chats">Chats</string>
+    <string name="bipe_tab_agenda">Agenda</string>
     <string name="bipe_tab_groups">Groups</string>
     <string name="bipe_tab_you">You</string>
     <string name="bipe_self_chat_title">Notes</string>
@@ -345,4 +346,25 @@
     <string name="bipe_pix_check_private">The check runs only on your phone.</string>
     <string name="bipe_pix_check_send_to_chat">Send to a chat</string>
     <string name="bipe_pix_check_close">Close</string>
+    <string name="bipe_agenda_book">Book</string>
+    <string name="bipe_agenda_pick_service">Pick a service</string>
+    <string name="bipe_agenda_pick_person">With whom?</string>
+    <string name="bipe_agenda_anyone">Anyone</string>
+    <string name="bipe_agenda_pick_time">Pick a time</string>
+    <string name="bipe_agenda_review_title">Check the booking</string>
+    <string name="bipe_agenda_confirm">Confirm</string>
+    <string name="bipe_agenda_duration">%1$s min</string>
+    <string name="bipe_agenda_with">with %1$s</string>
+    <string name="bipe_agenda_cancel_policy">Free cancellation up to %1$s before.</string>
+    <string name="bipe_agenda_hold">We hold this time for %1$s.</string>
+    <string name="bipe_agenda_card_title">Booking</string>
+    <string name="bipe_agenda_status_confirmed">Confirmed</string>
+    <string name="bipe_agenda_add_to_calendar">Add to calendar</string>
+    <string name="bipe_agenda_reschedule">Reschedule</string>
+    <string name="bipe_agenda_cancel">Cancel</string>
+    <string name="bipe_agenda_today">Today</string>
+    <string name="bipe_agenda_new">New</string>
+    <string name="bipe_agenda_reminder_body">Tomorrow at %1$s: %2$s with %3$s. Still on?</string>
+    <string name="bipe_agenda_reminder_confirm">I confirm</string>
+    <string name="bipe_agenda_reminder_reschedule">I need to reschedule</string>
 </resources>
