@@ -124,7 +124,10 @@
     <string name="bipe_invites_pending_header">Not used yet</string>
     <string name="bipe_invites_link">Invite link</string>
     <string name="bipe_invites_other_device">Made on another device. Share it from there.</string>
-    <string name="bipe_invites_share_message">Join me on Bipe. Our data stays in Brazil there: %1$s</string>
+    <string name="bipe_invites_name_action">Who is it for?</string>
+    <string name="bipe_invites_name_placeholder">Name</string>
+    <string name="bipe_invites_name_footer">Only you see this name, and only on this phone.</string>
+    <string name="bipe_invites_share_message">Join me on Bipe: %1$s</string>
     <string name="bipe_invites_none_left">You have used all your invites.</string>
     <string name="bipe_invites_empty">You have not invited anyone yet.</string>
     <string name="bipe_invites_expires">Valid until %1$s</string>

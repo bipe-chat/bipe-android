@@ -32,6 +32,7 @@ import java.time.Instant
 @Inject
 class BipeInvitesPresenter(
     private val bipeSession: BipeSession,
+    private val linkStore: BipeInviteLinkStore,
     private val stringProvider: StringProvider,
 ) : Presenter<BipeInvitesState> {
     @Composable
@@ -66,6 +67,10 @@ class BipeInvitesPresenter(
                 available = myInvites.available
                 nextAvailableAt = myInvites.nextAvailableAt
                 invites = myInvites.invites
+                // Forget links of invites that can no longer be used; the list itself shows who joined.
+                val pendingIds = myInvites.invites.filter { it.status == BipeInviteStatus.PENDING }.map { it.id }.toSet()
+                shareUrls = shareUrls.filterKeys { it in pendingIds }
+                linkStore.keepLinks(bipeSession.userId, pendingIds)
             } catch (error: BipeApiException) {
                 Timber.e(error, "Bipe invites load failed")
                 show(error)
@@ -74,7 +79,10 @@ class BipeInvitesPresenter(
             }
         }
 
-        LaunchedEffect(Unit) { load() }
+        LaunchedEffect(Unit) {
+            shareUrls = linkStore.links(bipeSession.userId)
+            load()
+        }
 
         /** Creates an invite and returns its link, so the caller can open the share sheet or the QR code at once. */
         suspend fun create(): String? {
@@ -84,6 +92,7 @@ class BipeInvitesPresenter(
                 val created = withTokenRetry { token -> bipeSession.apiClient.createInvite(token) }
                 Timber.i("Bipe invite created $created")
                 shareUrls = shareUrls + (created.id to created.url)
+                linkStore.saveLink(bipeSession.userId, created.id, created.url)
                 load()
                 action = AsyncAction.Uninitialized
                 created.url

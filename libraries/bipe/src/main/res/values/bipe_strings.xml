@@ -124,7 +124,10 @@
     <string name="bipe_invites_pending_header">Ainda não usados</string>
     <string name="bipe_invites_link">Link de convite</string>
     <string name="bipe_invites_other_device">Criado em outro aparelho. Compartilhe por lá.</string>
-    <string name="bipe_invites_share_message">Entra no Bipe comigo. Lá os dados ficam no Brasil: %1$s</string>
+    <string name="bipe_invites_name_action">Para quem é?</string>
+    <string name="bipe_invites_name_placeholder">Nome</string>
+    <string name="bipe_invites_name_footer">Só você vê esse nome, e só neste celular.</string>
+    <string name="bipe_invites_share_message">Entra no Bipe comigo: %1$s</string>
     <string name="bipe_invites_none_left">Você usou todos os seus convites.</string>
     <string name="bipe_invites_empty">Você ainda não convidou ninguém.</string>
     <string name="bipe_invites_expires">Vale até %1$s</string>

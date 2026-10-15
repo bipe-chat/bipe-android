@@ -16,6 +16,8 @@ jobs:
   gplay:
     name: Create App Bundle (Gplay)
     runs-on: ubuntu-latest
+    # Skip in forks. Bipe builds its APK in bipe-apk.yml.
+    if: github.repository == 'element-hq/element-x-android'
     concurrency:
       group: ${{ format('build-release-main-gplay-{0}', github.sha) }}
       cancel-in-progress: true
@@ -63,6 +65,8 @@ jobs:
   fdroid:
     name: Create APKs (FDroid)
     runs-on: ubuntu-latest
+    # Skip in forks. Bipe builds its APK in bipe-apk.yml.
+    if: github.repository == 'element-hq/element-x-android'
     concurrency:
       group: ${{ format('build-release-main-fdroid-{0}', github.sha) }}
       cancel-in-progress: true
