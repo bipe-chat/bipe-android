@@ -671,6 +671,12 @@ object BipeRegistries {
     const val RECOVERY_DELAY_HOURS_EMAIL = 24
     const val RECOVERY_DELAY_HOURS_GUARDIAN = 24
     const val RECOVERY_DELAY_HOURS_CPF = 72
+    // Linked providers are recovery factors only (ADR 0096).
+    val LINKED_RECOVERY_PROVIDERS: List<String> = listOf("apple", "google")
+    const val LINKED_RECOVERY_DELAY_HOURS = 24
+    const val LINKED_RECOVERY_REQUIRES_PIN = true
+    const val LINKED_RECOVERY_ALLOWS_PIN_RESET = false
+    const val LINKED_RECOVERY_MAX_ACCOUNTS_PER_PROVIDER = 1
     const val GUARDIAN_APPROVALS_MAX = 2
     const val RECOVERY_LINK_MINUTES = 60
     const val EMAIL_VERIFY_LINK_HOURS = 24
