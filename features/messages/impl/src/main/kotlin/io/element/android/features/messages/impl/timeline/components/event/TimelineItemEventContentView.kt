@@ -53,6 +53,8 @@ import io.element.android.features.messages.impl.timeline.model.event.formattedC
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionEvent
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.ui.BipeScamWarningView
+import io.element.android.libraries.bipe.ui.BipeVoiceTranscriptView
 import io.element.android.libraries.designsystem.components.EqualWidthColumn
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.ui.media.contentvalidation.ContentValidationState
@@ -60,8 +62,6 @@ import io.element.android.libraries.matrix.ui.media.contentvalidation.InvalidCon
 import io.element.android.libraries.matrix.ui.media.contentvalidation.NotFoundContentView
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectOverallState
 import io.element.android.libraries.matrix.ui.media.contentvalidation.rememberEventContentValidationState
-import io.element.android.libraries.bipe.ui.BipeScamWarningView
-import io.element.android.libraries.bipe.ui.BipeVoiceTranscriptView
 import io.element.android.libraries.textcomposer.ElementRichTextEditorStyle
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayout
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData

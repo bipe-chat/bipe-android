@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.account
 
+import android.util.Base64
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -23,7 +24,6 @@ import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.sessionstorage.api.observer.SessionListener
 import io.element.android.libraries.sessionstorage.api.observer.SessionObserver
-import android.util.Base64
 import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.security.SecureRandom

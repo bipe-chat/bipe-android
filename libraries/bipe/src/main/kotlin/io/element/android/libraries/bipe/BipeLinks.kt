@@ -7,6 +7,7 @@
 package io.element.android.libraries.bipe
 
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import java.net.URI
 import java.util.Locale
 
@@ -22,7 +23,7 @@ object BipeProfileLink {
     private val acceptedHosts = setOf(HOST, "www.$HOST", LEGACY_HOST, "www.$LEGACY_HOST")
 
     fun url(handle: String): String? =
-        runCatching { URI("https", HOST, "/@$handle", null).toASCIIString() }.getOrNull()
+        runCatchingExceptions { URI("https", HOST, "/@$handle", null).toASCIIString() }.getOrNull()
 
     /** The handle in a profile link, lowercased, or `null` when the URL is not one. */
     fun handle(url: String): String? {
@@ -34,7 +35,7 @@ object BipeProfileLink {
 
     /** The Matrix user ID in a `https://matrix.to/#/@user:server` permalink. */
     fun matrixUserId(permalink: String): String? {
-        val uri = runCatching { URI(permalink) }.getOrNull() ?: return null
+        val uri = runCatchingExceptions { URI(permalink) }.getOrNull() ?: return null
         if (uri.host != "matrix.to") return null
         val fragment = uri.fragment ?: return null
         val userId = fragment.substringBefore('?').removePrefix("/")
@@ -43,7 +44,7 @@ object BipeProfileLink {
 
     /** Decoded, non-empty path components of an `https` URL on the Bipe host, or `null`. */
     internal fun bipePathComponents(url: String): List<String>? {
-        val uri = runCatching { URI(url) }.getOrNull() ?: return null
+        val uri = runCatchingExceptions { URI(url) }.getOrNull() ?: return null
         val host = uri.host?.lowercase(Locale.ROOT)
         if (uri.scheme != "https" || host !in acceptedHosts) return null
         return uri.path.orEmpty().split('/').filter { it.isNotEmpty() }
@@ -84,7 +85,7 @@ object BipeRecoveryLink {
     fun token(url: String): String? {
         val components = BipeProfileLink.bipePathComponents(url) ?: return null
         if (components != listOf("recuperar")) return null
-        val fragment = runCatching { URI(url).fragment }.getOrNull() ?: return null
+        val fragment = runCatchingExceptions { URI(url).fragment }.getOrNull() ?: return null
         return fragment.takeIf { tokenPattern.matches(it) }
     }
 }

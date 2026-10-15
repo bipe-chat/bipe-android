@@ -7,6 +7,7 @@
 package io.element.android.libraries.bipe
 
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import java.util.regex.Pattern
 
 /**
@@ -83,17 +84,17 @@ data class PixCheck(
         internal fun crc16(text: String): String {
             var crc = 0xFFFF
             for (byte in text.toByteArray(Charsets.UTF_8)) {
-                crc = crc xor ((byte.toInt() and 0xFF) shl 8)
+                crc = crc xor (byte.toInt() and 0xFF shl 8)
                 repeat(8) {
-                    crc = if (crc and 0x8000 != 0) ((crc shl 1) xor 0x1021) and 0xFFFF else (crc shl 1) and 0xFFFF
+                    crc = if (crc and 0x8000 != 0) crc shl 1 xor 0x1021 and 0xFFFF else crc shl 1 and 0xFFFF
                 }
             }
             return "%04X".format(crc)
         }
 
-        private class Field(val id: String, val value: String, val start: Int, val end: Int)
+        private data class Field(val id: String, val value: String, val start: Int, val end: Int)
 
-        private class Found(val start: Int, val end: Int, val code: Code)
+        private data class Found(val start: Int, val end: Int, val code: Code)
 
         /** EMV TLV: two-digit ID, two-digit length, value. Lengths count code points. Null when the shape is wrong. */
         private fun readTlv(points: List<String>, from: Int, until: Int): List<Field>? {
@@ -168,7 +169,7 @@ data class PixCheck(
         private val keyExpressions: List<Pair<KeyType, Pattern>> by lazy {
             BipeRegistries.pixKeyPatterns.mapNotNull { pattern ->
                 val type = KeyType.fromId(pattern.id) ?: return@mapNotNull null
-                runCatching { Pattern.compile(pattern.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull()?.let { type to it }
+                runCatchingExceptions { Pattern.compile(pattern.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull()?.let { type to it }
             }
         }
 

@@ -8,6 +8,7 @@ package io.element.android.libraries.bipe.account.ui
 
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
@@ -47,7 +49,10 @@ private sealed interface PinDialog {
  * - then the recovery email rows ([BipeRecoveryEmailRows]).
  */
 @Composable
-fun BipeAccountRows(account: BipeAccountSession) {
+fun BipeAccountRows(
+    account: BipeAccountSession,
+    modifier: Modifier = Modifier,
+) {
     val status by account.status.collectAsState()
     LaunchedEffect(Unit) { account.refresh() }
     val context = LocalContext.current
@@ -59,6 +64,8 @@ fun BipeAccountRows(account: BipeAccountSession) {
 
     val changeTitle = stringResource(R.string.bipe_pin_change_title)
     val changeReason = stringResource(R.string.bipe_pin_change_biometric_reason)
+    val genericError = stringResource(R.string.bipe_error_generic)
+    val mismatchError = stringResource(R.string.bipe_pin_mismatch)
     fun startChange() {
         if (!current.pinSet) {
             dialog = PinDialog.NewPin
@@ -71,64 +78,66 @@ fun BipeAccountRows(account: BipeAccountSession) {
                 }
                 account.hasAppLockPin() -> dialog = PinDialog.CurrentPin(error = null)
                 // No biometrics, no screen lock and no app lock: nothing can prove the owner. Fail closed.
-                else -> dialog = PinDialog.Error(context.getString(R.string.bipe_error_generic))
+                else -> dialog = PinDialog.Error(genericError)
             }
         }
     }
 
-    when {
-        !current.deviceFirst -> ListItem(
-            content = { Text(stringResource(R.string.bipe_pin_create_title)) },
-            supportingContent = { Text(stringResource(R.string.bipe_pin_create_body, BipePin.LENGTH.toString())) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
-            enabled = !busy,
-            onClick = { dialog = PinDialog.MoveToDeviceFirst },
-        )
-        current.pinBlocked -> ListItem(
-            content = { Text(stringResource(R.string.bipe_pin_blocked_title)) },
-            supportingContent = { Text(stringResource(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LockOff())),
-            enabled = !busy,
-            onClick = ::startChange,
-        )
-        else -> ListItem(
-            content = { Text(if (current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
-            enabled = !busy,
-            onClick = ::startChange,
-        )
-    }
-    BipeRecoveryEmailRows(account, current)
+    Column(modifier = modifier) {
+        when {
+            !current.deviceFirst -> ListItem(
+                content = { Text(stringResource(R.string.bipe_pin_create_title)) },
+                supportingContent = { Text(stringResource(R.string.bipe_pin_create_body, BipePin.LENGTH.toString())) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
+                enabled = !busy,
+                onClick = { dialog = PinDialog.MoveToDeviceFirst },
+            )
+            current.pinBlocked -> ListItem(
+                content = { Text(stringResource(R.string.bipe_pin_blocked_title)) },
+                supportingContent = { Text(stringResource(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LockOff())),
+                enabled = !busy,
+                onClick = ::startChange,
+            )
+            else -> ListItem(
+                content = { Text(if (current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
+                enabled = !busy,
+                onClick = ::startChange,
+            )
+        }
+        BipeRecoveryEmailRows(account, current)
 
-    when (val shown = dialog) {
-        null -> Unit
-        PinDialog.NewPin, PinDialog.MoveToDeviceFirst -> BipeNewPinDialog(
-            title = if (shown == PinDialog.NewPin && current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title),
-            onSubmit = { pin ->
-                dialog = null
-                busy = true
-                scope.launch {
-                    val result = if (shown == PinDialog.MoveToDeviceFirst) account.moveToDeviceFirst(pin) else account.changePin(pin)
-                    busy = false
-                    result
-                        .onSuccess { Toast.makeText(context, R.string.bipe_pin_changed, Toast.LENGTH_SHORT).show() }
-                        .onFailure { dialog = PinDialog.Error(account.messageOf(it)) }
-                }
-            },
-            onDismiss = { dialog = null },
-        )
-        is PinDialog.CurrentPin -> BipeEnterPinDialog(
-            title = stringResource(R.string.bipe_pin_enter_title),
-            subtitle = changeReason,
-            error = shown.error,
-            onSubmit = { pin ->
-                scope.launch {
-                    dialog = if (account.verifyAppLockPin(pin)) PinDialog.NewPin else PinDialog.CurrentPin(context.getString(R.string.bipe_pin_mismatch))
-                }
-            },
-            onDismiss = { dialog = null },
-        )
-        is PinDialog.Error -> ErrorDialog(content = shown.message, onSubmit = { dialog = null })
+        when (val shown = dialog) {
+            null -> Unit
+            PinDialog.NewPin, PinDialog.MoveToDeviceFirst -> BipeNewPinDialog(
+                title = if (shown == PinDialog.NewPin && current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title),
+                onSubmit = { pin ->
+                    dialog = null
+                    busy = true
+                    scope.launch {
+                        val result = if (shown == PinDialog.MoveToDeviceFirst) account.moveToDeviceFirst(pin) else account.changePin(pin)
+                        busy = false
+                        result
+                            .onSuccess { Toast.makeText(context, R.string.bipe_pin_changed, Toast.LENGTH_SHORT).show() }
+                            .onFailure { dialog = PinDialog.Error(account.messageOf(it)) }
+                    }
+                },
+                onDismiss = { dialog = null },
+            )
+            is PinDialog.CurrentPin -> BipeEnterPinDialog(
+                title = stringResource(R.string.bipe_pin_enter_title),
+                subtitle = changeReason,
+                error = shown.error,
+                onSubmit = { pin ->
+                    scope.launch {
+                        dialog = if (account.verifyAppLockPin(pin)) PinDialog.NewPin else PinDialog.CurrentPin(mismatchError)
+                    }
+                },
+                onDismiss = { dialog = null },
+            )
+            is PinDialog.Error -> ErrorDialog(content = shown.message, onSubmit = { dialog = null })
+        }
     }
 }
 

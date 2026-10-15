@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,8 +38,8 @@ class BipeInvitesPresenter(
     override fun present(): BipeInvitesState {
         val coroutineScope = rememberCoroutineScope()
         var isLoading by remember { mutableStateOf(true) }
-        var quota by remember { mutableStateOf(0) }
-        var available by remember { mutableStateOf(0) }
+        var quota by remember { mutableIntStateOf(0) }
+        var available by remember { mutableIntStateOf(0) }
         var nextAvailableAt by remember { mutableStateOf<Instant?>(null) }
         var invites by remember { mutableStateOf<List<BipeInvite>>(emptyList()) }
         var shareUrls by remember { mutableStateOf<Map<String, String>>(emptyMap()) }

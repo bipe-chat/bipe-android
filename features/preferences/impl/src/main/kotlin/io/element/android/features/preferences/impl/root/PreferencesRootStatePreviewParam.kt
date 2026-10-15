@@ -70,6 +70,8 @@ fun aPreferencesRootState(
     showLabsItem: Boolean = false,
     userStatusState: UserStatusState? = aUserStatusState(),
     snackbarMessage: SnackbarMessage? = null,
+    bipeHandle: String? = null,
+    bipePublicProfileEnabled: Boolean? = null,
     eventSink: (PreferencesRootEvent) -> Unit = {},
 ) = PreferencesRootState(
     myUser = myUser,
@@ -85,5 +87,7 @@ fun aPreferencesRootState(
     showLabsItem = showLabsItem,
     userStatusState = userStatusState,
     snackbarMessage = snackbarMessage,
+    bipeHandle = bipeHandle,
+    bipePublicProfileEnabled = bipePublicProfileEnabled,
     eventSink = eventSink,
 )

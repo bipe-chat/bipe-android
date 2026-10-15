@@ -34,9 +34,9 @@ data class PreferencesRootState(
     val showLabsItem: Boolean,
     val snackbarMessage: SnackbarMessage?,
     // Bipe: the user's handle without "@", or null when there is none (or it is not loaded yet).
-    val bipeHandle: String? = null,
+    val bipeHandle: String?,
     // Bipe: whether the public profile is on (ADR 0041), or null while it is not loaded.
-    val bipePublicProfileEnabled: Boolean? = null,
+    val bipePublicProfileEnabled: Boolean?,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 

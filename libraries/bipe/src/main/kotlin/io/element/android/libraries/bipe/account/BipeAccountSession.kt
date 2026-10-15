@@ -8,8 +8,8 @@ package io.element.android.libraries.bipe.account
 
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeAccountStatus
-import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.bipe.api.BipeRecovery
 import io.element.android.libraries.bipe.api.BipeRecoveryMethod
 import io.element.android.libraries.bipe.api.BipeRecoveryPurpose
@@ -50,53 +50,47 @@ class BipeAccountSession(
     }.onFailure { Timber.w(it, "Bipe: account state not loaded") }
 
     /** Sets or changes the PIN on the server, then the app lock PIN. The caller does the biometric check first. */
-    suspend fun changePin(pin: String): Result<Unit> = runCatchingExceptions {
+    suspend fun changePin(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
         deviceAccount.lock.setPin(pin)
         refresh()
-        Unit
     }
 
     /** The lock screen set a new app lock PIN: send it to the server too, so both stay the same PIN. */
-    suspend fun onAppLockPinSet(pin: String): Result<Unit> = runCatchingExceptions {
+    suspend fun onAppLockPinSet(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
         refresh()
-        Unit
     }.onFailure { Timber.e(it, "Bipe: app lock PIN not sent to the server") }
 
     /**
      * A beta account (e-mail and own password) moves to a hidden password: PIN first, then `POST /v1/me/device-first`.
      * The user's own password stops working.
      */
-    suspend fun moveToDeviceFirst(pin: String): Result<Unit> = runCatchingExceptions {
+    suspend fun moveToDeviceFirst(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
         val credentials = BipeApiClient.withTokenRetry(accessToken) { apiClient.moveToDeviceFirst(it) }
         deviceAccount.onMovedToDeviceFirst(credentials)
         deviceAccount.lock.setPin(pin)
         refresh()
-        Unit
     }
 
     /** Adds or changes the recovery email. The address stays pending until the user opens the link the server sends. */
-    suspend fun setRecoveryEmail(email: String): Result<Unit> = runCatchingExceptions {
+    suspend fun setRecoveryEmail(email: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setRecoveryEmail(email, it) }
         refresh()
-        Unit
     }.onFailure { Timber.e(it, "Bipe: recovery email not saved") }
 
     /** Removes the verified and the pending recovery email. */
-    suspend fun removeRecoveryEmail(): Result<Unit> = runCatchingExceptions {
+    suspend fun removeRecoveryEmail(): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.removeRecoveryEmail(it) }
         refresh()
-        Unit
     }.onFailure { Timber.e(it, "Bipe: recovery email not removed") }
 
     /** "Cancel, it was not me": stops a waiting recovery. */
-    suspend fun cancelRecovery(recovery: BipeRecovery): Result<Unit> = runCatchingExceptions {
+    suspend fun cancelRecovery(recovery: BipeRecovery): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.cancelRecovery(recovery.id, it) }
         deviceAccount.dismissRecovery(recovery.id)
         refresh()
-        Unit
     }
 
     /** "It was me": the alert does not show again on this device. */

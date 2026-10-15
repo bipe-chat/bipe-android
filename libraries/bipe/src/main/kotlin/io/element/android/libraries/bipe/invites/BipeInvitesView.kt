@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
+import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.api.BipeInvite
+import io.element.android.libraries.bipe.api.BipeInviteStatus
+import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
@@ -37,10 +41,6 @@ import io.element.android.libraries.designsystem.theme.components.ModalBottomShe
 import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
-import io.element.android.libraries.bipe.R
-import io.element.android.libraries.bipe.api.BipeInvite
-import io.element.android.libraries.bipe.api.BipeInviteStatus
-import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
 import java.time.ZoneId

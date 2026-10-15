@@ -42,6 +42,9 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.canPop
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.handle.BipeHandleNode
+import io.element.android.libraries.bipe.invites.BipeInvitesNode
+import io.element.android.libraries.bipe.profile.BipePublicProfileNode
 import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.core.EventId
@@ -49,9 +52,6 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
-import io.element.android.libraries.bipe.handle.BipeHandleNode
-import io.element.android.libraries.bipe.invites.BipeInvitesNode
-import io.element.android.libraries.bipe.profile.BipePublicProfileNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize

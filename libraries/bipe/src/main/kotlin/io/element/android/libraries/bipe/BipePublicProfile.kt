@@ -124,7 +124,8 @@ class BipePublicProfiles(
     fun profile(handle: String): BipePublicProfile? {
         val key = handle.lowercase(Locale.ROOT)
         val entry = entries.value[key]
-        if ((entry?.expiryMillis ?: Long.MIN_VALUE) < clock()) fetch(key)
+        val expiryMillis = entry?.expiryMillis ?: Long.MIN_VALUE
+        if (expiryMillis < clock()) fetch(key)
         return entry?.profile
     }
 
@@ -153,17 +154,23 @@ class BipePublicProfiles(
         scope.launch {
             try {
                 set(key, Entry(apiClient.publicProfile(key), clock() + FOUND_TTL_MILLIS))
-            } catch (error: BipeApiException) {
-                if (error is BipeApiException.Server && error.statusCode == 404) {
+            } catch (error: BipeApiException.Server) {
+                if (error.statusCode == 404) {
                     set(key, Entry(null, clock() + MISSING_TTL_MILLIS))
                 } else {
-                    // Keep the old value, with a short expiry so views do not retry on every render while offline.
-                    set(key, Entry(entries.value[key]?.profile, clock() + MISSING_TTL_MILLIS))
+                    keepOldValue(key)
                 }
+            } catch (error: BipeApiException) {
+                keepOldValue(key)
             } finally {
                 synchronized(lock) { inFlight.remove(key) }
             }
         }
+    }
+
+    /** Keeps the old value, with a short expiry so views do not retry on every render while offline. */
+    private fun keepOldValue(key: String) {
+        set(key, Entry(entries.value[key]?.profile, clock() + MISSING_TTL_MILLIS))
     }
 
     private fun set(key: String, entry: Entry) {

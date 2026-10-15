@@ -80,10 +80,16 @@ import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.waitForChildAttached
 import io.element.android.libraries.architecture.waitForNavTargetAttached
+import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
+import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
+import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
+import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
-import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -100,13 +106,6 @@ import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
-import io.element.android.libraries.bipe.R as BipeR
-import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
-import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
-import io.element.android.libraries.bipe.di.BipeSession
-import io.element.android.libraries.bipe.groups.BipeQuietGroups
-import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
-import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.ui.common.nodes.EmptyState
 import io.element.android.libraries.ui.common.nodes.emptyNode
@@ -127,6 +126,7 @@ import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import im.vector.app.features.analytics.plan.JoinedRoom as JoinedRoomAnalyticsEvent
+import io.element.android.libraries.bipe.R as BipeR
 
 // The maximum number of room nodes that should be kept in the backstack at the same time.
 // Having 5 rooms in the backstack seems reasonable and shouldn't grow the saved state size too much.

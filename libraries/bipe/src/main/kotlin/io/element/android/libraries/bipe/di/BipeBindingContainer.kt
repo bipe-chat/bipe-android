@@ -13,8 +13,8 @@ import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import io.element.android.appconfig.BipeConfig
 import io.element.android.libraries.androidutils.json.JsonProvider
-import io.element.android.libraries.network.interceptors.UserAgentInterceptor
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.network.interceptors.UserAgentInterceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 

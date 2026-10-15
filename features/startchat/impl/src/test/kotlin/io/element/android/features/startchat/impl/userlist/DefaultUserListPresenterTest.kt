@@ -121,6 +121,7 @@ class DefaultUserListPresenterTest {
             val result = UserSearchResultState(
                 results = listOf(UserSearchResult(aMatrixUser())),
                 isSearching = false,
+                bipeHandleNotFound = null,
             )
             userRepository.emitState(result)
             awaitItem().also { state ->
@@ -135,6 +136,7 @@ class DefaultUserListPresenterTest {
             val newResult = UserSearchResultState(
                 results = aMatrixUserList().map { UserSearchResult(it) },
                 isSearching = false,
+                bipeHandleNotFound = null,
             )
             userRepository.emitState(newResult)
             awaitItem().also { state ->
@@ -168,7 +170,7 @@ class DefaultUserListPresenterTest {
             skipItems(1)
 
             // When the results list is empty, the state is set to NoResults
-            userRepository.emitState(UserSearchResultState(results = emptyList(), isSearching = false))
+            userRepository.emitState(UserSearchResultState(results = emptyList(), isSearching = false, bipeHandleNotFound = null))
             assertThat(awaitItem().searchResults).isInstanceOf(SearchBarResultState.NoResultsFound::class.java)
         }
     }

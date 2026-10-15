@@ -24,7 +24,7 @@ data class UserListState(
     val selectionMode: SelectionMode,
     val recentDirectRooms: ImmutableList<RecentDirectRoom>,
     // Bipe: the handle in the query when nobody holds it ("Ninguém usa @x no Bipe").
-    val bipeHandleNotFound: String? = null,
+    val bipeHandleNotFound: String?,
     val eventSink: (UserListEvent) -> Unit,
 ) {
     val isMultiSelectionEnabled = selectionMode == SelectionMode.Multiple

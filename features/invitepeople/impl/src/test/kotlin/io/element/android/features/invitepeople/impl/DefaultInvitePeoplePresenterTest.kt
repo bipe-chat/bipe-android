@@ -114,7 +114,7 @@ internal class DefaultInvitePeoplePresenterTest {
             val initialState = awaitItemAsDefault()
             initialState.searchQuery.setTextAndPlaceCursorAtEnd("some query")
             assertThat(repository.providedQuery).isEqualTo("some query")
-            repository.emitState(UserSearchResultState(results = emptyList(), isSearching = true))
+            repository.emitState(UserSearchResultState(results = emptyList(), isSearching = true, bipeHandleNotFound = null))
             skipItems(2)
             awaitItemAsDefault().also { state ->
                 assertThat(state.searchResults).isInstanceOf(SearchBarResultState.Initial::class.java)
@@ -724,7 +724,8 @@ internal class DefaultInvitePeoplePresenterTest {
             repository.emitState(
                 UserSearchResultState(
                     results = listOf(UserSearchResult(alice), UserSearchResult(bob)),
-                    isSearching = true
+                    isSearching = true,
+                    bipeHandleNotFound = null,
                 )
             )
             skipItems(2)
@@ -890,7 +891,8 @@ internal class DefaultInvitePeoplePresenterTest {
     ) {
         val state = UserSearchResultState(
             results = results,
-            isSearching = isSearching
+            isSearching = isSearching,
+            bipeHandleNotFound = null,
         )
         emitState(state)
     }

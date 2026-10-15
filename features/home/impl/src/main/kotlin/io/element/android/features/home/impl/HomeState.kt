@@ -11,9 +11,9 @@ package io.element.android.features.home.impl
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
-import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import kotlinx.collections.immutable.ImmutableList
 
 data class HomeState(
