@@ -6,11 +6,13 @@
 
 package io.element.android.libraries.bipe.invites
 
+import androidx.compose.runtime.Immutable
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.api.BipeInvite
 import java.time.Instant
 
 /** Port of BipeInvitesScreenViewState on iOS. */
+@Immutable
 data class BipeInvitesState(
     val isLoading: Boolean,
     val quota: Int,
