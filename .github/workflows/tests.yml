@@ -68,6 +68,15 @@ jobs:
         run: |
           git config lfs.url https://github.com/element-hq/element-x-android.git/info/lfs
           git lfs pull --include "libraries/mediaupload/impl/src/test/assets/*"
+      # Bipe: SharedVectorTest reads the shared test vectors from bipe-shared.
+      - name: ⏬ Checkout bipe-shared test vectors
+        if: ${{ github.repository != 'element-hq/element-x-android' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: bipe-chat/bipe-shared
+          path: .bipe-shared
+          persist-credentials: false
+          sparse-checkout: test-vectors
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'element-hq/element-x-android') }}
@@ -87,7 +96,9 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
 
       - name: ⚙️ Run unit tests
-        run: ./gradlew :app:testGplayDebugUnitTest testDebugUnitTest -x :tests:konsist:testDebugUnitTest $CI_GRADLE_ARG_PROPERTIES
+        env:
+          BIPE_SHARED: ${{ github.workspace }}/.bipe-shared
+        run: ./gradlew :app:testGplayDebugUnitTest testDebugUnitTest -x :tests:konsist:testDebugUnitTest $CI_GRADLE_ARG_PROPERTIES --continue
 
       # Bipe: the Element screenshots do not match the Bipe theme. Skip until the fork records its own.
       - name: ⚙️ Run screenshot tests
