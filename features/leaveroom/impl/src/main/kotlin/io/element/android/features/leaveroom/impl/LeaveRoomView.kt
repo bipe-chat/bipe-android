@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.features.leaveroom.api.LeaveRoomEvent
 import io.element.android.features.leaveroom.api.R
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.designsystem.components.ProgressDialog
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
@@ -63,9 +64,10 @@ private fun LeaveRoomConfirmationDialog(
     val defaultOnSubmitClick = { roomId: RoomId -> { eventSink(LeaveRoomEvent.LeaveRoom(roomId, needsConfirmation = false)) } }
     val defaultDismissAction = { eventSink(InternalLeaveRoomEvent.ResetState) }
     when (confirmation) {
+        // Bipe: a DM is a conversation, not a private room.
         is Confirmation.Dm -> LeaveRoomConfirmationDialog(
-            text = stringResource(R.string.leave_room_alert_private_subtitle),
-            isDm = false,
+            text = stringResource(BipeR.string.bipe_dm_leave_body),
+            isDm = true,
             onSubmitClick = defaultOnSubmitClick(confirmation.roomId),
             onDismiss = defaultDismissAction,
         )

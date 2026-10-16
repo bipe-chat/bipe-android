@@ -137,6 +137,13 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - **Save a received sticker:** action `TimelineItemAction.SaveSticker` → `MessagesPresenter.handleSaveSticker` downloads the bytes with `MatrixMediaLoader` and calls `addSticker`.
 - **Not compiled yet** (11 October 2026): this Mac has no JDK or Android SDK.
 
+## DMs are DMs (16 Oct 2026)
+
+- A DM never turns into a group. Room details for a DM: no topic, no polls history, no "Convidar" to the DM. "Convidar para um grupo" lists your joined groups (`BipeInviteToGroup` in libraries/bipe; not DMs, spaces, replaced rooms or the self-chat) and invites the other person to the one you pick. The group's invite permission is checked at pick time.
+- The composer has no poll option in a DM (`MessageComposerState.isDm`).
+- Leave in a DM says "Sair da conversa" with `bipe_dm_leave_body`. Upstream passed `isDm = false` for `Confirmation.Dm`.
+- iOS does the same (`BipeInviteToGroupSheet`).
+
 ## Differences from iOS (ADR 0031)
 
 Each line is a difference with its reason. A difference not listed here is a bug. The table is generated from `bipe-shared/product/parity.json` (ADR 0092): change it there, then run `node tools/parity.mjs --write` in bipe-shared.

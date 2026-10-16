@@ -133,14 +133,17 @@ private fun AttachmentSourcePickerMenu(
                 content = { Text(stringResource(R.string.screen_room_attachment_source_location)) },
             )
         }
-        ListItem(
-            modifier = Modifier.clickable {
-                state.eventSink(MessageComposerEvent.PickAttachmentSource.Poll)
-                onCreatePollClick()
-            },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Polls())),
-            content = { Text(stringResource(R.string.screen_room_attachment_source_poll)) },
-        )
+        // Bipe: no polls in DMs.
+        if (!state.isDm) {
+            ListItem(
+                modifier = Modifier.clickable {
+                    state.eventSink(MessageComposerEvent.PickAttachmentSource.Poll)
+                    onCreatePollClick()
+                },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Polls())),
+                content = { Text(stringResource(R.string.screen_room_attachment_source_poll)) },
+            )
+        }
         // Bipe: sticker picker (ADR 0029).
         ListItem(
             modifier = Modifier.clickable { state.eventSink(MessageComposerEvent.PickAttachmentSource.Sticker) },

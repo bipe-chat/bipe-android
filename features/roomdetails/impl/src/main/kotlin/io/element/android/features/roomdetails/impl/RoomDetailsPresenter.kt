@@ -14,9 +14,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -34,6 +36,9 @@ import io.element.android.features.securityandprivacy.api.securityAndPrivacyPerm
 import io.element.android.libraries.androidutils.clipboard.ClipboardHelper
 import io.element.android.libraries.androidutils.toast.ToastHelper
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.bipe.groups.BipeInviteGroup
+import io.element.android.libraries.bipe.groups.BipeInviteToGroup
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
@@ -57,6 +62,8 @@ import io.element.android.libraries.push.api.notifications.NotificationCleaner
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -79,6 +86,7 @@ class RoomDetailsPresenter(
     private val appPreferencesStore: AppPreferencesStore,
     private val sessionPreferencesStore: SessionPreferencesStore,
     private val notificationCleaner: NotificationCleaner,
+    private val bipeInviteToGroup: BipeInviteToGroup, // Bipe
 ) : Presenter<RoomDetailsState> {
     @AssistedFactory
     interface Factory {
@@ -128,6 +136,8 @@ class RoomDetailsPresenter(
         val topicState = remember(permissions.editDetailsPermissions.canEditTopic, roomTopic, roomType) {
             val topic = roomTopic
             when {
+                // Bipe: DMs have no topic.
+                roomType is RoomDetailsType.Dm -> RoomTopicState.Hidden
                 !topic.isNullOrBlank() -> RoomTopicState.ExistingTopic(topic)
                 permissions.editDetailsPermissions.canEditTopic && roomType is RoomDetailsType.Room -> RoomTopicState.CanAddTopic
                 else -> RoomTopicState.Hidden
@@ -151,6 +161,7 @@ class RoomDetailsPresenter(
 
         val snackbarDispatcher = LocalSnackbarDispatcher.current
         val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
+        var bipeInviteGroups by remember { mutableStateOf<ImmutableList<BipeInviteGroup>?>(null) }
 
         fun handleEvent(event: RoomDetailsEvent) {
             when (event) {
@@ -180,6 +191,27 @@ class RoomDetailsPresenter(
                 }
                 is RoomDetailsEvent.MarkAsRead -> scope.markAsRead()
                 is RoomDetailsEvent.MarkAsUnread -> scope.markAsUnread()
+                RoomDetailsEvent.BipeOpenInviteToGroup -> scope.launch {
+                    val groups = bipeInviteToGroup.groups()
+                    if (groups.isEmpty()) {
+                        snackbarDispatcher.post(SnackbarMessage(BipeR.string.bipe_dm_invite_to_group_empty))
+                    } else {
+                        bipeInviteGroups = groups.toImmutableList()
+                    }
+                }
+                is RoomDetailsEvent.BipeInviteToGroup -> {
+                    bipeInviteGroups = null
+                    val userId = dmMember?.userId ?: return
+                    scope.launch {
+                        val message = when (bipeInviteToGroup.invite(userId, event.groupId)) {
+                            BipeInviteToGroup.Outcome.Sent -> BipeR.string.bipe_dm_invite_to_group_sent
+                            BipeInviteToGroup.Outcome.AlreadyMember -> BipeR.string.bipe_dm_invite_to_group_already_member
+                            BipeInviteToGroup.Outcome.Failed -> CommonStrings.error_unknown
+                        }
+                        snackbarDispatcher.post(SnackbarMessage(message))
+                    }
+                }
+                RoomDetailsEvent.BipeDismissInviteToGroup -> bipeInviteGroups = null
             }
         }
 
@@ -224,6 +256,7 @@ class RoomDetailsPresenter(
             roomVersion = roomInfo.roomVersion,
             roomHistoryVisibility = roomInfo.historyVisibility,
             hasNewContent = hasNewContent,
+            bipeInviteGroups = bipeInviteGroups,
             eventSink = ::handleEvent,
         )
     }
