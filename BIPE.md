@@ -103,6 +103,13 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - Element's upstream multi-account extras (feature flag, announcement, vertical swipe on the avatar) are removed (bipe#434). The avatar tap and long press match iOS.
 - Not done: the account avatar in the composer, the account name in notifications (unverified), the rounded-square avatar for a verified company (ADR 0120, needs #252).
 
+## Contatos e convites (bipe#401, port of BipeContactsScreen on iOS)
+
+- **Two ways in**, as on iOS: "Convidar pessoas" on the Você root and Privacidade → Quem pode te achar → "Contatos e convites" (`privacy.contacts`). Both open `BipeContactsNode` (libraries/bipe `contacts/`). Top to bottom: the invite buttons and quota footer (`BipeInviteButtonsSection`, shared with the invites screen), people who joined with the user's invite (`GET /v1/me/invites`, status `used`, joined first), address-book matches, "Convites ainda não usados" with the count (opens `BipeInvitesNode`), then the discovery switch with the phone-linked footer. The switch and the footer read `BipeSession.privacy`, the same values as the Privacidade row.
+- **New invite:** the note dialog first (ADR 0136), then the share sheet or the QR code, and the success haptic.
+- **Address book:** `BipeAddressBook` reads `ContactsContract` phone rows, `BipePhoneNumber` normalises them (shared vectors `phone-numbers.json`), and `POST /v1/contacts/lookup` gets them in batches of 500. Nothing is stored.
+- **READ_CONTACTS** (libraries/bipe manifest) is asked only when the user taps "Permitir acesso aos contatos". That row carries `bipe_contacts_intro` (what is sent and that the server stores none), so the disclosure comes right before the system dialog, as the Play User Data policy requires. A refusal Android will not show again turns the row into "Abrir configurações" (`bipe_contacts_open_settings_android`). The Play Data safety form must list contacts.
+
 ## Handle change lines (ADR 0066, bipe#166)
 
 - **Remove the handle:** "Remover nome de usuário" on the "Nome de usuário" screen (`BipeHandleView`), also during the cooldown. A confirmation dialog (`bipe_handle_remove_body`), then `DELETE /v1/me/handle`. Same flow on iOS.
@@ -204,7 +211,6 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
-| Where invites live | Convidar pessoas in settings | Contatos e convites: invite buttons, people who joined with your invite, and unused invites in the contacts screen | Android has no contacts screen yet (#401) **Gap** |
 | Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |
 | Sticker import | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | Chat export ZIP or files | iOS apps cannot read WhatsApp's files |
 | Signed-device isolation | Fixed on | User preference, default on | Undecided (#102) **Undecided** |
