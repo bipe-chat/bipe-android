@@ -185,6 +185,7 @@ private fun HomeScaffold(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(appBarState)
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
     val roomListState: RoomListState = state.roomListState
+    val bipeCoroutineScope = rememberCoroutineScope()
 
     BackHandler(enabled = state.isBackHandlerEnabled) {
         if (state.currentHomeNavigationBarItem != HomeNavigationBarItem.Chats) {
@@ -323,6 +324,12 @@ private fun HomeScaffold(
                             onCreateRoomClick = onStartChatClick,
                             onBipeCreateGroupClick = onBipeCreateGroupClick,
                             contentPadding = lazyColumnContentPadding + contentPadding,
+                            // Bipe ADR 0034: the card to message the inviter shows in Conversas only.
+                            bipeInviterHandle = roomListState.bipeInviterHandle
+                                .takeIf { state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats },
+                            onBipeInviterClick = {
+                                bipeCoroutineScope.launch { roomListState.bipeOpenInviterChat()?.let(onRoomClick) }
+                            },
                             modifier = Modifier
                                 .padding(outerPadding)
                                 .consumeWindowInsets(outerPadding)

@@ -86,6 +86,9 @@ import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.test
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -727,6 +730,7 @@ class RoomListPresenterTest {
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         markRoomAsRead: MarkRoomAsRead? = null,
         bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
+        bipeInviterGreeting: BipeInviterGreeting = mockk { every { inviter } returns MutableStateFlow(null) },
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -760,5 +764,6 @@ class RoomListPresenterTest {
         coldStartWatcher = FakeAnalyticsColdStartWatcher(),
         featureFlagService = featureFlagService,
         bipeSelfChat = bipeSelfChat,
+        bipeInviterGreeting = bipeInviterGreeting,
     )
 }

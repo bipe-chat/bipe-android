@@ -63,6 +63,8 @@ internal data class BipeVaultData(
     @SerialName("pending_signup") val pendingSignup: BipePendingSignup? = null,
     /** New account's Matrix ID to its inviter's Matrix ID, until the first session opens the chat (ADR 0034). */
     @SerialName("pending_inviters") val pendingInviters: Map<String, String> = emptyMap(),
+    /** Account's Matrix ID to its inviter's Matrix ID, until the user sends the inviter a first message (ADR 0034). */
+    @SerialName("inviter_greetings") val inviterGreetings: Map<String, String> = emptyMap(),
 ) {
     override fun toString(): String = "BipeVaultData"
 }

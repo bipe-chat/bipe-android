@@ -58,6 +58,7 @@ import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.roomlist.RoomList
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
 import io.element.android.libraries.matrix.ui.safety.rememberHideInvitesAvatar
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.services.analytics.api.AnalyticsService
@@ -95,6 +96,7 @@ class RoomListPresenter(
     private val globalSearchPresenter: Presenter<GlobalSearchState>,
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
+    private val bipeInviterGreeting: BipeInviterGreeting,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -125,6 +127,7 @@ class RoomListPresenter(
         // Bipe: the fixed category of the list. Conversas (direct chats) is the first tab (ADR 0053).
         var bipeShowsGroups by rememberSaveable { mutableStateOf(false) }
         val bipeSelfChatRoomId by bipeSelfChat.roomId.collectAsState()
+        val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
 
         val contextMenu = remember { mutableStateOf<RoomListState.ContextMenu>(RoomListState.ContextMenu.Hidden) }
         val declineInviteMenu = remember { mutableStateOf<RoomListState.DeclineInviteMenu>(RoomListState.DeclineInviteMenu.Hidden) }
@@ -222,6 +225,8 @@ class RoomListPresenter(
             acceptDeclineInviteState = acceptDeclineInviteState,
             hideInvitesAvatars = hideInvitesAvatar,
             canReportRoom = canReportRoom,
+            bipeInviterHandle = bipeInviter?.handle,
+            bipeOpenInviterChat = bipeInviterGreeting::openChat,
             eventSink = ::handleEvent,
         )
     }

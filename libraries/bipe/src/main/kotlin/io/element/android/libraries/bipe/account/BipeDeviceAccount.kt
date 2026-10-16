@@ -150,7 +150,19 @@ class BipeDeviceAccount(
     /** Kept before the sign-in, so the first session finds it (ADR 0034). */
     private suspend fun rememberInviter(response: BipeSignupResponse) {
         val inviterUserId = response.inviterUserId ?: return
-        vault.update { it.copy(pendingInviters = it.pendingInviters + (response.userId to inviterUserId)) }
+        vault.update {
+            it.copy(
+                pendingInviters = it.pendingInviters + (response.userId to inviterUserId),
+                inviterGreetings = it.inviterGreetings + (response.userId to inviterUserId),
+            )
+        }
+    }
+
+    /** The inviter of [userId] while the user has not sent them a first message (ADR 0034). */
+    internal suspend fun inviterGreeting(userId: String): String? = vault.read().inviterGreetings[userId]
+
+    internal suspend fun endInviterGreeting(userId: String) {
+        vault.update { it.copy(inviterGreetings = it.inviterGreetings - userId) }
     }
 
     /** The inviter of [userId] after a personal-invite sign-up, once: the stored value is removed (ADR 0034). */

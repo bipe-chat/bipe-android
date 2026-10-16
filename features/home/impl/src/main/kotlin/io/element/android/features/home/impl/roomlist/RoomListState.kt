@@ -34,6 +34,10 @@ data class RoomListState(
     val acceptDeclineInviteState: AcceptDeclineInviteState,
     val hideInvitesAvatars: Boolean,
     val canReportRoom: Boolean,
+    /** Bipe ADR 0034: the inviter's handle (without "@") until the user sends them a first message. */
+    val bipeInviterHandle: String? = null,
+    /** Bipe ADR 0034: the chat with the inviter, found or created. `null` when it cannot open. */
+    val bipeOpenInviterChat: suspend () -> RoomId? = { null },
     val eventSink: (RoomListEvent) -> Unit,
 ) {
     val displayFilters = contentState is RoomListContentState.Rooms

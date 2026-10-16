@@ -703,6 +703,7 @@ class LoggedInFlowNode(
     /**
      * Bipe ADR 0034: after a personal-invite sign-up, open a chat with the inviter. Their app accepts it without a tap.
      * Port of `runPostSessionSetupTasks` on iOS. The stored inviter is removed first, so a failure does not repeat.
+     * The chat list card and the in-chat prompt (`BipeInviterGreeting`) stay until the user messages the inviter.
      */
     private suspend fun bipeOpenInviterChat() {
         val inviterUserId = bipeSession.account.takePendingInviter()
@@ -716,8 +717,8 @@ class LoggedInFlowNode(
         if (result is StartDMResult.Success) {
             attachRoom(result.roomId.toRoomIdOrAlias())
         } else {
+            // The chat list stays: its card to message the inviter retries.
             Timber.e("Bipe: could not open a chat with the inviter $inviterUserId: $result")
-            attachUser(inviterUserId)
         }
     }
 

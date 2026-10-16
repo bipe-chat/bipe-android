@@ -53,6 +53,7 @@ import io.element.android.libraries.designsystem.theme.components.HorizontalDivi
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
+import io.element.android.libraries.bipe.ui.BipeInviterRow
 import io.element.android.libraries.bipe.ui.BipeRequestsRow
 import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -73,6 +74,8 @@ fun RoomListContentView(
     onBipeCreateGroupClick: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    bipeInviterHandle: String? = null,
+    onBipeInviterClick: () -> Unit = {},
 ) {
     when (contentState) {
         is RoomListContentState.Skeleton -> {
@@ -90,6 +93,8 @@ fun RoomListContentView(
                 onSetUpRecoveryClick = onSetUpRecoveryClick,
                 onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
                 onCreateRoomClick = if (contentState.bipeGroups) onBipeCreateGroupClick else onCreateRoomClick,
+                bipeInviterHandle = bipeInviterHandle,
+                onBipeInviterClick = onBipeInviterClick,
             )
         }
         is RoomListContentState.Rooms -> {
@@ -105,6 +110,8 @@ fun RoomListContentView(
                 onRoomClick = onRoomClick,
                 lazyListState = lazyListState,
                 contentPadding = contentPadding,
+                bipeInviterHandle = bipeInviterHandle,
+                onBipeInviterClick = onBipeInviterClick,
             )
         }
     }
@@ -141,6 +148,8 @@ private fun EmptyView(
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
     onCreateRoomClick: () -> Unit,
+    bipeInviterHandle: String?,
+    onBipeInviterClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
@@ -163,7 +172,7 @@ private fun EmptyView(
             },
             modifier = Modifier.align(Alignment.Center),
         )
-        Box {
+        Column {
             when (state.securityBannerState) {
                 SecurityBannerState.SetUpRecovery -> {
                     SetUpRecoveryKeyBanner(
@@ -178,6 +187,9 @@ private fun EmptyView(
                     )
                 }
                 SecurityBannerState.None -> Unit
+            }
+            if (bipeInviterHandle != null) {
+                BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
             }
         }
     }
@@ -195,6 +207,8 @@ private fun RoomsView(
     onRoomClick: (RoomListRoomSummary) -> Unit,
     contentPadding: PaddingValues,
     lazyListState: LazyListState,
+    bipeInviterHandle: String?,
+    onBipeInviterClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isSpaceFilterSelected = spaceFiltersState is SpaceFiltersState.Selected
@@ -214,6 +228,9 @@ private fun RoomsView(
             } else {
                 null
             },
+            // Bipe ADR 0034: hidden while any filter is on.
+            bipeInviterHandle = bipeInviterHandle.takeUnless { hasAnyFilterSelected },
+            onBipeInviterClick = onBipeInviterClick,
             hideInvitesAvatars = hideInvitesAvatars,
             eventSink = eventSink,
             onSetUpRecoveryClick = onSetUpRecoveryClick,
@@ -230,6 +247,8 @@ private fun RoomsView(
 private fun RoomsViewList(
     state: RoomListContentState.Rooms,
     onRequestsClick: (() -> Unit)?,
+    bipeInviterHandle: String?,
+    onBipeInviterClick: () -> Unit,
     hideInvitesAvatars: Boolean,
     eventSink: (RoomListEvent) -> Unit,
     onSetUpRecoveryClick: () -> Unit,
@@ -284,6 +303,13 @@ private fun RoomsViewList(
                         )
                     }
                 }
+            }
+        }
+
+        if (bipeInviterHandle != null) {
+            item {
+                BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                HorizontalDivider()
             }
         }
 
