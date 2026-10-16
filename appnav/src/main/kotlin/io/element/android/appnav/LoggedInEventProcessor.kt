@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.coroutine.childScope
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
@@ -61,6 +62,8 @@ class LoggedInEventProcessor(
                         displayMessage(
                             if (roomMemberShipUpdate.isSpace) {
                                 CommonStrings.common_current_user_left_space
+                            } else if (roomMemberShipUpdate.isDm) {
+                                BipeR.string.bipe_dm_left_by_you // Bipe: a DM is a conversation
                             } else {
                                 CommonStrings.common_current_user_left_room
                             }

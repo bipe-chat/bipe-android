@@ -626,4 +626,12 @@
     <string name="bipe_dm_invite_to_group_sent">Invite sent</string>
     <string name="bipe_dm_invite_to_group_already_member">This person is already in this group</string>
     <string name="bipe_dm_leave_body">The chat disappears from your list.</string>
+    <string name="bipe_dm_details_title">Chat info</string>
+    <string name="bipe_dm_left">%1$s left the chat</string>
+    <string name="bipe_dm_left_by_you">You left the chat</string>
+    <string name="bipe_dm_leaving">Leaving the chat</string>
+    <string name="bipe_dm_error_muting">Could not mute the chat. Try again.</string>
+    <string name="bipe_dm_error_unmuting">Could not unmute the chat. Try again.</string>
+    <string name="bipe_dm_media_empty">Photos and videos from this chat show up here.</string>
+    <string name="bipe_dm_files_empty">Documents, audio and voice messages from this chat show up here.</string>
 </resources>

@@ -55,6 +55,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.background.OnboardingBackground
 import io.element.android.libraries.designsystem.components.BigIcon
@@ -244,11 +245,13 @@ private fun MediaGalleryPage(
                 when (mode) {
                     MediaGalleryMode.Images -> MediaGalleryImages(
                         imagesAndVideos = groupedMediaItems.data.imageAndVideoItems,
+                        isDm = state.isDm,
                         eventSink = state.eventSink,
                         onItemClick = onItemClick,
                     )
                     MediaGalleryMode.Files -> MediaGalleryFiles(
                         files = groupedMediaItems.data.fileItems,
+                        isDm = state.isDm,
                         eventSink = state.eventSink,
                         onItemClick = onItemClick,
                     )
@@ -279,13 +282,14 @@ private fun AsyncData<GroupedMediaItems>.isLoadingItems(mode: MediaGalleryMode):
 @Composable
 private fun MediaGalleryImages(
     imagesAndVideos: ImmutableList<MediaItem>,
+    isDm: Boolean,
     eventSink: (MediaGalleryEvent) -> Unit,
     onItemClick: (MediaItem.Event) -> Unit,
 ) {
     if (imagesAndVideos.isEmpty()) {
         EmptyContent(
             titleRes = R.string.screen_media_browser_media_empty_state_title,
-            subtitleRes = R.string.screen_media_browser_media_empty_state_subtitle,
+            subtitleRes = if (isDm) BipeR.string.bipe_dm_media_empty else R.string.screen_media_browser_media_empty_state_subtitle, // Bipe
             icon = CompoundIcons.Image(),
         )
     } else {
@@ -300,13 +304,14 @@ private fun MediaGalleryImages(
 @Composable
 private fun MediaGalleryFiles(
     files: ImmutableList<MediaItem>,
+    isDm: Boolean,
     eventSink: (MediaGalleryEvent) -> Unit,
     onItemClick: (MediaItem.Event) -> Unit,
 ) {
     if (files.isEmpty()) {
         EmptyContent(
             titleRes = R.string.screen_media_browser_files_empty_state_title,
-            subtitleRes = R.string.screen_media_browser_files_empty_state_subtitle,
+            subtitleRes = if (isDm) BipeR.string.bipe_dm_files_empty else R.string.screen_media_browser_files_empty_state_subtitle, // Bipe
             icon = CompoundIcons.Files(),
         )
     } else {

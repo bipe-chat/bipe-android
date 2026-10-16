@@ -171,6 +171,7 @@ class RustBaseRoom(
 
     override suspend fun leave(): Result<Unit> = withContext(roomDispatcher) {
         val membershipBeforeLeft = roomInfoFlow.value.currentUserMembership
+        val isDm = roomInfoFlow.value.isDm // Bipe
         runCatchingExceptions {
             innerRoom.leave()
         }.onSuccess {
@@ -178,6 +179,7 @@ class RustBaseRoom(
                 roomId = roomId,
                 isSpace = roomInfoFlow.value.isSpace,
                 membershipBeforeLeft = membershipBeforeLeft,
+                isDm = isDm,
             )
         }
     }

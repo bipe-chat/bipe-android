@@ -207,7 +207,8 @@ private fun RoomListModalBottomSheetContent(
         }
         ListItem(
             content = {
-                Text(text = stringResource(CommonStrings.action_leave_room))
+                // Bipe: a DM is a conversation
+                Text(text = stringResource(if (contextMenu.isDm) CommonStrings.action_leave_conversation else CommonStrings.action_leave_room))
             },
             modifier = Modifier.clickable { onLeaveRoomClick() },
             leadingContent = ListItemContent.Icon(

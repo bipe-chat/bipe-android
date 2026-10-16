@@ -182,6 +182,7 @@ class MediaGalleryPresenter(
             mediaBottomSheetState = mediaBottomSheetState,
             snackbarMessage = snackbarMessage,
             eventSink = ::handleEvent,
+            isDm = roomInfo.isDm, // Bipe
         )
     }
 
