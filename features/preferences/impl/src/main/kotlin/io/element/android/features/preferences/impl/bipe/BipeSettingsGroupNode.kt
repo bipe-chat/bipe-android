@@ -46,6 +46,8 @@ class BipeSettingsGroupNode(
         fun navigateToSecureBackup()
         fun navigateToLinkNewDevice()
         fun navigateToSignOut()
+        fun navigateToMessaging()
+        fun navigateToBlockedUsers()
     }
 
     private val callback: Callback = callback()
@@ -64,6 +66,8 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.PROFILE_NAME_PHOTO -> callback.navigateToEditProfile(state.myUser)
                     BipeSettingsRow.PROFILE_HANDLE -> callback.navigateToHandle()
                     BipeSettingsRow.PROFILE_PUBLIC_PROFILE -> callback.navigateToPublicProfile()
+                    BipeSettingsRow.PRIVACY_MESSAGING -> callback.navigateToMessaging()
+                    BipeSettingsRow.PRIVACY_BLOCKED -> callback.navigateToBlockedUsers()
                     BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> callback.navigateToSecureBackup()
                     BipeSettingsRow.ACCOUNT_LINK_DEVICE -> callback.navigateToLinkNewDevice()
                     BipeSettingsRow.ACCOUNT_SIGN_OUT -> callback.navigateToSignOut()

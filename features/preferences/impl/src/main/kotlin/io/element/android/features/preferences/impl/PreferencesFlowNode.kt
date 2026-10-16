@@ -32,7 +32,6 @@ import io.element.android.features.preferences.impl.developer.DeveloperSettingsN
 import io.element.android.features.preferences.impl.labs.LabsNode
 import io.element.android.features.preferences.impl.location.LocationSettingsNode
 import io.element.android.features.preferences.impl.media.MediaSettingsNode
-import io.element.android.features.preferences.impl.moderation.ModerationAndSafetyNode
 import io.element.android.features.preferences.impl.notifications.NotificationSettingsNode
 import io.element.android.features.preferences.impl.notifications.edit.EditDefaultNotificationSettingNode
 import io.element.android.features.preferences.impl.root.PreferencesRootNode
@@ -54,6 +53,7 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
 import io.element.android.features.preferences.impl.bipe.BipeSettingsGroupNode
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.settings.BipeMessagingNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -104,9 +104,6 @@ class PreferencesFlowNode(
         data object NotificationSettings : NavTarget
 
         @Parcelize
-        data object ModerationAndSafety : NavTarget
-
-        @Parcelize
         data object TroubleshootNotifications : NavTarget
 
         @Parcelize
@@ -148,6 +145,10 @@ class PreferencesFlowNode(
         /** Bipe: Seu perfil and the group screens of ADR 0112. */
         @Parcelize
         data class BipeGroup(val group: BipeSettingsGroup) : NavTarget
+
+        /** Bipe: "Quem pode me mandar mensagem" (ADR 0016). */
+        @Parcelize
+        data object BipeMessaging : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -213,7 +214,8 @@ class PreferencesFlowNode(
                     }
 
                     override fun navigateToModerationAndSafety() {
-                        backstack.push(NavTarget.ModerationAndSafety)
+                        // Bipe: Moderation & safety is gone; its rows are in Privacidade and Conversas e mídia (ADR 0112).
+                        backstack.push(BipeSettingsGroup.PRIVACY.toNavTarget())
                     }
 
                     override fun navigateToNotificationSettings() {
@@ -266,14 +268,6 @@ class PreferencesFlowNode(
                     }
                 }
                 createNode<LabsNode>(buildContext, listOf(callback))
-            }
-            NavTarget.ModerationAndSafety -> {
-                val callback = object : ModerationAndSafetyNode.Callback {
-                    override fun navigateToBlockedUsers() {
-                        backstack.push(NavTarget.BlockedUsers)
-                    }
-                }
-                createNode<ModerationAndSafetyNode>(buildContext, listOf(callback))
             }
             NavTarget.LocationSettings -> {
                 createNode<LocationSettingsNode>(buildContext)
@@ -330,8 +324,19 @@ class PreferencesFlowNode(
                     override fun navigateToSignOut() {
                         backstack.push(NavTarget.SignOut)
                     }
+
+                    override fun navigateToMessaging() {
+                        backstack.push(NavTarget.BipeMessaging)
+                    }
+
+                    override fun navigateToBlockedUsers() {
+                        backstack.push(NavTarget.BlockedUsers)
+                    }
                 }
                 createNode<BipeSettingsGroupNode>(buildContext, listOf(BipeSettingsGroupNode.Inputs(navTarget.group), callback))
+            }
+            NavTarget.BipeMessaging -> {
+                createNode<BipeMessagingNode>(buildContext)
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {
@@ -480,11 +485,11 @@ class PreferencesFlowNode(
 
 /**
  * Bipe: where a group row of the Você root goes (ADR 0112). Notificações keeps the Element screen.
- * Privacidade and Ajuda e sobre open the current screens until #359 and #362.
+ * Ajuda e sobre opens the current screen until #362.
  */
 internal fun BipeSettingsGroup.toNavTarget(): PreferencesFlowNode.NavTarget = when (this) {
     BipeSettingsGroup.NOTIFICATIONS -> PreferencesFlowNode.NavTarget.NotificationSettings
-    BipeSettingsGroup.PRIVACY -> PreferencesFlowNode.NavTarget.ModerationAndSafety
     BipeSettingsGroup.HELP -> PreferencesFlowNode.NavTarget.About
-    BipeSettingsGroup.PROFILE, BipeSettingsGroup.ACCOUNT, BipeSettingsGroup.CHATS -> PreferencesFlowNode.NavTarget.BipeGroup(this)
+    BipeSettingsGroup.PROFILE, BipeSettingsGroup.PRIVACY, BipeSettingsGroup.ACCOUNT, BipeSettingsGroup.CHATS ->
+        PreferencesFlowNode.NavTarget.BipeGroup(this)
 }
