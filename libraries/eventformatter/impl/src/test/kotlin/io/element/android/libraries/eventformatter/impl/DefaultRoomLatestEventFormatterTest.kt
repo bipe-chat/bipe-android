@@ -229,7 +229,8 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
                 val content = createMessageContent(type)
                 val message = createLatestEvent(sentByYou = sentByYou, senderDisplayName = senderName, content = content)
                 val result = formatter.format(message, isDmRoom = isDm)
-                if (isDm) {
+                // In a DM only the other person's name is left out: your own messages keep "You".
+                if (isDm && !sentByYou) {
                     resultsInDm.add(type to result)
                 } else {
                     resultsInRoom.add(type to result)
