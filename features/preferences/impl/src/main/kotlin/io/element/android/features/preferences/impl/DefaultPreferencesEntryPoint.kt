@@ -59,14 +59,14 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
         PreferencesEntryPoint.BipeSettingsScreen.Analytics -> PreferencesFlowNode.NavTarget.AnalyticsSettings
         PreferencesEntryPoint.BipeSettingsScreen.About -> PreferencesFlowNode.NavTarget.About
         PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
-        PreferencesEntryPoint.BipeSettingsScreen.LockScreen -> PreferencesFlowNode.NavTarget.LockScreenSettings
+        PreferencesEntryPoint.BipeSettingsScreen.LockScreen -> BipeSettingsGroup.ACCOUNT.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Media -> PreferencesFlowNode.NavTarget.MediaSettings
         PreferencesEntryPoint.BipeSettingsScreen.Location -> PreferencesFlowNode.NavTarget.LocationSettings
         PreferencesEntryPoint.BipeSettingsScreen.Labs -> PreferencesFlowNode.NavTarget.Labs
         PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety -> BipeSettingsGroup.PRIVACY.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Notifications -> PreferencesFlowNode.NavTarget.NotificationSettings
         PreferencesEntryPoint.BipeSettingsScreen.SignOut -> PreferencesFlowNode.NavTarget.SignOut
-        PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> PreferencesFlowNode.NavTarget.AccountDeactivation
+        PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> BipeSettingsGroup.ACCOUNT.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Handle -> PreferencesFlowNode.NavTarget.BipeHandle
         PreferencesEntryPoint.BipeSettingsScreen.Invites -> PreferencesFlowNode.NavTarget.BipeInvites
         PreferencesEntryPoint.BipeSettingsScreen.PublicProfile -> PreferencesFlowNode.NavTarget.BipePublicProfile

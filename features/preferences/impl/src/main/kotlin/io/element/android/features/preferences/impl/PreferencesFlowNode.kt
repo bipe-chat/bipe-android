@@ -20,9 +20,7 @@ import com.bumble.appyx.navmodel.backstack.operation.push
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
-import io.element.android.features.deactivation.api.AccountDeactivationEntryPoint
 import io.element.android.features.licenses.api.OpenSourceLicensesEntryPoint
-import io.element.android.features.lockscreen.api.LockScreenEntryPoint
 import io.element.android.features.logout.api.LogoutEntryPoint
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.preferences.impl.about.AboutNode
@@ -63,13 +61,11 @@ import kotlinx.parcelize.Parcelize
 class PreferencesFlowNode(
     @Assisted buildContext: BuildContext,
     @Assisted plugins: List<Plugin>,
-    private val lockScreenEntryPoint: LockScreenEntryPoint,
     private val notificationTroubleShootEntryPoint: NotificationTroubleShootEntryPoint,
     private val pushHistoryEntryPoint: PushHistoryEntryPoint,
     private val fileViewerEntryPoint: FileViewerEntryPoint,
     private val logoutEntryPoint: LogoutEntryPoint,
     private val openSourceLicensesEntryPoint: OpenSourceLicensesEntryPoint,
-    private val accountDeactivationEntryPoint: AccountDeactivationEntryPoint,
 ) : BaseFlowNode<PreferencesFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = plugins.filterIsInstance<PreferencesEntryPoint.Params>().first().initialElement.toNavTarget(),
@@ -113,9 +109,6 @@ class PreferencesFlowNode(
         data class PushRules(val filename: String, val content: String) : NavTarget
 
         @Parcelize
-        data object LockScreenSettings : NavTarget
-
-        @Parcelize
         data class EditDefaultNotificationSetting(val isOneToOne: Boolean) : NavTarget
 
         @Parcelize
@@ -126,9 +119,6 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object SignOut : NavTarget
-
-        @Parcelize
-        data object AccountDeactivation : NavTarget
 
         @Parcelize
         data object OssLicenses : NavTarget
@@ -174,7 +164,8 @@ class PreferencesFlowNode(
                     }
 
                     override fun navigateToLockScreenSettings() {
-                        backstack.push(NavTarget.LockScreenSettings)
+                        // Bipe: the app lock is the Senha section of Sua conta; no "Remover PIN" (ADR 0112).
+                        backstack.push(BipeSettingsGroup.ACCOUNT.toNavTarget())
                     }
 
                     override fun navigateToMediaSettings() {
@@ -235,7 +226,9 @@ class PreferencesFlowNode(
                     }
 
                     override fun startAccountDeactivationFlow() {
-                        backstack.push(NavTarget.AccountDeactivation)
+                        // Bipe: Element's "Delete account" asks for a password the account does not have (ADR 0057).
+                        // The Bipe flow comes with #363.
+                        backstack.push(BipeSettingsGroup.ACCOUNT.toNavTarget())
                     }
                 }
                 createNode<PreferencesRootNode>(buildContext, plugins = listOf(callback))
@@ -441,18 +434,6 @@ class PreferencesFlowNode(
                 }
                 createNode<EditUserProfileNode>(buildContext, listOf(inputs, callback))
             }
-            NavTarget.LockScreenSettings -> {
-                lockScreenEntryPoint.createNode(
-                    parentNode = this,
-                    buildContext = buildContext,
-                    navTarget = LockScreenEntryPoint.Target.Settings,
-                    callback = object : LockScreenEntryPoint.Callback {
-                        override fun onSetupDone() {
-                            // No op
-                        }
-                    }
-                )
-            }
             NavTarget.BlockedUsers -> {
                 createNode<BlockedUsersNode>(buildContext)
             }
@@ -470,9 +451,6 @@ class PreferencesFlowNode(
             }
             is NavTarget.OssLicenses -> {
                 openSourceLicensesEntryPoint.createNode(this, buildContext)
-            }
-            NavTarget.AccountDeactivation -> {
-                accountDeactivationEntryPoint.createNode(this, buildContext)
             }
         }
     }

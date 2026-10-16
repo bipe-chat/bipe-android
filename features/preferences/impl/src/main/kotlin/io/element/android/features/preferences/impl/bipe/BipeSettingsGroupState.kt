@@ -9,6 +9,7 @@ package io.element.android.features.preferences.impl.bipe
 import io.element.android.features.preferences.impl.root.ThemeOption
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.settings.BipeWayBack
 import io.element.android.libraries.matrix.api.media.MediaPreviewValue
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.collections.immutable.ImmutableList
@@ -30,6 +31,8 @@ data class BipeSettingsGroupState(
     val recoveryKeyEnabled: Boolean?,
     /** The make and model of this phone. */
     val deviceName: String,
+    /** Sua conta (#360): the ways back, or `null` while the account state is not loaded. */
+    val waysBack: ImmutableList<BipeWayBack>?,
     // Privacidade (#359). null while not loaded.
     val whoCanMessage: BipeWhoCanMessage?,
     val hideInviteAvatars: Boolean,

@@ -20,6 +20,7 @@ import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTa
 import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.inputs
+import io.element.android.libraries.bipe.account.BipeBiometricUnlock
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.generated.BipeSettingsRow
 import io.element.android.libraries.bipe.generated.BipeSettingsRowKind
@@ -34,6 +35,7 @@ class BipeSettingsGroupNode(
     @Assisted buildContext: BuildContext,
     @Assisted plugins: List<Plugin>,
     presenterFactory: BipeSettingsGroupPresenter.Factory,
+    private val biometricUnlock: BipeBiometricUnlock,
 ) : Node(buildContext, plugins = plugins) {
     data class Inputs(val group: BipeSettingsGroup) : NodeInputs
 
@@ -79,6 +81,7 @@ class BipeSettingsGroupNode(
                 }
             },
             modifier = modifier,
+            biometricUnlockRow = { biometricUnlock.Row() },
         )
     }
 }
