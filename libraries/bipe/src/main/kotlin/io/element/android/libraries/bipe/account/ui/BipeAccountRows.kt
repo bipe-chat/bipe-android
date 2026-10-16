@@ -42,17 +42,13 @@ private sealed interface PinDialog {
 }
 
 /**
- * Settings rows of the device-first account (ADR 0057), under the handle and invite rows:
+ * The Senha row of Sua conta (ADR 0057, ADR 0112):
  * - beta account: "Create your PIN", which also moves the account to a hidden password;
  * - blocked PIN: the blocked state; a new PIN unblocks it;
- * - else: "Change PIN" after a biometric check (or the phone's screen lock);
- * - then the recovery email rows ([BipeRecoveryEmailRows]).
+ * - else: "Change PIN" after a biometric check (or the phone's screen lock).
  */
 @Composable
-fun BipeAccountRows(
-    account: BipeAccountSession,
-    modifier: Modifier = Modifier,
-) {
+fun BipePinRow(account: BipeAccountSession) {
     val status by account.status.collectAsState()
     LaunchedEffect(Unit) { account.refresh() }
     val context = LocalContext.current
@@ -83,30 +79,28 @@ fun BipeAccountRows(
         }
     }
 
-    Column(modifier = modifier) {
-        when {
-            !current.deviceFirst -> ListItem(
-                content = { Text(stringResource(R.string.bipe_pin_create_title)) },
-                supportingContent = { Text(stringResource(R.string.bipe_pin_create_body, BipePin.LENGTH.toString())) },
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
-                enabled = !busy,
-                onClick = { dialog = PinDialog.MoveToDeviceFirst },
-            )
-            current.pinBlocked -> ListItem(
-                content = { Text(stringResource(R.string.bipe_pin_blocked_title)) },
-                supportingContent = { Text(stringResource(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())) },
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LockOff())),
-                enabled = !busy,
-                onClick = ::startChange,
-            )
-            else -> ListItem(
-                content = { Text(if (current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title)) },
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
-                enabled = !busy,
-                onClick = ::startChange,
-            )
-        }
-        BipeRecoveryEmailRows(account, current)
+    when {
+        !current.deviceFirst -> ListItem(
+            content = { Text(stringResource(R.string.bipe_pin_create_title)) },
+            supportingContent = { Text(stringResource(R.string.bipe_pin_create_body, BipePin.LENGTH.toString())) },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
+            enabled = !busy,
+            onClick = { dialog = PinDialog.MoveToDeviceFirst },
+        )
+        current.pinBlocked -> ListItem(
+            content = { Text(stringResource(R.string.bipe_pin_blocked_title)) },
+            supportingContent = { Text(stringResource(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())) },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LockOff())),
+            enabled = !busy,
+            onClick = ::startChange,
+        )
+        else -> ListItem(
+            content = { Text(if (current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title)) },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
+            enabled = !busy,
+            onClick = ::startChange,
+        )
+    }
 
         when (val shown = dialog) {
             null -> Unit

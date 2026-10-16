@@ -34,7 +34,6 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.MobileScreen
 import io.element.android.annotations.ContributesNode
-import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.home.api.HomeEntryPoint
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -49,7 +48,6 @@ import io.element.android.features.preferences.impl.root.PreferencesRootView
 import io.element.android.features.reportroom.api.ReportRoomEntryPoint
 import io.element.android.features.rolesandpermissions.api.ChangeRoomMemberRolesEntryPoint
 import io.element.android.features.rolesandpermissions.api.ChangeRoomMemberRolesListType
-import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.BackstackView
 import io.element.android.libraries.architecture.BaseFlowNode
@@ -64,10 +62,10 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatch
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
-import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -101,7 +99,6 @@ class HomeFlowNode(
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
     // Bipe: the Você tab (ADR 0053)
     private val preferencesRootPresenter: Lazy<PreferencesRootPresenter>,
-    private val emojiPickerRenderer: EmojiPickerRenderer,
     private val bipeSelfChat: BipeSelfChat,
     private val snackbarDispatcher: SnackbarDispatcher,
 ) : BaseFlowNode<HomeFlowNode.NavTarget>(
@@ -198,34 +195,20 @@ class HomeFlowNode(
         modifier: Modifier = Modifier,
     ) {
         val youState = preferencesRootPresenter.value.present()
-        val activity = requireNotNull(LocalActivity.current)
-        val isDark = !ElementTheme.isLightTheme
         val selfChatName = stringResource(BipeR.string.bipe_self_chat_title)
         PreferencesRootView(
             state = youState,
-            emojiPickerRenderer = emojiPickerRenderer,
             modifier = modifier,
             onBackClick = {},
-            onAddAccountClick = callback::navigateToAddAccount,
             onOpenAnalytics = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Analytics) },
-            onOpenLockScreenSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.LockScreen) },
-            onOpenAbout = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.About) },
             onOpenDeveloperSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings) },
-            onOpenMediaSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Media) },
-            onOpenLocationSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Location) },
             onOpenLabs = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Labs) },
-            onEditProfileClick = { callback.bipeNavigateToSettings(PreferencesEntryPoint.InitialTarget.BipeEditProfile(it)) },
-            onSecureBackupClick = callback::navigateToSetUpRecovery,
-            onManageAccountClick = { url -> activity.openUrlInChromeCustomTab(null, darkTheme = isDark, url = url) },
-            onLinkNewDeviceClick = callback::bipeNavigateToLinkNewDevice,
             onOpenRageShake = callback::navigateToBugReport,
-            onModerationAndSafetyClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety) },
-            onOpenNotificationSettings = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Notifications) },
-            onSignOutClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.SignOut) },
-            onDeactivateClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation) },
+            onEditProfileClick = { callback.bipeNavigateToSettings(PreferencesEntryPoint.InitialTarget.BipeEditProfile(it)) },
             onBipeHandleClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Handle) },
             onBipeInvitesClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Invites) },
-            onBipePublicProfileClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.PublicProfile) },
+            onBipeProfileClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Profile) },
+            onBipeGroupClick = { openBipeSettings(it.toBipeSettingsScreen()) },
             bipeTabContentPadding = contentPadding,
             onBipeSelfChatClick = { openBipeSelfChat(selfChatName, navigateToRoom) },
         )
@@ -370,4 +353,14 @@ class HomeFlowNode(
             NavTarget.Root -> rootNode(buildContext)
         }
     }
+}
+
+/** Bipe: the settings screen of a group row of the Você tab (ADR 0112). */
+private fun BipeSettingsGroup.toBipeSettingsScreen(): PreferencesEntryPoint.BipeSettingsScreen = when (this) {
+    BipeSettingsGroup.PROFILE -> PreferencesEntryPoint.BipeSettingsScreen.Profile
+    BipeSettingsGroup.PRIVACY -> PreferencesEntryPoint.BipeSettingsScreen.Privacy
+    BipeSettingsGroup.ACCOUNT -> PreferencesEntryPoint.BipeSettingsScreen.Account
+    BipeSettingsGroup.NOTIFICATIONS -> PreferencesEntryPoint.BipeSettingsScreen.Notifications
+    BipeSettingsGroup.CHATS -> PreferencesEntryPoint.BipeSettingsScreen.Chats
+    BipeSettingsGroup.HELP -> PreferencesEntryPoint.BipeSettingsScreen.Help
 }

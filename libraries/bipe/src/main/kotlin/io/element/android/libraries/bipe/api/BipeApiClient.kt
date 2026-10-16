@@ -162,11 +162,23 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `DELETE /v1/me/profile/photo`. */
     suspend fun deleteMyProfilePhoto(accessToken: String): BipeMyProfile = call { service.deleteMyProfilePhoto(bearer(accessToken)) }
 
+    // Privacy (ADR 0016, ADR 0112)
+
+    /** `GET /v1/me/messaging`. Who can message the caller. */
+    suspend fun messaging(accessToken: String): BipeMessagingSetting = call { service.messaging(bearer(accessToken)) }
+
+    /** `PUT /v1/me/messaging`. */
+    suspend fun setMessaging(setting: BipeMessagingSetting, accessToken: String): BipeMessagingSetting =
+        call { service.setMessaging(bearer(accessToken), setting) }
+
     companion object {
         private val JPEG = "image/jpeg".toMediaType()
 
         /** The `lang` for emails Bipe sends: English for an English device, else Portuguese (the app's fallback). Same rule as iOS. */
-        fun emailLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
+        fun emailLanguage(): String = appLanguage()
+
+        /** The app language for Bipe pages and copy: `en` for an English device, else `pt` (the app's fallback). */
+        fun appLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
 
         /**
          * [baseUrl] is the API root, e.g. `https://api.bipe.net.br`.
@@ -319,6 +331,12 @@ internal interface BipeApiService {
 
     @DELETE("v1/me/handle")
     suspend fun removeMyHandle(@Header("Authorization") authorization: String): Response<BipeMyHandle>
+
+    @GET("v1/me/messaging")
+    suspend fun messaging(@Header("Authorization") authorization: String): Response<BipeMessagingSetting>
+
+    @PUT("v1/me/messaging")
+    suspend fun setMessaging(@Header("Authorization") authorization: String, @Body request: BipeMessagingSetting): Response<BipeMessagingSetting>
 
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>

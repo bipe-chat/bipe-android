@@ -47,6 +47,9 @@ class BipeRecoveryTokenStore(
 
     suspend fun read(): String? = cloud?.read() ?: vault.read().localToken
 
+    /** `true` when the synced store holds a token, so a new phone signed in to the same Google account can use it. */
+    suspend fun hasSyncedToken(): Boolean = cloud?.read() != null
+
     suspend fun write(token: String) {
         val synced = cloud?.write(token) == true
         if (cloud != null && !synced) Timber.w("Bipe recovery token not synced, kept on this device only")

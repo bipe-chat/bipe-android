@@ -8,23 +8,24 @@
 
 package io.element.android.features.preferences.impl.root
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -32,6 +33,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -41,11 +44,6 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.preferences.impl.R
-import io.element.android.features.preferences.impl.account.PreferencesAccountView
-import io.element.android.features.preferences.impl.user.UserPreferences
-import io.element.android.features.preferences.impl.userstatus.UserStatusState
-import io.element.android.features.preferences.impl.userstatus.UserStatusView
-import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
 import io.element.android.libraries.bipe.BipeTrustProfile
 import io.element.android.libraries.bipe.account.ui.BipeAccountRows
@@ -57,12 +55,15 @@ import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
 import io.element.android.libraries.bipe.ui.BipeTrustProfileSection
 import io.element.android.libraries.designsystem.components.async.AsyncActionIndicator
 import io.element.android.libraries.designsystem.components.async.AsyncIndicator
+import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.bipe.api.BipeWhoCanMessage
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.ui.BipeTrustProfileCard
 import io.element.android.libraries.designsystem.components.avatar.AvatarRow
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
-import io.element.android.libraries.designsystem.components.preferences.PreferenceDropdown
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.preview.ElementPreviewDark
 import io.element.android.libraries.designsystem.preview.ElementPreviewLight
@@ -75,8 +76,6 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.CommonDrawables
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
-import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
-import io.element.android.libraries.emoji.api.picker.NoOpEmojiPickerRenderer
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.matrix.ui.model.getAvatarData
@@ -88,29 +87,18 @@ import kotlinx.collections.immutable.toImmutableList
 @Composable
 fun PreferencesRootView(
     state: PreferencesRootState,
-    emojiPickerRenderer: EmojiPickerRenderer,
     onBackClick: () -> Unit,
-    onAddAccountClick: () -> Unit,
     onOpenAnalytics: () -> Unit,
-    onOpenLockScreenSettings: () -> Unit,
-    onOpenAbout: () -> Unit,
     onOpenDeveloperSettings: () -> Unit,
-    onOpenMediaSettings: () -> Unit,
-    onOpenLocationSettings: () -> Unit,
     onOpenLabs: () -> Unit,
-    onEditProfileClick: (MatrixUser) -> Unit,
-    onSecureBackupClick: () -> Unit,
-    onManageAccountClick: (url: String) -> Unit,
-    onLinkNewDeviceClick: () -> Unit,
     onOpenRageShake: () -> Unit,
-    onModerationAndSafetyClick: () -> Unit,
-    onOpenNotificationSettings: () -> Unit,
-    onSignOutClick: () -> Unit,
-    onDeactivateClick: () -> Unit,
+    onEditProfileClick: (MatrixUser) -> Unit,
     modifier: Modifier = Modifier,
     onBipeHandleClick: () -> Unit = {},
     onBipeInvitesClick: () -> Unit = {},
-    onBipePublicProfileClick: () -> Unit = {},
+    // Bipe: Seu perfil and the group screens under "Configurações" (ADR 0112).
+    onBipeProfileClick: () -> Unit = {},
+    onBipeGroupClick: (BipeSettingsGroup) -> Unit = {},
     // Bipe: the Você tab (ADR 0053) shows this screen without its top bar, with the self-chat row first.
     bipeTabContentPadding: PaddingValues? = null,
     onBipeSelfChatClick: (() -> Unit)? = null,
@@ -118,18 +106,19 @@ fun PreferencesRootView(
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
 
     Box(modifier = modifier) {
+        // Bipe: the Você root (ADR 0112). Who you are first, then the setting groups. No Element section headers.
         val pageContent: @Composable ColumnScope.() -> Unit = {
-            onBipeSelfChatClick?.let { BipeSelfChatRow(onClick = it) } // Bipe
-            UserPreferences(
-                modifier = Modifier
-                    .testTag(TestTags.settingsUserProfile)
-                    .clickable {
-                        onEditProfileClick(state.myUser)
-                    },
+            BipeYouHeader(
+                modifier = Modifier.testTag(TestTags.settingsUserProfile),
                 matrixUser = state.myUser,
+                handle = state.bipeHandle,
+                onClick = onBipeProfileClick,
             )
-            // Bipe: the trust profile card, then the handle, public profile and invites rows.
-            BipeTrustProfileSection(
+            if (state.isMultiAccountEnabled && state.otherSessions.isNotEmpty()) {
+                MultiAccountSection(state = state)
+            }
+            onBipeSelfChatClick?.let { BipeSelfChatRow(onClick = it) }
+            BipeTrustProfileCard(
                 profile = BipeTrustProfile.create(
                     displayName = state.myUser.displayName,
                     hasAvatar = state.myUser.avatarUrl != null,
@@ -138,56 +127,18 @@ fun PreferencesRootView(
                 onEditProfileClick = { onEditProfileClick(state.myUser) },
                 onHandleClick = onBipeHandleClick,
             )
-            BipeHandleRow(handle = state.bipeHandle, onClick = onBipeHandleClick) // Bipe
-            BipePublicProfileRow(enabled = state.bipePublicProfileEnabled, onClick = onBipePublicProfileClick) // Bipe
-            BipeInvitesRow(onClick = onBipeInvitesClick) // Bipe
-            LocalBipeAccount.current?.let { BipeAccountRows(it) } // Bipe: PIN and beta account move (ADR 0057)
-            if (state.userStatusState != null) {
-                UserStatusSection(
-                    userStatusState = state.userStatusState,
-                    emojiPickerRenderer = emojiPickerRenderer,
-                )
-            }
-            if (state.isMultiAccountEnabled) {
-                MultiAccountSection(
-                    state = state,
-                    onAddAccountClick = onAddAccountClick,
-                )
-            }
-            HorizontalDivider(
-                thickness = 8.dp,
-                color = ElementTheme.colors.bgSubtleSecondary,
-            )
-            // Account settings section
-            PreferencesAccountView(
-                state = state.preferencesAccountState,
-                onSecureBackupClick = onSecureBackupClick,
-                onManageAccountClick = onManageAccountClick,
-                onLinkNewDeviceClick = onLinkNewDeviceClick,
-                onOpenRageShake = onOpenRageShake,
-                onModerationAndSafetyClick = onModerationAndSafetyClick,
-                onOpenNotificationSettings = onOpenNotificationSettings,
-                onSignOutClick = onSignOutClick,
-                onDeactivateClick = onDeactivateClick,
-            )
-            // 'App settings' section
-            AppSettingsSection(
+            BipeInvitesRow(onClick = onBipeInvitesClick)
+            BipeSettingsGroupRows(state = state, onGroupClick = onBipeGroupClick)
+            DeveloperSection(
                 state = state,
-                onOpenLockScreenSettings = onOpenLockScreenSettings,
-                onOpenMediaSettings = onOpenMediaSettings,
-                onOpenLocationSettings = onOpenLocationSettings,
-            )
-            // General section
-            GeneralSection(
-                state = state,
-                onOpenAbout = onOpenAbout,
                 onOpenAnalytics = onOpenAnalytics,
                 onOpenDeveloperSettings = onOpenDeveloperSettings,
                 onOpenLabs = onOpenLabs,
+                onOpenRageShake = onOpenRageShake,
             )
-            // Version
             Footer(
                 version = state.version,
+                deviceId = state.bipeDeviceId,
                 onClick = if (!state.showDeveloperSettings) {
                     { state.eventSink(PreferencesRootEvent.OnVersionInfoClick) }
                 } else {
@@ -205,47 +156,65 @@ fun PreferencesRootView(
                 content = pageContent,
             )
         } else {
-            // Include pref from other modules
+            // Bipe: the classic settings root shows the same structure as the Você tab (ADR 0112).
             PreferencePage(
                 onBackClick = onBackClick,
-                title = stringResource(id = CommonStrings.common_settings),
+                title = stringResource(id = BipeR.string.bipe_settings_section),
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 content = pageContent,
             )
         }
-        state.userStatusState?.let {
-            UserStatusUpdateIndicator(it.updateStatusAction)
+    }
+}
+
+/** Bipe: section "Configurações" with one row per group, each with its current state as the subtitle (ADR 0112). */
+@Composable
+private fun BipeSettingsGroupRows(
+    state: PreferencesRootState,
+    onGroupClick: (BipeSettingsGroup) -> Unit,
+) {
+    PreferenceCategory(title = stringResource(BipeR.string.bipe_settings_section)) {
+        for (group in BipeSettingsGroup.root) {
+            val subtitle = when (group) {
+                BipeSettingsGroup.PRIVACY -> state.bipeWhoCanMessage?.let { stringResource(it.summaryRes) }
+                BipeSettingsGroup.ACCOUNT -> state.bipeWaysBackCount?.let { count ->
+                    if (count == 0) {
+                        stringResource(BipeR.string.bipe_settings_account_paths_none)
+                    } else {
+                        stringResource(BipeR.string.bipe_settings_account_paths, count.toString())
+                    }
+                }
+                BipeSettingsGroup.NOTIFICATIONS -> state.bipeNotificationsOn?.let {
+                    stringResource(if (it) BipeR.string.bipe_settings_notifications_on else BipeR.string.bipe_settings_notifications_off)
+                }
+                BipeSettingsGroup.PROFILE, BipeSettingsGroup.CHATS, BipeSettingsGroup.HELP -> null
+            }
+            ListItem(
+                content = { Text(stringResource(group.title)) },
+                supportingContent = subtitle?.let { { Text(it) } },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(group.icon())),
+                onClick = { onGroupClick(group) },
+            )
         }
     }
 }
 
 @Composable
-private fun BoxScope.UserStatusUpdateIndicator(updateStatusAction: AsyncAction<Unit>) {
-    AsyncActionIndicator(
-        asyncAction = updateStatusAction,
-        modifier = Modifier
-            .align(Alignment.TopCenter)
-            .statusBarsPadding(),
-        loading = { AsyncIndicator.Loading(text = stringResource(CommonStrings.common_saving)) },
-        failure = { _ -> AsyncIndicator.Failure(text = stringResource(CommonStrings.common_failed)) },
-    )
+private fun BipeSettingsGroup.icon(): ImageVector = when (this) {
+    BipeSettingsGroup.PROFILE -> CompoundIcons.UserProfile()
+    BipeSettingsGroup.PRIVACY -> CompoundIcons.Lock()
+    BipeSettingsGroup.ACCOUNT -> CompoundIcons.Key()
+    BipeSettingsGroup.NOTIFICATIONS -> CompoundIcons.Notifications()
+    BipeSettingsGroup.CHATS -> CompoundIcons.Chat()
+    BipeSettingsGroup.HELP -> CompoundIcons.Info()
 }
 
-@Composable
-private fun ColumnScope.UserStatusSection(
-    userStatusState: UserStatusState,
-    emojiPickerRenderer: EmojiPickerRenderer,
-) {
-    HorizontalDivider(
-        thickness = 1.dp,
-        color = ElementTheme.colors.bgSubtleSecondary,
-    )
-    UserStatusView(
-        state = userStatusState,
-        emojiPickerRenderer = emojiPickerRenderer,
-        modifier = Modifier.fillMaxWidth(),
-    )
-}
+private val BipeWhoCanMessage.summaryRes: Int
+    get() = when (this) {
+        BipeWhoCanMessage.EVERYONE -> BipeR.string.bipe_settings_privacy_summary_everyone
+        BipeWhoCanMessage.VERIFIED -> BipeR.string.bipe_settings_privacy_summary_verified
+        BipeWhoCanMessage.CONTACTS -> BipeR.string.bipe_settings_privacy_summary_contacts
+    }
 
 /**
  * Ref: https://www.figma.com/design/G1xy0HDZKJf5TCRFmKb5d5/Compound-Android-Components?node-id=5414-4759
@@ -253,15 +222,13 @@ private fun ColumnScope.UserStatusSection(
 @Composable
 private fun ColumnScope.MultiAccountSection(
     state: PreferencesRootState,
-    onAddAccountClick: () -> Unit,
 ) {
     HorizontalDivider(
         thickness = 8.dp,
         color = ElementTheme.colors.bgSubtleSecondary,
     )
-    if (state.otherSessions.isEmpty()) {
-        AddAccountItem(onAddAccountClick)
-    } else {
+    // Bipe: only shown with two or more accounts, and without "Add account" until #267 (ADR 0112).
+    run {
         val expandedStateDescription = if (state.isOtherAccountsSectionExpanded) {
             stringResource(CommonStrings.a11y_state_expanded)
         } else {
@@ -329,109 +296,75 @@ private fun ColumnScope.MultiAccountSection(
                         verticalSpaceWidth = 16.dp,
                     )
                 }
-                AddAccountItem(onAddAccountClick)
             }
         }
     }
 }
 
+/**
+ * Bipe: developer options after the 7 taps on the version, English only (ADR 0112).
+ * Analytics, Labs and "Report a problem" show here, with the developer options, and not in the settings groups.
+ */
 @Composable
-private fun AddAccountItem(onAddAccountClick: () -> Unit) {
-    ListItem(
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Plus())),
-        content = {
-            Text(stringResource(CommonStrings.common_add_another_account))
-        },
-        onClick = onAddAccountClick,
-    )
-}
-
-@Composable
-private fun AppSettingsSection(
+private fun ColumnScope.DeveloperSection(
     state: PreferencesRootState,
-    onOpenLockScreenSettings: () -> Unit,
-    onOpenLocationSettings: () -> Unit,
-    onOpenMediaSettings: () -> Unit,
-) {
-    PreferenceCategory(
-        title = stringResource(CommonStrings.common_app_settings),
-    ) {
-        PreferenceDropdown(
-            icon = CompoundIcons.DarkMode(),
-            dropDownIcon = CompoundIcons.ChevronUpDown(),
-            title = stringResource(id = CommonStrings.common_appearance),
-            selectedOption = state.theme,
-            options = state.availableThemeOptions,
-            onSelectOption = { themeOption ->
-                state.eventSink(PreferencesRootEvent.SetTheme(themeOption))
-            }
-        )
-        ListItem(
-            content = { Text(stringResource(id = CommonStrings.common_media_upload_quality)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Image())),
-            onClick = onOpenMediaSettings,
-        )
-        ListItem(
-            content = { Text(stringResource(id = CommonStrings.common_screen_lock)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
-            onClick = onOpenLockScreenSettings,
-        )
-        ListItem(
-            content = { Text(stringResource(id = CommonStrings.common_location_sharing)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LocationPin())),
-            onClick = onOpenLocationSettings,
-        )
-    }
-}
-
-@Composable
-private fun ColumnScope.GeneralSection(
-    state: PreferencesRootState,
-    onOpenAbout: () -> Unit,
     onOpenAnalytics: () -> Unit,
     onOpenLabs: () -> Unit,
     onOpenDeveloperSettings: () -> Unit,
+    onOpenRageShake: () -> Unit,
 ) {
-    HorizontalDivider(
-        thickness = 1.dp,
-        color = ElementTheme.colors.bgSubtleSecondary,
-    )
-    if (state.showAnalyticsSettings) {
-        ListItem(
-            content = { Text(stringResource(id = CommonStrings.common_analytics)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chart())),
-            onClick = onOpenAnalytics,
-        )
-    }
-    if (state.showLabsItem) {
-        ListItem(
-            content = { Text(stringResource(id = R.string.screen_labs_title)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Labs())),
-            onClick = onOpenLabs,
-        )
-    }
-    ListItem(
-        content = { Text(stringResource(id = CommonStrings.common_about)) },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Info())),
-        onClick = onOpenAbout,
-    )
-    // Put developer settings at the end, so nothing bad happens if the user clicks 8 times to enable the entry
     AnimatedVisibility(
         visible = state.showDeveloperSettings,
     ) {
-        DeveloperPreferencesView(onOpenDeveloperSettings)
+        Column {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ElementTheme.colors.bgSubtleSecondary,
+            )
+            if (state.showAnalyticsSettings) {
+                ListItem(
+                    content = { Text(stringResource(id = CommonStrings.common_analytics)) },
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chart())),
+                    onClick = onOpenAnalytics,
+                )
+            }
+            if (state.showLabsItem) {
+                ListItem(
+                    content = { Text(stringResource(id = R.string.screen_labs_title)) },
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Labs())),
+                    onClick = onOpenLabs,
+                )
+            }
+            if (state.preferencesAccountState.canReportBug) {
+                ListItem(
+                    content = { Text(stringResource(id = CommonStrings.common_report_a_problem)) },
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ChatProblem())),
+                    onClick = onOpenRageShake,
+                )
+            }
+            DeveloperPreferencesView(onOpenDeveloperSettings)
+        }
     }
 }
 
+/** Bipe: the version. 7 taps unlock the developer options; a long press copies the device ID (ADR 0112). */
 @Composable
 private fun ColumnScope.Footer(
     version: String,
+    deviceId: String,
     onClick: (() -> Unit)?,
 ) {
+    val context = LocalContext.current
     Text(
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
-            .clickable(enabled = onClick != null, onClick = onClick ?: {})
+            .combinedClickable(
+                onClick = onClick ?: {},
+                onLongClick = {
+                    context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(null, deviceId))
+                    Toast.makeText(context, BipeR.string.bipe_help_device_id_copied, Toast.LENGTH_SHORT).show()
+                },
+            )
             .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
         textAlign = TextAlign.Center,
         text = version,
@@ -468,24 +401,11 @@ internal fun PreferencesRootViewDarkPreview(@PreviewParameter(PreferencesRootSta
 private fun ContentToPreview(state: PreferencesRootState) {
     PreferencesRootView(
         state = state,
-        emojiPickerRenderer = NoOpEmojiPickerRenderer,
         onBackClick = {},
-        onAddAccountClick = {},
         onOpenAnalytics = {},
         onOpenDeveloperSettings = {},
-        onOpenLocationSettings = {},
-        onOpenMediaSettings = {},
         onOpenLabs = {},
-        onOpenAbout = {},
-        onOpenLockScreenSettings = {},
-        onEditProfileClick = {},
-        onSecureBackupClick = {},
-        onManageAccountClick = {},
-        onLinkNewDeviceClick = {},
         onOpenRageShake = {},
-        onModerationAndSafetyClick = {},
-        onOpenNotificationSettings = {},
-        onSignOutClick = {},
-        onDeactivateClick = {},
+        onEditProfileClick = {},
     )
 }
