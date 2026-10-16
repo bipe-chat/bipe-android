@@ -609,4 +609,9 @@
     <string name="bipe_order_push_refused">%1$s recusou seu pedido. Confira o motivo no Bipe.</string>
     <string name="bipe_order_push_done">Pedido em %1$s entregue.</string>
     <string name="bipe_order_push_cancelled">Pedido em %1$s cancelado.</string>
+    <string name="bipe_dm_invite_to_group">Convidar para um grupo</string>
+    <string name="bipe_dm_invite_to_group_empty">Você não está em nenhum grupo em que possa convidar pessoas.</string>
+    <string name="bipe_dm_invite_to_group_sent">Convite enviado</string>
+    <string name="bipe_dm_invite_to_group_already_member">Essa pessoa já está nesse grupo</string>
+    <string name="bipe_dm_leave_body">A conversa some da sua lista.</string>
 </resources>
