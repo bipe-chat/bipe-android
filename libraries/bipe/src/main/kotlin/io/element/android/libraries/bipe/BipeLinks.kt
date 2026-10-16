@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe
 
+import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.generated.BipeRegistries
 import java.net.URI
 import java.util.Locale
@@ -87,6 +88,20 @@ object BipeRecoveryLink {
         val fragment = runCatching { URI(url).fragment }.getOrNull() ?: return null
         return fragment.takeIf { tokenPattern.matches(it) }
     }
+}
+
+/**
+ * The Termos de uso and the Política de privacidade on the public site (ADR 0113). Paths: bipe-shared/registries/legal.json (generated).
+ * English pages for an English device, else Portuguese: the same rule as the `lang` the API gets.
+ */
+object BipeLegalLinks {
+    fun termsUrl(): String = url(if (isEnglish()) BipeRegistries.EN_TERMS_PATH else BipeRegistries.TERMS_PATH)
+
+    fun privacyUrl(): String = url(if (isEnglish()) BipeRegistries.EN_PRIVACY_PATH else BipeRegistries.PRIVACY_PATH)
+
+    private fun isEnglish() = BipeApiClient.emailLanguage() == "en"
+
+    private fun url(path: String) = "https://${BipeProfileLink.HOST}$path"
 }
 
 /** A normalised invite code. Prints redacted, because routes and actions get logged. */

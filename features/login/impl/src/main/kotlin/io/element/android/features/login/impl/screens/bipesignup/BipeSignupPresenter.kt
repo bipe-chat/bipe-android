@@ -29,6 +29,7 @@ import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.api.BipeApiErrorCode
 import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.bipe.api.BipeSignupRequest
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -75,6 +76,7 @@ class BipeSignupPresenter(
         val pinState = remember { BipeNewPinState() }
         var createAction by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
         var isInviteRequired by remember { mutableStateOf(true) }
+        var isTermsAccepted by remember { mutableStateOf(false) }
 
         // An error keeps the default: an invite is required (ADR 0072).
         LaunchedEffect(Unit) {
@@ -119,6 +121,11 @@ class BipeSignupPresenter(
                     inviteCodeError = message
                     step = BipeSignupStep.FORM
                 }
+                // The server wants a legal version this build does not send (ADR 0113): back to the box, with the message.
+                BipeApiErrorCode.TERMS_REQUIRED -> {
+                    step = BipeSignupStep.FORM
+                    createAction = AsyncAction.Failure(Exception(message))
+                }
                 BipeApiErrorCode.PIN_WEAK -> {
                     pinState.clear()
                     step = BipeSignupStep.PIN
@@ -129,11 +136,18 @@ class BipeSignupPresenter(
         }
 
         fun createAccount() = coroutineScope.launch {
+            // The form step does not continue without the tick; this guards any other path to here.
+            if (!isTermsAccepted) {
+                step = BipeSignupStep.FORM
+                createAction = AsyncAction.Failure(Exception(stringProvider.getString(R.string.bipe_signup_terms_required)))
+                return@launch
+            }
             val request = BipeSignupRequest(
                 inviteCode = BipeInviteCode.parse(inviteCodeInput)?.value,
                 email = email.trim().ifEmpty { null },
                 handle = BipeHandle.sanitize(handle).ifEmpty { null },
                 displayName = displayName.trim().ifEmpty { null },
+                termsVersion = BipeRegistries.LEGAL_VERSION,
             )
             createAction = AsyncAction.Loading
             deviceAccount.signUp(request, pinState.pin)
@@ -159,6 +173,7 @@ class BipeSignupPresenter(
                     handleError = null
                     checker.check(event.value) { handleStatus = it }
                 }
+                is BipeSignupEvent.SetTermsAccepted -> isTermsAccepted = event.accepted
                 is BipeSignupEvent.UpdateInviteCode -> {
                     inviteCodeError = null
                     inviterHandle = null
@@ -210,6 +225,7 @@ class BipeSignupPresenter(
             isTokenSynced = deviceAccount.isTokenSynced,
             createAction = createAction,
             isInviteRequired = isInviteRequired,
+            isTermsAccepted = isTermsAccepted,
             eventSink = ::handleEvent,
         )
     }

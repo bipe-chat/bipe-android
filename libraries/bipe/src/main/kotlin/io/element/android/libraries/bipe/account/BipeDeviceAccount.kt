@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.account
 
+import android.util.Base64
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -23,7 +24,6 @@ import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.sessionstorage.api.observer.SessionListener
 import io.element.android.libraries.sessionstorage.api.observer.SessionObserver
-import android.util.Base64
 import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.security.SecureRandom
@@ -67,6 +67,8 @@ class BipeDeviceAccount(
      */
     suspend fun signUp(request: BipeSignupRequest, pin: String): Result<BipeSignupResponse> = runCatchingExceptions {
         require(request.password == null) { "Device-first sign-up sends no password" }
+        // Only a tick on the sign-up screen sets it (ADR 0113). The app never sends an acceptance on the user's behalf.
+        require(request.termsVersion != null) { "Sign-up sends the accepted terms version" }
         // Stored before the first request goes out, so a lost answer can be fetched again (ADR 0094).
         val pending = pendingSignup(pin)
         val accountPin = pending.pin ?: pin

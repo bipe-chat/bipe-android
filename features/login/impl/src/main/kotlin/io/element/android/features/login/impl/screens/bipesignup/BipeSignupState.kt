@@ -45,6 +45,8 @@ data class BipeSignupState(
     val createAction: AsyncAction<Unit>,
     /** From `GET /v1/signup/config` (ADR 0072). `true` until the server says otherwise, and after an error. */
     val isInviteRequired: Boolean = true,
+    /** The clickwrap box for the Termos de uso and the Política de privacidade (ADR 0113). Unticked at the start. */
+    val isTermsAccepted: Boolean = false,
     val eventSink: (BipeSignupEvent) -> Unit,
 ) {
     val inviteCode: BipeInviteCode? get() = BipeInviteCode.parse(inviteCodeInput)
@@ -65,7 +67,8 @@ data class BipeSignupState(
                 isEmailAcceptable &&
                 !handleStatus.isBlocking &&
                 isInviteCodeAcceptable &&
-                inviteCodeError == null
+                inviteCodeError == null &&
+                isTermsAccepted
         }
 
     override fun toString(): String = "BipeSignupState(step=$step)"
@@ -78,6 +81,9 @@ sealed interface BipeSignupEvent {
     }
     data class UpdateHandle(val value: String) : BipeSignupEvent
     data class UpdateInviteCode(val value: String) : BipeSignupEvent
+
+    /** The clickwrap box (ADR 0113). */
+    data class SetTermsAccepted(val accepted: Boolean) : BipeSignupEvent
 
     /** Next step, or create the account on the last one. */
     data object Continue : BipeSignupEvent

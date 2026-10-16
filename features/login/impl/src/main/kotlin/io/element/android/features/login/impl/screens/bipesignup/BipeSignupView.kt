@@ -9,25 +9,36 @@ package io.element.android.features.login.impl.screens.bipesignup
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.BipeHandleStatus
+import io.element.android.libraries.bipe.BipeLegalLinks
 import io.element.android.libraries.bipe.BipeSignupRules
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipePin
@@ -39,6 +50,7 @@ import io.element.android.libraries.designsystem.components.async.AsyncActionVie
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.modifiers.clearFocusOnTap
 import io.element.android.libraries.designsystem.theme.components.Button
+import io.element.android.libraries.designsystem.theme.components.Checkbox
 import io.element.android.libraries.designsystem.theme.components.Scaffold
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
@@ -147,6 +159,7 @@ private fun FormStep(state: BipeSignupState) {
         onValueChange = { eventSink(BipeSignupEvent.UpdateInviteCode(it)) },
     )
     EmailField(state)
+    TermsRow(state)
     Button(
         text = stringResource(CommonStrings.action_continue),
         enabled = state.canContinueForm,
@@ -155,6 +168,48 @@ private fun FormStep(state: BipeSignupState) {
             .fillMaxWidth()
             .padding(top = 12.dp, bottom = 16.dp),
     )
+}
+
+/** Clickwrap (ADR 0113): unticked at the start. The links open the pages; a tap anywhere else on the row toggles the box. */
+@Composable
+private fun TermsRow(state: BipeSignupState) {
+    val termsText = stringResource(R.string.bipe_signup_terms_link)
+    val privacyText = stringResource(R.string.bipe_signup_privacy_link)
+    val sentence = stringResource(R.string.bipe_signup_terms_accept, termsText, privacyText)
+    val linkStyles = TextLinkStyles(
+        style = SpanStyle(
+            textDecoration = TextDecoration.Underline,
+            fontWeight = FontWeight.Bold,
+            color = ElementTheme.colors.textPrimary,
+        ),
+    )
+    val text = buildAnnotatedString {
+        append(sentence)
+        listOf(termsText to BipeLegalLinks.termsUrl(), privacyText to BipeLegalLinks.privacyUrl()).forEach { (linkText, url) ->
+            val start = sentence.indexOf(linkText)
+            if (start >= 0) addLink(LinkAnnotation.Url(url = url, styles = linkStyles), start = start, end = start + linkText.length)
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .toggleable(
+                value = state.isTermsAccepted,
+                role = Role.Checkbox,
+                onValueChange = { state.eventSink(BipeSignupEvent.SetTermsAccepted(it)) },
+            )
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Checkbox(checked = state.isTermsAccepted, onCheckedChange = null)
+        Text(
+            text = text,
+            style = ElementTheme.typography.fontBodyMdRegular,
+            color = ElementTheme.colors.textSecondary,
+            modifier = Modifier.weight(1f),
+        )
+    }
 }
 
 @Composable
