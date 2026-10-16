@@ -90,8 +90,9 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 - `BipeWelcomeView` and `Modifier.bipeWelcomeBackground` (libraries/bipe) replace Element's logo, welcome text and `onboarding_bg` artwork in `OnBoardingView`. Copy: `bipe_onboarding_*` in bipe-shared. iOS: `BipeWelcomeView`.
 
-## Threads and galleries on by default (15 Oct 2026)
+## Threads and galleries on by default, no Labs (15 Oct 2026)
 
+- **No Labs entry in settings.** `FeatureFlags.Knock` ("Ask to join") is not in Labs any more and stays off; it shows in developer options only. `PreferencesRootPresenter` hides the Labs entry when no Labs feature is left.
 - `FeatureFlags.Threads` and `FeatureFlags.SendGalleryMessages` default to on and are finished, so they are not in Labs and an old Labs opt-out is ignored.
 - The session cache is built differently with threads on. `AppMigration11` marks the sessions of an existing install in `BipeThreadsCacheRebuild` (libraries/bipe). `LoggedInFlowNode` clears each marked session's cache once with `ClearCacheUseCase`, the path the Labs toggle used. The interface moved to `features/preferences/api` for this. iOS skips the clear for users who had threads on in Labs; Android clears once for every existing session.
 
