@@ -8,6 +8,9 @@
 
 package io.element.android.features.preferences.impl.notifications
 
+import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.core.meta.BuildType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -76,6 +79,7 @@ class NotificationSettingsPresenter(
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
     private val featureFlagService: FeatureFlagService,
+    private val buildMeta: BuildMeta,
 ) : Presenter<NotificationSettingsState> {
     // Serializes the pick → copy → persist → recreate pipeline per slot. The copier already locks
     // its `<slot>.tmp` file, but the persist+recreate window outside the copier is unprotected;
@@ -316,6 +320,7 @@ class NotificationSettingsPresenter(
             pendingMessageSoundPickerLaunch = pendingMessageSoundPickerLaunch,
             pendingCallRingtonePickerLaunch = pendingCallRingtonePickerLaunch,
             showAllActivityInRoomList = showAllActivityInRoomList,
+            bipeIsDeveloperBuild = buildMeta.buildType != BuildType.RELEASE,
             eventSink = ::handleEvent,
         )
     }
@@ -390,14 +395,16 @@ class NotificationSettingsPresenter(
         defaultLabel: String,
     ): String = when (sound) {
         NotificationSound.SystemDefault -> defaultLabel
-        NotificationSound.ElementDefault -> stringProvider.getString(R.string.screen_notification_settings_sound_element_default)
-        NotificationSound.ElementFade -> stringProvider.getString(R.string.screen_notification_settings_sound_element_fade)
+        NotificationSound.ElementDefault -> stringProvider.getString(BipeR.string.bipe_notifications_tone_default) // Bipe
+        NotificationSound.ElementFade -> stringProvider.getString(BipeR.string.bipe_notifications_tone_soft) // Bipe
+        // Bipe: needs strings bipe_notifications_tone_silent and bipe_notifications_tone_system; Element's have no pt-BR.
         NotificationSound.Silent -> stringProvider.getString(R.string.screen_notification_settings_sound_silent)
         is NotificationSound.Custom -> {
             val nonBlankPersisted = persistedTitle?.takeUnless { it.isBlank() }
             if (nonBlankPersisted != null) {
                 nonBlankPersisted
             } else {
+                // Bipe: needs string bipe_notifications_tone_other ("Outro som" / "Other sound"). Element's has no pt-BR.
                 val customFallback = stringProvider.getString(R.string.screen_notification_settings_sound_custom_fallback)
                 val resolved by produceState(initialValue = "", sound.uri) {
                     val title = soundDisplayNameResolver.resolveCustomSoundTitle(sound.uri)

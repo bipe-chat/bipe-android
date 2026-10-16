@@ -8,6 +8,7 @@
 
 package io.element.android.features.preferences.impl.notifications
 
+import io.element.android.libraries.matrix.test.core.aBuildMeta
 import com.google.common.truth.Truth.assertThat
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.featureflag.api.FeatureFlagService
@@ -1176,6 +1177,7 @@ class NotificationSettingsPresenterTest {
             stringProvider = FakeStringProvider(),
             sessionCoroutineScope = backgroundScope,
             featureFlagService = featureFlagService,
+            buildMeta = aBuildMeta(),
         )
     }
 }
