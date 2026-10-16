@@ -24,7 +24,9 @@ import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
+import io.element.android.libraries.designsystem.text.BIPE_LINK_PLACEHOLDER
 import io.element.android.libraries.designsystem.text.buildAnnotatedStringWithStyledPart
+import io.element.android.libraries.designsystem.text.stringWithoutLink
 import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.ListItem
@@ -43,7 +45,8 @@ fun SecureBackupRootView(
     onChangeClick: () -> Unit,
     onDisableClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
-    onLearnMoreClick: () -> Unit,
+    // Bipe: null hides the "Learn more" part, as there is no help page yet (bipe#205).
+    onLearnMoreClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
@@ -61,15 +64,23 @@ fun SecureBackupRootView(
                 )
             },
             supportingContent = {
-                Text(
-                    text = buildAnnotatedStringWithStyledPart(
-                        fullTextRes = R.string.screen_chat_backup_key_backup_description,
-                        coloredTextRes = CommonStrings.action_learn_more,
-                        color = ElementTheme.colors.textPrimary,
-                        underline = false,
-                        bold = true,
-                    ),
-                )
+                if (onLearnMoreClick != null) {
+                    Text(
+                        text = buildAnnotatedStringWithStyledPart(
+                            fullTextRes = R.string.screen_chat_backup_key_backup_description,
+                            coloredTextRes = CommonStrings.action_learn_more,
+                            color = ElementTheme.colors.textPrimary,
+                            underline = false,
+                            bold = true,
+                        ),
+                    )
+                } else {
+                    Text(
+                        text = stringWithoutLink(
+                            stringResource(id = R.string.screen_chat_backup_key_backup_description, BIPE_LINK_PLACEHOLDER)
+                        ),
+                    )
+                }
             },
             onClick = onLearnMoreClick,
         )
