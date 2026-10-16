@@ -51,7 +51,6 @@ class PreferencesRootPresenter(
     private val featureFlagService: FeatureFlagService,
     private val sessionStore: SessionStore,
     private val appPreferencesStore: AppPreferencesStore,
-    private val userStatusPresenter: Presenter<UserStatusState>,
     private val preferencesAccountPresenter: Presenter<PreferencesAccountState>,
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,

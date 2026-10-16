@@ -48,7 +48,7 @@ private sealed interface PinDialog {
  * - else: "Change PIN" after a biometric check (or the phone's screen lock).
  */
 @Composable
-fun BipePinRow(account: BipeAccountSession) {
+fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
     val status by account.status.collectAsState()
     LaunchedEffect(Unit) { account.refresh() }
     val context = LocalContext.current
@@ -81,6 +81,7 @@ fun BipePinRow(account: BipeAccountSession) {
 
     when {
         !current.deviceFirst -> ListItem(
+            modifier = modifier,
             content = { Text(stringResource(R.string.bipe_pin_create_title)) },
             supportingContent = { Text(stringResource(R.string.bipe_pin_create_body, BipePin.LENGTH.toString())) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
@@ -88,6 +89,7 @@ fun BipePinRow(account: BipeAccountSession) {
             onClick = { dialog = PinDialog.MoveToDeviceFirst },
         )
         current.pinBlocked -> ListItem(
+            modifier = modifier,
             content = { Text(stringResource(R.string.bipe_pin_blocked_title)) },
             supportingContent = { Text(stringResource(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LockOff())),
@@ -95,6 +97,7 @@ fun BipePinRow(account: BipeAccountSession) {
             onClick = ::startChange,
         )
         else -> ListItem(
+            modifier = modifier,
             content = { Text(if (current.pinSet) changeTitle else stringResource(R.string.bipe_pin_create_title)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
             enabled = !busy,

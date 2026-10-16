@@ -31,10 +31,8 @@ import io.element.android.tests.testutils.assertNoNodeWithText
 import io.element.android.tests.testutils.assertNodeWithTextIsDisplayed
 import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.ensureCalledOnce
-import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
-import kotlinx.collections.immutable.toImmutableList
 import org.junit.Test
 
 class PreferencesRootViewTest : RobolectricTest() {
