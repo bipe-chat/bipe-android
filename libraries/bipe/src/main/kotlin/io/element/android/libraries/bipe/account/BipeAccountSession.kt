@@ -14,6 +14,7 @@ import io.element.android.libraries.bipe.api.BipeRecovery
 import io.element.android.libraries.bipe.api.BipeRecoveryMethod
 import io.element.android.libraries.bipe.api.BipeRecoveryPurpose
 import io.element.android.libraries.bipe.api.BipeRecoveryState
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,6 +92,17 @@ class BipeAccountSession(
         refresh()
         Unit
     }.onFailure { Timber.e(it, "Bipe: recovery email not removed") }
+
+    /**
+     * Records that the user accepted the current legal texts (ADR 0113, `POST /v1/me/terms`). After the refresh the status
+     * carries the new version even when the refresh failed, so the re-accept screen closes without waiting for the next poll.
+     */
+    suspend fun acceptTerms(): Result<Unit> = runCatchingExceptions {
+        BipeApiClient.withTokenRetry(accessToken) { apiClient.acceptTerms(BipeRegistries.LEGAL_VERSION, it) }
+        refresh()
+        statusFlow.value = statusFlow.value?.copy(termsVersion = BipeRegistries.LEGAL_VERSION)
+        Unit
+    }.onFailure { Timber.e(it, "Bipe: terms acceptance not saved") }
 
     /** "Cancel, it was not me": stops a waiting recovery. */
     suspend fun cancelRecovery(recovery: BipeRecovery): Result<Unit> = runCatchingExceptions {

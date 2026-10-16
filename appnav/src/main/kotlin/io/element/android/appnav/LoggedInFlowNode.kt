@@ -109,6 +109,7 @@ import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.terms.BipeTermsReaccept
 import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
 import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
@@ -794,6 +795,7 @@ class LoggedInFlowNode(
                             if (ftueState is FtueState.Complete) {
                                 PermanentChild(permanentNavModel = permanentNavModel, navTarget = NavTarget.LoggedInPermanent)
                                 BipeRecoveryAlerts(bipeSession.account) // Bipe: recovery alerts on the old devices (ADR 0057)
+                                BipeTermsReaccept(bipeSession.account) // Bipe: re-accept the terms (ADR 0113, bipe#366)
                             }
                         }
                     }
