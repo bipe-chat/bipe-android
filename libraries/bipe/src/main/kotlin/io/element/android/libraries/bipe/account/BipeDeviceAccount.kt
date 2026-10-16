@@ -84,6 +84,7 @@ class BipeDeviceAccount(
         val token = response.recoveryToken ?: throw BipeApiException.UnexpectedResponse(statusCode = 201)
         Timber.i("Bipe device-first account created: ${response.userId}")
         storeCredentials(BipeCredentials(response.userId, password, token))
+        rememberInviter(response)
         signIn(response.userId, password, accountPin).getOrThrow()
         vault.update { it.copy(pendingSignup = null) }
         response
@@ -106,6 +107,7 @@ class BipeDeviceAccount(
         val token = response.recoveryToken ?: return null
         Timber.i("Bipe: finishing the sign-up of ${response.userId}")
         storeCredentials(BipeCredentials(response.userId, password, token))
+        rememberInviter(response)
         return signIn(response.userId, password, pending.pin).onSuccess { vault.update { it.copy(pendingSignup = null) } }
     }
 
@@ -144,6 +146,19 @@ class BipeDeviceAccount(
 
     private val BipeApiException.Server.isSignupInProgress: Boolean
         get() = code == BipeApiErrorCode.RATE_LIMITED && reason == "signup_in_progress"
+
+    /** Kept before the sign-in, so the first session finds it (ADR 0034). */
+    private suspend fun rememberInviter(response: BipeSignupResponse) {
+        val inviterUserId = response.inviterUserId ?: return
+        vault.update { it.copy(pendingInviters = it.pendingInviters + (response.userId to inviterUserId)) }
+    }
+
+    /** The inviter of [userId] after a personal-invite sign-up, once: the stored value is removed (ADR 0034). */
+    internal suspend fun takePendingInviter(userId: String): String? {
+        val inviterUserId = vault.read().pendingInviters[userId] ?: return null
+        vault.update { it.copy(pendingInviters = it.pendingInviters - userId) }
+        return inviterUserId
+    }
 
     /** Keeps new credentials: the password on this device, the token in the synced store. */
     suspend fun storeCredentials(credentials: BipeCredentials) {

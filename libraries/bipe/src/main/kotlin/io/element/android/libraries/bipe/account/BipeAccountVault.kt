@@ -61,6 +61,8 @@ internal data class BipeVaultData(
     /** Recovery IDs the user answered with "It was me" on this device. */
     @SerialName("dismissed") val dismissedRecoveries: List<String> = emptyList(),
     @SerialName("pending_signup") val pendingSignup: BipePendingSignup? = null,
+    /** New account's Matrix ID to its inviter's Matrix ID, until the first session opens the chat (ADR 0034). */
+    @SerialName("pending_inviters") val pendingInviters: Map<String, String> = emptyMap(),
 ) {
     override fun toString(): String = "BipeVaultData"
 }

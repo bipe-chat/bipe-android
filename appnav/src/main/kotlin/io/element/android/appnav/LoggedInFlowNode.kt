@@ -99,6 +99,8 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.core.toRoomIdOrAlias
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.libraries.matrix.api.room.JoinedRoom
+import io.element.android.libraries.matrix.api.room.StartDMResult
+import io.element.android.libraries.matrix.api.room.startDM
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
@@ -228,6 +230,7 @@ class LoggedInFlowNode(
                 sessionCoroutineScope.launch { BipeQuietGroups(matrixClient.notificationSettingsService).run() } // Bipe: bipe#97
                 // Bipe: not the session scope, clearing the cache destroys the client and cancels it.
                 if (BipeThreadsCacheRebuild.takePending(context, matrixClient.sessionId.value)) lifecycleScope.launch { clearCacheUseCase() }
+                lifecycleScope.launch { bipeOpenInviterChat() } // Bipe: ADR 0034
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }
@@ -694,6 +697,27 @@ class LoggedInFlowNode(
             it is NavTarget.Room &&
                 it.roomIdOrAlias == roomIdOrAlias &&
                 it.initialElement == initialElement
+        }
+    }
+
+    /**
+     * Bipe ADR 0034: after a personal-invite sign-up, open a chat with the inviter. Their app accepts it without a tap.
+     * Port of `runPostSessionSetupTasks` on iOS. The stored inviter is removed first, so a failure does not repeat.
+     */
+    private suspend fun bipeOpenInviterChat() {
+        val inviterUserId = bipeSession.account.takePendingInviter()
+            ?.let { runCatchingExceptions { UserId(it) }.getOrNull() }
+            ?: return
+        val result = matrixClient.startDM(
+            userId = inviterUserId,
+            createIfDmDoesNotExist = true,
+            isEncryped = !sessionEnterpriseService.isEncryptionDisabledByHomeserver(),
+        )
+        if (result is StartDMResult.Success) {
+            attachRoom(result.roomId.toRoomIdOrAlias())
+        } else {
+            Timber.e("Bipe: could not open a chat with the inviter $inviterUserId: $result")
+            attachUser(inviterUserId)
         }
     }
 
