@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.element.android.compound.theme.ElementTheme
@@ -89,15 +90,20 @@ fun BipeSettingsGroupView(
             }
             first = false
         }
+        if (state.group == BipeSettingsGroup.HELP) {
+            BipeVersionFooter(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                version = state.version,
+                deviceId = state.deviceId,
+            )
+        }
     }
 }
 
 /** Rows that need something this build does not have yet. */
 private fun isAvailable(row: BipeSettingsRow): Boolean = when (row) {
     // Android has no "Contatos no Bipe" screen (address-book matching) yet.
-    BipeSettingsRow.PRIVACY_CONTACTS,
-    // Bipe: built with Ajuda e sobre (#362).
-    BipeSettingsRow.HELP_DOCS, BipeSettingsRow.HELP_TERMS, BipeSettingsRow.HELP_PRIVACY, BipeSettingsRow.HELP_LICENSES -> false
+    BipeSettingsRow.PRIVACY_CONTACTS -> false
     else -> true
 }
 
@@ -292,6 +298,8 @@ internal fun BipeSettingsGroupViewPreview() = ElementPreview {
             phoneLinked = false,
             discoverableByPhone = true,
             sharePresence = true,
+            version = "Versão 26.10.2 (6)",
+            deviceId = "ABCDEFGHIJ",
             eventSink = {},
         ),
         onBackClick = {},

@@ -24,7 +24,7 @@ import io.element.android.libraries.bipe.R as BipeR
 @Composable
 fun AboutView(
     state: AboutState,
-    onElementLegalClick: (ElementLegal) -> Unit,
+    onAppLegalClick: (AppLegal) -> Unit,
     onOpenSourceLicensesClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -34,12 +34,12 @@ fun AboutView(
         onBackClick = onBackClick,
         title = stringResource(id = CommonStrings.common_about)
     ) {
-        state.elementLegals.forEach { elementLegal ->
+        state.appLegals.forEach { appLegal ->
             ListItem(
                 content = {
-                    Text(stringResource(id = elementLegal.titleRes))
+                    Text(stringResource(id = appLegal.titleRes))
                 },
-                onClick = { onElementLegalClick(elementLegal) }
+                onClick = { onAppLegalClick(appLegal) }
             )
         }
         ListItem(
@@ -58,7 +58,7 @@ fun AboutView(
 internal fun AboutViewPreview(@PreviewParameter(AboutStatePreviewParam::class) state: AboutState) = ElementPreview {
     AboutView(
         state = state,
-        onElementLegalClick = {},
+        onAppLegalClick = {},
         onOpenSourceLicensesClick = {},
         onBackClick = {},
     )

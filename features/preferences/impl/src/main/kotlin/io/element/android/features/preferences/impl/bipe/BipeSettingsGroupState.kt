@@ -40,6 +40,9 @@ data class BipeSettingsGroupState(
     val phoneLinked: Boolean?,
     val discoverableByPhone: Boolean?,
     val sharePresence: Boolean,
+    // Ajuda e sobre (#362)
+    val version: String,
+    val deviceId: String,
     val eventSink: (BipeSettingsGroupEvent) -> Unit,
 )
 

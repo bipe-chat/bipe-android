@@ -10,6 +10,8 @@
 
 package io.element.android.features.preferences.impl.root
 
+import io.element.android.features.preferences.impl.notifications.FakeSystemNotificationsEnabledProvider
+import io.element.android.libraries.pushstore.test.userpushstore.FakeUserPushStoreFactory
 import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
 import io.element.android.compound.theme.Theme
@@ -310,7 +312,9 @@ class PreferencesRootPresenterTest {
         userStatusPresenter = { aUserStatusState() },
         preferencesAccountPresenter = { aPreferencesAccountState() },
         sessionCoroutineScope = this,
-        bipeSession = aBipeSession(),
+        userPushStoreFactory = FakeUserPushStoreFactory(),
+        systemNotificationsEnabledProvider = FakeSystemNotificationsEnabledProvider(),
+        buildMeta = aBuildMeta(BuildType.DEBUG),
     )
 
     // Bipe: no API. The server name matches no test user, so the resolver knows no handle; no public profile.

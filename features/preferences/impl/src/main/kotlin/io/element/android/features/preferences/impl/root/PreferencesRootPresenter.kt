@@ -22,6 +22,8 @@ import io.element.android.features.preferences.impl.userstatus.UserStatusState
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -56,6 +58,7 @@ class PreferencesRootPresenter(
     private val bipeSession: BipeSession,
     private val userPushStoreFactory: UserPushStoreFactory,
     private val systemNotificationsEnabledProvider: SystemNotificationsEnabledProvider,
+    private val buildMeta: BuildMeta,
 ) : Presenter<PreferencesRootState> {
     @Composable
     override fun present(): PreferencesRootState {
@@ -142,6 +145,7 @@ class PreferencesRootPresenter(
             bipeWaysBackCount = bipeWaysBack?.size,
             bipeNotificationsOn = bipeNotificationsOn,
             bipeDeviceId = matrixClient.deviceId.value,
+            bipeIsDeveloperBuild = buildMeta.buildType != BuildType.RELEASE,
             eventSink = ::handleEvent,
         )
     }

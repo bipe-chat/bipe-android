@@ -44,6 +44,8 @@ data class PreferencesRootState(
     val bipeNotificationsOn: Boolean? = null,
     // Bipe: copied on a long press on the version footer (ADR 0112). Never shown.
     val bipeDeviceId: String = "",
+    // Bipe: Analytics, Labs and "Report a problem" show only in builds that are not release builds (ADR 0112).
+    val bipeIsDeveloperBuild: Boolean = false,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 
