@@ -57,7 +57,6 @@ class BipeAccountSession(
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
         deviceAccount.lock.setPin(pin)
         refresh()
-        Unit
     }
 
     /** The lock screen set a new app lock PIN: send it to the server too, so both stay the same PIN. */
@@ -77,7 +76,6 @@ class BipeAccountSession(
         deviceAccount.onMovedToDeviceFirst(credentials)
         deviceAccount.lock.setPin(pin)
         refresh()
-        Unit
     }
 
     /** Adds or changes the recovery email. The address stays pending until the user opens the link the server sends. */
@@ -99,7 +97,6 @@ class BipeAccountSession(
         BipeApiClient.withTokenRetry(accessToken) { apiClient.cancelRecovery(recovery.id, it) }
         deviceAccount.dismissRecovery(recovery.id)
         refresh()
-        Unit
     }
 
     /** "It was me": the alert does not show again on this device. */
