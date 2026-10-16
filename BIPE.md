@@ -142,6 +142,8 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - A DM never turns into a group. Room details for a DM: no topic, no polls history, no "Convidar" to the DM. "Convidar para um grupo" lists your joined groups (`BipeInviteToGroup` in libraries/bipe; not DMs, spaces, replaced rooms or the self-chat) and invites the other person to the one you pick. The group's invite permission is checked at pick time.
 - The composer has no poll option in a DM (`MessageComposerState.isDm`).
 - Leave in a DM says "Sair da conversa" with `bipe_dm_leave_body`. Upstream passed `isDm = false` for `Confirmation.Dm`.
+- No room setup lines in a DM timeline: `RoomBeginningPostProcessor` drops invites, joins and "encryption enabled" (upstream already dropped the create event and the creator's join). A leave says "saiu da conversa" (`TimelineItemsFactoryConfig.isDm`). The room list menu, the leave snackbar and the media empty states say "conversa" in a DM. The details top bar has no title (upstream), so it needs no DM title. The leave progress dialog still says "Saindo da sala": `AsyncAction.Loading` does not carry the room kind.
+- Leaving a DM is final for that room. The SDK finds a DM only among joined rooms (`get_dm_rooms`), so if you start a chat again, Bipe creates a new room. The other person keeps the old room: they see "Você está sozinho nesta conversa" and can invite you back to it.
 - iOS does the same (`BipeInviteToGroupSheet`).
 
 ## Differences from iOS (ADR 0031)
