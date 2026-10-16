@@ -147,7 +147,7 @@ class NotificationSettingsPresenter(
         val callRingtone by remember { appPreferencesStore.getCallRingtoneFlow() }.collectAsState(initial = NotificationSound.SystemDefault)
         val persistedMessageSoundTitle by remember { appPreferencesStore.getMessageSoundDisplayNameFlow() }.collectAsState(initial = null)
         val persistedCallRingtoneTitle by remember { appPreferencesStore.getCallRingtoneDisplayNameFlow() }.collectAsState(initial = null)
-        val defaultLabel = stringProvider.getString(R.string.screen_notification_settings_sound_system_default)
+        val defaultLabel = stringProvider.getString(BipeR.string.bipe_notifications_tone_system) // Bipe
 
         // One-shot classification for the call-ringtone slot only: users who customised the
         // channel via Android system settings before the in-app picker existed (channel version 0,
@@ -397,15 +397,13 @@ class NotificationSettingsPresenter(
         NotificationSound.SystemDefault -> defaultLabel
         NotificationSound.ElementDefault -> stringProvider.getString(BipeR.string.bipe_notifications_tone_default) // Bipe
         NotificationSound.ElementFade -> stringProvider.getString(BipeR.string.bipe_notifications_tone_soft) // Bipe
-        // Bipe: needs strings bipe_notifications_tone_silent and bipe_notifications_tone_system; Element's have no pt-BR.
-        NotificationSound.Silent -> stringProvider.getString(R.string.screen_notification_settings_sound_silent)
+        NotificationSound.Silent -> stringProvider.getString(BipeR.string.bipe_notifications_tone_silent) // Bipe
         is NotificationSound.Custom -> {
             val nonBlankPersisted = persistedTitle?.takeUnless { it.isBlank() }
             if (nonBlankPersisted != null) {
                 nonBlankPersisted
             } else {
-                // Bipe: needs string bipe_notifications_tone_other ("Outro som" / "Other sound"). Element's has no pt-BR.
-                val customFallback = stringProvider.getString(R.string.screen_notification_settings_sound_custom_fallback)
+                val customFallback = stringProvider.getString(BipeR.string.bipe_notifications_tone_custom) // Bipe
                 val resolved by produceState(initialValue = "", sound.uri) {
                     val title = soundDisplayNameResolver.resolveCustomSoundTitle(sound.uri)
                     value = title?.takeUnless { it.isBlank() } ?: customFallback

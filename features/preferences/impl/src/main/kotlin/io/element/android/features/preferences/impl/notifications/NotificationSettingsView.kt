@@ -149,8 +149,7 @@ private fun NotificationSettingsContentView(
     }
 
     PreferenceSwitch(
-        // Bipe: needs string bipe_notifications_enable ("Ligar neste celular" / "On for this phone"). pt-BR says "dispositivo".
-        title = stringResource(id = R.string.screen_notification_settings_enable_notifications),
+        title = stringResource(id = BipeR.string.bipe_notifications_enable), // Bipe
         isChecked = systemSettings.appNotificationsEnabled,
         onCheckedChange = onNotificationsEnabledChange
     )
@@ -172,10 +171,10 @@ private fun NotificationSettingsContentView(
                 )
             }
         }
-        PreferenceCategory(title = stringResource(id = R.string.screen_notification_settings_notification_section_title)) {
+        PreferenceCategory(title = stringResource(id = BipeR.string.bipe_notifications_notify_about) /* Bipe */) {
             ListItem(
                 content = {
-                    Text(stringResource(id = R.string.screen_notification_settings_group_chats))
+                    Text(stringResource(id = BipeR.string.bipe_notifications_groups)) // Bipe
                 },
                 supportingContent = {
                     Text(getTitleForRoomNotificationMode(mode = matrixSettings.defaultGroupNotificationMode))
@@ -184,7 +183,7 @@ private fun NotificationSettingsContentView(
             )
             ListItem(
                 content = {
-                    Text(stringResource(id = R.string.screen_notification_settings_direct_chats))
+                    Text(stringResource(id = BipeR.string.bipe_notifications_chats)) // Bipe
                 },
                 supportingContent = {
                     Text(getTitleForRoomNotificationMode(mode = matrixSettings.defaultOneToOneNotificationMode))
@@ -355,8 +354,7 @@ private fun MessageSoundDialog(state: NotificationSettingsState) {
     // sound as a subtitle so screen readers (and sighted users) still have state context.
     val subtitle = if (initialSelection == null) {
         stringResource(
-            // Bipe: needs string bipe_notifications_tone_current ("Agora: %1$s" / "Now: %1$s"). Element's has no pt-BR.
-            id = R.string.screen_notification_settings_message_sound_dialog_current_subtitle,
+            id = BipeR.string.bipe_notifications_tone_current, // Bipe
             state.messageSound.displayName,
         )
     } else {
@@ -369,8 +367,7 @@ private fun MessageSoundDialog(state: NotificationSettingsState) {
             // Bipe: Bipe tone names, no "Element" (ADR 0112).
             ListOption(title = stringResource(id = BipeR.string.bipe_notifications_tone_default)),
             ListOption(title = stringResource(id = BipeR.string.bipe_notifications_tone_soft)),
-            // Bipe: needs string bipe_notifications_tone_system ("Som do celular" / "Phone sound"). Element's has no pt-BR.
-            ListOption(title = stringResource(id = R.string.screen_notification_settings_sound_system_default)),
+            ListOption(title = stringResource(id = BipeR.string.bipe_notifications_tone_system)), // Bipe
             ListOption(title = stringResource(id = BipeR.string.bipe_notifications_tone_custom)), // Bipe
         ),
         initialSelection = initialSelection,
@@ -394,8 +391,7 @@ private fun CallRingtoneDialog(state: NotificationSettingsState) {
     }
     val subtitle = if (initialSelection == null) {
         stringResource(
-            // Bipe: needs string bipe_notifications_tone_current ("Agora: %1$s" / "Now: %1$s"). Element's has no pt-BR.
-            id = R.string.screen_notification_settings_message_sound_dialog_current_subtitle,
+            id = BipeR.string.bipe_notifications_tone_current, // Bipe
             state.callRingtone.displayName,
         )
     } else {
@@ -405,8 +401,7 @@ private fun CallRingtoneDialog(state: NotificationSettingsState) {
         title = stringResource(id = BipeR.string.bipe_notifications_call_sound), // Bipe
         subtitle = subtitle,
         options = persistentListOf(
-            // Bipe: needs string bipe_notifications_tone_system ("Som do celular" / "Phone sound"). Element's has no pt-BR.
-            ListOption(title = stringResource(id = R.string.screen_notification_settings_sound_system_default)),
+            ListOption(title = stringResource(id = BipeR.string.bipe_notifications_tone_system)), // Bipe
             ListOption(title = stringResource(id = BipeR.string.bipe_notifications_tone_custom)), // Bipe
         ),
         initialSelection = initialSelection,
@@ -430,8 +425,7 @@ private fun SoundCopyErrorRow(
             .semantics { liveRegion = LiveRegionMode.Polite },
         content = {
             Text(
-                // Bipe: needs string bipe_notifications_tone_error ("Não deu para usar este som." / "This sound could not be used.").
-                text = stringResource(R.string.screen_notification_settings_sound_set_sound_error_title),
+                text = stringResource(BipeR.string.bipe_notifications_tone_error), // Bipe
                 style = ElementTheme.typography.fontBodyMdRegular,
                 color = ElementTheme.colors.textSecondary,
             )
