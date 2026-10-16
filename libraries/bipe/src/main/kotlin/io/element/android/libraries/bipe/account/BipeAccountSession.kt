@@ -49,6 +49,9 @@ class BipeAccountSession(
         status
     }.onFailure { Timber.w(it, "Bipe: account state not loaded") }
 
+    /** The inviter's Matrix ID after a personal-invite sign-up on this device, once (ADR 0034). */
+    suspend fun takePendingInviter(): String? = deviceAccount.takePendingInviter(userId)
+
     /** Sets or changes the PIN on the server, then the app lock PIN. The caller does the biometric check first. */
     suspend fun changePin(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }

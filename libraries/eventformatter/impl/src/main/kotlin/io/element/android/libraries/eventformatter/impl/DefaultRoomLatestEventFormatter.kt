@@ -182,7 +182,8 @@ class DefaultRoomLatestEventFormatter(
         senderDisambiguatedDisplayName: String,
         isDmRoom: Boolean,
         isOutgoing: Boolean,
-    ): CharSequence = if (isDmRoom) {
+    ): CharSequence = if (isDmRoom && !isOutgoing) {
+        // Bipe: the DM row title is already the other person's name. Keep "You" so the row shows who spoke last.
         this
     } else {
         prefixWith(

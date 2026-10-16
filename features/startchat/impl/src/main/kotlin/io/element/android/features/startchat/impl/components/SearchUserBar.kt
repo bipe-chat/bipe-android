@@ -36,6 +36,7 @@ import io.element.android.libraries.matrix.ui.components.SelectedUsersRowList
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.libraries.usersearch.api.UserSearchResult
 import kotlinx.collections.immutable.ImmutableList
+import androidx.compose.foundation.layout.ColumnScope
 
 @Composable
 fun SearchUserBar(
@@ -52,6 +53,7 @@ fun SearchUserBar(
     showBackButton: Boolean = true,
     placeHolderTitle: String = stringResource(CommonStrings.common_search_for_someone),
     noResultsText: String? = null, // Bipe
+    noResultsContent: @Composable ColumnScope.() -> Unit = {}, // Bipe
 ) {
     val columnState = rememberLazyListState()
 
@@ -63,6 +65,7 @@ fun SearchUserBar(
         placeHolderTitle = placeHolderTitle,
         showBackButton = showBackButton,
         noResultsText = noResultsText,
+        noResultsContent = noResultsContent,
         contentPrefix = {
             if (isMultiSelectionEnable && active && selectedUsers.isNotEmpty()) {
                 // We want the selected users to behave a bit like a top bar - when the list below is scrolled, the colour

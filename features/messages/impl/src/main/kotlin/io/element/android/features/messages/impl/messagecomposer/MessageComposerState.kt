@@ -25,6 +25,8 @@ data class MessageComposerState(
     val showAttachmentSourcePicker: Boolean,
     val showTextFormatting: Boolean,
     val canShareLocation: Boolean,
+    /** Bipe: DMs have no polls. */
+    val isDm: Boolean = false,
     /** Bipe: sticker picker (ADR 0029). */
     val stickerPicker: StickerPickerState,
     val suggestions: ImmutableList<ResolvedSuggestion>,

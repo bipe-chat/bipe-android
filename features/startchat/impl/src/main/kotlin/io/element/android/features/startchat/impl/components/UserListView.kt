@@ -22,16 +22,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.startchat.impl.userlist.UserListEvent
 import io.element.android.features.startchat.impl.userlist.UserListState
 import io.element.android.features.startchat.impl.userlist.UserListStatePreviewParam
+import io.element.android.libraries.bipe.ui.BipeInviterRow
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.ListSectionHeader
+import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.lazyColumnContentPadding
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.CheckableUserRow
@@ -60,6 +64,26 @@ fun UserListView(
             queryState = state.searchQuery,
             resultState = state.searchResults,
             noResultsText = state.bipeHandleNotFound?.let { stringResource(BipeR.string.bipe_start_chat_handle_not_found, it) },
+            // Bipe ADR 0111: the search finds exact handles only, so a name finds nobody. Say so, and offer the inviter.
+            noResultsContent = {
+                Text(
+                    text = stringResource(BipeR.string.bipe_start_chat_search_by_handle),
+                    textAlign = TextAlign.Center,
+                    style = ElementTheme.typography.fontBodyMdRegular,
+                    color = ElementTheme.colors.textSecondary,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+                val inviter = state.bipeInviter
+                if (inviter != null && !state.isMultiSelectionEnabled) {
+                    BipeInviterRow(
+                        inviterHandle = inviter.displayName.orEmpty().removePrefix("@"),
+                        onClick = {
+                            state.eventSink(UserListEvent.AddToSelection(inviter))
+                            onSelectUser(inviter)
+                        },
+                    )
+                }
+            },
             selectedUsers = state.selectedUsers,
             active = state.isSearchActive,
             showLoader = state.showSearchLoader,

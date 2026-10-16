@@ -147,7 +147,7 @@ enum class FeatureFlags(
         description = "Allow creating rooms which users can request access to.",
         defaultValue = { false },
         isFinished = false,
-        isInLabs = true,
+        // Bipe: not in Labs. With no Labs feature left, the Labs entry in settings is hidden.
     ),
     MessageSearch(
         key = "feature.message_search",

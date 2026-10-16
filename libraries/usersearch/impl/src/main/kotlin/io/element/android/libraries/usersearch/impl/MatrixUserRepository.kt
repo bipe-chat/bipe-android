@@ -37,7 +37,9 @@ class MatrixUserRepository(
 ) : UserRepository {
     override fun search(query: String): Flow<UserSearchResultState> = flow {
         val shouldQueryProfile = MatrixPatterns.isUserId(query) && !client.isMe(UserId(query))
-        val shouldFetchSearchResults = query.length >= MINIMUM_SEARCH_LENGTH
+        val shouldSearchDirectory = query.length >= MINIMUM_SEARCH_LENGTH
+        // Bipe: owned handles can be 2 characters (ADR 0065), below the directory minimum. The handle lookup has no minimum.
+        val shouldFetchSearchResults = shouldSearchDirectory || BipeHandle.localProblem(bipeHandle(query)) == null
         // If the search term is a MXID that's not ours, we'll show a 'fake' result for that user, then update it when we get search results.
         val fakeSearchResult = if (shouldQueryProfile) {
             UserSearchResult(MatrixUser(UserId(query)))
@@ -48,20 +50,24 @@ class MatrixUserRepository(
             emit(UserSearchResultState(isSearching = shouldFetchSearchResults, results = listOfNotNull(fakeSearchResult), bipeHandleNotFound = null))
         }
         if (shouldFetchSearchResults) {
-            val results = fetchSearchResults(query, shouldQueryProfile)
+            val results = fetchSearchResults(query, shouldQueryProfile, shouldSearchDirectory)
             emit(results)
         }
     }
 
-    private suspend fun fetchSearchResults(query: String, shouldQueryProfile: Boolean): UserSearchResultState = coroutineScope {
+    private suspend fun fetchSearchResults(query: String, shouldQueryProfile: Boolean, shouldSearchDirectory: Boolean): UserSearchResultState = coroutineScope {
         // Debounce
         delay(DEBOUNCE_TIME_MILLIS)
         // Bipe: exact @handle lookup next to the directory search. The match goes first.
         val bipeLookUp = async { bipeLookUp(query) }
-        val directoryResults = dataSource
-            .search(query, MAXIMUM_SEARCH_RESULTS)
-            .filter { !client.isMe(it.userId) }
-            .map { UserSearchResult(it) }
+        val directoryResults = if (shouldSearchDirectory) {
+            dataSource
+                .search(query, MAXIMUM_SEARCH_RESULTS)
+                .filter { !client.isMe(it.userId) }
+                .map { UserSearchResult(it) }
+        } else {
+            emptyList()
+        }
         val lookUp = bipeLookUp.await()
         val handleUser = lookUp?.user
         val results = (listOfNotNull(handleUser?.let { UserSearchResult(it) }) + directoryResults.filter { it.matrixUser.userId != handleUser?.userId })
@@ -89,7 +95,7 @@ class MatrixUserRepository(
 
     /** Bipe: exact handle lookup. Null when the query is not a handle, is the user's own handle, or the lookup failed. */
     private suspend fun bipeLookUp(query: String): BipeLookUp? {
-        val handle = BipeHandle.sanitize(query).lowercase(Locale.ROOT)
+        val handle = bipeHandle(query)
         if (BipeHandle.localProblem(handle) != null) return null
         val userId = try {
             bipeSession.handleResolver.userId(forHandle = handle)
@@ -100,6 +106,8 @@ class MatrixUserRepository(
         if (client.isMe(UserId(userId))) return null
         return BipeLookUp(handle, dataSource.getProfile(UserId(userId)) ?: MatrixUser(UserId(userId)))
     }
+
+    private fun bipeHandle(query: String): String = BipeHandle.sanitize(query).lowercase(Locale.ROOT)
 
     companion object {
         private const val DEBOUNCE_TIME_MILLIS = 250L

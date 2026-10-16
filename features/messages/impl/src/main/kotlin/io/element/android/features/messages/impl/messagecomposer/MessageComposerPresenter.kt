@@ -188,6 +188,7 @@ class MessageComposerPresenter(
         val cameraPermissionState = cameraPermissionPresenter.present()
 
         val canShareLocation = remember { mutableStateOf(false) }
+        val isDm by remember { room.roomInfoFlow.map { it.isDm } }.collectAsState(initial = room.info().isDm)
         LaunchedEffect(Unit) {
             canShareLocation.value = locationService.isServiceAvailable()
         }
@@ -483,6 +484,7 @@ class MessageComposerPresenter(
             showAttachmentSourcePicker = showAttachmentSourcePicker,
             showTextFormatting = showTextFormatting,
             canShareLocation = canShareLocation.value,
+            isDm = isDm,
             stickerPicker = stickerPicker,
             suggestions = suggestions.toImmutableList(),
             resolveMentionDisplay = resolveMentionDisplay,

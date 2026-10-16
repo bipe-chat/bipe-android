@@ -90,8 +90,9 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 - `BipeWelcomeView` and `Modifier.bipeWelcomeBackground` (libraries/bipe) replace Element's logo, welcome text and `onboarding_bg` artwork in `OnBoardingView`. Copy: `bipe_onboarding_*` in bipe-shared. iOS: `BipeWelcomeView`.
 
-## Threads and galleries on by default (15 Oct 2026)
+## Threads and galleries on by default, no Labs (15 Oct 2026)
 
+- **No Labs entry in settings.** `FeatureFlags.Knock` ("Ask to join") is not in Labs any more and stays off; it shows in developer options only. `PreferencesRootPresenter` hides the Labs entry when no Labs feature is left.
 - `FeatureFlags.Threads` and `FeatureFlags.SendGalleryMessages` default to on and are finished, so they are not in Labs and an old Labs opt-out is ignored.
 - The session cache is built differently with threads on. `AppMigration11` marks the sessions of an existing install in `BipeThreadsCacheRebuild` (libraries/bipe). `LoggedInFlowNode` clears each marked session's cache once with `ClearCacheUseCase`, the path the Labs toggle used. The interface moved to `features/preferences/api` for this. iOS skips the clear for users who had threads on in Labs; Android clears once for every existing session.
 
@@ -104,7 +105,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 - **Tabs:** Conversas, Grupos, Você in `HomeNavigationBarItem.bipeVisibleItems`. The Spaces tab stays in the code but is not shown. The avatar in the top bar opens Você.
 - **Conversas and Grupos** use the one room list (`RoomListPresenter`) with a fixed SDK category filter: `Category.People` or `Category.Group`. The SDK decides with the DM flag. The People and Rooms chips are hidden. Pedidos stays on Conversas only.
-- **Badges:** `BipeTabBadges` (libraries/bipe) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls.
+- **Badges:** `BipeTabBadges` (libraries/bipe) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls. A group invite not in `SeenInvitesStore` adds 1 to Grupos.
 - **Você** is the settings root (`PreferencesRootView` without its top bar). Each row opens the settings flow at that screen (`PreferencesEntryPoint.InitialTarget.BipeScreen`).
 - **Self-chat ("Anotações"):** `BipeSelfChat` (libraries/bipe). The room ID is in global account data `chat.bipe.self_chat`, content `{"room_id": "..."}`, the same as iOS. It opens the stored room when the user is joined, else creates an encrypted private room with no invites. The room does not show in Conversas or Grupos.
 - **Search** stays in the top bar on Conversas and Grupos.
@@ -136,6 +137,13 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - **Save a received sticker:** action `TimelineItemAction.SaveSticker` → `MessagesPresenter.handleSaveSticker` downloads the bytes with `MatrixMediaLoader` and calls `addSticker`.
 - **Not compiled yet** (11 October 2026): this Mac has no JDK or Android SDK.
 
+## DMs are DMs (16 Oct 2026)
+
+- A DM never turns into a group. Room details for a DM: no topic, no polls history, no "Convidar" to the DM. "Convidar para um grupo" lists your joined groups (`BipeInviteToGroup` in libraries/bipe; not DMs, spaces, replaced rooms or the self-chat) and invites the other person to the one you pick. The group's invite permission is checked at pick time.
+- The composer has no poll option in a DM (`MessageComposerState.isDm`).
+- Leave in a DM says "Sair da conversa" with `bipe_dm_leave_body`. Upstream passed `isDm = false` for `Confirmation.Dm`.
+- iOS does the same (`BipeInviteToGroupSheet`).
+
 ## Differences from iOS (ADR 0031)
 
 Each line is a difference with its reason. A difference not listed here is a bug. The table is generated from `bipe-shared/product/parity.json` (ADR 0092): change it there, then run `node tools/parity.mjs --write` in bipe-shared.
@@ -153,6 +161,7 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
+| Where invites live | Convidar pessoas in settings | Contatos e convites: invite buttons, people who joined with your invite, and unused invites in the contacts screen | Android has no contacts screen yet (#162) **Gap** |
 | Help links | Still point to element.io | Hidden | Not done on Android (#205) **Gap** |
 | Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |
 | Sticker import | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | Chat export ZIP or files | iOS apps cannot read WhatsApp's files |

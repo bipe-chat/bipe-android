@@ -15,6 +15,8 @@ import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
@@ -50,6 +52,11 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     /** `GET /v1/me/account`. PIN state and the recoveries of the caller's account. */
     suspend fun account(accessToken: String): BipeAccountStatus = call { service.account(bearer(accessToken)) }
+
+    /** `POST /v1/me/terms`. Records that the caller accepted the legal texts of [termsVersion] (ADR 0113). HTTP 204. */
+    suspend fun acceptTerms(termsVersion: String, accessToken: String) {
+        checked { service.acceptTerms(bearer(accessToken), TermsRequest(termsVersion)) }
+    }
 
     /** `PUT /v1/me/pin`. Set or change the PIN. The app does the biometric check before it calls this. */
     suspend fun setPin(pin: String, accessToken: String) {
@@ -229,6 +236,10 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     }
 }
 
+/** `POST /v1/me/terms` body. Internal, not private: [BipeApiService] takes it, and Kotlin does not let an internal interface expose a file-private type. */
+@Serializable
+internal data class TermsRequest(@SerialName("terms_version") val termsVersion: String)
+
 /** Retrofit encodes each `@Path` value, so a handle cannot add path segments. */
 internal interface BipeApiService {
     @POST("v1/signup")
@@ -242,6 +253,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/account")
     suspend fun account(@Header("Authorization") authorization: String): Response<BipeAccountStatus>
+
+    @POST("v1/me/terms")
+    suspend fun acceptTerms(@Header("Authorization") authorization: String, @Body request: TermsRequest): Response<Unit>
 
     @PUT("v1/me/pin")
     suspend fun setPin(@Header("Authorization") authorization: String, @Body request: PinRequest): Response<Unit>
@@ -345,7 +359,10 @@ enum class BipeApiErrorCode(val id: String) {
     PIN_BLOCKED("pin_blocked"),
     PIN_NOT_SET("pin_not_set"),
     RECOVERY_INVALID("recovery_invalid"),
-    EMAIL_UNAVAILABLE("email_unavailable");
+    EMAIL_UNAVAILABLE("email_unavailable"),
+
+    /** HTTP 403, reason `missing` or `outdated`: the sign-up or the account lacks the current legal version (ADR 0113). */
+    TERMS_REQUIRED("terms_required");
 
     companion object {
         fun fromId(id: String): BipeApiErrorCode? = entries.firstOrNull { it.id == id }
@@ -399,6 +416,7 @@ sealed class BipeApiException(cause: Throwable? = null) : Exception(cause) {
                 stringProvider.getString(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())
             BipeApiErrorCode.RECOVERY_INVALID -> stringProvider.getString(R.string.bipe_error_recovery_invalid)
             BipeApiErrorCode.EMAIL_UNAVAILABLE -> stringProvider.getString(R.string.bipe_error_email_unavailable)
+            BipeApiErrorCode.TERMS_REQUIRED -> stringProvider.getString(R.string.bipe_signup_terms_required)
             // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).
             BipeApiErrorCode.ATTESTATION_INVALID, BipeApiErrorCode.PIN_NOT_SET,
             BipeApiErrorCode.BAD_REQUEST, BipeApiErrorCode.NOT_FOUND, BipeApiErrorCode.INTERNAL ->

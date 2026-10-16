@@ -126,6 +126,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -1643,6 +1646,7 @@ class MessagesPresenterTest {
             sessionCoroutineScope = backgroundScope,
             mediaLoader = FakeMatrixMediaLoader(),
             stickerPackRepository = FakeStickerPackRepository(),
+            bipeInviterGreeting = mockk { every { inviter } returns MutableStateFlow(null) },
         )
     }
 }

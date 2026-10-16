@@ -36,6 +36,8 @@ data class BipeSignupRequest(
     @SerialName("display_name") val displayName: String? = null,
     /** Same key on a retry: the same account (ADR 0094). From the pending sign-up in the vault. */
     @SerialName("signup_key") val signupKey: String? = null,
+    /** The legal version the user ticked at sign-up (ADR 0113): `BipeRegistries.LEGAL_VERSION`, YYYY-MM-DD. */
+    @SerialName("terms_version") val termsVersion: String? = null,
 ) {
     /** Never prints the PIN, the password, the email or the key. */
     override fun toString(): String = "BipeSignupRequest"
@@ -45,6 +47,8 @@ data class BipeSignupRequest(
 @Serializable
 data class BipeSignupConfig(
     @SerialName("invite_required") val inviteRequired: Boolean,
+    /** The current legal version (ADR 0113). `null` from a server older than the clickwrap. */
+    @SerialName("terms_version") val termsVersion: String? = null,
 )
 
 @Serializable
@@ -225,6 +229,8 @@ data class BipeAccountStatus(
     @SerialName("email_pending") val emailPending: String? = null,
     /** Newest first. */
     @SerialName("recoveries") val recoveries: List<BipeRecovery> = emptyList(),
+    /** The last legal version this account accepted (ADR 0113). `null`: none recorded. */
+    @SerialName("terms_version") val termsVersion: String? = null,
 ) {
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }
