@@ -105,7 +105,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 - **Tabs:** Conversas, Grupos, Você in `HomeNavigationBarItem.bipeVisibleItems`. The Spaces tab stays in the code but is not shown. The avatar in the top bar opens Você.
 - **Conversas and Grupos** use the one room list (`RoomListPresenter`) with a fixed SDK category filter: `Category.People` or `Category.Group`. The SDK decides with the DM flag. The People and Rooms chips are hidden. Pedidos stays on Conversas only.
-- **Badges:** `BipeTabBadges` (libraries/bipe) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls.
+- **Badges:** `BipeTabBadges` (libraries/bipe) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls. A group invite not in `SeenInvitesStore` adds 1 to Grupos.
 - **Você** is the settings root (`PreferencesRootView` without its top bar). Each row opens the settings flow at that screen (`PreferencesEntryPoint.InitialTarget.BipeScreen`).
 - **Self-chat ("Anotações"):** `BipeSelfChat` (libraries/bipe). The room ID is in global account data `chat.bipe.self_chat`, content `{"room_id": "..."}`, the same as iOS. It opens the stored room when the user is joined, else creates an encrypted private room with no invites. The room does not show in Conversas or Grupos.
 - **Search** stays in the top bar on Conversas and Grupos.
