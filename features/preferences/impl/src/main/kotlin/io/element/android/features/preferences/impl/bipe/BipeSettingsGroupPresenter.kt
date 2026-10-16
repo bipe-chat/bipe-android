@@ -31,6 +31,7 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -73,6 +74,9 @@ class BipeSettingsGroupPresenter(
         val mediaPreviewConfig = mediaPreviewConfigStateStore.state()
         val recoveryState by matrixClient.encryptionService.recoveryStateStateFlow.collectAsState()
 
+        // Sua conta (#360)
+        val waysBack = if (group == BipeSettingsGroup.ACCOUNT) BipeSettingsValues.waysBack(bipeSession, matrixClient) else null
+
         // Privacidade (#359)
         val whoCanMessage by bipeSession.privacy.messaging.collectAsState()
         val discoverableByPhone by bipeSession.privacy.discoverableByPhone.collectAsState()
@@ -114,6 +118,7 @@ class BipeSettingsGroupPresenter(
                 RecoveryState.DISABLED, RecoveryState.INCOMPLETE -> false
             },
             deviceName = remember { listOf(Build.MANUFACTURER, Build.MODEL).joinToString(" ") },
+            waysBack = waysBack?.toImmutableList(),
             whoCanMessage = whoCanMessage,
             hideInviteAvatars = mediaPreviewConfig.hideInviteAvatars,
             blockedUsersCount = blockedUsers.size,

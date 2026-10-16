@@ -6,15 +6,18 @@
 
 package io.element.android.features.preferences.impl.bipe
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
+import io.element.android.libraries.bipe.account.BipePin
 import io.element.android.libraries.bipe.account.ui.BipePinRow
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryEmailRows
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
@@ -22,6 +25,7 @@ import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.generated.BipeSettingsRow
 import io.element.android.libraries.bipe.generated.BipeSettingsRowKind
 import io.element.android.libraries.bipe.settings.BipeDataExportRow
+import io.element.android.libraries.bipe.settings.BipeWayBack
 import io.element.android.libraries.bipe.settings.BipeSettingsGate
 import io.element.android.libraries.bipe.settings.titleRes
 import io.element.android.libraries.designsystem.components.list.ListItemContent
@@ -44,6 +48,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbar
 import io.element.android.libraries.matrix.api.media.MediaPreviewValue
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
 import io.element.android.features.preferences.impl.root.ThemeOption
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 
@@ -57,6 +62,7 @@ fun BipeSettingsGroupView(
     onBackClick: () -> Unit,
     onRowClick: (BipeSettingsRow) -> Unit,
     modifier: Modifier = Modifier,
+    biometricUnlockRow: @Composable () -> Unit = {},
 ) {
     val snackbarDispatcher = LocalSnackbarDispatcher.current
     val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
@@ -76,10 +82,10 @@ fun BipeSettingsGroupView(
                 showTopDivider = !first,
             ) {
                 for (row in rows) {
-                    SettingsRow(row = row, state = state, onClick = { onRowClick(row) })
+                    SettingsRow(row = row, state = state, onClick = { onRowClick(row) }, biometricUnlockRow = biometricUnlockRow)
                     row.footer?.let { ListSupportingText(text = stringResource(it)) }
                 }
-                section.footer?.let { ListSupportingText(text = stringResource(it)) }
+                section.footer?.let { ListSupportingText(text = footerText(it)) }
             }
             first = false
         }
@@ -90,11 +96,16 @@ fun BipeSettingsGroupView(
 private fun isAvailable(row: BipeSettingsRow): Boolean = when (row) {
     // Android has no "Contatos no Bipe" screen (address-book matching) yet.
     BipeSettingsRow.PRIVACY_CONTACTS,
-    // Bipe: built with Sua conta (#360).
-    BipeSettingsRow.ACCOUNT_WAYS_BACK_STATUS, BipeSettingsRow.ACCOUNT_BIOMETRIC_UNLOCK,
     // Bipe: built with Ajuda e sobre (#362).
     BipeSettingsRow.HELP_DOCS, BipeSettingsRow.HELP_TERMS, BipeSettingsRow.HELP_PRIVACY, BipeSettingsRow.HELP_LICENSES -> false
     else -> true
+}
+
+/** Footers with a value to fill in. */
+@Composable
+private fun footerText(@StringRes footer: Int): String = when (footer) {
+    BipeR.string.bipe_account_pin_footer -> stringResource(footer, BipePin.LENGTH.toString())
+    else -> stringResource(footer)
 }
 
 @Composable
@@ -102,6 +113,7 @@ private fun SettingsRow(
     row: BipeSettingsRow,
     state: BipeSettingsGroupState,
     onClick: () -> Unit,
+    biometricUnlockRow: @Composable () -> Unit,
 ) {
     val title = stringResource(row.title)
     when (row) {
@@ -146,6 +158,8 @@ private fun SettingsRow(
         )
         BipeSettingsRow.PRIVACY_READ_RECEIPTS -> InfoRow(title, stringResource(BipeR.string.bipe_privacy_read_receipts_value))
         BipeSettingsRow.PRIVACY_EXPORT -> LocalBipeAccount.current?.let { BipeDataExportRow(account = it, title = title) }
+        BipeSettingsRow.ACCOUNT_WAYS_BACK_STATUS -> state.waysBack?.let { WaysBackStatus(it.size) }
+        BipeSettingsRow.ACCOUNT_BIOMETRIC_UNLOCK -> biometricUnlockRow()
         BipeSettingsRow.ACCOUNT_CHANGE_PIN -> LocalBipeAccount.current?.let { BipePinRow(it) }
         BipeSettingsRow.ACCOUNT_EMAIL -> LocalBipeAccount.current?.let { BipeRecoveryEmailRows(it) }
         BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> LinkRow(
@@ -182,6 +196,37 @@ private fun SettingsRow(
             else -> LinkRow(title, null, onClick)
         }
     }
+}
+
+/**
+ * The status card of Sua conta (ADR 0112): how many ways back the account has. The only warning in Settings shows at one
+ * or none (bipe/docs/security.md).
+ */
+@Composable
+private fun WaysBackStatus(count: Int) {
+    val warning = count <= 1
+    val warningRes = when (count) {
+        0 -> BipeR.string.bipe_fallback_reminder
+        1 -> BipeR.string.bipe_account_paths_warning
+        else -> null
+    }
+    ListItem(
+        content = {
+            Text(
+                if (count == 0) {
+                    stringResource(BipeR.string.bipe_settings_account_paths_none)
+                } else {
+                    stringResource(BipeR.string.bipe_settings_account_paths, count.toString())
+                }
+            )
+        },
+        supportingContent = warningRes?.let { { Text(stringResource(it)) } },
+        leadingContent = if (warning) {
+            ListItemContent.Icon(IconSource.Vector(CompoundIcons.Warning()), tintColor = ElementTheme.colors.iconCriticalPrimary)
+        } else {
+            ListItemContent.Icon(IconSource.Vector(CompoundIcons.CheckCircleSolid()), tintColor = ElementTheme.colors.iconSuccessPrimary)
+        },
+    )
 }
 
 /** A value with no action: a fixed rule or a state the user changes elsewhere. */
@@ -240,6 +285,7 @@ internal fun BipeSettingsGroupViewPreview() = ElementPreview {
             mediaPreviewValue = MediaPreviewValue.On,
             recoveryKeyEnabled = true,
             deviceName = "Motorola moto g54",
+            waysBack = persistentListOf(BipeWayBack.EMAIL),
             whoCanMessage = BipeWhoCanMessage.EVERYONE,
             hideInviteAvatars = false,
             blockedUsersCount = 0,

@@ -193,6 +193,10 @@ private fun BipeSettingsGroupRows(
                 content = { Text(stringResource(group.title)) },
                 supportingContent = subtitle?.let { { Text(it) } },
                 leadingContent = ListItemContent.Icon(IconSource.Vector(group.icon())),
+                // The only warning badge in Settings: one way back or none (ADR 0112).
+                trailingContent = ListItemContent.Badge.takeIf {
+                    group == BipeSettingsGroup.ACCOUNT && (state.bipeWaysBackCount ?: Int.MAX_VALUE) <= 1
+                },
                 onClick = { onGroupClick(group) },
             )
         }
