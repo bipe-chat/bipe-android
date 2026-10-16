@@ -34,6 +34,7 @@ dependencies {
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.core)
     implementation(projects.libraries.cryptography.api)
+    implementation(projects.libraries.deeplink.api)
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.di)
     implementation(projects.libraries.matrix.api)
