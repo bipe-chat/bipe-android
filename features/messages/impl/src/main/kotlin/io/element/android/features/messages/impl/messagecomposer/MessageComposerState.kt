@@ -26,7 +26,7 @@ data class MessageComposerState(
     val showTextFormatting: Boolean,
     val canShareLocation: Boolean,
     /** Bipe: DMs have no polls. */
-    val isDm: Boolean = false,
+    val isDm: Boolean,
     /** Bipe: sticker picker (ADR 0029). */
     val stickerPicker: StickerPickerState,
     val suggestions: ImmutableList<ResolvedSuggestion>,

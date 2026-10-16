@@ -709,10 +709,6 @@ class RoomDetailsPresenterTest {
             room = room,
             notificationCleaner = notificationCleaner,
             sessionPreferencesStore = sessionPreferencesStore,
-            bipeInviteToGroup = BipeInviteToGroup(
-                matrixClient = matrixClient,
-                selfChat = BipeSelfChat(matrixClient, CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> })),
-            ),
         )
         presenter.testWithLifecycleOwner(lifecycleOwner = fakeLifecycleOwner) {
             skipItems(1)

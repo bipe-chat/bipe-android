@@ -69,6 +69,7 @@ fun aUserListState(
     selectionMode: SelectionMode = SelectionMode.Single,
     recentDirectRooms: List<RecentDirectRoom> = emptyList(),
     bipeHandleNotFound: String? = null,
+    bipeInviter: MatrixUser? = null,
     eventSink: (UserListEvent) -> Unit = {},
 ) = UserListState(
     searchQuery = TextFieldState(initialText = searchQuery),
@@ -79,6 +80,7 @@ fun aUserListState(
     selectionMode = selectionMode,
     recentDirectRooms = recentDirectRooms.toImmutableList(),
     bipeHandleNotFound = bipeHandleNotFound,
+    bipeInviter = bipeInviter,
     eventSink = eventSink
 )
 

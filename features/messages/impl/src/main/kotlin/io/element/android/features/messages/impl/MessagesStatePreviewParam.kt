@@ -192,9 +192,11 @@ fun aUserEventPermissions(
 
 fun aReactionSummaryState(
     target: ReactionSummaryState.Summary? = null,
+    bipeInviterHandle: String? = null,
     eventSink: (ReactionSummaryEvent) -> Unit = {}
 ) = ReactionSummaryState(
     target = target,
+    bipeInviterHandle = bipeInviterHandle,
     eventSink = eventSink,
 )
 

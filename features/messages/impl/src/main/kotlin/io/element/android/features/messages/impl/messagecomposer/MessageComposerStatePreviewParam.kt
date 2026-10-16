@@ -36,6 +36,7 @@ fun aMessageComposerState(
     stickerPicker: StickerPickerState = StickerPickerState.Hidden,
     suggestions: ImmutableList<ResolvedSuggestion> = persistentListOf(),
     slashCommandAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
+    isDm: Boolean = false,
     eventSink: (MessageComposerEvent) -> Unit = {},
 ) = MessageComposerState(
     textEditorState = textEditorState,
@@ -50,5 +51,6 @@ fun aMessageComposerState(
     resolveMentionDisplay = { _, _ -> TextDisplay.Plain },
     resolveAtRoomMentionDisplay = { TextDisplay.Plain },
     slashCommandAction = slashCommandAction,
+    isDm = isDm,
     eventSink = eventSink,
 )
