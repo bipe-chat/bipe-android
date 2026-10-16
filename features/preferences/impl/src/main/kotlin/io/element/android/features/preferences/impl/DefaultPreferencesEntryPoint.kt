@@ -15,6 +15,7 @@ import dev.zacsweers.metro.ContributesBinding
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.preferences.impl.developer.appsettings.AppDeveloperSettingsNode
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 
 @ContributesBinding(AppScope::class)
 class DefaultPreferencesEntryPoint : PreferencesEntryPoint {
@@ -50,6 +51,11 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
     // Bipe: the Você tab rows (ADR 0053)
     is PreferencesEntryPoint.InitialTarget.BipeEditProfile -> PreferencesFlowNode.NavTarget.UserProfile(matrixUser)
     is PreferencesEntryPoint.InitialTarget.BipeScreen -> when (screen) {
+        PreferencesEntryPoint.BipeSettingsScreen.Profile -> BipeSettingsGroup.PROFILE.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Privacy -> BipeSettingsGroup.PRIVACY.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Account -> BipeSettingsGroup.ACCOUNT.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Chats -> BipeSettingsGroup.CHATS.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Help -> BipeSettingsGroup.HELP.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Analytics -> PreferencesFlowNode.NavTarget.AnalyticsSettings
         PreferencesEntryPoint.BipeSettingsScreen.About -> PreferencesFlowNode.NavTarget.About
         PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings

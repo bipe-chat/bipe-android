@@ -52,6 +52,8 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
+import io.element.android.features.preferences.impl.bipe.BipeSettingsGroupNode
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -142,6 +144,10 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object BipePublicProfile : NavTarget
+
+        /** Bipe: Seu perfil and the group screens of ADR 0112. */
+        @Parcelize
+        data class BipeGroup(val group: BipeSettingsGroup) : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -192,6 +198,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToBipePublicProfile() {
                         backstack.push(NavTarget.BipePublicProfile)
+                    }
+
+                    override fun navigateToBipeGroup(group: BipeSettingsGroup) {
+                        backstack.push(group.toNavTarget())
                     }
 
                     override fun navigateToBugReport() {
@@ -286,6 +296,42 @@ class PreferencesFlowNode(
                     }
                 }
                 createNode<BipePublicProfileNode>(buildContext, listOf(callback))
+            }
+            is NavTarget.BipeGroup -> {
+                val callback = object : BipeSettingsGroupNode.Callback {
+                    override fun navigateToEditProfile(matrixUser: MatrixUser) {
+                        backstack.push(NavTarget.UserProfile(matrixUser))
+                    }
+
+                    override fun navigateToHandle() {
+                        backstack.push(NavTarget.BipeHandle)
+                    }
+
+                    override fun navigateToPublicProfile() {
+                        backstack.push(NavTarget.BipePublicProfile)
+                    }
+
+                    override fun navigateToMediaSettings() {
+                        backstack.push(NavTarget.MediaSettings)
+                    }
+
+                    override fun navigateToLocationSettings() {
+                        backstack.push(NavTarget.LocationSettings)
+                    }
+
+                    override fun navigateToSecureBackup() {
+                        callback.navigateToSecureBackup()
+                    }
+
+                    override fun navigateToLinkNewDevice() {
+                        callback.navigateToLinkNewDevice()
+                    }
+
+                    override fun navigateToSignOut() {
+                        backstack.push(NavTarget.SignOut)
+                    }
+                }
+                createNode<BipeSettingsGroupNode>(buildContext, listOf(BipeSettingsGroupNode.Inputs(navTarget.group), callback))
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {
@@ -430,4 +476,15 @@ class PreferencesFlowNode(
     override fun View(modifier: Modifier) {
         BackstackView()
     }
+}
+
+/**
+ * Bipe: where a group row of the Você root goes (ADR 0112). Notificações keeps the Element screen.
+ * Privacidade and Ajuda e sobre open the current screens until #359 and #362.
+ */
+internal fun BipeSettingsGroup.toNavTarget(): PreferencesFlowNode.NavTarget = when (this) {
+    BipeSettingsGroup.NOTIFICATIONS -> PreferencesFlowNode.NavTarget.NotificationSettings
+    BipeSettingsGroup.PRIVACY -> PreferencesFlowNode.NavTarget.ModerationAndSafety
+    BipeSettingsGroup.HELP -> PreferencesFlowNode.NavTarget.About
+    BipeSettingsGroup.PROFILE, BipeSettingsGroup.ACCOUNT, BipeSettingsGroup.CHATS -> PreferencesFlowNode.NavTarget.BipeGroup(this)
 }

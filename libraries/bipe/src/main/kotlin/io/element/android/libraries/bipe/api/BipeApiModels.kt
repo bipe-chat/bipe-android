@@ -315,6 +315,24 @@ internal data class ClaimRequest(@SerialName("claim_secret") val claimSecret: St
     override fun toString(): String = "ClaimRequest"
 }
 
+/** Who can message the caller (ADR 0016). The server enforces it. */
+enum class BipeWhoCanMessage(val id: String) {
+    EVERYONE("everyone"),
+    VERIFIED("verified"),
+    CONTACTS("contacts"),
+}
+
+@Serializable
+data class BipeMessagingSetting(
+    @SerialName("who_can_message") private val whoCanMessageId: String,
+) {
+    constructor(whoCanMessage: BipeWhoCanMessage) : this(whoCanMessage.id)
+
+    /** An unknown value from a newer server reads as the strictest one the app knows. */
+    val whoCanMessage: BipeWhoCanMessage
+        get() = BipeWhoCanMessage.entries.firstOrNull { it.id == whoCanMessageId } ?: BipeWhoCanMessage.CONTACTS
+}
+
 @Serializable
 internal data class HandleChangesRequest(
     @SerialName("user_ids") val userIds: List<String>,
