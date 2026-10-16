@@ -7,6 +7,7 @@
 package io.element.android.features.preferences.impl.bipe
 
 import io.element.android.features.preferences.impl.root.ThemeOption
+import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.matrix.api.media.MediaPreviewValue
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -29,10 +30,20 @@ data class BipeSettingsGroupState(
     val recoveryKeyEnabled: Boolean?,
     /** The make and model of this phone. */
     val deviceName: String,
+    // Privacidade (#359). null while not loaded.
+    val whoCanMessage: BipeWhoCanMessage?,
+    val hideInviteAvatars: Boolean,
+    val blockedUsersCount: Int,
+    val phoneLinked: Boolean?,
+    val discoverableByPhone: Boolean?,
+    val sharePresence: Boolean,
     val eventSink: (BipeSettingsGroupEvent) -> Unit,
 )
 
 sealed interface BipeSettingsGroupEvent {
     data class SetTheme(val theme: ThemeOption) : BipeSettingsGroupEvent
     data class SetMediaPreview(val value: MediaPreviewValue) : BipeSettingsGroupEvent
+    data class SetHideInviteAvatars(val hide: Boolean) : BipeSettingsGroupEvent
+    data class SetDiscoverableByPhone(val value: Boolean) : BipeSettingsGroupEvent
+    data class SetSharePresence(val value: Boolean) : BipeSettingsGroupEvent
 }

@@ -15,6 +15,8 @@ import io.element.android.libraries.bipe.api.BipeRecoveryMethod
 import io.element.android.libraries.bipe.api.BipeRecoveryPurpose
 import io.element.android.libraries.bipe.api.BipeRecoveryState
 import io.element.android.libraries.bipe.generated.BipeRegistries
+
+import io.element.android.libraries.bipe.settings.BipeDataExportFile
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -99,6 +101,11 @@ class BipeAccountSession(
         refresh()
         statusFlow.value = statusFlow.value?.copy(termsVersion = BipeRegistries.LEGAL_VERSION)
     }.onFailure { Timber.e(it, "Bipe: terms acceptance not saved") }
+
+    /** "Baixar meus dados" (#364): the server data as one JSON file. The caller proves the owner first. */
+    suspend fun exportData(): Result<BipeDataExportFile> = runCatchingExceptions {
+        BipeApiClient.withTokenRetry(accessToken) { apiClient.export(it) }
+    }
 
     /** "Cancel, it was not me": stops a waiting recovery. */
     suspend fun cancelRecovery(recovery: BipeRecovery): Result<Unit> = runCatchingExceptions<Unit> {

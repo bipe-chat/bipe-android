@@ -19,14 +19,18 @@ import io.element.android.features.preferences.impl.moderation.MediaPreviewConfi
 import io.element.android.features.preferences.impl.root.rememberThemeOptions
 import io.element.android.features.preferences.impl.root.setTheme
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -39,6 +43,8 @@ class BipeSettingsGroupPresenter(
     private val featureFlagService: FeatureFlagService,
     private val appPreferencesStore: AppPreferencesStore,
     private val mediaPreviewConfigStateStore: MediaPreviewConfigStateStore,
+    private val sessionPreferencesStore: SessionPreferencesStore,
+    private val snackbarDispatcher: SnackbarDispatcher,
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
 ) : Presenter<BipeSettingsGroupState> {
@@ -67,10 +73,29 @@ class BipeSettingsGroupPresenter(
         val mediaPreviewConfig = mediaPreviewConfigStateStore.state()
         val recoveryState by matrixClient.encryptionService.recoveryStateStateFlow.collectAsState()
 
+        // Privacidade (#359)
+        val whoCanMessage by bipeSession.privacy.messaging.collectAsState()
+        val discoverableByPhone by bipeSession.privacy.discoverableByPhone.collectAsState()
+        val phone by bipeSession.privacy.phone.collectAsState()
+        val blockedUsers by matrixClient.ignoredUsersFlow.collectAsState()
+        val sharePresence by remember { sessionPreferencesStore.isSharePresenceEnabled() }.collectAsState(initial = true)
+        LaunchedEffect(Unit) {
+            if (group == BipeSettingsGroup.PRIVACY) {
+                bipeSession.privacy.refreshMessaging()
+                bipeSession.privacy.refreshDiscovery()
+            }
+        }
+
         fun handleEvent(event: BipeSettingsGroupEvent) {
             when (event) {
                 is BipeSettingsGroupEvent.SetTheme -> sessionCoroutineScope.launch { appPreferencesStore.setTheme(event.theme) }
                 is BipeSettingsGroupEvent.SetMediaPreview -> mediaPreviewConfigStateStore.setTimelineMediaPreviewValue(event.value)
+                is BipeSettingsGroupEvent.SetHideInviteAvatars -> mediaPreviewConfigStateStore.setHideInviteAvatars(event.hide)
+                is BipeSettingsGroupEvent.SetDiscoverableByPhone -> sessionCoroutineScope.launch {
+                    bipeSession.privacy.setDiscoverableByPhone(event.value)
+                        .onFailure { snackbarDispatcher.post(SnackbarMessage(BipeR.string.bipe_error_generic)) }
+                }
+                is BipeSettingsGroupEvent.SetSharePresence -> sessionCoroutineScope.launch { sessionPreferencesStore.setSharePresence(event.value) }
             }
         }
 
@@ -89,6 +114,12 @@ class BipeSettingsGroupPresenter(
                 RecoveryState.DISABLED, RecoveryState.INCOMPLETE -> false
             },
             deviceName = remember { listOf(Build.MANUFACTURER, Build.MODEL).joinToString(" ") },
+            whoCanMessage = whoCanMessage,
+            hideInviteAvatars = mediaPreviewConfig.hideInviteAvatars,
+            blockedUsersCount = blockedUsers.size,
+            phoneLinked = phone?.linked,
+            discoverableByPhone = discoverableByPhone,
+            sharePresence = sharePresence,
             eventSink = ::handleEvent,
         )
     }

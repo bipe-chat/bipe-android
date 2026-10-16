@@ -14,18 +14,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.account.ui.BipePinRow
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryEmailRows
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.generated.BipeSettingsRow
 import io.element.android.libraries.bipe.generated.BipeSettingsRowKind
+import io.element.android.libraries.bipe.settings.BipeDataExportRow
 import io.element.android.libraries.bipe.settings.BipeSettingsGate
+import io.element.android.libraries.bipe.settings.titleRes
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.DropdownOption
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferenceDropdown
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
+import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.IconSource
@@ -84,11 +88,8 @@ fun BipeSettingsGroupView(
 
 /** Rows that need something this build does not have yet. */
 private fun isAvailable(row: BipeSettingsRow): Boolean = when (row) {
-    // Bipe: built with the Privacidade group (#359).
-    BipeSettingsRow.PRIVACY_MESSAGING, BipeSettingsRow.PRIVACY_REQUEST_PHOTOS, BipeSettingsRow.PRIVACY_BLOCKED,
-    BipeSettingsRow.PRIVACY_NUMBER, BipeSettingsRow.PRIVACY_DISCOVERY, BipeSettingsRow.PRIVACY_CONTACTS,
-    BipeSettingsRow.PRIVACY_PRESENCE, BipeSettingsRow.PRIVACY_READ_RECEIPTS, BipeSettingsRow.PRIVACY_WHO_CAN_READ,
-    BipeSettingsRow.PRIVACY_EXPORT, BipeSettingsRow.PRIVACY_WHAT_BIPE_KEEPS,
+    // Android has no "Contatos no Bipe" screen (address-book matching) yet.
+    BipeSettingsRow.PRIVACY_CONTACTS,
     // Bipe: built with Sua conta (#360).
     BipeSettingsRow.ACCOUNT_WAYS_BACK_STATUS, BipeSettingsRow.ACCOUNT_BIOMETRIC_UNLOCK,
     // Bipe: built with Ajuda e sobre (#362).
@@ -113,6 +114,38 @@ private fun SettingsRow(
             },
             onClick = onClick,
         )
+        BipeSettingsRow.PRIVACY_MESSAGING -> LinkRow(title, state.whoCanMessage?.let { stringResource(it.titleRes) }, onClick)
+        BipeSettingsRow.PRIVACY_REQUEST_PHOTOS -> PreferenceSwitch(
+            title = title,
+            isChecked = state.hideInviteAvatars,
+            onCheckedChange = { state.eventSink(BipeSettingsGroupEvent.SetHideInviteAvatars(it)) },
+        )
+        BipeSettingsRow.PRIVACY_BLOCKED -> ListItem(
+            content = { Text(title) },
+            trailingContent = ListItemContent.Text(
+                if (state.blockedUsersCount == 0) stringResource(BipeR.string.bipe_privacy_blocked_none) else state.blockedUsersCount.toString()
+            ),
+            onClick = onClick,
+        )
+        BipeSettingsRow.PRIVACY_NUMBER -> InfoRow(
+            title = title,
+            value = state.phoneLinked?.let {
+                stringResource(if (it) BipeR.string.bipe_privacy_number_linked else BipeR.string.bipe_privacy_number_not_linked)
+            },
+        )
+        BipeSettingsRow.PRIVACY_DISCOVERY -> PreferenceSwitch(
+            title = title,
+            isChecked = state.discoverableByPhone == true,
+            enabled = state.discoverableByPhone != null,
+            onCheckedChange = { state.eventSink(BipeSettingsGroupEvent.SetDiscoverableByPhone(it)) },
+        )
+        BipeSettingsRow.PRIVACY_PRESENCE -> PreferenceSwitch(
+            title = title,
+            isChecked = state.sharePresence,
+            onCheckedChange = { state.eventSink(BipeSettingsGroupEvent.SetSharePresence(it)) },
+        )
+        BipeSettingsRow.PRIVACY_READ_RECEIPTS -> InfoRow(title, stringResource(BipeR.string.bipe_privacy_read_receipts_value))
+        BipeSettingsRow.PRIVACY_EXPORT -> LocalBipeAccount.current?.let { BipeDataExportRow(account = it, title = title) }
         BipeSettingsRow.ACCOUNT_CHANGE_PIN -> LocalBipeAccount.current?.let { BipePinRow(it) }
         BipeSettingsRow.ACCOUNT_EMAIL -> LocalBipeAccount.current?.let { BipeRecoveryEmailRows(it) }
         BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> LinkRow(
@@ -122,10 +155,7 @@ private fun SettingsRow(
             },
             onClick = onClick,
         )
-        BipeSettingsRow.ACCOUNT_THIS_DEVICE -> ListItem(
-            content = { Text(title) },
-            trailingContent = ListItemContent.Text(state.deviceName),
-        )
+        BipeSettingsRow.ACCOUNT_THIS_DEVICE -> InfoRow(title, state.deviceName)
         BipeSettingsRow.CHATS_APPEARANCE -> PreferenceDropdown(
             title = title,
             selectedOption = state.theme,
@@ -152,6 +182,15 @@ private fun SettingsRow(
             else -> LinkRow(title, null, onClick)
         }
     }
+}
+
+/** A value with no action: a fixed rule or a state the user changes elsewhere. */
+@Composable
+private fun InfoRow(title: String, value: String?) {
+    ListItem(
+        content = { Text(title) },
+        trailingContent = value?.let { ListItemContent.Text(it) },
+    )
 }
 
 @Composable
@@ -201,6 +240,12 @@ internal fun BipeSettingsGroupViewPreview() = ElementPreview {
             mediaPreviewValue = MediaPreviewValue.On,
             recoveryKeyEnabled = true,
             deviceName = "Motorola moto g54",
+            whoCanMessage = BipeWhoCanMessage.EVERYONE,
+            hideInviteAvatars = false,
+            blockedUsersCount = 0,
+            phoneLinked = false,
+            discoverableByPhone = true,
+            sharePresence = true,
             eventSink = {},
         ),
         onBackClick = {},

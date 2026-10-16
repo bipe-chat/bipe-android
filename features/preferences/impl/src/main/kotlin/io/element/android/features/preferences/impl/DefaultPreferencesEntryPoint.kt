@@ -63,7 +63,7 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
         PreferencesEntryPoint.BipeSettingsScreen.Media -> PreferencesFlowNode.NavTarget.MediaSettings
         PreferencesEntryPoint.BipeSettingsScreen.Location -> PreferencesFlowNode.NavTarget.LocationSettings
         PreferencesEntryPoint.BipeSettingsScreen.Labs -> PreferencesFlowNode.NavTarget.Labs
-        PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety -> PreferencesFlowNode.NavTarget.ModerationAndSafety
+        PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety -> BipeSettingsGroup.PRIVACY.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Notifications -> PreferencesFlowNode.NavTarget.NotificationSettings
         PreferencesEntryPoint.BipeSettingsScreen.SignOut -> PreferencesFlowNode.NavTarget.SignOut
         PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> PreferencesFlowNode.NavTarget.AccountDeactivation

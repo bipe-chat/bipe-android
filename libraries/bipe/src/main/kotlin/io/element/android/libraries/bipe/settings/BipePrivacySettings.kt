@@ -7,7 +7,9 @@
 package io.element.android.libraries.bipe.settings
 
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.api.BipeDiscoverySettings
 import io.element.android.libraries.bipe.api.BipeMessagingSetting
+import io.element.android.libraries.bipe.api.BipePhoneStatus
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +26,8 @@ class BipePrivacySettings(
     private val accessToken: suspend () -> String?,
 ) {
     private val messagingFlow = MutableStateFlow<BipeWhoCanMessage?>(null)
+    private val discoveryFlow = MutableStateFlow<Boolean?>(null)
+    private val phoneFlow = MutableStateFlow<BipePhoneStatus?>(null)
 
     /** `null` until the first answer of `GET /v1/me/messaging`. */
     val messaging: StateFlow<BipeWhoCanMessage?> = messagingFlow.asStateFlow()
@@ -39,4 +43,19 @@ class BipePrivacySettings(
         messagingFlow.value = saved
         saved
     }.onFailure { Timber.e(it, "Bipe: messaging setting not saved") }
+
+    /** "Quem tem meu número pode me encontrar" (ADR 0063). `null` until the first answer of `GET /v1/me/discovery`. */
+    val discoverableByPhone: StateFlow<Boolean?> = discoveryFlow.asStateFlow()
+
+    /** `null` until the first answer of `GET /v1/me/phone`. */
+    val phone: StateFlow<BipePhoneStatus?> = phoneFlow.asStateFlow()
+
+    suspend fun refreshDiscovery(): Result<Unit> = runCatchingExceptions {
+        discoveryFlow.value = BipeApiClient.withTokenRetry(accessToken) { apiClient.discovery(it) }.byPhone
+        phoneFlow.value = BipeApiClient.withTokenRetry(accessToken) { apiClient.phone(it) }
+    }.onFailure { Timber.w(it, "Bipe: discovery settings not loaded") }
+
+    suspend fun setDiscoverableByPhone(value: Boolean): Result<Unit> = runCatchingExceptions {
+        discoveryFlow.value = BipeApiClient.withTokenRetry(accessToken) { apiClient.setDiscovery(BipeDiscoverySettings(value), it) }.byPhone
+    }.onFailure { Timber.e(it, "Bipe: discovery setting not saved") }
 }
