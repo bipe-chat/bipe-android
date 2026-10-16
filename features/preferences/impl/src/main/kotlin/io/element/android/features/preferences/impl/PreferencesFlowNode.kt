@@ -156,7 +156,7 @@ class PreferencesFlowNode(
                     }
 
                     override fun navigateToAbout() {
-                        backstack.push(NavTarget.About)
+                        backstack.push(BipeSettingsGroup.HELP.toNavTarget()) // Bipe: Ajuda e sobre (ADR 0112)
                     }
 
                     override fun navigateToDeveloperSettings() {
@@ -325,6 +325,10 @@ class PreferencesFlowNode(
                     override fun navigateToBlockedUsers() {
                         backstack.push(NavTarget.BlockedUsers)
                     }
+
+                    override fun navigateToOssLicenses() {
+                        backstack.push(NavTarget.OssLicenses)
+                    }
                 }
                 createNode<BipeSettingsGroupNode>(buildContext, listOf(BipeSettingsGroupNode.Inputs(navTarget.group), callback))
             }
@@ -461,13 +465,9 @@ class PreferencesFlowNode(
     }
 }
 
-/**
- * Bipe: where a group row of the Você root goes (ADR 0112). Notificações keeps the Element screen.
- * Ajuda e sobre opens the current screen until #362.
- */
+/** Bipe: where a group row of the Você root goes (ADR 0112). Notificações keeps the Element screen. */
 internal fun BipeSettingsGroup.toNavTarget(): PreferencesFlowNode.NavTarget = when (this) {
     BipeSettingsGroup.NOTIFICATIONS -> PreferencesFlowNode.NavTarget.NotificationSettings
-    BipeSettingsGroup.HELP -> PreferencesFlowNode.NavTarget.About
-    BipeSettingsGroup.PROFILE, BipeSettingsGroup.PRIVACY, BipeSettingsGroup.ACCOUNT, BipeSettingsGroup.CHATS ->
+    BipeSettingsGroup.PROFILE, BipeSettingsGroup.PRIVACY, BipeSettingsGroup.ACCOUNT, BipeSettingsGroup.CHATS, BipeSettingsGroup.HELP ->
         PreferencesFlowNode.NavTarget.BipeGroup(this)
 }

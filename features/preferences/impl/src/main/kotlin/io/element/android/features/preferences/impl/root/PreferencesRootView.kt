@@ -8,16 +8,12 @@
 
 package io.element.android.features.preferences.impl.root
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,16 +30,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.preferences.impl.R
+import io.element.android.features.preferences.impl.bipe.BipeVersionFooter
 import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
 import io.element.android.libraries.bipe.BipeTrustProfile
 import io.element.android.libraries.bipe.account.ui.BipeAccountRows
@@ -136,7 +131,8 @@ fun PreferencesRootView(
                 onOpenLabs = onOpenLabs,
                 onOpenRageShake = onOpenRageShake,
             )
-            Footer(
+            BipeVersionFooter(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
                 version = state.version,
                 deviceId = state.bipeDeviceId,
                 onClick = if (!state.showDeveloperSettings) {
@@ -307,7 +303,7 @@ private fun ColumnScope.MultiAccountSection(
 
 /**
  * Bipe: developer options after the 7 taps on the version, English only (ADR 0112).
- * Analytics, Labs and "Report a problem" show here, with the developer options, and not in the settings groups.
+ * Analytics, Labs and "Report a problem" show here, and only in builds that are not release builds.
  */
 @Composable
 private fun ColumnScope.DeveloperSection(
@@ -325,21 +321,21 @@ private fun ColumnScope.DeveloperSection(
                 thickness = 1.dp,
                 color = ElementTheme.colors.bgSubtleSecondary,
             )
-            if (state.showAnalyticsSettings) {
+            if (state.showAnalyticsSettings && state.bipeIsDeveloperBuild) {
                 ListItem(
                     content = { Text(stringResource(id = CommonStrings.common_analytics)) },
                     leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chart())),
                     onClick = onOpenAnalytics,
                 )
             }
-            if (state.showLabsItem) {
+            if (state.showLabsItem && state.bipeIsDeveloperBuild) {
                 ListItem(
                     content = { Text(stringResource(id = R.string.screen_labs_title)) },
                     leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Labs())),
                     onClick = onOpenLabs,
                 )
             }
-            if (state.preferencesAccountState.canReportBug) {
+            if (state.preferencesAccountState.canReportBug && state.bipeIsDeveloperBuild) {
                 ListItem(
                     content = { Text(stringResource(id = CommonStrings.common_report_a_problem)) },
                     leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ChatProblem())),
@@ -349,32 +345,6 @@ private fun ColumnScope.DeveloperSection(
             DeveloperPreferencesView(onOpenDeveloperSettings)
         }
     }
-}
-
-/** Bipe: the version. 7 taps unlock the developer options; a long press copies the device ID (ADR 0112). */
-@Composable
-private fun ColumnScope.Footer(
-    version: String,
-    deviceId: String,
-    onClick: (() -> Unit)?,
-) {
-    val context = LocalContext.current
-    Text(
-        modifier = Modifier
-            .align(Alignment.CenterHorizontally)
-            .combinedClickable(
-                onClick = onClick ?: {},
-                onLongClick = {
-                    context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(null, deviceId))
-                    Toast.makeText(context, BipeR.string.bipe_help_device_id_copied, Toast.LENGTH_SHORT).show()
-                },
-            )
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
-        textAlign = TextAlign.Center,
-        text = version,
-        style = ElementTheme.typography.fontBodySmRegular,
-        color = ElementTheme.colors.textSecondary,
-    )
 }
 
 @Composable

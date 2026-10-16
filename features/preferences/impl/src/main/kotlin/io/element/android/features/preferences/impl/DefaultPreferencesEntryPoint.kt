@@ -57,7 +57,7 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
         PreferencesEntryPoint.BipeSettingsScreen.Chats -> BipeSettingsGroup.CHATS.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Help -> BipeSettingsGroup.HELP.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Analytics -> PreferencesFlowNode.NavTarget.AnalyticsSettings
-        PreferencesEntryPoint.BipeSettingsScreen.About -> PreferencesFlowNode.NavTarget.About
+        PreferencesEntryPoint.BipeSettingsScreen.About -> BipeSettingsGroup.HELP.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
         PreferencesEntryPoint.BipeSettingsScreen.LockScreen -> BipeSettingsGroup.ACCOUNT.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Media -> PreferencesFlowNode.NavTarget.MediaSettings

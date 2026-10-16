@@ -16,6 +16,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.features.preferences.impl.moderation.MediaPreviewConfigStateStore
+import io.element.android.features.preferences.impl.root.VersionFormatter
 import io.element.android.features.preferences.impl.root.rememberThemeOptions
 import io.element.android.features.preferences.impl.root.setTheme
 import io.element.android.libraries.architecture.Presenter
@@ -46,6 +47,7 @@ class BipeSettingsGroupPresenter(
     private val mediaPreviewConfigStateStore: MediaPreviewConfigStateStore,
     private val sessionPreferencesStore: SessionPreferencesStore,
     private val snackbarDispatcher: SnackbarDispatcher,
+    private val versionFormatter: VersionFormatter,
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
 ) : Presenter<BipeSettingsGroupState> {
@@ -125,6 +127,8 @@ class BipeSettingsGroupPresenter(
             phoneLinked = phone?.linked,
             discoverableByPhone = discoverableByPhone,
             sharePresence = sharePresence,
+            version = remember { versionFormatter.get() },
+            deviceId = matrixClient.deviceId.value,
             eventSink = ::handleEvent,
         )
     }

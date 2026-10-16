@@ -50,6 +50,7 @@ class BipeSettingsGroupNode(
         fun navigateToSignOut()
         fun navigateToMessaging()
         fun navigateToBlockedUsers()
+        fun navigateToOssLicenses()
     }
 
     private val callback: Callback = callback()
@@ -75,6 +76,7 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.ACCOUNT_SIGN_OUT -> callback.navigateToSignOut()
                     BipeSettingsRow.CHATS_MEDIA_QUALITY -> callback.navigateToMediaSettings()
                     BipeSettingsRow.CHATS_LIVE_LOCATION -> callback.navigateToLocationSettings()
+                    BipeSettingsRow.HELP_LICENSES -> callback.navigateToOssLicenses()
                     else -> if (row.kind == BipeSettingsRowKind.URL) {
                         row.localizedUrl()?.let { activity.openUrlInChromeCustomTab(null, isDark, it) }
                     }
