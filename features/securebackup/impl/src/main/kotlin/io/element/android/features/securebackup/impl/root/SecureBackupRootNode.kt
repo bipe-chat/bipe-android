@@ -41,8 +41,8 @@ class SecureBackupRootNode(
 
     private val callback: Callback = callback()
 
-    private fun onLearnMoreClick(uriHandler: UriHandler) {
-        uriHandler.openUri(LearnMoreConfig.SECURE_BACKUP_URL)
+    private fun onLearnMoreClick(uriHandler: UriHandler, url: String) {
+        uriHandler.openUri(url)
     }
 
     @Composable
@@ -56,7 +56,7 @@ class SecureBackupRootNode(
             onChangeClick = callback::navigateToChange,
             onDisableClick = callback::navigateToDisable,
             onConfirmRecoveryKeyClick = callback::navigateToEnterRecoveryKey,
-            onLearnMoreClick = { onLearnMoreClick(uriHandler) },
+            onLearnMoreClick = LearnMoreConfig.SECURE_BACKUP_URL?.let { url -> { onLearnMoreClick(uriHandler, url) } },
             modifier = modifier,
         )
     }

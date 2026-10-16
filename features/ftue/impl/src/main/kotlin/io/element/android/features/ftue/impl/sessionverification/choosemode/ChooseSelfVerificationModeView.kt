@@ -47,7 +47,8 @@ fun ChooseSelfVerificationModeView(
     onUseAnotherDevice: () -> Unit,
     onUseRecoveryKey: () -> Unit,
     onResetKey: () -> Unit,
-    onLearnMore: () -> Unit,
+    // Bipe: null hides "Learn more", as there is no help page yet (bipe#205).
+    onLearnMore: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     val activity = LocalActivity.current
@@ -84,21 +85,23 @@ fun ChooseSelfVerificationModeView(
             )
         }
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                modifier = Modifier
-                    .clickable(onClick = onLearnMore)
-                    .padding(vertical = 4.dp, horizontal = 16.dp)
-                    .semantics {
-                        // Note: there is no Role.Link, so we use Role.Button for better accessibility support
-                        role = Role.Button
-                    },
-                text = stringResource(CommonStrings.action_learn_more),
-                style = ElementTheme.typography.fontBodyLgMedium
-            )
+        if (onLearnMore != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    modifier = Modifier
+                        .clickable(onClick = onLearnMore)
+                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                        .semantics {
+                            // Note: there is no Role.Link, so we use Role.Button for better accessibility support
+                            role = Role.Button
+                        },
+                    text = stringResource(CommonStrings.action_learn_more),
+                    style = ElementTheme.typography.fontBodyLgMedium
+                )
+            }
         }
     }
 }

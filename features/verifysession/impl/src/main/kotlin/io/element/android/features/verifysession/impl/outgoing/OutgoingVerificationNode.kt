@@ -8,6 +8,7 @@
 
 package io.element.android.features.verifysession.impl.outgoing
 
+import io.element.android.appconfig.LearnMoreConfig
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.core.modality.BuildContext
@@ -42,7 +43,7 @@ class OutgoingVerificationNode(
         OutgoingVerificationView(
             state = state,
             modifier = modifier,
-            onLearnMoreClick = callback::navigateToLearnMoreAboutEncryption,
+            onLearnMoreClick = (callback::navigateToLearnMoreAboutEncryption).takeIf { LearnMoreConfig.ENCRYPTION_URL != null },
             onFinish = callback::onDone,
             onBack = callback::onBack,
         )

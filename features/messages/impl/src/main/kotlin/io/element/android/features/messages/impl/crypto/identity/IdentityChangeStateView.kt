@@ -24,6 +24,8 @@ import io.element.android.libraries.designsystem.atomic.molecules.ComposerAlertL
 import io.element.android.libraries.designsystem.atomic.molecules.ComposerAlertMolecule
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
+import io.element.android.libraries.designsystem.text.BIPE_LINK_PLACEHOLDER
+import io.element.android.libraries.designsystem.text.stringWithoutLink
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.encryption.identity.isAViolation
 import io.element.android.libraries.matrix.ui.room.RoomMemberIdentityStateChange
@@ -76,13 +78,17 @@ private fun ViolationAlert(
         modifier = modifier,
         avatar = identityChangeViolation.identityRoomMember.avatarData,
         content = buildAnnotatedString {
-            val learnMoreStr = stringResource(CommonStrings.action_learn_more)
+            // Bipe: no help page, so no "Learn more" link (bipe#205).
+            val learnMoreUrl = LearnMoreConfig.IDENTITY_CHANGE_URL
+            val learnMoreStr = if (learnMoreUrl != null) stringResource(CommonStrings.action_learn_more) else BIPE_LINK_PLACEHOLDER
             val displayName = identityChangeViolation.identityRoomMember.displayNameOrDefault
             val userIdStr = stringResource(
                 CommonStrings.crypto_identity_change_pin_violation_new_user_id,
                 identityChangeViolation.identityRoomMember.userId,
             )
-            val fullText = stringResource(textId, displayName, userIdStr, learnMoreStr)
+            val fullText = stringResource(textId, displayName, userIdStr, learnMoreStr).let {
+                if (learnMoreUrl != null) it else stringWithoutLink(it)
+            }
             append(fullText)
             val userIdStartIndex = fullText.indexOf(userIdStr)
             addStyle(
@@ -92,26 +98,28 @@ private fun ViolationAlert(
                 start = userIdStartIndex,
                 end = userIdStartIndex + userIdStr.length,
             )
-            val learnMoreStartIndex = fullText.lastIndexOf(learnMoreStr)
-            addStyle(
-                style = SpanStyle(
-                    textDecoration = TextDecoration.Underline,
-                    fontWeight = FontWeight.Bold,
-                    color = ElementTheme.colors.textPrimary
-                ),
-                start = learnMoreStartIndex,
-                end = learnMoreStartIndex + learnMoreStr.length,
-            )
-            addLink(
-                url = LinkAnnotation.Url(
-                    url = LearnMoreConfig.IDENTITY_CHANGE_URL,
-                    linkInteractionListener = {
-                        onLinkClick(LearnMoreConfig.IDENTITY_CHANGE_URL, true)
-                    }
-                ),
-                start = learnMoreStartIndex,
-                end = learnMoreStartIndex + learnMoreStr.length,
-            )
+            if (learnMoreUrl != null) {
+                val learnMoreStartIndex = fullText.lastIndexOf(learnMoreStr)
+                addStyle(
+                    style = SpanStyle(
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold,
+                        color = ElementTheme.colors.textPrimary
+                    ),
+                    start = learnMoreStartIndex,
+                    end = learnMoreStartIndex + learnMoreStr.length,
+                )
+                addLink(
+                    url = LinkAnnotation.Url(
+                        url = learnMoreUrl,
+                        linkInteractionListener = {
+                            onLinkClick(learnMoreUrl, true)
+                        }
+                    ),
+                    start = learnMoreStartIndex,
+                    end = learnMoreStartIndex + learnMoreStr.length,
+                )
+            }
         },
         submitText = stringResource(submitTextId),
         onSubmitClick = onSubmitClick,
