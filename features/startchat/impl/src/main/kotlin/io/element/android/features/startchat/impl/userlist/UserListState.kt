@@ -25,6 +25,8 @@ data class UserListState(
     val recentDirectRooms: ImmutableList<RecentDirectRoom>,
     // Bipe: the handle in the query when nobody holds it ("Ninguém usa @x no Bipe").
     val bipeHandleNotFound: String? = null,
+    // Bipe ADR 0111: the inviter, display name "@handle", while the user has not messaged them yet.
+    val bipeInviter: MatrixUser? = null,
     val eventSink: (UserListEvent) -> Unit,
 ) {
     val isMultiSelectionEnabled = selectionMode == SelectionMode.Multiple

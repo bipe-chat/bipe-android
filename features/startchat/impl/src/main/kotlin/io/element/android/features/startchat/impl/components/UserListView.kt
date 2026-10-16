@@ -41,6 +41,10 @@ import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.getBestName
 import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.ui.strings.CommonStrings
+import androidx.compose.ui.text.style.TextAlign
+import io.element.android.compound.theme.ElementTheme
+import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.bipe.ui.BipeInviterRow
 
 @Composable
 fun UserListView(
@@ -60,6 +64,26 @@ fun UserListView(
             queryState = state.searchQuery,
             resultState = state.searchResults,
             noResultsText = state.bipeHandleNotFound?.let { stringResource(BipeR.string.bipe_start_chat_handle_not_found, it) },
+            // Bipe ADR 0111: the search finds exact handles only, so a name finds nobody. Say so, and offer the inviter.
+            noResultsContent = {
+                Text(
+                    text = stringResource(BipeR.string.bipe_start_chat_search_by_handle),
+                    textAlign = TextAlign.Center,
+                    style = ElementTheme.typography.fontBodyMdRegular,
+                    color = ElementTheme.colors.textSecondary,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+                val inviter = state.bipeInviter
+                if (inviter != null && !state.isMultiSelectionEnabled) {
+                    BipeInviterRow(
+                        inviterHandle = inviter.displayName.orEmpty().removePrefix("@"),
+                        onClick = {
+                            state.eventSink(UserListEvent.AddToSelection(inviter))
+                            onSelectUser(inviter)
+                        },
+                    )
+                }
+            },
             selectedUsers = state.selectedUsers,
             active = state.isSearchActive,
             showLoader = state.showSearchLoader,

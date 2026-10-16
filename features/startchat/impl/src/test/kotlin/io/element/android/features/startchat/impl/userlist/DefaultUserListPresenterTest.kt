@@ -10,6 +10,7 @@ package io.element.android.features.startchat.impl.userlist
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import com.google.common.truth.Truth.assertThat
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.designsystem.theme.components.SearchBarResultState
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
@@ -19,7 +20,10 @@ import io.element.android.libraries.usersearch.api.UserSearchResultState
 import io.element.android.libraries.usersearch.test.FakeUserRepository
 import io.element.android.tests.testutils.WarmUpRule
 import io.element.android.tests.testutils.test
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -38,6 +42,7 @@ class DefaultUserListPresenterTest {
                 userRepository,
                 UserListDataStore(),
                 FakeMatrixClient(),
+                aBipeInviterGreeting(),
             )
         presenter.test {
             val initialState = awaitItem()
@@ -57,6 +62,7 @@ class DefaultUserListPresenterTest {
                 userRepository,
                 UserListDataStore(),
                 FakeMatrixClient(),
+                aBipeInviterGreeting(),
             )
         presenter.test {
             val initialState = awaitItem()
@@ -76,6 +82,7 @@ class DefaultUserListPresenterTest {
                 userRepository,
                 UserListDataStore(),
                 FakeMatrixClient(),
+                aBipeInviterGreeting(),
             )
         presenter.test {
             val initialState = awaitItem()
@@ -108,6 +115,7 @@ class DefaultUserListPresenterTest {
                 userRepository,
                 UserListDataStore(),
                 FakeMatrixClient(),
+                aBipeInviterGreeting(),
             )
         presenter.test {
             val initialState = awaitItem()
@@ -158,6 +166,7 @@ class DefaultUserListPresenterTest {
                 userRepository,
                 UserListDataStore(),
                 FakeMatrixClient(),
+                aBipeInviterGreeting(),
             )
         presenter.test {
             val initialState = awaitItem()
@@ -181,6 +190,7 @@ class DefaultUserListPresenterTest {
                 userRepository,
                 UserListDataStore(),
                 FakeMatrixClient(),
+                aBipeInviterGreeting(),
             )
         presenter.test {
             val initialState = awaitItem()
@@ -210,3 +220,5 @@ class DefaultUserListPresenterTest {
         }
     }
 }
+
+private fun aBipeInviterGreeting(): BipeInviterGreeting = mockk { every { inviter } returns MutableStateFlow(null) }

@@ -28,6 +28,8 @@ import io.element.android.libraries.matrix.api.room.recent.RecentDirectRoom
 import io.element.android.libraries.matrix.api.room.recent.getRecentDirectRooms
 import io.element.android.libraries.usersearch.api.UserRepository
 import io.element.android.libraries.usersearch.api.UserSearchResult
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.launchIn
@@ -43,6 +45,7 @@ class DefaultUserListPresenter(
     @Assisted val userRepository: UserRepository,
     @Assisted val userListDataStore: UserListDataStore,
     private val matrixClient: MatrixClient,
+    private val bipeInviterGreeting: BipeInviterGreeting,
 ) : UserListPresenter {
     @AssistedFactory
     @ContributesBinding(SessionScope::class)
@@ -71,6 +74,7 @@ class DefaultUserListPresenter(
         }
         var showSearchLoader by remember { mutableStateOf(false) }
         var bipeHandleNotFound by remember { mutableStateOf<String?>(null) }
+        val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
 
         val searchQuery = queryState.text.toString()
         LaunchedEffect(searchQuery) {
@@ -105,6 +109,7 @@ class DefaultUserListPresenter(
             selectionMode = args.selectionMode,
             recentDirectRooms = recentDirectRooms.toImmutableList(),
             bipeHandleNotFound = bipeHandleNotFound,
+            bipeInviter = bipeInviter?.let { MatrixUser(userId = it.userId, displayName = "@${it.handle}") },
             eventSink = ::handleEvent,
         )
     }
