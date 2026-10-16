@@ -9,11 +9,9 @@
 package io.element.android.libraries.deeplink.impl.usecase
 
 import android.app.Activity
-import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.deeplink.api.usecase.InviteFriendsUseCase
-import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.permalink.PermalinkBuilder
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -21,7 +19,7 @@ import io.element.android.services.toolbox.api.strings.StringProvider
 import timber.log.Timber
 import io.element.android.libraries.androidutils.R as AndroidUtilsR
 
-@ContributesBinding(SessionScope::class)
+// Bipe: not bound. BipeInviteFriendsUseCase (libraries/bipe) shares a personal invite link instead of a matrix.to link.
 class DefaultInviteFriendsUseCase(
     private val stringProvider: StringProvider,
     private val matrixClient: MatrixClient,
