@@ -87,6 +87,7 @@
     <string name="bipe_error_attestation_failed">We couldn\'t check this phone with Apple. Check your connection and try again.</string>
     <string name="bipe_signup_display_name_footer">This is the name people see in chats. You can change it later.</string>
     <string name="bipe_start_chat_handle_not_found">Nobody on Bipe uses @%1$s. Check the spelling.</string>
+    <string name="bipe_start_chat_search_by_handle">On Bipe, you find people by their @. Ask them for it.</string>
     <string name="bipe_profile_share">Share profile</string>
     <string name="bipe_profile_qr_action">QR code</string>
     <string name="bipe_profile_qr_title">Your QR code</string>
@@ -113,6 +114,11 @@
     <string name="bipe_signup_invite_code_optional">Invite code (optional)</string>
     <string name="bipe_signup_invite_required">Bipe is opening a few people at a time. To create an account, you need an invite code from someone who already uses it.</string>
     <string name="bipe_signup_invited_by">Invited by @%1$s</string>
+    <string name="bipe_inviter_hint">\@%1$s invited you to Bipe.</string>
+    <string name="bipe_inviter_hint_action">Say hi</string>
+    <string name="bipe_inviter_greeting">Hi! 👋</string>
+    <string name="bipe_inviter_card_title">Chat with @%1$s</string>
+    <string name="bipe_inviter_card_body">Invited you to Bipe</string>
     <string name="bipe_invite_already_signed_in">You already have an account. Invites are for people not on Bipe yet.</string>
     <string name="bipe_invites_title">Invite people</string>
     <string name="bipe_invites_available">Invites available: %1$s</string>
@@ -212,13 +218,15 @@
     <string name="bipe_sticker_saved">Sticker saved to My stickers</string>
     <string name="bipe_sticker_save_failed">The sticker was not saved. Try again.</string>
     <string name="bipe_stickers_from_photo">Make from a photo</string>
-    <string name="bipe_contacts_title">Contacts on Bipe</string>
+    <string name="bipe_contacts_title">Contacts and invites</string>
     <string name="bipe_contacts_intro">See which of your contacts are already on Bipe. The server only compares the numbers and stores none of them.</string>
     <string name="bipe_contacts_allow">Allow access to contacts</string>
     <string name="bipe_contacts_denied">Bipe has no access to your contacts. You can allow it in iPhone Settings.</string>
     <string name="bipe_contacts_open_settings">Open Settings</string>
     <string name="bipe_contacts_none">None of your contacts are on Bipe yet.</string>
     <string name="bipe_contacts_invite">Invite people who are not here</string>
+    <string name="bipe_contacts_joined_with_invite">Joined with your invite</string>
+    <string name="bipe_contacts_pending_invites">Unused invites</string>
     <string name="bipe_discovery_toggle">People who have my number can find me</string>
     <string name="bipe_discovery_footer">Your number is never shown to anyone. Only people who already have you in their contacts can find you.</string>
     <string name="bipe_phone_not_linked">Your number is not linked yet, so nobody can find you by it for now.</string>

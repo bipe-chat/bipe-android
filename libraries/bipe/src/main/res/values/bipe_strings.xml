@@ -87,6 +87,7 @@
     <string name="bipe_error_attestation_failed">Não deu para confirmar este celular com a Apple. Confira a internet e tente de novo.</string>
     <string name="bipe_signup_display_name_footer">É o nome que aparece nas conversas. Dá para mudar depois.</string>
     <string name="bipe_start_chat_handle_not_found">Ninguém usa @%1$s no Bipe. Confira se digitou certo.</string>
+    <string name="bipe_start_chat_search_by_handle">No Bipe, você encontra as pessoas pelo @. Peça o @ para quem você procura.</string>
     <string name="bipe_profile_share">Compartilhar perfil</string>
     <string name="bipe_profile_qr_action">QR code</string>
     <string name="bipe_profile_qr_title">Seu QR code</string>
@@ -113,6 +114,11 @@
     <string name="bipe_signup_invite_code_optional">Código de convite (opcional)</string>
     <string name="bipe_signup_invite_required">O Bipe está abrindo aos poucos. Para criar a conta, você precisa do código de convite de alguém que já usa.</string>
     <string name="bipe_signup_invited_by">Convite de @%1$s</string>
+    <string name="bipe_inviter_hint">\@%1$s te convidou para o Bipe.</string>
+    <string name="bipe_inviter_hint_action">Mandar um oi</string>
+    <string name="bipe_inviter_greeting">Oi! 👋</string>
+    <string name="bipe_inviter_card_title">Converse com @%1$s</string>
+    <string name="bipe_inviter_card_body">Quem te convidou para o Bipe</string>
     <string name="bipe_invite_already_signed_in">Você já tem uma conta. O convite é para quem ainda não está no Bipe.</string>
     <string name="bipe_invites_title">Convidar pessoas</string>
     <string name="bipe_invites_available">Convites disponíveis: %1$s</string>
@@ -212,13 +218,15 @@
     <string name="bipe_sticker_saved">Sticker salvo em Meus stickers</string>
     <string name="bipe_sticker_save_failed">O sticker não foi salvo. Tente de novo.</string>
     <string name="bipe_stickers_from_photo">Criar de uma foto</string>
-    <string name="bipe_contacts_title">Contatos no Bipe</string>
+    <string name="bipe_contacts_title">Contatos e convites</string>
     <string name="bipe_contacts_intro">Veja quem dos seus contatos já está no Bipe. O servidor só compara os números e não guarda nenhum.</string>
     <string name="bipe_contacts_allow">Permitir acesso aos contatos</string>
     <string name="bipe_contacts_denied">O Bipe não tem acesso aos seus contatos. Você pode liberar nos Ajustes do iPhone.</string>
     <string name="bipe_contacts_open_settings">Abrir Ajustes</string>
     <string name="bipe_contacts_none">Nenhum contato seu está no Bipe ainda.</string>
     <string name="bipe_contacts_invite">Convidar quem não está</string>
+    <string name="bipe_contacts_joined_with_invite">Entrou com seu convite</string>
+    <string name="bipe_contacts_pending_invites">Convites ainda não usados</string>
     <string name="bipe_discovery_toggle">Quem tem meu número pode me encontrar</string>
     <string name="bipe_discovery_footer">Ninguém vê o seu número. Só quem já salvou seu número consegue te achar.</string>
     <string name="bipe_phone_not_linked">Seu número ainda não está vinculado, então ninguém te encontra por ele por enquanto.</string>

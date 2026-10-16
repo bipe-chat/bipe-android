@@ -154,6 +154,7 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
+| Where invites live | Convidar pessoas in settings | Contatos e convites: invite buttons, people who joined with your invite, and unused invites in the contacts screen | Android has no contacts screen yet (#162) **Gap** |
 | Help links | Still point to element.io | Hidden | Not done on Android (#205) **Gap** |
 | Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |
 | Sticker import | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | Chat export ZIP or files | iOS apps cannot read WhatsApp's files |
