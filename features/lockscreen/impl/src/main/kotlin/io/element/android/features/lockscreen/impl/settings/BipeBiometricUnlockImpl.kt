@@ -14,11 +14,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
-import io.element.android.features.lockscreen.impl.R
 import io.element.android.features.lockscreen.impl.biometric.BiometricAuthenticator
 import io.element.android.features.lockscreen.impl.biometric.BiometricAuthenticatorManager
 import io.element.android.features.lockscreen.impl.pin.PinCodeManager
 import io.element.android.features.lockscreen.impl.storage.LockScreenStore
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.account.BipeBiometricUnlock
 import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
 import kotlinx.coroutines.launch
@@ -38,9 +38,7 @@ class BipeBiometricUnlockImpl(
         val scope = rememberCoroutineScope()
         if (!hasPin || !biometricAuthenticatorManager.hasAvailableAuthenticator) return
         PreferenceSwitch(
-            // Bipe: needs string bipe_account_biometric_word_android ("biometria" / "biometrics") to format bipe_account_biometric_unlock.
-            // Element's "Desbloquear com biometria" has real pt-BR until then.
-            title = stringResource(R.string.screen_app_lock_biometric_unlock_title_android),
+            title = stringResource(BipeR.string.bipe_account_biometric_unlock, stringResource(BipeR.string.bipe_account_biometric_word_android)),
             isChecked = isEnabled,
             onCheckedChange = { checked ->
                 scope.launch {

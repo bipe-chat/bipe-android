@@ -87,9 +87,7 @@ private fun ColumnScope.LiveLocationUpdatesSection(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            // Bipe: needs string bipe_chats_live_location_distance ("A cada %1$s m" / "Every %1$s m"). Element's plural has no pt-BR,
-            // so the value shows with the unit only, like the slider ends.
-            text = "${sliderValue}m",
+            text = stringResource(BipeR.string.bipe_chats_live_location_distance, "$sliderValue m"), // Bipe
             style = ElementTheme.typography.fontBodyLgRegular,
             color = ElementTheme.colors.textPrimary,
         )
@@ -118,12 +116,10 @@ private fun ColumnScope.LiveLocationUpdatesSection(
             Text("${end}m", color = ElementTheme.colors.textSecondary, style = ElementTheme.typography.fontBodyMdRegular)
         }
     }
-    // Bipe: needs strings bipe_chats_live_location_permission ("Confira se a localização precisa está ligada para o Bipe. Para mudar, abra %1$s.")
-    // and bipe_chats_live_location_permission_link ("as configurações do app"). Element's have no pt-BR.
     val footerText = stringWithLink(
-        textRes = R.string.screen_advanced_settings_live_location_section_footer,
+        textRes = BipeR.string.bipe_chats_live_location_permission, // Bipe
         url = "",
-        linkTextRes = R.string.screen_advanced_settings_live_location_section_footer_link,
+        linkTextRes = BipeR.string.bipe_chats_live_location_permission_link, // Bipe
         onLinkClick = { onOpenAppPermissionsClick() },
     )
     ListSupportingText(
