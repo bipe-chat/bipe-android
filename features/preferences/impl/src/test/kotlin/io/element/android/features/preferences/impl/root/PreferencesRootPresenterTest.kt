@@ -16,7 +16,6 @@ import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
 import io.element.android.compound.theme.Theme
 import io.element.android.features.preferences.impl.account.aPreferencesAccountState
-import io.element.android.features.preferences.impl.userstatus.aUserStatusState
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
 import io.element.android.libraries.bipe.BipeHandleResolver
 import io.element.android.libraries.bipe.BipePublicProfiles
@@ -309,7 +308,6 @@ class PreferencesRootPresenterTest {
         featureFlagService = featureFlagService,
         sessionStore = sessionStore,
         appPreferencesStore = appPreferencesStore,
-        userStatusPresenter = { aUserStatusState() },
         preferencesAccountPresenter = { aPreferencesAccountState() },
         sessionCoroutineScope = this,
         userPushStoreFactory = FakeUserPushStoreFactory(),

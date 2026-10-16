@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
@@ -25,6 +26,7 @@ import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.ui.BipeBiometricCheck
 import io.element.android.libraries.bipe.account.ui.BipeEnterPinDialog
+import io.element.android.libraries.core.extensions.mapCatchingExceptions
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
@@ -37,11 +39,6 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 
-/** The server data export as the API sends it (`GET /v1/me/export`). The app saves the body as it is. */
-class BipeDataExportFile(val fileName: String, val bytes: ByteArray) {
-    override fun toString(): String = "BipeDataExportFile($fileName, ${bytes.size} bytes)"
-}
-
 private sealed interface ExportDialog {
     data class Pin(val error: String?) : ExportDialog
     data object Failed : ExportDialog
@@ -52,19 +49,20 @@ private sealed interface ExportDialog {
  * else refused), then gets the export, saves it in the cache and opens the system share sheet with it.
  */
 @Composable
-fun BipeDataExportRow(account: BipeAccountSession, title: String) {
+fun BipeDataExportRow(account: BipeAccountSession, title: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val activity = LocalActivity.current as? FragmentActivity
     val scope = rememberCoroutineScope()
     var busy by remember { mutableStateOf(false) }
     var dialog by remember { mutableStateOf<ExportDialog?>(null) }
     val reason = stringResource(R.string.bipe_privacy_export_biometric)
+    val pinMismatch = stringResource(R.string.bipe_pin_mismatch)
 
     fun export() {
         busy = true
         scope.launch {
             account.exportData()
-                .mapCatching { file -> withContext(Dispatchers.IO) { context.saveExport(file) } }
+                .mapCatchingExceptions { file -> withContext(Dispatchers.IO) { context.saveExport(file) } }
                 .onSuccess { context.shareExport(it) }
                 .onFailure {
                     Timber.w(it, "Bipe: data export failed")
@@ -88,6 +86,7 @@ fun BipeDataExportRow(account: BipeAccountSession, title: String) {
     }
 
     ListItem(
+        modifier = modifier,
         content = { Text(title) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Download())),
         trailingContent = if (busy) ListItemContent.Custom { CircularProgressIndicator() } else null,
@@ -107,7 +106,7 @@ fun BipeDataExportRow(account: BipeAccountSession, title: String) {
                         dialog = null
                         export()
                     } else {
-                        dialog = ExportDialog.Pin(context.getString(R.string.bipe_pin_mismatch))
+                        dialog = ExportDialog.Pin(pinMismatch)
                     }
                 }
             },
