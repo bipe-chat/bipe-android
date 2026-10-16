@@ -66,6 +66,10 @@ fun RoomListContextMenu(
                 eventSink(RoomListEvent.HideContextMenu)
                 eventSink(RoomListEvent.LeaveRoom(contextMenu.roomId, needsConfirmation = true))
             },
+            onMuteChange = { isMuted ->
+                eventSink(RoomListEvent.HideContextMenu)
+                eventSink(RoomListEvent.SetRoomIsMuted(contextMenu.roomId, isMuted))
+            },
             onFavoriteChange = { isFavorite ->
                 eventSink(RoomListEvent.SetRoomIsFavorite(contextMenu.roomId, isFavorite))
             },
@@ -84,6 +88,7 @@ private fun RoomListModalBottomSheetContent(
     onRoomSettingsClick: () -> Unit,
     onLeaveRoomClick: () -> Unit,
     onFavoriteChange: (isFavorite: Boolean) -> Unit,
+    onMuteChange: (isMuted: Boolean) -> Unit,
     onRoomMarkReadClick: () -> Unit,
     onRoomMarkUnreadClick: () -> Unit,
     onReportRoomClick: () -> Unit,
@@ -151,6 +156,25 @@ private fun RoomListModalBottomSheetContent(
             ),
             onClick = {
                 onFavoriteChange(!contextMenu.isFavorite)
+            },
+        )
+        val (muteTextResId, muteIcon) = if (contextMenu.isMuted) {
+            CommonStrings.common_unmute to CompoundIcons.Notifications()
+        } else {
+            CommonStrings.common_mute to CompoundIcons.NotificationsOff()
+        }
+        ListItem(
+            content = {
+                Text(
+                    text = stringResource(id = muteTextResId),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            },
+            leadingContent = ListItemContent.Icon(
+                iconSource = IconSource.Vector(muteIcon)
+            ),
+            onClick = {
+                onMuteChange(!contextMenu.isMuted)
             },
         )
         ListItem(
