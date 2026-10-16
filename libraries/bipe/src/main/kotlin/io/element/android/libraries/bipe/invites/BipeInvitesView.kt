@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeInvite
@@ -43,9 +42,6 @@ import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /** Port of BipeInvitesScreen on iOS: one-tap invite, people who joined, then invites not used yet. */
 @Composable
@@ -76,9 +72,8 @@ fun BipeInvitesView(
     }
     state.shareSheetUrl?.let { url ->
         val context = LocalContext.current
-        val message = stringResource(R.string.bipe_invites_share_message, url)
         LaunchedEffect(url) {
-            context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = message)
+            context.shareBipeInvite(url)
             state.eventSink(BipeInvitesEvent.ShareSheetOpened)
         }
     }
@@ -125,9 +120,7 @@ private fun footer(state: BipeInvitesState): String {
     val explainer = stringResource(R.string.bipe_invites_explainer)
     if (state.isLoading) return explainer
     if (state.available <= 0) {
-        val noneLeft = stringResource(R.string.bipe_invites_none_left)
-        val next = state.nextAvailableAt ?: return noneLeft
-        return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
+        return LocalContext.current.bipeInvitesNoneLeftText(state.nextAvailableAt)
     }
     // A large count means nothing to the person, so it shows only when few invites are left.
     if (state.available > LOW_INVITE_COUNT) return explainer
@@ -160,7 +153,7 @@ private fun PendingSection(state: BipeInvitesState, onInviteClick: (BipeInvite) 
     if (pendingInvites.isEmpty()) return
     PreferenceCategory(title = stringResource(R.string.bipe_invites_pending_header)) {
         for (invite in pendingInvites) {
-            val expiry = stringResource(R.string.bipe_invites_expires, formatDate(invite.expiresAt, withTime = false))
+            val expiry = stringResource(R.string.bipe_invites_expires, formatInviteDate(invite.expiresAt, withTime = false))
             val otherDevice = stringResource(R.string.bipe_invites_other_device)
             val description = if (state.shareUrls.containsKey(invite.id)) expiry else "$expiry. $otherDevice"
             ListItem(
@@ -228,15 +221,6 @@ private fun InviteQrCodeSheet(url: String, shareText: String, onDismiss: () -> U
             modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
         )
     }
-}
-
-private fun formatDate(instant: Instant, withTime: Boolean): String {
-    val formatter = if (withTime) {
-        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-    } else {
-        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-    }
-    return formatter.withZone(ZoneId.systemDefault()).format(instant)
 }
 
 @PreviewsDayNight
