@@ -116,6 +116,25 @@ class TimelinePresenterTest {
     @get:Rule
     val warmUpRule = WarmUpRule()
 
+    // TEMP diagnostic for the fork CI, to be removed.
+    @Test
+    fun `zz diag - print the first states`() = runTest {
+        val presenter = createTimelinePresenter()
+        presenter.test {
+            val events = mutableListOf<TimelineState>()
+            events += awaitItem()
+            advanceUntilIdle()
+            cancelAndConsumeRemainingEvents().forEach { e ->
+                if (e is app.cash.turbine.Event.Item) events += e.value
+            }
+            events.forEachIndexed { i, s ->
+                println("BIPEDIAG state[$i] items=${s.timelineItems.size} mode=${s.timelineMode} live=${s.isLive} new=${s.newEventState} focus=${s.focusRequestState}")
+                println("BIPEDIAG state[$i] roomInfo=${runCatching { s.timelineRoomInfo.toString() }.getOrElse { it.toString() }}")
+                println("BIPEDIAG state[$i] full=${runCatching { s.copy(eventSink = {}).toString() }.getOrElse { it.toString() }}")
+            }
+        }
+    }
+
     @Test
     fun `present - initial state`() = runTest {
         val presenter = createTimelinePresenter()
