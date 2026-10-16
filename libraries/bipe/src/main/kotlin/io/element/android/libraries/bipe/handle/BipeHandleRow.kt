@@ -51,11 +51,11 @@ fun BipePublicProfileRow(
     )
 }
 
-/** Settings row: "Convites", the personal invites screen. */
+/** Settings row: "Contatos e convites". Invites live in the contacts screen, one row for both (same as iOS). */
 @Composable
-fun BipeInvitesRow(onClick: () -> Unit) {
+fun BipeContactsRow(onClick: () -> Unit) {
     ListItem(
-        content = { Text(stringResource(R.string.bipe_invites_title)) },
+        content = { Text(stringResource(R.string.bipe_contacts_title)) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
         onClick = onClick,
     )

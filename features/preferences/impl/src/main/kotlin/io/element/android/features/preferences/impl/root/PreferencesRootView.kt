@@ -76,7 +76,7 @@ import io.element.android.libraries.bipe.BipeTrustProfile
 import io.element.android.libraries.bipe.account.ui.BipeAccountRows
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.handle.BipeHandleRow
-import io.element.android.libraries.bipe.handle.BipeInvitesRow
+import io.element.android.libraries.bipe.handle.BipeContactsRow
 import io.element.android.libraries.bipe.handle.BipePublicProfileRow
 import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
 import io.element.android.libraries.bipe.ui.BipeTrustProfileSection
@@ -109,7 +109,7 @@ fun PreferencesRootView(
     onDeactivateClick: () -> Unit,
     modifier: Modifier = Modifier,
     onBipeHandleClick: () -> Unit = {},
-    onBipeInvitesClick: () -> Unit = {},
+    onBipeContactsClick: () -> Unit = {},
     onBipePublicProfileClick: () -> Unit = {},
     // Bipe: the Você tab (ADR 0053) shows this screen without its top bar, with the self-chat row first.
     bipeTabContentPadding: PaddingValues? = null,
@@ -140,7 +140,7 @@ fun PreferencesRootView(
             )
             BipeHandleRow(handle = state.bipeHandle, onClick = onBipeHandleClick) // Bipe
             BipePublicProfileRow(enabled = state.bipePublicProfileEnabled, onClick = onBipePublicProfileClick) // Bipe
-            BipeInvitesRow(onClick = onBipeInvitesClick) // Bipe
+            BipeContactsRow(onClick = onBipeContactsClick) // Bipe
             LocalBipeAccount.current?.let { BipeAccountRows(it) } // Bipe: PIN and beta account move (ADR 0057)
             if (state.userStatusState != null) {
                 UserStatusSection(

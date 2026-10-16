@@ -122,6 +122,28 @@ data class BipeCreatedInvite(
 }
 
 @Serializable
+data class BipeContactMatch(
+    /** E.164, as normalised by the server. */
+    @SerialName("phone") val phone: String,
+    @SerialName("user_id") val userId: String,
+) {
+    /** Never prints the number. */
+    override fun toString(): String = "BipeContactMatch($userId)"
+}
+
+@Serializable
+data class BipeMyPhone(
+    @SerialName("linked") val linked: Boolean,
+    @SerialName("discoverable_by_phone") val discoverableByPhone: Boolean,
+    @Serializable(with = InstantSerializer::class) @SerialName("linked_at") val linkedAt: Instant? = null,
+    /** After this date the number stops being discoverable until confirmed again. */
+    @Serializable(with = InstantSerializer::class) @SerialName("confirm_by") val confirmBy: Instant? = null,
+)
+
+@Serializable
+data class BipeDiscoverySettings(@SerialName("by_phone") val byPhone: Boolean)
+
+@Serializable
 data class BipeHandleAvailability(
     @SerialName("handle") val handle: String,
     @SerialName("available") val available: Boolean,
@@ -323,6 +345,14 @@ internal data class HandleChangesRequest(
 
 @Serializable
 internal data class HandleChangesResponse(@SerialName("changes") val changes: List<BipeHandleChange>)
+
+@Serializable
+internal data class ContactsLookupRequest(@SerialName("phones") val phones: List<String>) {
+    override fun toString(): String = "ContactsLookupRequest(${phones.size})"
+}
+
+@Serializable
+internal data class ContactsLookupResponse(@SerialName("matches") val matches: List<BipeContactMatch>)
 
 @Serializable
 internal data class ResolveHandlesRequest(@SerialName("user_ids") val userIds: List<String>)

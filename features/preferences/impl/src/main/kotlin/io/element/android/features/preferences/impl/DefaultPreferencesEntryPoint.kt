@@ -62,7 +62,7 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
         PreferencesEntryPoint.BipeSettingsScreen.SignOut -> PreferencesFlowNode.NavTarget.SignOut
         PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> PreferencesFlowNode.NavTarget.AccountDeactivation
         PreferencesEntryPoint.BipeSettingsScreen.Handle -> PreferencesFlowNode.NavTarget.BipeHandle
-        PreferencesEntryPoint.BipeSettingsScreen.Invites -> PreferencesFlowNode.NavTarget.BipeInvites
+        PreferencesEntryPoint.BipeSettingsScreen.Contacts -> PreferencesFlowNode.NavTarget.BipeContacts
         PreferencesEntryPoint.BipeSettingsScreen.PublicProfile -> PreferencesFlowNode.NavTarget.BipePublicProfile
     }
 }

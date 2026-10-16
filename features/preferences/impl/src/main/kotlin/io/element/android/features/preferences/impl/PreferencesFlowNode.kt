@@ -50,6 +50,7 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
 import io.element.android.libraries.bipe.handle.BipeHandleNode
+import io.element.android.libraries.bipe.contacts.BipeContactsNode
 import io.element.android.libraries.bipe.invites.BipeInvitesNode
 import io.element.android.libraries.bipe.profile.BipePublicProfileNode
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
@@ -138,6 +139,9 @@ class PreferencesFlowNode(
         data object BipeHandle : NavTarget
 
         @Parcelize
+        data object BipeContacts : NavTarget
+
+        @Parcelize
         data object BipeInvites : NavTarget
 
         @Parcelize
@@ -186,8 +190,8 @@ class PreferencesFlowNode(
                         backstack.push(NavTarget.BipeHandle)
                     }
 
-                    override fun navigateToBipeInvites() {
-                        backstack.push(NavTarget.BipeInvites)
+                    override fun navigateToBipeContacts() {
+                        backstack.push(NavTarget.BipeContacts)
                     }
 
                     override fun navigateToBipePublicProfile() {
@@ -270,6 +274,18 @@ class PreferencesFlowNode(
             }
             NavTarget.BipeHandle -> {
                 createNode<BipeHandleNode>(buildContext)
+            }
+            NavTarget.BipeContacts -> {
+                val callback = object : BipeContactsNode.Callback {
+                    override fun navigateToUserProfile(userId: String) {
+                        callback.navigateToUserProfile(UserId(userId))
+                    }
+
+                    override fun navigateToInvites() {
+                        backstack.push(NavTarget.BipeInvites)
+                    }
+                }
+                createNode<BipeContactsNode>(buildContext, listOf(callback))
             }
             NavTarget.BipeInvites -> {
                 val callback = object : BipeInvitesNode.Callback {

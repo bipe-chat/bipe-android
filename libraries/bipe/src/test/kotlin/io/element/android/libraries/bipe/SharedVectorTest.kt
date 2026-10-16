@@ -120,6 +120,16 @@ class SharedVectorTest {
     }
 
     @Test
+    fun phoneNumbers() {
+        val cases = vectors("phone-numbers.json", "vectors")
+        assertWithMessage("phone-numbers.json is empty").that(cases).isNotEmpty()
+        for (vector in cases) {
+            val input = vector.string("input")!!
+            assertWithMessage("normalizePhone($input)").that(BipePhoneNumber.normalize(input)).isEqualTo(vector.string("e164"))
+        }
+    }
+
+    @Test
     fun inviteCodes() {
         for (vector in vectors("invite-codes.json", "vectors")) {
             val input = vector.string("input")!!

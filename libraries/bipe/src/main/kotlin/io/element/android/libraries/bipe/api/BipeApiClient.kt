@@ -120,6 +120,20 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
         checked { service.revokeInvite(bearer(accessToken), id) }
     }
 
+    // Phone discovery (bipe/docs/phone-link.md)
+
+    /** `POST /v1/contacts/lookup`. At most 500 E.164 numbers per call; returns only the matches. */
+    suspend fun lookupContacts(phones: List<String>, accessToken: String): List<BipeContactMatch> =
+        call { service.lookupContacts(bearer(accessToken), ContactsLookupRequest(phones)) }.matches
+
+    /** `GET /v1/me/phone`. Status only, never the number. */
+    suspend fun myPhone(accessToken: String): BipeMyPhone = call { service.myPhone(bearer(accessToken)) }
+
+    /** `PUT /v1/me/discovery`. */
+    suspend fun setDiscoverableByPhone(value: Boolean, accessToken: String) {
+        call { service.setDiscovery(bearer(accessToken), BipeDiscoverySettings(value)) }
+    }
+
     // Handles
 
     /** `GET /v1/handles/{handle}/availability`. No auth. */
@@ -297,6 +311,15 @@ internal interface BipeApiService {
 
     @DELETE("v1/me/invites/{inviteId}")
     suspend fun revokeInvite(@Header("Authorization") authorization: String, @Path("inviteId") inviteId: String): Response<Unit>
+
+    @POST("v1/contacts/lookup")
+    suspend fun lookupContacts(@Header("Authorization") authorization: String, @Body request: ContactsLookupRequest): Response<ContactsLookupResponse>
+
+    @GET("v1/me/phone")
+    suspend fun myPhone(@Header("Authorization") authorization: String): Response<BipeMyPhone>
+
+    @PUT("v1/me/discovery")
+    suspend fun setDiscovery(@Header("Authorization") authorization: String, @Body request: BipeDiscoverySettings): Response<BipeDiscoverySettings>
 
     @GET("v1/handles/{handle}/availability")
     suspend fun handleAvailability(@Path("handle") handle: String): Response<BipeHandleAvailability>

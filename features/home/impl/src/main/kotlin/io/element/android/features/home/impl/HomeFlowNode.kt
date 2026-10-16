@@ -224,7 +224,7 @@ class HomeFlowNode(
             onSignOutClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.SignOut) },
             onDeactivateClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation) },
             onBipeHandleClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Handle) },
-            onBipeInvitesClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Invites) },
+            onBipeContactsClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Contacts) },
             onBipePublicProfileClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.PublicProfile) },
             bipeTabContentPadding = contentPadding,
             onBipeSelfChatClick = { openBipeSelfChat(selfChatName, navigateToRoom) },

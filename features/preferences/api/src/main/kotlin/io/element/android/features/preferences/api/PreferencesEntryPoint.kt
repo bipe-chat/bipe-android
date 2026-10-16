@@ -57,7 +57,7 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
         SignOut,
         AccountDeactivation,
         Handle,
-        Invites,
+        Contacts,
         PublicProfile,
     }
 

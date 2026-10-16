@@ -43,7 +43,7 @@ class PreferencesRootNode(
         fun navigateToLocationSettings()
         fun navigateToLabs()
         fun navigateToBipeHandle() // Bipe
-        fun navigateToBipeInvites() // Bipe
+        fun navigateToBipeContacts() // Bipe
         fun navigateToBipePublicProfile() // Bipe
     }
 
@@ -92,7 +92,7 @@ class PreferencesRootNode(
             onSignOutClick = callback::startSignOutFlow,
             onDeactivateClick = callback::startAccountDeactivationFlow,
             onBipeHandleClick = callback::navigateToBipeHandle,
-            onBipeInvitesClick = callback::navigateToBipeInvites,
+            onBipeContactsClick = callback::navigateToBipeContacts,
             onBipePublicProfileClick = callback::navigateToBipePublicProfile,
         )
     }
