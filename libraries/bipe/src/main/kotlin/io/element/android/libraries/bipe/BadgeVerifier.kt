@@ -32,7 +32,7 @@ class BadgeVerifier(trustedKeys: Map<String, ByteArray>) {
 
     /**
      * Decodes and verifies envelope JSON. Undecodable JSON is `malformed`.
-     * @param senderMasterKey the sender's cross-signing master key from the SDK (`UserIdentity.masterKey()`), null when unknown.
+     * `senderMasterKey` is the sender's cross-signing master key from the SDK (`UserIdentity.masterKey()`), null when unknown.
      */
     fun verify(
         envelopeJson: String,
