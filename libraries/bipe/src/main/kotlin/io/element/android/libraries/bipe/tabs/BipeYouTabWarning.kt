@@ -7,7 +7,6 @@
 package io.element.android.libraries.bipe.tabs
 
 import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.settings.BipeWayBack
 import io.element.android.libraries.di.SessionScope
@@ -29,7 +28,6 @@ fun interface BipeYouTabWarning {
 }
 
 @ContributesBinding(SessionScope::class)
-@Inject
 class DefaultBipeYouTabWarning(
     private val bipeSession: BipeSession,
     private val matrixClient: MatrixClient,
