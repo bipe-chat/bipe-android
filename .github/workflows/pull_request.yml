@@ -26,7 +26,8 @@ jobs:
   community-prs:
     name: Label Community PRs
     runs-on: ubuntu-latest
-    if: github.event.action == 'opened'
+    # Bipe: the Element team lookup needs an element-hq token, so this runs only in element-hq.
+    if: github.repository == 'element-hq/element-x-android' && github.event.action == 'opened'
     permissions:
       pull-requests: write
     steps:
