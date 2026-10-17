@@ -721,6 +721,9 @@
     <string name="bipe_notifications_tone_silent">Sem som</string>
     <string name="bipe_notifications_tone_current">Som atual: %1$s</string>
     <string name="bipe_notifications_tone_error">Não deu para usar este som. Tente outro.</string>
+    <string name="bipe_notifications_mismatch_title">Escolhas antigas de notificação</string>
+    <string name="bipe_notifications_mismatch_body">Algumas escolhas que você fez antes não aparecem nesta tela, mas continuam valendo. Se você continuar, o Bipe pode mudar parte delas.</string>
+    <string name="bipe_action_continue">Continuar</string>
     <string name="bipe_account_biometric_word_android">biometria</string>
     <string name="bipe_chats_live_location_distance">A cada %1$s</string>
     <string name="bipe_chats_live_location_precise">Para a localização ao vivo funcionar, ligue a Localização Exata para o Bipe nos Ajustes do iPhone.</string>

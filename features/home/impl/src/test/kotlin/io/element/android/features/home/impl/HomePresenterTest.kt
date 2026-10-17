@@ -20,6 +20,7 @@ import io.element.android.features.invite.test.InMemorySeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
+import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
@@ -262,6 +263,7 @@ internal fun createHomePresenter(
     featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
     bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
     seenInvitesStore: SeenInvitesStore = InMemorySeenInvitesStore(),
+    bipeYouTabWarning: BipeYouTabWarning = BipeYouTabWarning { flowOf(false) },
 ) = HomePresenter(
     client = client,
     syncService = syncService,
@@ -275,4 +277,5 @@ internal fun createHomePresenter(
     featureFlagService = featureFlagService,
     bipeSelfChat = bipeSelfChat,
     seenInvitesStore = seenInvitesStore,
+    bipeYouTabWarning = bipeYouTabWarning,
 )
