@@ -135,6 +135,7 @@ fun aValidNotificationSettingsState(
     pendingMessageSoundPickerLaunch = pendingMessageSoundPickerLaunch,
     pendingCallRingtonePickerLaunch = pendingCallRingtonePickerLaunch,
     showAllActivityInRoomList = showAllActivityInRoomList,
+    bipeIsDeveloperBuild = true,
     eventSink = eventSink,
 )
 
@@ -169,6 +170,7 @@ fun aInvalidNotificationSettingsState(
     pendingMessageSoundPickerLaunch = 0,
     pendingCallRingtonePickerLaunch = 0,
     showAllActivityInRoomList = false,
+    bipeIsDeveloperBuild = true,
     eventSink = eventSink,
 )
 

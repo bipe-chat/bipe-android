@@ -37,15 +37,15 @@ data class PreferencesRootState(
     // Bipe: the user's handle without "@", or null when there is none (or it is not loaded yet).
     val bipeHandle: String?,
     // Bipe: whether the public profile is on (ADR 0041), or null while it is not loaded.
-    val bipePublicProfileEnabled: Boolean? = null,
+    val bipePublicProfileEnabled: Boolean?,
     // Bipe: values shown as subtitles of the group rows under "Configurações" (ADR 0112). null while not loaded.
-    val bipeWhoCanMessage: BipeWhoCanMessage? = null,
-    val bipeWaysBackCount: Int? = null,
-    val bipeNotificationsOn: Boolean? = null,
+    val bipeWhoCanMessage: BipeWhoCanMessage?,
+    val bipeWaysBackCount: Int?,
+    val bipeNotificationsOn: Boolean?,
     // Bipe: copied on a long press on the version footer (ADR 0112). Never shown.
-    val bipeDeviceId: String = "",
+    val bipeDeviceId: String,
     // Bipe: Analytics, Labs and "Report a problem" show only in builds that are not release builds (ADR 0112).
-    val bipeIsDeveloperBuild: Boolean = false,
+    val bipeIsDeveloperBuild: Boolean,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 
