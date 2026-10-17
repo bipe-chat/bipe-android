@@ -22,6 +22,7 @@ import io.element.android.libraries.bipe.api.BipeSignupResponse
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.api.observer.SessionListener
 import io.element.android.libraries.sessionstorage.api.observer.SessionObserver
 import kotlinx.coroutines.delay
@@ -44,6 +45,7 @@ class BipeDeviceAccount(
     private val vault: BipeAccountVault,
     private val tokenStore: BipeRecoveryTokenStore,
     private val appLock: BipeAppLock,
+    private val sessionStore: SessionStore,
     sessionObserver: SessionObserver,
 ) {
     init {
@@ -189,9 +191,7 @@ class BipeDeviceAccount(
         authenticationService.setHomeserver(BipeConfig.HOMESERVER_BASE_URL).getOrThrow()
         val sessionId = authenticationService.login(userId, password).getOrThrow()
         vault.update { it.copy(signedInAt = it.signedInAt + (userId to System.currentTimeMillis())) }
-        if (pin != null) {
-            runCatchingExceptions { appLock.setPin(pin) }.onFailure { Timber.e(it, "Bipe: app lock PIN not set") }
-        }
+        if (pin != null) adoptAccountPin(pin)
         sessionId
     }
 
@@ -300,6 +300,19 @@ class BipeDeviceAccount(
     }
 
     internal val lock: BipeAppLock get() = appLock
+
+    /**
+     * The device PIN locks the app and belongs to the phone (ADR 0086). It follows the account PIN only while the phone
+     * holds one account, so a one-account user keeps one PIN for both. With more accounts, a set device PIN stays.
+     */
+    internal suspend fun devicePinFollowsAccountPin(): Boolean = sessionStore.numberOfSessions() <= 1
+
+    /** [pin] is an account PIN the user just typed or set. It becomes the device PIN when [devicePinFollowsAccountPin] or none is set. */
+    internal suspend fun adoptAccountPin(pin: String) {
+        runCatchingExceptions {
+            if (devicePinFollowsAccountPin() || !appLock.isPinSet()) appLock.setPin(pin)
+        }.onFailure { Timber.e(it, "Bipe: app lock PIN not set") }
+    }
 
     private companion object {
         const val MAX_DISMISSED = 50

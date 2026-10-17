@@ -11,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -78,6 +80,10 @@ class BipeSettingsGroupPresenter(
 
         // Sua conta (#360)
         val waysBack = if (group == BipeSettingsGroup.ACCOUNT) BipeSettingsValues.waysBack(bipeSession, matrixClient) else null
+        var hasSeparateDevicePin by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            if (group == BipeSettingsGroup.ACCOUNT) hasSeparateDevicePin = bipeSession.account.hasSeparateDevicePin()
+        }
 
         // Privacidade (#359)
         val whoCanMessage by bipeSession.privacy.messaging.collectAsState()
@@ -130,6 +136,7 @@ class BipeSettingsGroupPresenter(
             version = remember { versionFormatter.get() },
             deviceId = matrixClient.deviceId.value,
             eventSink = ::handleEvent,
+            hasSeparateDevicePin = hasSeparateDevicePin,
         )
     }
 
