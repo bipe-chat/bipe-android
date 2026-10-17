@@ -16,6 +16,7 @@ import io.element.android.features.home.impl.roomlist.aRoomsContentState
 import io.element.android.features.home.impl.roomlist.generateRoomListRoomSummaryList
 import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.features.home.impl.spaces.aHomeSpacesState
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.core.UserId
@@ -66,6 +67,8 @@ internal fun aHomeState(
     canReportBug: Boolean = true,
     showMultiAccountAnnouncement: Boolean = false,
     bipeBadges: BipeTabBadges = BipeTabBadges.NONE,
+    bipeAccounts: List<MatrixUser> = currentUserAndNeighbors.distinctBy { it.userId },
+    bipeMaxAccounts: Int = BipeRegistries.MAX_PERSONAL_ACCOUNTS,
     eventSink: (HomeEvent) -> Unit = {}
 ) = HomeState(
     currentUserAndNeighbors = currentUserAndNeighbors.toImmutableList(),
@@ -78,5 +81,7 @@ internal fun aHomeState(
     roomListState = roomListState,
     homeSpacesState = homeSpacesState,
     bipeBadges = bipeBadges,
+    bipeAccounts = bipeAccounts.toImmutableList(),
+    bipeMaxAccounts = bipeMaxAccounts,
     eventSink = eventSink,
 )

@@ -27,6 +27,7 @@ import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.account.BipeAccountCap
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
@@ -39,6 +40,7 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -73,6 +75,15 @@ class HomePresenter(
                 currentUserWithNeighborsBuilder::build,
             )
         }.collectAsState(initial = persistentListOf(matrixUser))
+        // Bipe: the avatar menu lists the accounts, the current one first (ADR 0086, #267). The neighbours hold every account
+        // up to three, which covers the cap; no second flow, so the presenter emits no extra state.
+        val bipeAccounts by remember {
+            derivedStateOf {
+                val current = currentUserAndNeighbors.getOrNull(1) ?: currentUserAndNeighbors.first()
+                (listOf(current) + currentUserAndNeighbors).distinctBy { it.userId }.toImmutableList()
+            }
+        }
+        val bipeMaxAccounts by BipeAccountCap.maxPersonalAccounts.collectAsState()
         val isOnline by syncService.isOnline.collectAsState()
         val canReportBug by remember { rageshakeFeatureAvailability.isAvailable() }.collectAsState(false)
         val showMultiAccountAnnouncement by remember {
@@ -163,6 +174,8 @@ class HomePresenter(
             showMultiAccountAnnouncement = showMultiAccountAnnouncement,
             eventSink = ::handleEvent,
             bipeBadges = bipeBadges.copy(youWarning = bipeYouWarning),
+            bipeAccounts = bipeAccounts,
+            bipeMaxAccounts = bipeMaxAccounts,
         )
     }
 }

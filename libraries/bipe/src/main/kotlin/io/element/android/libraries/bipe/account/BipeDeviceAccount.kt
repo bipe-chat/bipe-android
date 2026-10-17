@@ -200,7 +200,8 @@ class BipeDeviceAccount(
      */
     suspend fun signInSilently(): Result<SessionId>? {
         val data = vault.read()
-        val (userId, account) = data.accounts.entries.lastOrNull { it.value.password != null } ?: return null
+        val signedIn = signedInUserIds()
+        val (userId, account) = data.accounts.entries.lastOrNull { it.value.password != null && it.key !in signedIn } ?: return null
         val password = account.password ?: return null
         Timber.i("Bipe: silent sign-in for $userId")
         // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for the app lock.
@@ -210,7 +211,7 @@ class BipeDeviceAccount(
     }
 
     /** `true` when the synced store has a recovery token (e.g. a new phone with the same Google account). */
-    suspend fun hasRecoveryToken(): Boolean = tokenStore.readAll().isNotEmpty()
+    suspend fun hasRecoveryToken(): Boolean = tokenStore.recoveryToken(signedInUserIds()) != null
 
     /** `true` when the token of [userId] sits in the synced store (Block Store), so it reaches a new phone (ADR 0059). */
     suspend fun hasSyncedRecoveryToken(userId: String): Boolean = tokenStore.hasSyncedToken(userId)
@@ -220,7 +221,7 @@ class BipeDeviceAccount(
      * signs in. An unknown token is deleted from the store.
      */
     suspend fun recoverWithToken(pin: String): Result<SessionId> = runCatchingExceptions {
-        val (tokenUserId, token) = tokenStore.recoveryToken()
+        val (tokenUserId, token) = tokenStore.recoveryToken(signedInUserIds())
             ?: throw BipeApiException.Server(BipeApiErrorCode.RECOVERY_INVALID, reason = null, statusCode = 403)
         val credentials = try {
             apiClient.recoverWithToken(token, pin)
@@ -306,6 +307,9 @@ class BipeDeviceAccount(
      * holds one account, so a one-account user keeps one PIN for both. With more accounts, a set device PIN stays.
      */
     internal suspend fun devicePinFollowsAccountPin(): Boolean = sessionStore.numberOfSessions() <= 1
+
+    /** Accounts with a session on this phone. Adding an account never signs one of them in again (ADR 0086). */
+    private suspend fun signedInUserIds(): Set<String> = sessionStore.getAllSessions().mapTo(mutableSetOf()) { it.userId }
 
     /** [pin] is an account PIN the user just typed or set. It becomes the device PIN when [devicePinFollowsAccountPin] or none is set. */
     internal suspend fun adoptAccountPin(pin: String) {
