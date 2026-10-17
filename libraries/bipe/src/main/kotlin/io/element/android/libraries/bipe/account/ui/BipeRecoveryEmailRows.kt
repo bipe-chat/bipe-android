@@ -56,7 +56,11 @@ fun BipeRecoveryEmailRows(account: BipeAccountSession, modifier: Modifier = Modi
 }
 
 @Composable
-private fun BipeRecoveryEmailRows(account: BipeAccountSession, status: BipeAccountStatus, modifier: Modifier = Modifier) {
+private fun BipeRecoveryEmailRows(
+    account: BipeAccountSession,
+    status: BipeAccountStatus,
+    modifier: Modifier = Modifier,
+) {
     val scope = rememberCoroutineScope()
     var dialog by remember { mutableStateOf<EmailDialog?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -75,18 +79,7 @@ private fun BipeRecoveryEmailRows(account: BipeAccountSession, status: BipeAccou
         sentTo?.let { add(stringResource(R.string.bipe_email_sent, it)) }
         if (!hasEmail && sentTo == null) add(stringResource(R.string.bipe_fallback_reminder))
     }
-    fun send(request: suspend () -> Result<Unit>, onSuccess: () -> Unit) {
-        dialog = null
-        busy = true
-        scope.launch {
-            val result = request()
-            busy = false
-            result
-                .onSuccess { onSuccess() }
-                .onFailure { dialog = EmailDialog.Error(account.messageOf(it)) }
-        }
-
-    Column(modifier) {
+    Column(modifier = modifier) {
         ListItem(
             content = { Text(stringResource(R.string.bipe_email_title)) },
             supportingContent = { Text(lines.joinToString("\n")) },
@@ -102,6 +95,18 @@ private fun BipeRecoveryEmailRows(account: BipeAccountSession, status: BipeAccou
                 enabled = !busy,
                 onClick = { dialog = EmailDialog.ConfirmRemove },
             )
+        }
+
+        fun send(request: suspend () -> Result<Unit>, onSuccess: () -> Unit) {
+            dialog = null
+            busy = true
+            scope.launch {
+                val result = request()
+                busy = false
+                result
+                    .onSuccess { onSuccess() }
+                    .onFailure { dialog = EmailDialog.Error(account.messageOf(it)) }
+            }
         }
 
         when (val shown = dialog) {
