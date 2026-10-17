@@ -18,14 +18,14 @@ import io.element.android.features.lockscreen.impl.biometric.BiometricAuthentica
 import io.element.android.features.lockscreen.impl.biometric.BiometricAuthenticatorManager
 import io.element.android.features.lockscreen.impl.pin.PinCodeManager
 import io.element.android.features.lockscreen.impl.storage.LockScreenStore
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.account.BipeBiometricUnlock
 import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
 import kotlinx.coroutines.launch
+import io.element.android.libraries.bipe.R as BipeR
 
 /** Bipe: the biometric unlock switch of Element's lock screen settings, shown in Sua conta (ADR 0112). */
 @ContributesBinding(AppScope::class)
-class BipeBiometricUnlockImpl(
+class DefaultBipeBiometricUnlock(
     private val pinCodeManager: PinCodeManager,
     private val lockScreenStore: LockScreenStore,
     private val biometricAuthenticatorManager: BiometricAuthenticatorManager,
