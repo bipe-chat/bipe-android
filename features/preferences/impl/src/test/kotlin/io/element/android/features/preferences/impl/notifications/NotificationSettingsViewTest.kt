@@ -214,7 +214,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 eventSink = eventsRecorder
             ),
         )
-        clickOn(CommonStrings.action_continue)
+        clickOn(BipeR.string.bipe_action_continue)
         eventsRecorder.assertList(
             listOf(
                 NotificationSettingsEvent.RefreshSystemNotificationsEnabled,

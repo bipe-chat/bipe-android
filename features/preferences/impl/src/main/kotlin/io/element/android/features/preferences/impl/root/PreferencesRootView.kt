@@ -45,6 +45,7 @@ import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.handle.BipeInvitesRow
 import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
+import io.element.android.libraries.bipe.settings.BipeWayBack
 import io.element.android.libraries.bipe.ui.BipeTrustProfileCard
 import io.element.android.libraries.designsystem.components.avatar.AvatarRow
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
@@ -184,7 +185,7 @@ private fun BipeSettingsGroupRows(
                 leadingContent = ListItemContent.Icon(IconSource.Vector(group.icon())),
                 // The only warning badge in Settings: one way back or none (ADR 0112).
                 trailingContent = ListItemContent.Badge.takeIf {
-                    group == BipeSettingsGroup.ACCOUNT && state.bipeWaysBackCount ?: Int.MAX_VALUE <= 1
+                    group == BipeSettingsGroup.ACCOUNT && BipeWayBack.needsWarning(state.bipeWaysBackCount)
                 },
                 onClick = { onGroupClick(group) },
             )

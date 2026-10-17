@@ -29,5 +29,8 @@ enum class BipeWayBack {
             if (recoveryKeyEnabled) add(RECOVERY_KEY)
             if (status.recoveryTokenSet && syncedTokenPresent) add(SYNCED_TOKEN)
         }
+
+        /** One way back or none: the only warning in Settings, on the "Sua conta" row and the Você tab. `null` is not loaded. */
+        fun needsWarning(count: Int?): Boolean = count != null && count <= 1
     }
 }

@@ -415,6 +415,7 @@ private fun HomeBottomBar(
                 isSelected = isSelected,
                 onClick = { onItemClick(item) },
                 counter = badge.takeIf { it > 0 }?.coerceAtMost(Int.MAX_VALUE.toLong())?.toInt(),
+                showWarning = item == HomeNavigationBarItem.You && bipeBadges.youWarning,
             )
         }
     }
