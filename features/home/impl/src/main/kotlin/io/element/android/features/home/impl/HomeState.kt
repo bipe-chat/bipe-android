@@ -11,9 +11,9 @@ package io.element.android.features.home.impl
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
-import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import kotlinx.collections.immutable.ImmutableList
 
 data class HomeState(
@@ -32,7 +32,7 @@ data class HomeState(
     val showMultiAccountAnnouncement: Boolean,
     val eventSink: (HomeEvent) -> Unit,
     // Bipe: tab bar badges (ADR 0053)
-    val bipeBadges: BipeTabBadges = BipeTabBadges.NONE,
+    val bipeBadges: BipeTabBadges,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem.isBipeRoomList && roomListState.displayFilters // Bipe: Conversas and Grupos

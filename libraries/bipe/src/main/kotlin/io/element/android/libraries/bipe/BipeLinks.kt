@@ -6,7 +6,9 @@
 
 package io.element.android.libraries.bipe
 
+import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import java.net.URI
 import java.util.Locale
 
@@ -22,7 +24,7 @@ object BipeProfileLink {
     private val acceptedHosts = setOf(HOST, "www.$HOST", LEGACY_HOST, "www.$LEGACY_HOST")
 
     fun url(handle: String): String? =
-        runCatching { URI("https", HOST, "/@$handle", null).toASCIIString() }.getOrNull()
+        runCatchingExceptions { URI("https", HOST, "/@$handle", null).toASCIIString() }.getOrNull()
 
     /** The handle in a profile link, lowercased, or `null` when the URL is not one. */
     fun handle(url: String): String? {
@@ -34,7 +36,7 @@ object BipeProfileLink {
 
     /** The Matrix user ID in a `https://matrix.to/#/@user:server` permalink. */
     fun matrixUserId(permalink: String): String? {
-        val uri = runCatching { URI(permalink) }.getOrNull() ?: return null
+        val uri = runCatchingExceptions { URI(permalink) }.getOrNull() ?: return null
         if (uri.host != "matrix.to") return null
         val fragment = uri.fragment ?: return null
         val userId = fragment.substringBefore('?').removePrefix("/")
@@ -43,7 +45,7 @@ object BipeProfileLink {
 
     /** Decoded, non-empty path components of an `https` URL on the Bipe host, or `null`. */
     internal fun bipePathComponents(url: String): List<String>? {
-        val uri = runCatching { URI(url) }.getOrNull() ?: return null
+        val uri = runCatchingExceptions { URI(url) }.getOrNull() ?: return null
         val host = uri.host?.lowercase(Locale.ROOT)
         if (uri.scheme != "https" || host !in acceptedHosts) return null
         return uri.path.orEmpty().split('/').filter { it.isNotEmpty() }
@@ -84,9 +86,23 @@ object BipeRecoveryLink {
     fun token(url: String): String? {
         val components = BipeProfileLink.bipePathComponents(url) ?: return null
         if (components != listOf("recuperar")) return null
-        val fragment = runCatching { URI(url).fragment }.getOrNull() ?: return null
+        val fragment = runCatchingExceptions { URI(url).fragment }.getOrNull() ?: return null
         return fragment.takeIf { tokenPattern.matches(it) }
     }
+}
+
+/**
+ * The Termos de uso and the Política de privacidade on the public site (ADR 0113). Paths: bipe-shared/registries/legal.json (generated).
+ * English pages for an English device, else Portuguese: the same rule as the `lang` the API gets.
+ */
+object BipeLegalLinks {
+    fun termsUrl(): String = url(if (isEnglish()) BipeRegistries.EN_TERMS_PATH else BipeRegistries.TERMS_PATH)
+
+    fun privacyUrl(): String = url(if (isEnglish()) BipeRegistries.EN_PRIVACY_PATH else BipeRegistries.PRIVACY_PATH)
+
+    private fun isEnglish() = BipeApiClient.emailLanguage() == "en"
+
+    private fun url(path: String) = "https://${BipeProfileLink.HOST}$path"
 }
 
 /** A normalised invite code. Prints redacted, because routes and actions get logged. */

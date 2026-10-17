@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.account
 
+import android.util.Base64
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -23,7 +24,6 @@ import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.sessionstorage.api.observer.SessionListener
 import io.element.android.libraries.sessionstorage.api.observer.SessionObserver
-import android.util.Base64
 import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.security.SecureRandom
@@ -67,6 +67,8 @@ class BipeDeviceAccount(
      */
     suspend fun signUp(request: BipeSignupRequest, pin: String): Result<BipeSignupResponse> = runCatchingExceptions {
         require(request.password == null) { "Device-first sign-up sends no password" }
+        // Only a tick on the sign-up screen sets it (ADR 0113). The app never sends an acceptance on the user's behalf.
+        require(request.termsVersion != null) { "Sign-up sends the accepted terms version" }
         // Stored before the first request goes out, so a lost answer can be fetched again (ADR 0094).
         val pending = pendingSignup(pin)
         val accountPin = pending.pin ?: pin
@@ -84,6 +86,7 @@ class BipeDeviceAccount(
         val token = response.recoveryToken ?: throw BipeApiException.UnexpectedResponse(statusCode = 201)
         Timber.i("Bipe device-first account created: ${response.userId}")
         storeCredentials(BipeCredentials(response.userId, password, token))
+        rememberInviter(response)
         signIn(response.userId, password, accountPin).getOrThrow()
         vault.update { it.copy(pendingSignup = null) }
         response
@@ -106,6 +109,7 @@ class BipeDeviceAccount(
         val token = response.recoveryToken ?: return null
         Timber.i("Bipe: finishing the sign-up of ${response.userId}")
         storeCredentials(BipeCredentials(response.userId, password, token))
+        rememberInviter(response)
         return signIn(response.userId, password, pending.pin).onSuccess { vault.update { it.copy(pendingSignup = null) } }
     }
 
@@ -145,6 +149,31 @@ class BipeDeviceAccount(
     private val BipeApiException.Server.isSignupInProgress: Boolean
         get() = code == BipeApiErrorCode.RATE_LIMITED && reason == "signup_in_progress"
 
+    /** Kept before the sign-in, so the first session finds it (ADR 0034). */
+    private suspend fun rememberInviter(response: BipeSignupResponse) {
+        val inviterUserId = response.inviterUserId ?: return
+        vault.update {
+            it.copy(
+                pendingInviters = it.pendingInviters + (response.userId to inviterUserId),
+                inviterGreetings = it.inviterGreetings + (response.userId to inviterUserId),
+            )
+        }
+    }
+
+    /** The inviter of [userId] while the user has not sent them a first message (ADR 0034). */
+    internal suspend fun inviterGreeting(userId: String): String? = vault.read().inviterGreetings[userId]
+
+    internal suspend fun endInviterGreeting(userId: String) {
+        vault.update { it.copy(inviterGreetings = it.inviterGreetings - userId) }
+    }
+
+    /** The inviter of [userId] after a personal-invite sign-up, once: the stored value is removed (ADR 0034). */
+    internal suspend fun takePendingInviter(userId: String): String? {
+        val inviterUserId = vault.read().pendingInviters[userId] ?: return null
+        vault.update { it.copy(pendingInviters = it.pendingInviters - userId) }
+        return inviterUserId
+    }
+
     /** Keeps new credentials: the password on this device, the token in the synced store. */
     suspend fun storeCredentials(credentials: BipeCredentials) {
         vault.update { it.copy(userId = credentials.userId, password = credentials.password) }
@@ -179,6 +208,9 @@ class BipeDeviceAccount(
 
     /** `true` when the synced store has a recovery token (e.g. a new phone with the same Google account). */
     suspend fun hasRecoveryToken(): Boolean = tokenStore.read() != null
+
+    /** `true` when the recovery token sits in the synced store (Block Store), so it reaches a new phone (ADR 0059). */
+    suspend fun hasSyncedRecoveryToken(): Boolean = tokenStore.hasSyncedToken()
 
     /** Forgets the synced token, e.g. when the user wants a new account on this phone. */
     suspend fun forgetRecoveryToken() = tokenStore.delete()

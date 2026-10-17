@@ -6,19 +6,24 @@
 
 package io.element.android.libraries.bipe.api
 
-import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.libraries.bipe.BipeHandleProblem
 import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipePinProblem
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.bipe.settings.BipeDataExportFile
+import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -30,6 +35,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Locale
 
 /** Client for the Bipe API. Contract: bipe-shared/api/openapi.yaml. */
@@ -49,6 +55,11 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     /** `GET /v1/me/account`. PIN state and the recoveries of the caller's account. */
     suspend fun account(accessToken: String): BipeAccountStatus = call { service.account(bearer(accessToken)) }
+
+    /** `POST /v1/me/terms`. Records that the caller accepted the legal texts of [termsVersion] (ADR 0113). HTTP 204. */
+    suspend fun acceptTerms(termsVersion: String, accessToken: String) {
+        checked { service.acceptTerms(bearer(accessToken), TermsRequest(termsVersion)) }
+    }
 
     /** `PUT /v1/me/pin`. Set or change the PIN. The app does the biometric check before it calls this. */
     suspend fun setPin(pin: String, accessToken: String) {
@@ -154,11 +165,48 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `DELETE /v1/me/profile/photo`. */
     suspend fun deleteMyProfilePhoto(accessToken: String): BipeMyProfile = call { service.deleteMyProfilePhoto(bearer(accessToken)) }
 
+    // Privacy (ADR 0016, ADR 0112)
+
+    /** `GET /v1/me/messaging`. Who can message the caller. */
+    suspend fun messaging(accessToken: String): BipeMessagingSetting = call { service.messaging(bearer(accessToken)) }
+
+    /** `PUT /v1/me/messaging`. */
+    suspend fun setMessaging(setting: BipeMessagingSetting, accessToken: String): BipeMessagingSetting =
+        call { service.setMessaging(bearer(accessToken), setting) }
+
+    /** `GET /v1/me/discovery`. */
+    suspend fun discovery(accessToken: String): BipeDiscoverySettings = call { service.discovery(bearer(accessToken)) }
+
+    /** `PUT /v1/me/discovery`. */
+    suspend fun setDiscovery(settings: BipeDiscoverySettings, accessToken: String): BipeDiscoverySettings =
+        call { service.setDiscovery(bearer(accessToken), settings) }
+
+    /** `GET /v1/me/phone`. The link status, never the number. */
+    suspend fun phone(accessToken: String): BipePhoneStatus = call { service.phone(bearer(accessToken)) }
+
+    /**
+     * `GET /v1/me/export` (LGPD art. 18, #364). The body is saved as it is, not parsed. The file name comes from
+     * `content-disposition` when it has the contract's form, else the app makes the same name for today.
+     */
+    suspend fun export(accessToken: String): BipeDataExportFile {
+        val response = checked { service.export(bearer(accessToken)) }
+        val body = response.body() ?: throw BipeApiException.UnexpectedResponse(statusCode = response.code())
+        val bytes = body.use { it.bytes() }
+        val fileName = response.headers()["content-disposition"]
+            ?.let { EXPORT_FILE_NAME.find(it)?.value }
+            ?: "bipe-dados-${LocalDate.now()}.json"
+        return BipeDataExportFile(fileName = fileName, bytes = bytes)
+    }
+
     companion object {
         private val JPEG = "image/jpeg".toMediaType()
+        private val EXPORT_FILE_NAME = Regex("""bipe-dados-\d{4}-\d{2}-\d{2}\.json""")
 
         /** The `lang` for emails Bipe sends: English for an English device, else Portuguese (the app's fallback). Same rule as iOS. */
-        fun emailLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
+        fun emailLanguage(): String = appLanguage()
+
+        /** The app language for Bipe pages and copy: `en` for an English device, else `pt` (the app's fallback). */
+        fun appLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
 
         /**
          * [baseUrl] is the API root, e.g. `https://api.bipe.net.br`.
@@ -212,8 +260,8 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
         }
 
         if (!response.isSuccessful) {
-            val errorBody = runCatching { response.errorBody()?.string() }.getOrNull()
-                ?.let { runCatching { errorJson.decodeFromString(BipeErrorBody.serializer(), it) }.getOrNull() }
+            val errorBody = runCatchingExceptions { response.errorBody()?.string() }.getOrNull()
+                ?.let { runCatchingExceptions { errorJson.decodeFromString(BipeErrorBody.serializer(), it) }.getOrNull() }
             if (errorBody != null) {
                 throw BipeApiException.Server(
                     code = BipeApiErrorCode.fromId(errorBody.error) ?: BipeApiErrorCode.INTERNAL,
@@ -228,6 +276,10 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     }
 }
 
+/** `POST /v1/me/terms` body. Internal, not private: [BipeApiService] takes it, and Kotlin does not let an internal interface expose a file-private type. */
+@Serializable
+internal data class TermsRequest(@SerialName("terms_version") val termsVersion: String)
+
 /** Retrofit encodes each `@Path` value, so a handle cannot add path segments. */
 internal interface BipeApiService {
     @POST("v1/signup")
@@ -241,6 +293,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/account")
     suspend fun account(@Header("Authorization") authorization: String): Response<BipeAccountStatus>
+
+    @POST("v1/me/terms")
+    suspend fun acceptTerms(@Header("Authorization") authorization: String, @Body request: TermsRequest): Response<Unit>
 
     @PUT("v1/me/pin")
     suspend fun setPin(@Header("Authorization") authorization: String, @Body request: PinRequest): Response<Unit>
@@ -305,6 +360,24 @@ internal interface BipeApiService {
     @DELETE("v1/me/handle")
     suspend fun removeMyHandle(@Header("Authorization") authorization: String): Response<BipeMyHandle>
 
+    @GET("v1/me/messaging")
+    suspend fun messaging(@Header("Authorization") authorization: String): Response<BipeMessagingSetting>
+
+    @PUT("v1/me/messaging")
+    suspend fun setMessaging(@Header("Authorization") authorization: String, @Body request: BipeMessagingSetting): Response<BipeMessagingSetting>
+
+    @GET("v1/me/discovery")
+    suspend fun discovery(@Header("Authorization") authorization: String): Response<BipeDiscoverySettings>
+
+    @PUT("v1/me/discovery")
+    suspend fun setDiscovery(@Header("Authorization") authorization: String, @Body request: BipeDiscoverySettings): Response<BipeDiscoverySettings>
+
+    @GET("v1/me/phone")
+    suspend fun phone(@Header("Authorization") authorization: String): Response<BipePhoneStatus>
+
+    @GET("v1/me/export")
+    suspend fun export(@Header("Authorization") authorization: String): Response<ResponseBody>
+
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>
 
@@ -344,7 +417,10 @@ enum class BipeApiErrorCode(val id: String) {
     PIN_BLOCKED("pin_blocked"),
     PIN_NOT_SET("pin_not_set"),
     RECOVERY_INVALID("recovery_invalid"),
-    EMAIL_UNAVAILABLE("email_unavailable");
+    EMAIL_UNAVAILABLE("email_unavailable"),
+
+    /** HTTP 403, reason `missing` or `outdated`: the sign-up or the account lacks the current legal version (ADR 0113). */
+    TERMS_REQUIRED("terms_required");
 
     companion object {
         fun fromId(id: String): BipeApiErrorCode? = entries.firstOrNull { it.id == id }
@@ -398,6 +474,7 @@ sealed class BipeApiException(cause: Throwable? = null) : Exception(cause) {
                 stringProvider.getString(R.string.bipe_pin_blocked_body, BipeRegistries.PIN_MAX_WRONG_TRIES.toString())
             BipeApiErrorCode.RECOVERY_INVALID -> stringProvider.getString(R.string.bipe_error_recovery_invalid)
             BipeApiErrorCode.EMAIL_UNAVAILABLE -> stringProvider.getString(R.string.bipe_error_email_unavailable)
+            BipeApiErrorCode.TERMS_REQUIRED -> stringProvider.getString(R.string.bipe_signup_terms_required)
             // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).
             BipeApiErrorCode.ATTESTATION_INVALID, BipeApiErrorCode.PIN_NOT_SET,
             BipeApiErrorCode.BAD_REQUEST, BipeApiErrorCode.NOT_FOUND, BipeApiErrorCode.INTERNAL ->

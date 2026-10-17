@@ -15,6 +15,7 @@ import dev.zacsweers.metro.ContributesBinding
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.preferences.impl.developer.appsettings.AppDeveloperSettingsNode
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 
 @ContributesBinding(AppScope::class)
 class DefaultPreferencesEntryPoint : PreferencesEntryPoint {
@@ -50,17 +51,22 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
     // Bipe: the Você tab rows (ADR 0053)
     is PreferencesEntryPoint.InitialTarget.BipeEditProfile -> PreferencesFlowNode.NavTarget.UserProfile(matrixUser)
     is PreferencesEntryPoint.InitialTarget.BipeScreen -> when (screen) {
+        PreferencesEntryPoint.BipeSettingsScreen.Profile -> BipeSettingsGroup.PROFILE.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Privacy -> BipeSettingsGroup.PRIVACY.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Account -> BipeSettingsGroup.ACCOUNT.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Chats -> BipeSettingsGroup.CHATS.toNavTarget()
+        PreferencesEntryPoint.BipeSettingsScreen.Help -> BipeSettingsGroup.HELP.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Analytics -> PreferencesFlowNode.NavTarget.AnalyticsSettings
-        PreferencesEntryPoint.BipeSettingsScreen.About -> PreferencesFlowNode.NavTarget.About
+        PreferencesEntryPoint.BipeSettingsScreen.About -> BipeSettingsGroup.HELP.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
-        PreferencesEntryPoint.BipeSettingsScreen.LockScreen -> PreferencesFlowNode.NavTarget.LockScreenSettings
+        PreferencesEntryPoint.BipeSettingsScreen.LockScreen -> BipeSettingsGroup.ACCOUNT.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Media -> PreferencesFlowNode.NavTarget.MediaSettings
         PreferencesEntryPoint.BipeSettingsScreen.Location -> PreferencesFlowNode.NavTarget.LocationSettings
         PreferencesEntryPoint.BipeSettingsScreen.Labs -> PreferencesFlowNode.NavTarget.Labs
-        PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety -> PreferencesFlowNode.NavTarget.ModerationAndSafety
+        PreferencesEntryPoint.BipeSettingsScreen.ModerationAndSafety -> BipeSettingsGroup.PRIVACY.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Notifications -> PreferencesFlowNode.NavTarget.NotificationSettings
         PreferencesEntryPoint.BipeSettingsScreen.SignOut -> PreferencesFlowNode.NavTarget.SignOut
-        PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> PreferencesFlowNode.NavTarget.AccountDeactivation
+        PreferencesEntryPoint.BipeSettingsScreen.AccountDeactivation -> BipeSettingsGroup.ACCOUNT.toNavTarget()
         PreferencesEntryPoint.BipeSettingsScreen.Handle -> PreferencesFlowNode.NavTarget.BipeHandle
         PreferencesEntryPoint.BipeSettingsScreen.Invites -> PreferencesFlowNode.NavTarget.BipeInvites
         PreferencesEntryPoint.BipeSettingsScreen.PublicProfile -> PreferencesFlowNode.NavTarget.BipePublicProfile

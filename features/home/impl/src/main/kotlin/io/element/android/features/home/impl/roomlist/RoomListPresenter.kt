@@ -49,6 +49,8 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.featureflag.api.ShowAllActivityInRoomListFeature
@@ -56,10 +58,10 @@ import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermiss
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
+import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.roomlist.RoomList
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
 import io.element.android.libraries.matrix.ui.safety.rememberHideInvitesAvatar
-import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.watchers.AnalyticsColdStartWatcher
@@ -96,6 +98,7 @@ class RoomListPresenter(
     private val globalSearchPresenter: Presenter<GlobalSearchState>,
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
+    private val bipeInviterGreeting: BipeInviterGreeting,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
     private val isBipeAccount = client.sessionId.value.endsWith(":${BipeConfig.SERVER_NAME}") // Bipe: bipe#201
@@ -127,6 +130,7 @@ class RoomListPresenter(
         // Bipe: the fixed category of the list. Conversas (direct chats) is the first tab (ADR 0053).
         var bipeShowsGroups by rememberSaveable { mutableStateOf(false) }
         val bipeSelfChatRoomId by bipeSelfChat.roomId.collectAsState()
+        val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
 
         val contextMenu = remember { mutableStateOf<RoomListState.ContextMenu>(RoomListState.ContextMenu.Hidden) }
         val declineInviteMenu = remember { mutableStateOf<RoomListState.DeclineInviteMenu>(RoomListState.DeclineInviteMenu.Hidden) }
@@ -156,6 +160,7 @@ class RoomListPresenter(
                     leaveRoomState.eventSink(LeaveRoomEvent.LeaveRoom(event.roomId, needsConfirmation = event.needsConfirmation))
                 }
                 is RoomListEvent.SetRoomIsFavorite -> coroutineScope.setRoomIsFavorite(event.roomId, event.isFavorite)
+                is RoomListEvent.SetRoomIsMuted -> coroutineScope.setRoomIsMuted(event.roomId, event.isMuted)
                 is RoomListEvent.MarkAsRead -> coroutineScope.markAsRead(event.roomId)
                 is RoomListEvent.MarkAsUnread -> coroutineScope.markAsUnread(event.roomId)
                 is RoomListEvent.AcceptInvite -> {
@@ -224,6 +229,8 @@ class RoomListPresenter(
             acceptDeclineInviteState = acceptDeclineInviteState,
             hideInvitesAvatars = hideInvitesAvatar,
             canReportRoom = canReportRoom,
+            bipeInviterHandle = bipeInviter?.handle,
+            bipeOpenInviterChat = bipeInviterGreeting::openChat,
             eventSink = ::handleEvent,
         )
     }
@@ -352,6 +359,7 @@ class RoomListPresenter(
             isDm = event.roomSummary.isDm,
             isFavorite = event.roomSummary.isFavorite,
             hasNewContent = event.roomSummary.hasNewContent,
+            isMuted = event.roomSummary.userDefinedNotificationMode == RoomNotificationMode.MUTE,
         )
         contextMenuState.value = initialState
 
@@ -380,6 +388,18 @@ class RoomListPresenter(
                 .onSuccess {
                     analyticsService.captureInteraction(name = Interaction.Name.MobileRoomListRoomContextMenuFavouriteToggle)
                 }
+        }
+    }
+
+    // Bipe: one-tap mute from the room list. No duration, the room stays muted until unmuted.
+    private fun CoroutineScope.setRoomIsMuted(roomId: RoomId, isMuted: Boolean) = launch {
+        val notificationSettingsService = client.notificationSettingsService
+        if (isMuted) {
+            notificationSettingsService.muteRoom(roomId)
+        } else {
+            client.getRoom(roomId)?.use { room ->
+                notificationSettingsService.unmuteRoom(roomId, room.roomInfoFlow.value.isEncrypted == true, room.isDm())
+            }
         }
     }
 

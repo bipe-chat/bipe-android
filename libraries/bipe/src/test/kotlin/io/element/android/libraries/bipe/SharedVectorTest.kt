@@ -12,7 +12,6 @@ import io.element.android.libraries.bipe.generated.BipeTrustFacts
 import io.element.android.libraries.bipe.generated.BipeTrustInput
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -152,7 +151,7 @@ class SharedVectorTest {
 
     private fun load(name: String): JsonObject = Json.parseToJsonElement(File(vectorsDir, name).readText()).jsonObject
 
-    private fun JsonObject.string(key: String): String? = (get(key) as JsonElement?)?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+    private fun JsonObject.string(key: String): String? = get(key)?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
 
     private companion object {
         /** bipe-shared next to this repo. Unit tests run in the module directory. BIPE_SHARED overrides it. */

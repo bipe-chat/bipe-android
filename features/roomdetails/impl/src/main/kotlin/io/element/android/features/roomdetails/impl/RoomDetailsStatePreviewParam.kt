@@ -17,6 +17,7 @@ import io.element.android.features.userprofile.api.UserProfileState
 import io.element.android.features.userprofile.api.UserProfileVerificationState
 import io.element.android.features.userprofile.shared.aUserProfileState
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.groups.BipeInviteGroup
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -29,6 +30,7 @@ import io.element.android.libraries.matrix.api.room.history.RoomHistoryVisibilit
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.aMatrixUserList
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 open class RoomDetailsStatePreviewParam : PreviewParameterProvider<RoomDetailsState> {
@@ -127,6 +129,7 @@ fun aRoomDetailsState(
     showDebugInfo: Boolean = false,
     roomHistoryVisibility: RoomHistoryVisibility = RoomHistoryVisibility.Shared,
     hasNewContent: Boolean = false,
+    bipeInviteGroups: ImmutableList<BipeInviteGroup>? = null,
     eventSink: (RoomDetailsEvent) -> Unit = {},
 ) = RoomDetailsState(
     roomId = roomId,
@@ -159,6 +162,7 @@ fun aRoomDetailsState(
     roomVersion = "12",
     roomHistoryVisibility = roomHistoryVisibility,
     hasNewContent = hasNewContent,
+    bipeInviteGroups = bipeInviteGroups,
     eventSink = eventSink,
 )
 

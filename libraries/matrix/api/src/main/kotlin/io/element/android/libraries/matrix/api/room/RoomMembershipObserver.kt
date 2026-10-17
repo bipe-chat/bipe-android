@@ -19,6 +19,7 @@ class RoomMembershipObserver {
         val isSpace: Boolean,
         val isUserInRoom: Boolean,
         val change: MembershipChange,
+        val isDm: Boolean = false, // Bipe: "Você saiu da conversa"
     )
 
     private val _updates = MutableSharedFlow<RoomMembershipUpdate>(extraBufferCapacity = 10)
@@ -28,6 +29,7 @@ class RoomMembershipObserver {
         roomId: RoomId,
         isSpace: Boolean,
         membershipBeforeLeft: CurrentUserMembership,
+        isDm: Boolean = false, // Bipe
     ) {
         val membershipChange = when (membershipBeforeLeft) {
             CurrentUserMembership.INVITED -> MembershipChange.INVITATION_REJECTED
@@ -40,6 +42,7 @@ class RoomMembershipObserver {
                 isSpace = isSpace,
                 isUserInRoom = false,
                 change = membershipChange,
+                isDm = isDm,
             )
         )
     }

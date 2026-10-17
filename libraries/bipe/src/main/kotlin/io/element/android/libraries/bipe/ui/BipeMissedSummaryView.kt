@@ -14,40 +14,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.libraries.bipe.R
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.bipe.R
-
-/** Groups MVP (bipe#98): what a member missed since the last visit. iOS: `BipeMissedSummary`. */
-@Immutable
-data class BipeMissedSummary(
-    val lines: List<Line>,
-    val otherCount: Int,
-) {
-    @Immutable
-    data class Line(
-        val kind: Kind,
-        val eventId: String,
-        val senderName: String,
-        val text: String,
-    )
-
-    enum class Kind { MENTION, REPLY, POLL }
-
-    companion object {
-        /** Below this many unread messages the block stays hidden: a short gap reads fine without it. */
-        const val MINIMUM_UNREAD_COUNT = 20
-        const val MAXIMUM_LINES = 4
-    }
-}
 
 /** The "O que você perdeu" block above the read marker. Each line opens its message. */
 @Composable

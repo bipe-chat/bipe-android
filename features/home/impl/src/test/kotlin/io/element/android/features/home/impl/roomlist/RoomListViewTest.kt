@@ -286,6 +286,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
     onSetUpRecoveryClick: () -> Unit = EnsureNeverCalled(),
     onConfirmRecoveryKeyClick: () -> Unit = EnsureNeverCalled(),
     onCreateRoomClick: () -> Unit = EnsureNeverCalled(),
+    onBipeCreateGroupClick: () -> Unit = EnsureNeverCalled(),
     onCreateSpaceClick: () -> Unit = EnsureNeverCalled(),
     onRoomSettingsClick: (RoomId) -> Unit = EnsureNeverCalledWithParam(),
     onMenuActionClick: (RoomListMenuAction) -> Unit = EnsureNeverCalledWithParam(),
@@ -308,12 +309,14 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
             onSetUpRecoveryClick = onSetUpRecoveryClick,
             onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
             onStartChatClick = onCreateRoomClick,
+            onBipeCreateGroupClick = onBipeCreateGroupClick,
             onCreateSpaceClick = onCreateSpaceClick,
             onRoomSettingsClick = onRoomSettingsClick,
             onMenuActionClick = onMenuActionClick,
             onDeclineInviteAndBlockUser = onDeclineInviteAndBlockUser,
             onReportRoomClick = onReportRoomClick,
             acceptDeclineInviteView = {},
+            youTabView = { _, _ -> },
             leaveRoomView = {},
         )
     }

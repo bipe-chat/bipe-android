@@ -8,9 +8,9 @@
 
 package io.element.android.features.messages.impl.timeline.model.event
 
+import io.element.android.libraries.bipe.ScamWarningKind
 import io.element.android.libraries.htmlrenderer.api.DocumentNode
 import io.element.android.libraries.matrix.ui.messages.toPlainText
-import io.element.android.libraries.bipe.ScamWarningKind
 import org.jsoup.nodes.Document
 
 data class TimelineItemTextContent(

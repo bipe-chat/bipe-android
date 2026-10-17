@@ -70,7 +70,7 @@ object BipePin {
     fun sanitizeInput(raw: String): String = raw.filter { it in '0'..'9' }.take(LENGTH)
 
     private fun isDate(year: Int, month: Int, day: Int): Boolean {
-        if (year < BipeRegistries.PIN_DATE_YEAR_MIN || year > BipeRegistries.PIN_DATE_YEAR_MAX || month !in 1..12 || day < 1) return false
+        if (year !in BipeRegistries.PIN_DATE_YEAR_MIN..BipeRegistries.PIN_DATE_YEAR_MAX || month !in 1..12 || day < 1) return false
         val leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
         val days = intArrayOf(31, if (leap) 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)[month - 1]
         return day <= days

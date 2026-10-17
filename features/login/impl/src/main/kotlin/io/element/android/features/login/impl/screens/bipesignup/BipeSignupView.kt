@@ -9,6 +9,7 @@ package io.element.android.features.login.impl.screens.bipesignup
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -33,6 +34,7 @@ import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipePin
 import io.element.android.libraries.bipe.account.ui.BipeNewPinFields
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.bipe.terms.BipeTermsRow
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
@@ -97,7 +99,7 @@ fun BipeSignupView(
 }
 
 @Composable
-private fun FormStep(state: BipeSignupState) {
+private fun ColumnScope.FormStep(state: BipeSignupState) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),
@@ -147,6 +149,10 @@ private fun FormStep(state: BipeSignupState) {
         onValueChange = { eventSink(BipeSignupEvent.UpdateInviteCode(it)) },
     )
     EmailField(state)
+    BipeTermsRow(
+        checked = state.isTermsAccepted,
+        onCheckedChange = { eventSink(BipeSignupEvent.SetTermsAccepted(it)) },
+    )
     Button(
         text = stringResource(CommonStrings.action_continue),
         enabled = state.canContinueForm,
@@ -173,7 +179,7 @@ private fun EmailField(state: BipeSignupState) {
 }
 
 @Composable
-private fun PinStep(state: BipeSignupState, isLoading: Boolean) {
+private fun ColumnScope.PinStep(state: BipeSignupState, isLoading: Boolean) {
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),
         iconStyle = BigIcon.Style.Default(CompoundIcons.LockSolid()),
@@ -193,7 +199,7 @@ private fun PinStep(state: BipeSignupState, isLoading: Boolean) {
 }
 
 @Composable
-private fun FallbackStep(state: BipeSignupState, isLoading: Boolean) {
+private fun ColumnScope.FallbackStep(state: BipeSignupState, isLoading: Boolean) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 12.dp),

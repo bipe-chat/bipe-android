@@ -8,8 +8,6 @@
 
 package io.element.android.features.preferences.impl.root
 
-import android.app.Activity
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.core.modality.BuildContext
@@ -18,12 +16,10 @@ import com.bumble.appyx.core.plugin.Plugin
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
-import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.preferences.impl.account.PreferencesAccountCallback
-import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.callback
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.di.SessionScope
-import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
 
 @ContributesNode(SessionScope::class)
 @AssistedInject
@@ -31,7 +27,6 @@ class PreferencesRootNode(
     @Assisted buildContext: BuildContext,
     @Assisted plugins: List<Plugin>,
     private val presenter: PreferencesRootPresenter,
-    private val emojiPickerRenderer: EmojiPickerRenderer,
 ) : Node(buildContext, plugins = plugins) {
     interface Callback : PreferencesAccountCallback, Plugin {
         fun navigateToAddAccount()
@@ -45,55 +40,27 @@ class PreferencesRootNode(
         fun navigateToBipeHandle() // Bipe
         fun navigateToBipeInvites() // Bipe
         fun navigateToBipePublicProfile() // Bipe
+        fun navigateToBipeGroup(group: BipeSettingsGroup) // Bipe: Seu perfil and the groups of ADR 0112
     }
 
     private val callback: Callback = callback()
 
-    private fun onManageAccountClick(
-        activity: Activity,
-        url: String?,
-        isDark: Boolean,
-    ) {
-        url?.let {
-            activity.openUrlInChromeCustomTab(
-                null,
-                darkTheme = isDark,
-                url = it
-            )
-        }
-    }
-
     @Composable
     override fun View(modifier: Modifier) {
         val state = presenter.present()
-        val activity = requireNotNull(LocalActivity.current)
-        val isDark = ElementTheme.isLightTheme.not()
-
         PreferencesRootView(
             state = state,
-            emojiPickerRenderer = emojiPickerRenderer,
             modifier = modifier,
             onBackClick = this::navigateUp,
-            onAddAccountClick = callback::navigateToAddAccount,
             onOpenAnalytics = callback::navigateToAnalyticsSettings,
-            onOpenAbout = callback::navigateToAbout,
             onOpenDeveloperSettings = callback::navigateToDeveloperSettings,
-            onOpenMediaSettings = callback::navigateToMediaSettings,
-            onOpenLocationSettings = callback::navigateToLocationSettings,
             onOpenLabs = callback::navigateToLabs,
-            onOpenLockScreenSettings = callback::navigateToLockScreenSettings,
             onOpenRageShake = callback::navigateToBugReport,
-            onSecureBackupClick = callback::navigateToSecureBackup,
-            onModerationAndSafetyClick = callback::navigateToModerationAndSafety,
-            onLinkNewDeviceClick = callback::navigateToLinkNewDevice,
-            onManageAccountClick = { onManageAccountClick(activity, it, isDark) },
-            onOpenNotificationSettings = callback::navigateToNotificationSettings,
             onEditProfileClick = callback::navigateToUserProfile,
-            onSignOutClick = callback::startSignOutFlow,
-            onDeactivateClick = callback::startAccountDeactivationFlow,
             onBipeHandleClick = callback::navigateToBipeHandle,
             onBipeInvitesClick = callback::navigateToBipeInvites,
-            onBipePublicProfileClick = callback::navigateToBipePublicProfile,
+            onBipeProfileClick = { callback.navigateToBipeGroup(BipeSettingsGroup.PROFILE) },
+            onBipeGroupClick = callback::navigateToBipeGroup,
         )
     }
 }

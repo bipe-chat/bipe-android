@@ -77,6 +77,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - **Settings (Você):** `BipeAccountRows` under the invite row: "Trocar senha" after a biometric check (`BipeBiometricCheck`: biometrics or the phone's screen lock; without either, the current app lock PIN; without that, refused), the blocked state from `GET /v1/me/account` (a new PIN unblocks), and for beta accounts "Crie sua senha", which sets the PIN, calls `POST /v1/me/device-first` and stores the new credentials. Then `BipeRecoveryEmailRows`, the same copy and flow as the iOS email section: the confirmed and the pending address from `GET /v1/me/account`, a dialog to add or change it (`PUT /v1/me/email` with `lang`; HTTP 202, the address stays pending until the link is opened) and "Remover e-mail" after a confirmation (`DELETE /v1/me/email`).
 - **Recovery** (`features/login/.../biperecovery`): token and PIN (`/v1/recovery/token`); QR code from the old phone (Element's QR sign-in); e-mail: `/v1/recovery/email`, then the app link `https://bipe.chat/recuperar/#<token>` asks for the PIN or ("Esqueci minha senha") a new PIN, `POST /v1/recovery/email/confirm`, keeps the claim secret in the vault and polls `/v1/recovery/{id}/claim` every minute. Guardian and CPF paths are not built (API not built).
 - **Old devices:** `BipeRecoveryAlerts` (in `LoggedInFlowNode`) polls `GET /v1/me/account` every minute in the foreground and shows waiting recoveries (`bipe_recovery_alert_*`) with "Cancelar, não fui eu" (`POST /v1/me/recoveries/{id}/cancel`), and token sign-ins on another device. It ignores token recoveries older than this device's own sign-in, which covers this device's own token recovery. "Fui eu" hides the alert on this device only.
+- **Terms re-accept (ADR 0113, bipe#366):** `BipeTermsReaccept` (libraries/bipe `terms/`, in `LoggedInFlowNode`) shows a blocking screen when the `GET /v1/me/account` status that `BipeRecoveryAlerts` polls loaded and its `terms_version` is not `BipeRegistries.LEGAL_VERSION` (none counts as different). A failed load never shows it. It waits while a recovery alert is open. The same `BipeTermsRow` as sign-up, Continue calls `POST /v1/me/terms`. No close, no sign-out, Back does nothing. The app lock is its own activity, so the screen shows after unlock.
 - **Beta login:** the onboarding sign-in opens Element's password screen (no browser) with "E-mail" as the field placeholder. MAS takes the e-mail as the login (`login_with_email_allowed`).
 
 ## Handle change lines (ADR 0066, bipe#166)
@@ -105,7 +106,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 - **Tabs:** Conversas, Grupos, Você in `HomeNavigationBarItem.bipeVisibleItems`. The Spaces tab stays in the code but is not shown. The avatar in the top bar opens Você.
 - **Conversas and Grupos** use the one room list (`RoomListPresenter`) with a fixed SDK category filter: `Category.People` or `Category.Group`. The SDK decides with the DM flag. The People and Rooms chips are hidden. Pedidos stays on Conversas only.
-- **Badges:** `BipeTabBadges` (libraries/bipe) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls.
+- **Badges:** `BipeTabBadges` (libraries/bipe) sums `numUnreadNotifications` over all joined rooms, split by the DM flag. The quiet-group push rules limit a group's count to mentions, replies and new polls. A group invite not in `SeenInvitesStore` adds 1 to Grupos.
 - **Você** is the settings root (`PreferencesRootView` without its top bar). Each row opens the settings flow at that screen (`PreferencesEntryPoint.InitialTarget.BipeScreen`).
 - **Self-chat ("Anotações"):** `BipeSelfChat` (libraries/bipe). The room ID is in global account data `chat.bipe.self_chat`, content `{"room_id": "..."}`, the same as iOS. It opens the stored room when the user is joined, else creates an encrypted private room with no invites. The room does not show in Conversas or Grupos.
 - **Search** stays in the top bar on Conversas and Grupos.
@@ -128,14 +129,23 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 ## Stickers (ADR 0029, 0033, issue #101)
 
 - **Picker:** attachments sheet → `PickAttachmentSource.Sticker` → `MessageComposerState.stickerPicker` → `StickerPickerBottomSheet` in `MessagesView`. UI: `messagecomposer/BipeStickerPicker.kt`.
-- **Packs:** MSC2545 (`im.ponies.*`). `HttpStickerPackRepository` in `libraries/bipe/stickers` reads them over HTTP: the SDK cannot read custom room state under sliding sync. Same order as iOS: the user's pack, this room's packs, then enabled packs from other rooms.
+- **Packs:** MSC2545 (`im.ponies.*`). `DefaultStickerPackRepository` in `libraries/bipe/stickers` reads them over HTTP: the SDK cannot read custom room state under sliding sync. Same order as iOS: the user's pack, this room's packs, then enabled packs from other rooms.
 - **Send:** `JoinedRoom.sendRaw("m.sticker", …)`. The SDK has no typed sticker send. `sendRaw` skips the send queue: no local echo, no retry. In a thread the content carries an `m.thread` relation.
-- **Import:** "Importar do WhatsApp" in the sheet opens the system document picker for a WhatsApp chat export ZIP, WebP or PNG. `StickerImporter` (`java.util.zip`) reads the `.webp` entries, checks magic bytes, size (1 MB) and sides (1024 px), derives the shortcode from SHA-256 (`st_…`). `HttpStickerPackRepository.importStickers` uploads them and adds them to `im.ponies.user_emotes`. Same rules as iOS.
+- **Import:** "Importar do WhatsApp" in the sheet opens the system document picker for a WhatsApp chat export ZIP, WebP or PNG. `StickerImporter` (`java.util.zip`) reads the `.webp` entries, checks magic bytes, size (1 MB) and sides (1024 px), derives the shortcode from SHA-256 (`st_…`). `DefaultStickerPackRepository.importStickers` uploads them and adds them to `im.ponies.user_emotes`. Same rules as iOS.
 - **WhatsApp folder:** the picker opens in `Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Stickers` (`EXTRA_INITIAL_URI`, Android 8+), where WhatsApp keeps every received sticker as `.webp`. The user selects several files there. This is an Android-only route; the help text says so (`bipe_stickers_import_help_folder_android`). Whether every Android version lets the picker open that folder is not verified.
 - **Animated WebP:** Coil's `AnimatedImageDecoder` (already registered) plays it on Android 9+.
-- **Make from a photo:** "Criar de uma foto" in the sheet → system photo picker → `HttpStickerPackRepository.makeSticker` crops a centred square, scales to 512 × 512 and encodes WebP. No subject cut-out: that needs ML Kit (a Google dependency, not decided). iOS cuts out the subject with Vision.
+- **Make from a photo:** "Criar de uma foto" in the sheet → system photo picker → `DefaultStickerPackRepository.makeSticker` crops a centred square, scales to 512 × 512 and encodes WebP. No subject cut-out: that needs ML Kit (a Google dependency, not decided). iOS cuts out the subject with Vision.
 - **Save a received sticker:** action `TimelineItemAction.SaveSticker` → `MessagesPresenter.handleSaveSticker` downloads the bytes with `MatrixMediaLoader` and calls `addSticker`.
 - **Not compiled yet** (11 October 2026): this Mac has no JDK or Android SDK.
+
+## DMs are DMs (16 Oct 2026)
+
+- A DM never turns into a group. Room details for a DM: no topic, no polls history, no "Convidar" to the DM. "Convidar para um grupo" lists your joined groups (`BipeInviteToGroup` in libraries/bipe; not DMs, spaces, replaced rooms or the self-chat) and invites the other person to the one you pick. The group's invite permission is checked at pick time.
+- The composer has no poll option in a DM (`MessageComposerState.isDm`).
+- Leave in a DM says "Sair da conversa" with `bipe_dm_leave_body`. Upstream passed `isDm = false` for `Confirmation.Dm`.
+- No room setup lines in a DM timeline: `RoomBeginningPostProcessor` drops invites, joins and "encryption enabled" (upstream already dropped the create event and the creator's join). A leave says "saiu da conversa" (`TimelineItemsFactoryConfig.isDm`). The room list menu, the leave snackbar and the media empty states say "conversa" in a DM. The details top bar has no title (upstream), so it needs no DM title. The leave progress dialog still says "Saindo da sala": `AsyncAction.Loading` does not carry the room kind.
+- Leaving a DM is final for that room. The SDK finds a DM only among joined rooms (`get_dm_rooms`), so if you start a chat again, Bipe creates a new room. The other person keeps the old room: they see "Você está sozinho nesta conversa" and can invite you back to it.
+- iOS does the same (`BipeInviteToGroupSheet`).
 
 ## Differences from iOS (ADR 0031)
 
@@ -154,6 +164,7 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
+| Where invites live | Convidar pessoas in settings | Contatos e convites: invite buttons, people who joined with your invite, and unused invites in the contacts screen | Android has no contacts screen yet (#162) **Gap** |
 | Help links | Still point to element.io | Hidden | Not done on Android (#205) **Gap** |
 | Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |
 | Sticker import | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | Chat export ZIP or files | iOS apps cannot read WhatsApp's files |
@@ -163,5 +174,8 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Search | Search button in the top bar of Conversas and Grupos | Search tab (iOS 26+), inline before iOS 26 | Platform idiom (ADR 0053) |
 | Quiet groups "done" marker | The poll rule in the account's push rules (once per account) | A flag on the device (once per device) | Android has no per-session store in libraries/bipe; same result for the user |
 | Conferir no Bipe: close | Back to Bipe | Back to the app that shared | The iOS check runs in the share extension; Android shows it in the app (ADR 0091) |
+| Message actions | Element's bottom sheet | Native context menu on long press: reaction row, actions, the message as preview | Platform idiom |
+| Terms screen and a recovery alert due together | Recovery alert first, then the terms screen | Terms screen first, the alert right after Continue | On iOS a root alert cannot show over the full-screen terms cover; on Android the terms screen is an overlay that waits for the alert |
+| Settings: Idioma | No row | Row that opens the iPhone Ajustes | iOS sets the app language in system settings; Android follows the system language |
 
 <!-- /parity:differences -->

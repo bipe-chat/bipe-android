@@ -46,6 +46,8 @@ data class NotificationSettingsState(
      * Whether to show all activity indicators in the room list, using unread messages instead of notifications.
      */
     val showAllActivityInRoomList: Boolean,
+    /** Bipe: the push provider picker shows only in builds that are not release builds (ADR 0112). */
+    val bipeIsDeveloperBuild: Boolean,
     val eventSink: (NotificationSettingsEvent) -> Unit,
 ) {
     sealed interface MatrixSettings {
@@ -82,5 +84,5 @@ data class NotificationSettingsState(
      * Whether the advanced settings should be shown.
      * This is true if the current push distributor is in a failure state or if there are multiple push distributors available.
      */
-    val showAdvancedSettings: Boolean = currentPushDistributor.isFailure() || availablePushDistributors.size > 1
+    val showAdvancedSettings: Boolean = bipeIsDeveloperBuild && (currentPushDistributor.isFailure() || availablePushDistributors.size > 1)
 }

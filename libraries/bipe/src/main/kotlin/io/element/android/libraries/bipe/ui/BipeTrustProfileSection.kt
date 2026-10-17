@@ -21,6 +21,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.libraries.bipe.BipeTrustProfile
+import io.element.android.libraries.bipe.BipeTrustProfile.ProfileItem
+import io.element.android.libraries.bipe.BipeTrustProfile.Status
+import io.element.android.libraries.bipe.BipeTrustProfile.StepId
+import io.element.android.libraries.bipe.R
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -29,11 +34,6 @@ import io.element.android.libraries.designsystem.theme.components.LinearProgress
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.ListSupportingText
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.bipe.BipeTrustProfile
-import io.element.android.libraries.bipe.BipeTrustProfile.ProfileItem
-import io.element.android.libraries.bipe.BipeTrustProfile.Status
-import io.element.android.libraries.bipe.BipeTrustProfile.StepId
-import io.element.android.libraries.bipe.R
 
 /** Bipe: the "Perfil de confiança" card in settings (bipe/docs/trust-levels.md). Port of BipeTrustProfileSection on iOS. */
 @Composable

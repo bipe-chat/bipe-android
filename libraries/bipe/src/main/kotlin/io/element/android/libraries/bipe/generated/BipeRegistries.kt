@@ -688,4 +688,11 @@ object BipeRegistries {
     const val GUARDIAN_APPROVALS_MAX = 2
     const val RECOVERY_LINK_MINUTES = 60
     const val EMAIL_VERIFY_LINK_HOURS = 24
+
+    // Terms and privacy accepted at sign-up (ADR 0113; registries/legal.json). Paths are on the public site.
+    const val LEGAL_VERSION = "2026-10-16"
+    const val TERMS_PATH = "/termos/"
+    const val PRIVACY_PATH = "/privacidade/"
+    const val EN_TERMS_PATH = "/en/terms/"
+    const val EN_PRIVACY_PATH = "/en/privacy/"
 }

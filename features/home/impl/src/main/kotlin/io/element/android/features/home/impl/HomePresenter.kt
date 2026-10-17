@@ -24,8 +24,11 @@ import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.roomlist.RoomListEvent
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
+import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.featureflag.api.FeatureFlagService
@@ -33,8 +36,6 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.indicator.api.IndicatorService
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.sync.SyncService
-import io.element.android.libraries.bipe.selfchat.BipeSelfChat
-import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.combine
@@ -55,6 +56,7 @@ class HomePresenter(
     private val announcementService: AnnouncementService,
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
+    private val seenInvitesStore: SeenInvitesStore,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -120,8 +122,12 @@ class HomePresenter(
         // from account data, so the room lists and the badges can leave it out.
         LaunchedEffect(Unit) { bipeSelfChat.refresh() }
         val bipeBadges by remember {
-            combine(client.roomListService.allRooms.summaries, bipeSelfChat.roomId) { summaries, selfChatRoomId ->
-                BipeTabBadges.from(summaries, selfChatRoomId)
+            combine(
+                client.roomListService.allRooms.summaries,
+                bipeSelfChat.roomId,
+                seenInvitesStore.seenRoomIds(),
+            ) { summaries, selfChatRoomId, seenInviteRoomIds ->
+                BipeTabBadges.from(summaries, selfChatRoomId, seenInviteRoomIds)
             }.distinctUntilChanged()
         }.collectAsState(BipeTabBadges.NONE)
         // Avatar indicator

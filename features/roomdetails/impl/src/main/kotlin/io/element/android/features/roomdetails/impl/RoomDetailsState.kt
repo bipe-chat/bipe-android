@@ -12,6 +12,7 @@ import androidx.compose.runtime.Immutable
 import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.features.userprofile.api.UserProfileState
+import io.element.android.libraries.bipe.groups.BipeInviteGroup
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -53,6 +54,8 @@ data class RoomDetailsState(
     val roomVersion: String?,
     val roomHistoryVisibility: RoomHistoryVisibility,
     val hasNewContent: Boolean,
+    /** Bipe: the groups shown by "Convidar para um grupo" in a DM, or null when the picker is closed. */
+    val bipeInviteGroups: ImmutableList<BipeInviteGroup>?,
     val eventSink: (RoomDetailsEvent) -> Unit
 ) {
     val roomBadges = buildList {

@@ -55,6 +55,7 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersView
 import io.element.android.features.home.impl.spaces.HomeSpacesView
 import io.element.android.libraries.androidutils.throttler.FirstThrottler
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.FloatingActionButton
@@ -69,7 +70,6 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
-import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.coroutines.launch
 
@@ -89,10 +89,10 @@ fun HomeView(
     onReportRoomClick: (roomId: RoomId) -> Unit,
     onDeclineInviteAndBlockUser: (roomSummary: RoomListRoomSummary) -> Unit,
     acceptDeclineInviteView: @Composable () -> Unit,
+    // Bipe: the Você tab content (ADR 0053), built by the node.
+    youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
     leaveRoomView: @Composable () -> Unit,
-    // Bipe: the Você tab content (ADR 0053), built by the node.
-    youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit = { _, _ -> },
 ) {
     val state: RoomListState = homeState.roomListState
     val coroutineScope = rememberCoroutineScope()
@@ -174,8 +174,8 @@ private fun HomeScaffold(
     onBipeCreateGroupClick: () -> Unit,
     onCreateSpaceClick: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
-    youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
+    youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
 ) {
     fun onRoomClick(room: RoomListRoomSummary) {
         onRoomClick(room.roomId)
@@ -185,6 +185,7 @@ private fun HomeScaffold(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(appBarState)
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
     val roomListState: RoomListState = state.roomListState
+    val bipeCoroutineScope = rememberCoroutineScope()
 
     BackHandler(enabled = state.isBackHandlerEnabled) {
         if (state.currentHomeNavigationBarItem != HomeNavigationBarItem.Chats) {
@@ -323,6 +324,12 @@ private fun HomeScaffold(
                             onCreateRoomClick = onStartChatClick,
                             onBipeCreateGroupClick = onBipeCreateGroupClick,
                             contentPadding = lazyColumnContentPadding + contentPadding,
+                            // Bipe ADR 0034: the card to message the inviter shows in Conversas only.
+                            bipeInviterHandle = roomListState.bipeInviterHandle
+                                .takeIf { state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats },
+                            onBipeInviterClick = {
+                                bipeCoroutineScope.launch { roomListState.bipeOpenInviterChat()?.let(onRoomClick) }
+                            },
                             modifier = Modifier
                                 .padding(outerPadding)
                                 .consumeWindowInsets(outerPadding)
@@ -433,6 +440,7 @@ internal fun HomeViewPreview(@PreviewParameter(HomeStatePreviewParam::class) sta
         onMenuActionClick = {},
         onDeclineInviteAndBlockUser = {},
         acceptDeclineInviteView = {},
+        youTabView = { _, _ -> },
         leaveRoomView = {}
     )
 }
@@ -455,6 +463,7 @@ internal fun HomeViewA11yPreview() = ElementPreview {
         onMenuActionClick = {},
         onDeclineInviteAndBlockUser = {},
         acceptDeclineInviteView = {},
+        youTabView = { _, _ -> },
         leaveRoomView = {}
     )
 }

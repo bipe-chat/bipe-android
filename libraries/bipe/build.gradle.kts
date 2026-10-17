@@ -23,6 +23,7 @@ setupDependencyInjection()
 
 dependencies {
     implementation(libs.coroutines.core)
+    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.serialization.json)
     implementation(libs.google.tink)
     implementation(libs.androidx.exifinterface)

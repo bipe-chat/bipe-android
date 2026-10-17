@@ -73,10 +73,12 @@ class DefaultSessionPreferencesStore(
     }
 
     override suspend fun setSendPublicReadReceipts(enabled: Boolean) = update(sendPublicReadReceiptsKey, enabled)
+
     // Bipe: receipts are always public, whatever an older build stored (ADR 0050)
     override fun isSendPublicReadReceiptsEnabled(): Flow<Boolean> = flowOf(true)
 
     override suspend fun setRenderReadReceipts(enabled: Boolean) = update(renderReadReceiptsKey, enabled)
+
     // Bipe: receipts of other people are always shown (ADR 0050)
     override fun isRenderReadReceiptsEnabled(): Flow<Boolean> = flowOf(true)
 

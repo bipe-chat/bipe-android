@@ -26,16 +26,15 @@ import kotlin.time.Duration.Companion.minutes
  *
  * Reads are synchronous: [handle] returns `null` at first, the resolver batches the lookup through
  * `POST /v1/handles/resolve`, and [handles] emits when the handle arrives. UI collects [handles] to recompose.
- *
- * @param accessToken read before every request, because Matrix access tokens are short-lived.
- * @param clock milliseconds since the epoch. Tests can pass a fake.
  */
 class BipeHandleResolver(
     private val apiClient: BipeApiClient,
     /** Only Matrix IDs on this server have handles. */
     val serverName: String,
     private val scope: CoroutineScope,
+    /** Read before every request, because Matrix access tokens are short-lived. */
     private val accessToken: suspend () -> String?,
+    /** Milliseconds since the epoch. Tests can pass a fake. */
     private val clock: () -> Long = System::currentTimeMillis,
     /** Called with each batch after a `resolve` refresh. The handle change history refreshes with it (ADR 0066). */
     private val onBatchResolved: (List<String>) -> Unit = {},
@@ -63,7 +62,8 @@ class BipeHandleResolver(
     fun handle(userId: String): String? {
         if (!isBipeUserId(userId)) return null
         val entry = entries.value[userId]
-        if ((entry?.expiryMillis ?: Long.MIN_VALUE) < clock()) enqueue(userId)
+        val expiryMillis = entry?.expiryMillis ?: Long.MIN_VALUE
+        if (expiryMillis < clock()) enqueue(userId)
         return entry?.handle
     }
 

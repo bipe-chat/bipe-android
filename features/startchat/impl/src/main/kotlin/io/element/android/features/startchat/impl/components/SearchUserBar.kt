@@ -12,6 +12,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -52,6 +53,7 @@ fun SearchUserBar(
     showBackButton: Boolean = true,
     placeHolderTitle: String = stringResource(CommonStrings.common_search_for_someone),
     noResultsText: String? = null, // Bipe
+    noResultsContent: @Composable ColumnScope.() -> Unit = {}, // Bipe
 ) {
     val columnState = rememberLazyListState()
 
@@ -63,6 +65,7 @@ fun SearchUserBar(
         placeHolderTitle = placeHolderTitle,
         showBackButton = showBackButton,
         noResultsText = noResultsText,
+        noResultsContent = noResultsContent,
         contentPrefix = {
             if (isMultiSelectionEnable && active && selectedUsers.isNotEmpty()) {
                 // We want the selected users to behave a bit like a top bar - when the list below is scrolled, the colour

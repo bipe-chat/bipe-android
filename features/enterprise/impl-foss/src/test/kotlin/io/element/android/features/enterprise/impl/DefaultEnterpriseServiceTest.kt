@@ -10,6 +10,7 @@ package io.element.android.features.enterprise.impl
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import io.element.android.appconfig.BipeConfig
 import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.features.enterprise.api.BugReportUrl
 import io.element.android.libraries.androidutils.json.JsonProvider
@@ -29,21 +30,23 @@ import org.junit.Test
 
 class DefaultEnterpriseServiceTest {
     @Test
-    fun accountProviderAllowList() = runTest {
+    fun `accountProviderAllowList is the Bipe server only`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.accountProviderAllowList()).isEmpty()
+        assertThat(defaultEnterpriseService.accountProviderAllowList()).containsExactly(BipeConfig.accountProvider)
+    }
+
+    // Bipe: closed federation, the app connects to its own server only.
+    @Test
+    fun `canConnectToAnyAccountProvider is always false`() = runTest {
+        val defaultEnterpriseService = createDefaultEnterpriseService()
+        assertThat(defaultEnterpriseService.canConnectToAnyAccountProvider()).isFalse()
     }
 
     @Test
-    fun `canConnectToAnyAccountProvider is always true`() = runTest {
+    fun `isAllowedToConnectToAccountProvider is true for the Bipe server only`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.canConnectToAnyAccountProvider()).isTrue()
-    }
-
-    @Test
-    fun `isAllowedToConnectToAccountProvider is true for all account providers`() = runTest {
-        val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric())).isTrue()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(BipeConfig.accountProvider)).isTrue()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric())).isFalse()
     }
 
     @Test

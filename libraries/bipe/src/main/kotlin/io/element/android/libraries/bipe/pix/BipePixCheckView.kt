@@ -30,6 +30,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.PixCheck
 import io.element.android.libraries.bipe.R
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -38,6 +39,9 @@ import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.Scaffold
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.Locale
@@ -70,7 +74,7 @@ fun BipePixCheckView(
             check.code?.let { CodeSection(it) }
             if (check.keys.isNotEmpty()) {
                 SectionTitle(stringResource(R.string.bipe_pix_check_keys_title))
-                for (key in check.keys) Field(keyLabel(key.types), key.value)
+                for (key in check.keys) Field(keyLabel(key.types.toImmutableList()), key.value)
             }
             check.warning?.let { warning ->
                 Notice(
@@ -104,8 +108,11 @@ private fun CodeSection(code: PixCheck.Code) {
                 Notice(title = stringResource(R.string.bipe_pix_check_code_bad_crc), body = null, caution = true)
             }
             code.name?.let { Field(stringResource(R.string.bipe_pix_check_field_name), it, stringResource(R.string.bipe_pix_check_name_hint)) }
-            Field(stringResource(R.string.bipe_pix_check_field_amount), code.amount?.let(::formattedAmount) ?: stringResource(R.string.bipe_pix_check_amount_open))
-            code.key?.let { Field(keyLabel(listOf(code.keyType ?: PixCheck.KeyType.UNKNOWN)), it) }
+            Field(
+                stringResource(R.string.bipe_pix_check_field_amount),
+                code.amount?.let(::formattedAmount) ?: stringResource(R.string.bipe_pix_check_amount_open),
+            )
+            code.key?.let { Field(keyLabel(persistentListOf(code.keyType ?: PixCheck.KeyType.UNKNOWN)), it) }
             code.urlHost?.let { Field(stringResource(R.string.bipe_pix_check_field_charge_host), it, stringResource(R.string.bipe_pix_check_code_dynamic)) }
             code.city?.let { Field(stringResource(R.string.bipe_pix_check_field_city), it) }
             code.info?.let { Field(stringResource(R.string.bipe_pix_check_field_info), it) }
@@ -157,7 +164,7 @@ private fun Notice(title: String, body: String?, caution: Boolean) {
 }
 
 @Composable
-private fun keyLabel(types: List<PixCheck.KeyType>): String {
+private fun keyLabel(types: ImmutableList<PixCheck.KeyType>): String {
     val names = types.map { type ->
         stringResource(
             when (type) {
@@ -178,12 +185,13 @@ private fun keyLabel(types: List<PixCheck.KeyType>): String {
 private fun formattedAmount(amount: String): String =
     amount.toBigDecimalOrNull()?.let { NumberFormat.getCurrencyInstance(Locale.forLanguageTag("pt-BR")).format(it) } ?: amount
 
-private fun String.toBigDecimalOrNull(): BigDecimal? = runCatching { BigDecimal(this) }.getOrNull()
+private fun String.toBigDecimalOrNull(): BigDecimal? = runCatchingExceptions { BigDecimal(this) }.getOrNull()
 
-internal class PixCheckPreviewProvider : PreviewParameterProvider<PixCheck> {
+internal class PixCheckPreviewParam : PreviewParameterProvider<PixCheck> {
     override val values = sequenceOf(
         PixCheck.check(
-            "URGENTE, paga agora: 00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-4266554400005204000053039865802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D"
+            "URGENTE, paga agora: 00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-426655440000" +
+                "5204000053039865802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D"
         ),
         PixCheck.check("minha chave pix é 123.456.789-09 ou ana@example.com"),
         PixCheck.check("00020126580014br.gov.bcb.pix0136123e4567"),
@@ -192,6 +200,6 @@ internal class PixCheckPreviewProvider : PreviewParameterProvider<PixCheck> {
 
 @PreviewsDayNight
 @Composable
-internal fun BipePixCheckViewPreview(@PreviewParameter(PixCheckPreviewProvider::class) check: PixCheck) = ElementPreview {
+internal fun BipePixCheckViewPreview(@PreviewParameter(PixCheckPreviewParam::class) check: PixCheck) = ElementPreview {
     BipePixCheckView(check = check, onClose = {}, onSendToChat = {})
 }

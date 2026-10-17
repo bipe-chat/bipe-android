@@ -64,6 +64,8 @@ import kotlin.time.Duration.Companion.seconds
 @AssistedInject
 class ConfigureRoomPresenter(
     @Assisted private val isSpace: Boolean,
+    // Bipe: groups have no parent space picker (ec23f0a). The factory keeps the upstream signature.
+    @Suppress("UnusedPrivateProperty")
     @Assisted private val initialParentSpaceId: RoomId?,
     private val dataStore: CreateRoomConfigStore,
     private val matrixClient: MatrixClient,

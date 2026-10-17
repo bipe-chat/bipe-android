@@ -229,7 +229,8 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
                 val content = createMessageContent(type)
                 val message = createLatestEvent(sentByYou = sentByYou, senderDisplayName = senderName, content = content)
                 val result = formatter.format(message, isDmRoom = isDm)
-                if (isDm) {
+                // In a DM only the other person's name is left out: your own messages keep "You".
+                if (isDm && !sentByYou) {
                     resultsInDm.add(type to result)
                 } else {
                     resultsInRoom.add(type to result)
@@ -937,7 +938,8 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         val pollContent = aPollContent()
 
         val mineContentEvent = createLatestEvent(sentByYou = true, senderDisplayName = "Alice", content = pollContent)
-        assertThat(formatter.format(mineContentEvent, true).toString()).isEqualTo("Poll: Do you like polls?")
+        // Bipe: a DM keeps "You" on your own last message.
+        assertThat(formatter.format(mineContentEvent, true).toString()).isEqualTo("You: Poll: Do you like polls?")
 
         val contentEvent = createLatestEvent(sentByYou = false, senderDisplayName = "Bob", content = pollContent)
         assertThat(formatter.format(contentEvent, true).toString()).isEqualTo("Poll: Do you like polls?")

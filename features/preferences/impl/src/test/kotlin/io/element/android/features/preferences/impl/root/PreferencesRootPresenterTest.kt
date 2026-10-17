@@ -14,8 +14,13 @@ import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
 import io.element.android.compound.theme.Theme
 import io.element.android.features.preferences.impl.account.aPreferencesAccountState
-import io.element.android.features.preferences.impl.userstatus.aUserStatusState
+import io.element.android.features.preferences.impl.notifications.FakeSystemNotificationsEnabledProvider
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
+import io.element.android.libraries.bipe.BipeHandleResolver
+import io.element.android.libraries.bipe.BipePublicProfiles
+import io.element.android.libraries.bipe.account.BipeAccountSession
+import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.bipe.settings.BipePrivacySettings
 import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.featureflag.api.FeatureFlagService
@@ -31,6 +36,7 @@ import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore
+import io.element.android.libraries.pushstore.test.userpushstore.FakeUserPushStoreFactory
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
 import io.element.android.libraries.sessionstorage.test.aSessionData
@@ -40,9 +46,13 @@ import io.element.android.tests.testutils.consumeItemsUntilPredicate
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.test
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -69,12 +79,13 @@ class PreferencesRootPresenterTest {
             assertThat(initialState.isOtherAccountsSectionExpanded).isTrue()
             assertThat(initialState.otherSessions).isEmpty()
             assertThat(initialState.preferencesAccountState).isEqualTo(aPreferencesAccountState())
-            val loadedState = awaitItem()
+            // Bipe: no status row (ADR 0030, ADR 0112), so no second state for the status support.
+            val loadedState = initialState
             assertThat(loadedState.theme).isEqualTo(ThemeOption.System)
             assertThat(loadedState.availableThemeOptions).isEqualTo(
                 listOf(ThemeOption.System, ThemeOption.Light, ThemeOption.Dark).toImmutableList()
             )
-            assertThat(loadedState.userStatusState).isNotNull()
+            assertThat(loadedState.userStatusState).isNull()
             assertThat(loadedState.showAnalyticsSettings).isFalse()
             assertThat(loadedState.showDeveloperSettings).isTrue()
             assertThat(loadedState.showLabsItem).isFalse()
@@ -97,9 +108,6 @@ class PreferencesRootPresenterTest {
     @Test
     fun `present - change theme`() = runTest {
         createPreferencesRootPresenter().test {
-            // Skip until the initial data is loaded
-            skipItems(1)
-
             with(awaitItem()) {
                 assertThat(theme).isEqualTo(ThemeOption.System)
                 eventSink(PreferencesRootEvent.SetTheme(ThemeOption.Dark))
@@ -181,6 +189,7 @@ class PreferencesRootPresenterTest {
             loadedState.eventSink(PreferencesRootEvent.SwitchToSession(A_SESSION_ID_2))
             setLatestSessionResult.assertions().isCalledOnce()
                 .with(value(A_SESSION_ID_2.value))
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -214,7 +223,6 @@ class PreferencesRootPresenterTest {
                 }
             ),
         ).test {
-            skipItems(1)
             assertThat(awaitItem().showLabsItem).isFalse()
             cancelAndIgnoreRemainingEvents()
         }
@@ -239,7 +247,7 @@ class PreferencesRootPresenterTest {
                 )
             )
         ).test {
-            val state = awaitFirstItem()
+            val state = consumeItemsUntilPredicate { it.otherSessions.isNotEmpty() }.last()
             assertThat(state.isMultiAccountEnabled).isTrue()
             assertThat(state.otherSessions).hasSize(1)
             assertThat(state.otherSessions[0]).isEqualTo(
@@ -280,10 +288,8 @@ class PreferencesRootPresenterTest {
         }
     }
 
-    private suspend fun <T> ReceiveTurbine<T>.awaitFirstItem(): T {
-        skipItems(1)
-        return awaitItem()
-    }
+    // Bipe: the first state is complete; the status support no longer adds a second one.
+    private suspend fun <T> ReceiveTurbine<T>.awaitFirstItem(): T = awaitItem()
 
     private fun CoroutineScope.createPreferencesRootPresenter(
         matrixClient: FakeMatrixClient = FakeMatrixClient(),
@@ -300,8 +306,36 @@ class PreferencesRootPresenterTest {
         featureFlagService = featureFlagService,
         sessionStore = sessionStore,
         appPreferencesStore = appPreferencesStore,
-        userStatusPresenter = { aUserStatusState() },
         preferencesAccountPresenter = { aPreferencesAccountState() },
         sessionCoroutineScope = this,
+        bipeSession = aBipeSession(),
+        userPushStoreFactory = FakeUserPushStoreFactory(),
+        systemNotificationsEnabledProvider = FakeSystemNotificationsEnabledProvider(),
+        buildMeta = aBuildMeta(BuildType.DEBUG),
     )
+
+    // Bipe: no API. The server name matches no test user, so the resolver knows no handle; no public profile.
+    private fun CoroutineScope.aBipeSession(): BipeSession {
+        val resolver = BipeHandleResolver(apiClient = mockk(), serverName = "bipe.invalid", scope = this, accessToken = { null })
+        val profiles = mockk<BipePublicProfiles> {
+            every { myProfile } returns MutableStateFlow(null)
+            coEvery { refreshMine() } returns Unit
+        }
+        // Bipe: the group row subtitles (ADR 0112) stay unloaded.
+        val privacy = mockk<BipePrivacySettings> {
+            every { messaging } returns MutableStateFlow(null)
+            coEvery { refreshMessaging() } returns Result.failure(IllegalStateException("no API"))
+        }
+        val account = mockk<BipeAccountSession> {
+            every { status } returns MutableStateFlow(null)
+            coEvery { refresh() } returns Result.failure(IllegalStateException("no API"))
+            coEvery { hasSyncedRecoveryToken() } returns false
+        }
+        return mockk {
+            every { handleResolver } returns resolver
+            every { publicProfiles } returns profiles
+            every { this@mockk.privacy } returns privacy
+            every { this@mockk.account } returns account
+        }
+    }
 }

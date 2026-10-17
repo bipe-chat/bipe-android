@@ -144,7 +144,7 @@ class OnBoardingPresenter(
             mustChooseAccountProvider = mustChooseAccountProvider,
             canLoginWithQrCode = canLoginWithQrCode,
             canCreateAccount = OnBoardingConfig.CAN_CREATE_ACCOUNT &&
-                (OnBoardingConfig.USES_BIPE_SIGNUP || (defaultAccountProvider == null && canConnectToAnyAccountProvider)), // Bipe
+                (OnBoardingConfig.USES_BIPE_SIGNUP || defaultAccountProvider == null && canConnectToAnyAccountProvider), // Bipe
             canReportBug = canReportBug && showReportBug,
             loginModeState = loginModeState,
             version = buildMeta.versionName,

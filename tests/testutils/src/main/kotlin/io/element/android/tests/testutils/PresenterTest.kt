@@ -13,7 +13,6 @@ import app.cash.molecule.moleculeFlow
 import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
 import io.element.android.libraries.architecture.Presenter
-import org.junit.Assert.fail
 import kotlin.time.Duration
 
 suspend fun <State> Presenter<State>.test(
@@ -28,12 +27,15 @@ suspend fun <State> Presenter<State>.test(
     } catch (t: Throwable) {
         if (t::class.simpleName == "KotlinReflectionInternalError") {
             // Give a more explicit error to the developer
-            fail("""
+            throw AssertionError(
+                """
                 It looks like you have an unconsumed event in your test.
                     If you get this error, it means that your test is missing to consume one or several events.
                     You can fix by consuming and check the event with `awaitItem()`, or you can also invoke
                     `cancelAndIgnoreRemainingEvents()`.
-                """.trimIndent())
+                """.trimIndent(),
+                t,
+            )
         }
         throw t
     }

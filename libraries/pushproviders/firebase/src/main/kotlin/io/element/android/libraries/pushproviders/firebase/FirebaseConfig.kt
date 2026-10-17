@@ -12,8 +12,8 @@ object FirebaseConfig {
     /**
      * It is the push gateway for firebase.
      * Note: pusher_http_url should have path '/_matrix/push/v1/notify' -->
+     * Bipe: own Sygnal (issue #61); never matrix.org.
      */
-    // Bipe: own Sygnal (issue #61); never matrix.org.
     const val PUSHER_HTTP_URL: String = "https://push.bipe.net.br/_matrix/push/v1/notify"
 
     const val INDEX = 0

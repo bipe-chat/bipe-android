@@ -29,6 +29,7 @@ import io.element.android.appconfig.MessageComposerConfig
 import io.element.android.features.location.api.live.ActiveLiveLocationShareManager
 import io.element.android.features.location.api.live.isCurrentlySharing
 import io.element.android.features.messages.api.timeline.HtmlConverterProvider
+import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerEvent
 import io.element.android.features.messages.impl.MessagesState.Threads
 import io.element.android.features.messages.impl.actionlist.ActionListState
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemAction
@@ -64,6 +65,8 @@ import io.element.android.libraries.androidutils.clipboard.ClipboardHelper
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.element.android.libraries.bipe.stickers.StickerPackRepository
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.extensions.flatMap
 import io.element.android.libraries.core.extensions.runCatchingExceptions
@@ -95,7 +98,6 @@ import io.element.android.libraries.matrix.ui.messages.reply.map
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
-import io.element.android.libraries.bipe.stickers.StickerPackRepository
 import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
@@ -143,6 +145,7 @@ class MessagesPresenter(
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
     private val mediaLoader: MatrixMediaLoader,
     private val stickerPackRepository: StickerPackRepository,
+    private val bipeInviterGreeting: BipeInviterGreeting,
 ) : Presenter<MessagesState> {
     @AssistedFactory
     interface Factory {
@@ -168,8 +171,17 @@ class MessagesPresenter(
         val coroutineScope = rememberCoroutineScope()
         val roomInfo by room.roomInfoFlow.collectAsState()
         val localCoroutineScope = rememberCoroutineScope()
-        val composerState = composerPresenter.present()
-        val voiceMessageComposerState = voiceMessageComposerPresenter.present()
+        val presentedComposerState = composerPresenter.present()
+        val presentedVoiceMessageComposerState = voiceMessageComposerPresenter.present()
+        // Bipe ADR 0034: a message sent here ends the prompt to message the inviter.
+        val composerState = presentedComposerState.copy(eventSink = { event ->
+            if (event == MessageComposerEvent.SendMessage) bipeInviterGreeting.end()
+            presentedComposerState.eventSink(event)
+        })
+        val voiceMessageComposerState = presentedVoiceMessageComposerState.copy(eventSink = { event ->
+            if (event == VoiceMessageComposerEvent.SendVoiceMessage) bipeInviterGreeting.end()
+            presentedVoiceMessageComposerState.eventSink(event)
+        })
         val timelineState = timelinePresenter.present()
         val timelineProtectionState = timelineProtectionPresenter.present()
         val identityChangeState = identityChangeStatePresenter.present()
@@ -232,6 +244,10 @@ class MessagesPresenter(
 
         val membersState by room.membersStateFlow.collectAsState()
         val dmRoomMember by room.getDirectRoomMember(membersState)
+        val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
+        val bipeInviterHandle = bipeInviter?.takeIf { inviter ->
+            roomInfo.isDirect && (dmRoomMember?.userId == inviter.userId || roomInfo.heroes.any { it.userId == inviter.userId })
+        }?.handle
         val roomMemberIdentityStateChanges = identityChangeState.roomMemberIdentityStateChanges
 
         // The top bar should show a "history" icon if:
@@ -315,6 +331,11 @@ class MessagesPresenter(
                 MessagesEvent.ShowLiveLocationShare -> {
                     navigator.navigateToCurrentLiveLocation()
                 }
+                MessagesEvent.SayHiToBipeInviter -> localCoroutineScope.launch {
+                    room.liveTimeline.sendMessage(body = bipeInviterGreeting.greetingText, htmlBody = null, intentionalMentions = emptyList())
+                        .onSuccess { bipeInviterGreeting.end() }
+                        .onFailure { Timber.e(it, "Bipe: could not send the greeting") }
+                }
                 is MessagesEvent.MarkAsFullyReadAndExit -> if (!markingAsReadAndExiting.getAndSet(true)) {
                     coroutineScope.launch {
                         val latestEventId = room.liveTimeline.getLatestEventId().getOrElse {
@@ -369,6 +390,7 @@ class MessagesPresenter(
             ),
             showLiveLocationShareBanner = isCurrentlySharingLiveLocationInRoom && timelineState.timelineMode !is Timeline.Mode.Thread,
             redactEventAction = redactEventAction.value,
+            bipeInviterHandle = bipeInviterHandle,
             eventSink = ::handleEvent,
         )
     }

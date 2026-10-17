@@ -97,6 +97,7 @@ import io.element.android.libraries.mediaviewer.impl.model.MediaItem
 import io.element.android.libraries.mediaviewer.impl.model.id
 import io.element.android.libraries.voiceplayer.api.VoiceMessageState
 import kotlinx.collections.immutable.ImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun MediaGalleryView(
@@ -244,11 +245,13 @@ private fun MediaGalleryPage(
                 when (mode) {
                     MediaGalleryMode.Images -> MediaGalleryImages(
                         imagesAndVideos = groupedMediaItems.data.imageAndVideoItems,
+                        isDm = state.isDm,
                         eventSink = state.eventSink,
                         onItemClick = onItemClick,
                     )
                     MediaGalleryMode.Files -> MediaGalleryFiles(
                         files = groupedMediaItems.data.fileItems,
+                        isDm = state.isDm,
                         eventSink = state.eventSink,
                         onItemClick = onItemClick,
                     )
@@ -279,13 +282,14 @@ private fun AsyncData<GroupedMediaItems>.isLoadingItems(mode: MediaGalleryMode):
 @Composable
 private fun MediaGalleryImages(
     imagesAndVideos: ImmutableList<MediaItem>,
+    isDm: Boolean,
     eventSink: (MediaGalleryEvent) -> Unit,
     onItemClick: (MediaItem.Event) -> Unit,
 ) {
     if (imagesAndVideos.isEmpty()) {
         EmptyContent(
             titleRes = R.string.screen_media_browser_media_empty_state_title,
-            subtitleRes = R.string.screen_media_browser_media_empty_state_subtitle,
+            subtitleRes = if (isDm) BipeR.string.bipe_dm_media_empty else R.string.screen_media_browser_media_empty_state_subtitle, // Bipe
             icon = CompoundIcons.Image(),
         )
     } else {
@@ -300,13 +304,14 @@ private fun MediaGalleryImages(
 @Composable
 private fun MediaGalleryFiles(
     files: ImmutableList<MediaItem>,
+    isDm: Boolean,
     eventSink: (MediaGalleryEvent) -> Unit,
     onItemClick: (MediaItem.Event) -> Unit,
 ) {
     if (files.isEmpty()) {
         EmptyContent(
             titleRes = R.string.screen_media_browser_files_empty_state_title,
-            subtitleRes = R.string.screen_media_browser_files_empty_state_subtitle,
+            subtitleRes = if (isDm) BipeR.string.bipe_dm_files_empty else R.string.screen_media_browser_files_empty_state_subtitle, // Bipe
             icon = CompoundIcons.Files(),
         )
     } else {

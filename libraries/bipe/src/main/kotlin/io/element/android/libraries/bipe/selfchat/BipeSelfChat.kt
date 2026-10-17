@@ -8,6 +8,7 @@ package io.element.android.libraries.bipe.selfchat
 
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import io.element.android.libraries.core.extensions.mapCatchingExceptions
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -88,7 +89,7 @@ class BipeSelfChat(
     }
 
     private suspend fun readRoomId(): Result<RoomId?> {
-        return matrixClient.getAccountData(EVENT_TYPE).mapCatching { content ->
+        return matrixClient.getAccountData(EVENT_TYPE).mapCatchingExceptions { content ->
             val value = content?.let { json.decodeFromString(SelfChatContent.serializer(), it).roomId }
             value?.takeIf { MatrixPatterns.isRoomId(it) }?.let(::RoomId)
         }.onSuccess { roomId ->

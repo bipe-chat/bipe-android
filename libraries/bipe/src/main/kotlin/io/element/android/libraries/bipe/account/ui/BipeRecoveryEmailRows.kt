@@ -6,13 +6,17 @@
 
 package io.element.android.libraries.bipe.account.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,7 +49,18 @@ private sealed interface EmailDialog {
  * "Remover e-mail" (`DELETE /v1/me/email`) after a confirmation.
  */
 @Composable
-internal fun BipeRecoveryEmailRows(account: BipeAccountSession, status: BipeAccountStatus) {
+fun BipeRecoveryEmailRows(account: BipeAccountSession, modifier: Modifier = Modifier) {
+    val status by account.status.collectAsState()
+    LaunchedEffect(Unit) { account.refresh() }
+    status?.let { BipeRecoveryEmailRows(account, it, modifier) }
+}
+
+@Composable
+private fun BipeRecoveryEmailRows(
+    account: BipeAccountSession,
+    status: BipeAccountStatus,
+    modifier: Modifier = Modifier,
+) {
     val scope = rememberCoroutineScope()
     var dialog by remember { mutableStateOf<EmailDialog?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -53,56 +68,64 @@ internal fun BipeRecoveryEmailRows(account: BipeAccountSession, status: BipeAcco
     val hasEmail = status.email != null || status.emailPending != null
 
     val lines = buildList {
-        status.email?.let { add(it); add(stringResource(R.string.bipe_email_confirmed)) }
-        status.emailPending?.let { add(it); add(stringResource(R.string.bipe_email_pending)) }
+        status.email?.let {
+            add(it)
+            add(stringResource(R.string.bipe_email_confirmed))
+        }
+        status.emailPending?.let {
+            add(it)
+            add(stringResource(R.string.bipe_email_pending))
+        }
         sentTo?.let { add(stringResource(R.string.bipe_email_sent, it)) }
         if (!hasEmail && sentTo == null) add(stringResource(R.string.bipe_fallback_reminder))
     }
-    ListItem(
-        content = { Text(stringResource(R.string.bipe_email_title)) },
-        supportingContent = { Text(lines.joinToString("\n")) },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Email())),
-        enabled = !busy,
-        onClick = { dialog = EmailDialog.Edit },
-    )
-    if (hasEmail) {
+    Column(modifier = modifier) {
         ListItem(
-            content = { Text(stringResource(R.string.bipe_email_remove)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Delete())),
-            style = ListItemStyle.Destructive,
+            content = { Text(stringResource(R.string.bipe_email_title)) },
+            supportingContent = { Text(lines.joinToString("\n")) },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Email())),
             enabled = !busy,
-            onClick = { dialog = EmailDialog.ConfirmRemove },
+            onClick = { dialog = EmailDialog.Edit },
         )
-    }
-
-    fun send(request: suspend () -> Result<Unit>, onSuccess: () -> Unit) {
-        dialog = null
-        busy = true
-        scope.launch {
-            val result = request()
-            busy = false
-            result
-                .onSuccess { onSuccess() }
-                .onFailure { dialog = EmailDialog.Error(account.messageOf(it)) }
+        if (hasEmail) {
+            ListItem(
+                content = { Text(stringResource(R.string.bipe_email_remove)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Delete())),
+                style = ListItemStyle.Destructive,
+                enabled = !busy,
+                onClick = { dialog = EmailDialog.ConfirmRemove },
+            )
         }
-    }
 
-    when (val shown = dialog) {
-        null -> Unit
-        EmailDialog.Edit -> BipeRecoveryEmailDialog(
-            footer = stringResource(if (hasEmail) R.string.bipe_email_footer else R.string.bipe_fallback_reminder),
-            onSubmit = { email -> send({ account.setRecoveryEmail(email) }) { sentTo = email } },
-            onDismiss = { dialog = null },
-        )
-        EmailDialog.ConfirmRemove -> ConfirmationDialog(
-            title = stringResource(R.string.bipe_email_remove),
-            content = stringResource(R.string.bipe_email_footer),
-            submitText = stringResource(R.string.bipe_email_remove),
-            destructiveSubmit = true,
-            onSubmitClick = { send({ account.removeRecoveryEmail() }) { sentTo = null } },
-            onDismiss = { dialog = null },
-        )
-        is EmailDialog.Error -> ErrorDialog(content = shown.message, onSubmit = { dialog = null })
+        fun send(request: suspend () -> Result<Unit>, onSuccess: () -> Unit) {
+            dialog = null
+            busy = true
+            scope.launch {
+                val result = request()
+                busy = false
+                result
+                    .onSuccess { onSuccess() }
+                    .onFailure { dialog = EmailDialog.Error(account.messageOf(it)) }
+            }
+        }
+
+        when (val shown = dialog) {
+            null -> Unit
+            EmailDialog.Edit -> BipeRecoveryEmailDialog(
+                footer = stringResource(if (hasEmail) R.string.bipe_email_footer else R.string.bipe_fallback_reminder),
+                onSubmit = { email -> send({ account.setRecoveryEmail(email) }) { sentTo = email } },
+                onDismiss = { dialog = null },
+            )
+            EmailDialog.ConfirmRemove -> ConfirmationDialog(
+                title = stringResource(R.string.bipe_email_remove),
+                content = stringResource(R.string.bipe_email_footer),
+                submitText = stringResource(R.string.bipe_email_remove),
+                destructiveSubmit = true,
+                onSubmitClick = { send({ account.removeRecoveryEmail() }) { sentTo = null } },
+                onDismiss = { dialog = null },
+            )
+            is EmailDialog.Error -> ErrorDialog(content = shown.message, onSubmit = { dialog = null })
+        }
     }
 }
 

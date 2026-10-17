@@ -8,6 +8,8 @@
 
 package io.element.android.features.roomdetails.impl
 
+import io.element.android.libraries.matrix.api.core.RoomId
+
 sealed interface RoomDetailsEvent {
     data class LeaveRoom(val needsConfirmation: Boolean) : RoomDetailsEvent
     data object MuteNotification : RoomDetailsEvent
@@ -17,4 +19,9 @@ sealed interface RoomDetailsEvent {
     data class SetFavorite(val isFavorite: Boolean) : RoomDetailsEvent
     data object MarkAsRead : RoomDetailsEvent
     data object MarkAsUnread : RoomDetailsEvent
+
+    // Bipe: "Convidar para um grupo" in a DM.
+    data object BipeOpenInviteToGroup : RoomDetailsEvent
+    data class BipeInviteToGroup(val groupId: RoomId) : RoomDetailsEvent
+    data object BipeDismissInviteToGroup : RoomDetailsEvent
 }

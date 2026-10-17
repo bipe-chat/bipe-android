@@ -24,8 +24,7 @@ internal object BipeHandleChangeLines {
     /** Matrix ID to the time (ms) of the latest join in the loaded timeline. */
     fun joinTimes(items: List<MatrixTimelineItem>): Map<String, Long> {
         val joins = HashMap<String, Long>()
-        for (item in items) {
-            val event = (item as? MatrixTimelineItem.Event)?.event ?: continue
+        for (event in items.mapNotNull { (it as? MatrixTimelineItem.Event)?.event }) {
             val content = event.content as? RoomMembershipContent ?: continue
             if (content.change == MembershipChange.JOINED || content.change == MembershipChange.INVITATION_ACCEPTED) {
                 val userId = content.userId.value

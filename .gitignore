@@ -112,3 +112,4 @@ lint/tmp/
 .DS_Store
 
 checkouts/**
+/.bipe-shared/

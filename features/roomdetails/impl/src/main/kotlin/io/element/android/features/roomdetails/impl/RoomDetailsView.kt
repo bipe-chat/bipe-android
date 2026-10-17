@@ -57,6 +57,8 @@ import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.components.button.MainActionButton
+import io.element.android.libraries.designsystem.components.dialogs.ListOption
+import io.element.android.libraries.designsystem.components.dialogs.SingleSelectionDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
@@ -98,6 +100,7 @@ import io.element.android.services.analyticsproviders.api.trackers.captureIntera
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Ref: https://www.figma.com/design/pDlJZGBsri47FNTXMnEdXB/Compound-Android-Templates?node-id=21-120385
@@ -249,9 +252,12 @@ fun RoomDetailsView(
                     pinnedMessagesCount = state.pinnedMessagesCount,
                     onPinnedMessagesClick = onPinnedMessagesClick
                 )
-                PollsItem(
-                    openPollHistory = openPollHistory
-                )
+                // Bipe: no polls in DMs.
+                if (state.roomType !is RoomDetailsType.Dm) {
+                    PollsItem(
+                        openPollHistory = openPollHistory
+                    )
+                }
             }
             when (state.roomType) {
                 is RoomDetailsType.Room -> {
@@ -277,11 +283,21 @@ fun RoomDetailsView(
                     }
                 }
                 is RoomDetailsType.Dm -> {
-                    if (state.canInvite) {
-                        // Note: for rooms the invite action is a Main action
-                        PreferenceCategory {
-                            InviteItem(onClick = invitePeople)
-                        }
+                    // Bipe: a DM never gets more people. Invite the recipient to one of your groups instead.
+                    PreferenceCategory {
+                        ListItem(
+                            content = { Text(stringResource(BipeR.string.bipe_dm_invite_to_group)) },
+                            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
+                            onClick = { state.eventSink(RoomDetailsEvent.BipeOpenInviteToGroup) },
+                        )
+                    }
+                    state.bipeInviteGroups?.let { groups ->
+                        SingleSelectionDialog(
+                            options = groups.map { ListOption(it.name) }.toImmutableList(),
+                            onSelectOption = { index -> state.eventSink(RoomDetailsEvent.BipeInviteToGroup(groups[index].roomId)) },
+                            onDismissRequest = { state.eventSink(RoomDetailsEvent.BipeDismissInviteToGroup) },
+                            title = stringResource(BipeR.string.bipe_dm_invite_to_group),
+                        )
                     }
                     state.dmOtherMemberDetailsState?.let { dmMemberDetails ->
                         PreferenceCategory {
@@ -328,6 +344,7 @@ fun RoomDetailsView(
                 }
             }
             OtherActionsSection(
+                isDm = state.roomType is RoomDetailsType.Dm,
                 dmOtherMemberDetailsState = state.dmOtherMemberDetailsState,
                 canReportRoom = state.canReportRoom,
                 onReportRoomClick = onReportRoomClick,
@@ -771,17 +788,6 @@ private fun MembersItem(
 }
 
 @Composable
-private fun InviteItem(
-    onClick: () -> Unit,
-) {
-    ListItem(
-        content = { Text(stringResource(R.string.screen_room_details_invite_title)) },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
-        onClick = onClick,
-    )
-}
-
-@Composable
 private fun PinnedMessagesItem(
     pinnedMessagesCount: Int?,
     onPinnedMessagesClick: () -> Unit,
@@ -829,6 +835,7 @@ private fun MediaGalleryItem(
 
 @Composable
 private fun OtherActionsSection(
+    isDm: Boolean,
     canReportRoom: Boolean,
     onReportRoomClick: () -> Unit,
     onLeaveRoomClick: () -> Unit,
@@ -851,7 +858,8 @@ private fun OtherActionsSection(
         }
         ListItem(
             content = {
-                Text(stringResource(CommonStrings.action_leave_room))
+                // Bipe: a DM is a conversation, not a room.
+                Text(stringResource(if (isDm) CommonStrings.action_leave_conversation else CommonStrings.action_leave_room))
             },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Leave())),
             style = ListItemStyle.Destructive,

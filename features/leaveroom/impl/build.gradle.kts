@@ -27,6 +27,7 @@ dependencies {
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.uiStrings)
     implementation(projects.libraries.push.api)
+    implementation(projects.libraries.bipe) // Bipe
 
     testCommonDependencies(libs)
     testImplementation(libs.coroutines.core)

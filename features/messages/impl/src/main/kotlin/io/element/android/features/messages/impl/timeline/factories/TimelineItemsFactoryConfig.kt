@@ -12,8 +12,10 @@ package io.element.android.features.messages.impl.timeline.factories
  * Some data used to configure the creation of timeline items.
  * @param computeReadReceipts when false, read receipts will be empty.
  * @param computeReactions when false, reactions will be empty.
+ * @param isDm Bipe: when true, membership lines use conversation wording.
  */
 data class TimelineItemsFactoryConfig(
     val computeReadReceipts: Boolean,
     val computeReactions: Boolean,
+    val isDm: Boolean = false, // Bipe
 )

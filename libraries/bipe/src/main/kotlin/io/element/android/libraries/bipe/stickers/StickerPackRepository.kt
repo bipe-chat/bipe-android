@@ -14,7 +14,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
 import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.SessionScope
@@ -65,8 +64,7 @@ interface StickerPackRepository {
  */
 @ContributesBinding(SessionScope::class)
 @SingleIn(SessionScope::class)
-@Inject
-class HttpStickerPackRepository(
+class DefaultStickerPackRepository(
     @ApplicationContext private val context: Context,
     matrixClient: MatrixClient,
     private val sessionStore: SessionStore,
@@ -130,14 +128,13 @@ class HttpStickerPackRepository(
     private suspend fun addToUserPack(candidates: List<StickerImportCandidate>, token: String): Int {
         val path = listOf("user", userId, "account_data", StickerPackEventType.USER_PACK)
         val content = get(path, token)
-            ?.let { runCatching { Json.parseToJsonElement(it) as? JsonObject }.getOrNull() }
+            ?.let { runCatchingExceptions { Json.parseToJsonElement(it) as? JsonObject }.getOrNull() }
             ?: JsonObject(emptyMap())
         val images = (content["images"] as? JsonObject)?.toMutableMap() ?: mutableMapOf()
 
         var added = 0
         var uploadError: Exception? = null
-        for (candidate in candidates) {
-            if (images.containsKey(candidate.shortcode)) continue
+        for (candidate in candidates.distinctBy { it.shortcode }.filterNot { images.containsKey(it.shortcode) }) {
             try {
                 val extension = if (candidate.mimeType == "image/png") "png" else "webp"
                 val url = upload(candidate.bytes, candidate.mimeType, "${candidate.shortcode}.$extension", token)
@@ -185,7 +182,7 @@ class HttpStickerPackRepository(
             for ((enabledRoomId, stateKey) in StickerPack.parseEnabledRooms(content)) {
                 if (enabledRoomId == roomId) continue
                 // A pack in a room the user left is unreadable. Skip it, keep the others.
-                val pack = runCatching {
+                val pack = runCatchingExceptions {
                     get(listOf("rooms", enabledRoomId, "state", StickerPackEventType.ROOM_PACK, stateKey), token)
                 }.getOrNull()?.let { StickerPack.parse(it, StickerPack.Source.Room(enabledRoomId, stateKey)) }
                 if (pack != null) packs += pack
@@ -196,7 +193,7 @@ class HttpStickerPackRepository(
 
     private suspend fun roomPacks(roomId: String, token: String): List<StickerPack> {
         val body = get(listOf("rooms", roomId, "state"), token) ?: return emptyList()
-        val events = runCatching { Json.parseToJsonElement(body) as? JsonArray }.getOrNull() ?: return emptyList()
+        val events = runCatchingExceptions { Json.parseToJsonElement(body) as? JsonArray }.getOrNull() ?: return emptyList()
         return events.mapNotNull { element ->
             val event = element as? JsonObject ?: return@mapNotNull null
             if ((event["type"] as? JsonPrimitive)?.content != StickerPackEventType.ROOM_PACK) return@mapNotNull null

@@ -8,6 +8,7 @@ package io.element.android.libraries.bipe
 
 import androidx.annotation.StringRes
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import java.util.regex.Pattern
 
 /** The scam pattern a message looks like (security.md rule 9). Friction, not protection. */
@@ -94,7 +95,7 @@ object ScamDetector {
                 // address in a message about a bank, a card or Pix.
                 ScamWarningKind.REMOTE_APP -> containsWord(normalized, BipeRegistries.remoteAppInstallWords) &&
                     (containsWord(normalized, BipeRegistries.remoteAppNames) ||
-                        (hosts.any { !isUnder(it.plain, installSafeDomains) } && containsAny(normalized, BipeRegistries.remoteAppBankWords)))
+                        hosts.any { !isUnder(it.plain, installSafeDomains) } && containsAny(normalized, BipeRegistries.remoteAppBankWords))
                 // Fake support asks for the PIN or a code. Bipe never asks for either.
                 ScamWarningKind.PIN_REQUEST -> containsAny(normalized, BipeRegistries.pinRequestAskPhrases) &&
                     containsWord(normalized, BipeRegistries.pinRequestSecretWords) &&
@@ -140,7 +141,7 @@ object ScamDetector {
     private const val URGENCY_PREFIX = "urgency:"
     private const val MAX_CACHED_EVENTS = 2000
 
-    private class CompiledPattern(val matchId: String, val expression: Pattern)
+    private data class CompiledPattern(val matchId: String, val expression: Pattern)
 
     private data class CachedWarning(val bodyHash: Int, val kind: ScamWarningKind?)
 
@@ -161,7 +162,7 @@ object ScamDetector {
         // bipe-shared validates every regex at generation time, so a compile failure here is not expected.
         groups.flatMap { (name, patterns) ->
             patterns.mapNotNull { pattern ->
-                runCatching { Pattern.compile(pattern.regex, Pattern.UNICODE_CHARACTER_CLASS) }
+                runCatchingExceptions { Pattern.compile(pattern.regex, Pattern.UNICODE_CHARACTER_CLASS) }
                     .getOrNull()
                     ?.let { CompiledPattern("$name:${pattern.id}", it) }
             }
@@ -169,7 +170,7 @@ object ScamDetector {
     }
 
     private val linkExpressions: List<Pattern> by lazy {
-        BipeRegistries.linkPatterns.mapNotNull { runCatching { Pattern.compile(it.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull() }
+        BipeRegistries.linkPatterns.mapNotNull { runCatchingExceptions { Pattern.compile(it.regex, Pattern.UNICODE_CHARACTER_CLASS) }.getOrNull() }
     }
 
     private val bankAlertWordLists = listOf(
