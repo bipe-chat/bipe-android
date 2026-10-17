@@ -173,5 +173,6 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Search | Search button in the top bar of Conversas and Grupos | Search tab (iOS 26+), inline before iOS 26 | Platform idiom (ADR 0053) |
 | Quiet groups "done" marker | The poll rule in the account's push rules (once per account) | A flag on the device (once per device) | Android has no per-session store in libraries/bipe; same result for the user |
 | Conferir no Bipe: close | Back to Bipe | Back to the app that shared | The iOS check runs in the share extension; Android shows it in the app (ADR 0091) |
+| Message actions | Element's bottom sheet | Native context menu on long press: reaction row, actions, the message as preview | Platform idiom |
 
 <!-- /parity:differences -->
