@@ -120,7 +120,7 @@ class BipeAccountSession(
     }
 
     /** `true` when this phone keeps the recovery token in the synced store (Block Store). */
-    suspend fun hasSyncedRecoveryToken(): Boolean = deviceAccount.hasSyncedRecoveryToken()
+    suspend fun hasSyncedRecoveryToken(): Boolean = deviceAccount.hasSyncedRecoveryToken(userId)
 
     suspend fun hasAppLockPin(): Boolean = deviceAccount.lock.isPinSet()
 
