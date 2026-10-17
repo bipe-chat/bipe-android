@@ -54,18 +54,28 @@ class BipeAccountSession(
     /** The inviter's Matrix ID after a personal-invite sign-up on this device, once (ADR 0034). */
     suspend fun takePendingInviter(): String? = deviceAccount.takePendingInviter(userId)
 
-    /** Sets or changes the PIN on the server, then the app lock PIN. The caller does the biometric check first. */
+    /**
+     * Sets or changes this account's PIN on the server, then the device PIN when it follows the account PIN (ADR 0086).
+     * The caller does the biometric check first.
+     */
     suspend fun changePin(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
-        deviceAccount.lock.setPin(pin)
+        deviceAccount.adoptAccountPin(pin)
         refresh()
     }
 
-    /** The lock screen set a new app lock PIN: send it to the server too, so both stay the same PIN. */
+    /**
+     * The lock screen set a new device PIN. With one account on the phone the account PIN follows, so both stay one PIN.
+     * With more accounts the device PIN belongs to the phone and no account PIN changes (ADR 0086).
+     */
     suspend fun onAppLockPinSet(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
+        if (!deviceAccount.devicePinFollowsAccountPin()) return@runCatchingExceptions
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
         refresh()
     }.onFailure { Timber.e(it, "Bipe: app lock PIN not sent to the server") }
+
+    /** `true` when the account PIN is not the PIN that locks the app: the phone holds more than one account (ADR 0086). */
+    suspend fun hasSeparateDevicePin(): Boolean = !deviceAccount.devicePinFollowsAccountPin()
 
     /**
      * A beta account (e-mail and own password) moves to a hidden password: PIN first, then `POST /v1/me/device-first`.
@@ -75,7 +85,7 @@ class BipeAccountSession(
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
         val credentials = BipeApiClient.withTokenRetry(accessToken) { apiClient.moveToDeviceFirst(it) }
         deviceAccount.onMovedToDeviceFirst(credentials)
-        deviceAccount.lock.setPin(pin)
+        deviceAccount.adoptAccountPin(pin)
         refresh()
     }
 
