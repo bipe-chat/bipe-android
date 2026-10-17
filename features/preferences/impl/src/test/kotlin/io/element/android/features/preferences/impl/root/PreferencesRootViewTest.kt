@@ -28,8 +28,6 @@ import io.element.android.tests.testutils.EnsureNeverCalled
 import io.element.android.tests.testutils.EnsureNeverCalledWithParam
 import io.element.android.tests.testutils.EventsRecorder
 import io.element.android.tests.testutils.assertNoNodeWithText
-import io.element.android.tests.testutils.assertNodeWithTextIsDisplayed
-import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
@@ -147,6 +145,9 @@ class PreferencesRootViewTest : RobolectricTest() {
             setView(
                 aPreferencesRootState(
                     showAnalyticsSettings = true,
+                    // Bipe: these rows sit with the developer options, in builds that are not release builds (ADR 0112).
+                    showDeveloperSettings = true,
+                    bipeIsDeveloperBuild = true,
                     eventSink = eventsRecorder,
                 ),
                 onOpenAnalytics = callback,
@@ -175,6 +176,9 @@ class PreferencesRootViewTest : RobolectricTest() {
             setView(
                 aPreferencesRootState(
                     showLabsItem = true,
+                    // Bipe: these rows sit with the developer options, in builds that are not release builds (ADR 0112).
+                    showDeveloperSettings = true,
+                    bipeIsDeveloperBuild = true,
                     eventSink = eventsRecorder,
                 ),
                 onOpenLabs = callback,
