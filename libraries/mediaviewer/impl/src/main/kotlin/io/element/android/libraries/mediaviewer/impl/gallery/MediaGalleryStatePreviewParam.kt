@@ -139,13 +139,15 @@ private fun aMediaGalleryState(
     mode: MediaGalleryMode = MediaGalleryMode.Images,
     groupedMediaItems: AsyncData<GroupedMediaItems> = AsyncData.Uninitialized,
     mediaBottomSheetState: MediaBottomSheetState = MediaBottomSheetState.Hidden,
+    isDm: Boolean = false,
 ) = MediaGalleryState(
     roomName = roomName,
     mode = mode,
     groupedMediaItems = groupedMediaItems,
     mediaBottomSheetState = mediaBottomSheetState,
     snackbarMessage = null,
-    eventSink = {}
+    eventSink = {},
+    isDm = isDm,
 )
 
 fun aGroupedMediaItems(

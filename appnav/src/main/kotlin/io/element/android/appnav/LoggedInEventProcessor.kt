@@ -12,7 +12,6 @@ import androidx.annotation.VisibleForTesting
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.coroutine.childScope
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
@@ -29,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import io.element.android.libraries.bipe.R as BipeR
 
 @AssistedInject
 class LoggedInEventProcessor(

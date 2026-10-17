@@ -98,7 +98,6 @@ class BipeAccountSession(
         BipeApiClient.withTokenRetry(accessToken) { apiClient.acceptTerms(BipeRegistries.LEGAL_VERSION, it) }
         refresh()
         statusFlow.value = statusFlow.value?.copy(termsVersion = BipeRegistries.LEGAL_VERSION)
-        Unit
     }.onFailure { Timber.e(it, "Bipe: terms acceptance not saved") }
 
     /** "Cancel, it was not me": stops a waiting recovery. */

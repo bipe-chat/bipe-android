@@ -55,7 +55,6 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.background.OnboardingBackground
 import io.element.android.libraries.designsystem.components.BigIcon
@@ -98,6 +97,7 @@ import io.element.android.libraries.mediaviewer.impl.model.MediaItem
 import io.element.android.libraries.mediaviewer.impl.model.id
 import io.element.android.libraries.voiceplayer.api.VoiceMessageState
 import kotlinx.collections.immutable.ImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun MediaGalleryView(
