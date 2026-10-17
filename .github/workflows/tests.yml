@@ -68,12 +68,26 @@ jobs:
         run: |
           git config lfs.url https://github.com/element-hq/element-x-android.git/info/lfs
           git lfs pull --include "libraries/mediaupload/impl/src/test/assets/*"
-      # Bipe: SharedVectorTest reads the shared test vectors from bipe-shared.
+      # Bipe: SharedVectorTest reads the shared test vectors from bipe-shared. On a pull request, use the
+      # bipe-shared branch with the same name where it exists, so a cross-repo change tests against its own
+      # vectors. Else use bipe-shared main.
+      - name: Pick the bipe-shared ref
+        id: shared-ref
+        if: ${{ github.repository != 'element-hq/element-x-android' }}
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if [ -n "$BRANCH" ] && git ls-remote --exit-code --heads https://github.com/bipe-chat/bipe-shared.git "$BRANCH" > /dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
       - name: ⏬ Checkout bipe-shared test vectors
         if: ${{ github.repository != 'element-hq/element-x-android' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: bipe-chat/bipe-shared
+          ref: ${{ steps.shared-ref.outputs.ref }}
           path: .bipe-shared
           persist-credentials: false
           sparse-checkout: test-vectors
