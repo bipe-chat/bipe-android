@@ -657,6 +657,8 @@
     <string name="bipe_account_biometric_unlock">Desbloquear com %1$s</string>
     <string name="bipe_account_pin_footer">A mesma senha de %1$s números trava o app e protege a volta para sua conta.</string>
     <string name="bipe_account_pin_footer_device">Esta senha protege a volta para esta conta. A que trava o app é do celular e continua a mesma.</string>
+    <string name="bipe_account_add">Adicionar conta</string>
+    <string name="bipe_account_cap_reached">Este celular já tem %1$s contas, o limite.</string>
     <string name="bipe_account_ways_back">Jeitos de voltar</string>
     <string name="bipe_account_email_none">Não adicionado</string>
     <string name="bipe_account_recovery_key">Chave de recuperação</string>
