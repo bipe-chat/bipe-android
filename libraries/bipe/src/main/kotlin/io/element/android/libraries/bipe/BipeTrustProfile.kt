@@ -29,6 +29,9 @@ data class BipeTrustProfile(
     val totalCount: Int get() = steps.size
     val progress: Float get() = if (totalCount == 0) 0f else completedCount.toFloat() / totalCount
 
+    /** `true` when no step that ships today is left to do; steps that are "em breve" do not count (ADR 0112). */
+    val liveStepsDone: Boolean get() = steps.none { it.status == Status.TODO }
+
     companion object {
         fun create(displayName: String?, hasAvatar: Boolean, handle: String?): BipeTrustProfile {
             val missing = buildList {

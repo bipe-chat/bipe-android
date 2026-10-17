@@ -209,6 +209,9 @@ class BipeDeviceAccount(
     /** `true` when the synced store has a recovery token (e.g. a new phone with the same Google account). */
     suspend fun hasRecoveryToken(): Boolean = tokenStore.read() != null
 
+    /** `true` when the recovery token sits in the synced store (Block Store), so it reaches a new phone (ADR 0059). */
+    suspend fun hasSyncedRecoveryToken(): Boolean = tokenStore.hasSyncedToken()
+
     /** Forgets the synced token, e.g. when the user wants a new account on this phone. */
     suspend fun forgetRecoveryToken() = tokenStore.delete()
 

@@ -56,7 +56,6 @@ dependencies {
     implementation(projects.services.analytics.api)
     implementation(libs.androidx.datastore.preferences)
     implementation(projects.features.preferences.impl)
-    implementation(projects.libraries.emoji.api) // Bipe: the Você tab (ADR 0053)
     implementation(projects.features.reportroom.api)
     implementation(projects.features.rolesandpermissions.api)
     implementation(projects.libraries.previewutils)

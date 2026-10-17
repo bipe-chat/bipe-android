@@ -14,6 +14,7 @@ import io.element.android.libraries.bipe.BipePublicProfiles
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.settings.BipePrivacySettings
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -67,6 +68,12 @@ class BipeSession(
     val publicProfiles = BipePublicProfiles(
         apiClient = apiClient,
         scope = sessionCoroutineScope,
+        accessToken = accessToken,
+    )
+
+    /** Who can message and find the user (ADR 0112, Privacidade). */
+    val privacy = BipePrivacySettings(
+        apiClient = apiClient,
         accessToken = accessToken,
     )
 }

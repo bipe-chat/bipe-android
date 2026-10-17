@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.account.PreferencesAccountState
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
+import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.designsystem.components.preferences.DropdownOption
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -37,6 +38,14 @@ data class PreferencesRootState(
     val bipeHandle: String?,
     // Bipe: whether the public profile is on (ADR 0041), or null while it is not loaded.
     val bipePublicProfileEnabled: Boolean?,
+    // Bipe: values shown as subtitles of the group rows under "Configurações" (ADR 0112). null while not loaded.
+    val bipeWhoCanMessage: BipeWhoCanMessage?,
+    val bipeWaysBackCount: Int?,
+    val bipeNotificationsOn: Boolean?,
+    // Bipe: copied on a long press on the version footer (ADR 0112). Never shown.
+    val bipeDeviceId: String,
+    // Bipe: Analytics, Labs and "Report a problem" show only in builds that are not release builds (ADR 0112).
+    val bipeIsDeveloperBuild: Boolean,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 

@@ -21,12 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
-import io.element.android.features.preferences.impl.R
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runUpdatingStateNoSuccess
 import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.ShowAllActivityInRoomListFeature
@@ -59,6 +60,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
+import io.element.android.libraries.bipe.R as BipeR
 
 @Inject
 class NotificationSettingsPresenter(
@@ -76,6 +78,7 @@ class NotificationSettingsPresenter(
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
     private val featureFlagService: FeatureFlagService,
+    private val buildMeta: BuildMeta,
 ) : Presenter<NotificationSettingsState> {
     // Serializes the pick → copy → persist → recreate pipeline per slot. The copier already locks
     // its `<slot>.tmp` file, but the persist+recreate window outside the copier is unprotected;
@@ -143,7 +146,7 @@ class NotificationSettingsPresenter(
         val callRingtone by remember { appPreferencesStore.getCallRingtoneFlow() }.collectAsState(initial = NotificationSound.SystemDefault)
         val persistedMessageSoundTitle by remember { appPreferencesStore.getMessageSoundDisplayNameFlow() }.collectAsState(initial = null)
         val persistedCallRingtoneTitle by remember { appPreferencesStore.getCallRingtoneDisplayNameFlow() }.collectAsState(initial = null)
-        val defaultLabel = stringProvider.getString(R.string.screen_notification_settings_sound_system_default)
+        val defaultLabel = stringProvider.getString(BipeR.string.bipe_notifications_tone_system) // Bipe
 
         // One-shot classification for the call-ringtone slot only: users who customised the
         // channel via Android system settings before the in-app picker existed (channel version 0,
@@ -316,6 +319,7 @@ class NotificationSettingsPresenter(
             pendingMessageSoundPickerLaunch = pendingMessageSoundPickerLaunch,
             pendingCallRingtonePickerLaunch = pendingCallRingtonePickerLaunch,
             showAllActivityInRoomList = showAllActivityInRoomList,
+            bipeIsDeveloperBuild = buildMeta.buildType != BuildType.RELEASE,
             eventSink = ::handleEvent,
         )
     }
@@ -390,15 +394,15 @@ class NotificationSettingsPresenter(
         defaultLabel: String,
     ): String = when (sound) {
         NotificationSound.SystemDefault -> defaultLabel
-        NotificationSound.ElementDefault -> stringProvider.getString(R.string.screen_notification_settings_sound_element_default)
-        NotificationSound.ElementFade -> stringProvider.getString(R.string.screen_notification_settings_sound_element_fade)
-        NotificationSound.Silent -> stringProvider.getString(R.string.screen_notification_settings_sound_silent)
+        NotificationSound.ElementDefault -> stringProvider.getString(BipeR.string.bipe_notifications_tone_default) // Bipe
+        NotificationSound.ElementFade -> stringProvider.getString(BipeR.string.bipe_notifications_tone_soft) // Bipe
+        NotificationSound.Silent -> stringProvider.getString(BipeR.string.bipe_notifications_tone_silent) // Bipe
         is NotificationSound.Custom -> {
             val nonBlankPersisted = persistedTitle?.takeUnless { it.isBlank() }
             if (nonBlankPersisted != null) {
                 nonBlankPersisted
             } else {
-                val customFallback = stringProvider.getString(R.string.screen_notification_settings_sound_custom_fallback)
+                val customFallback = stringProvider.getString(BipeR.string.bipe_notifications_tone_custom) // Bipe
                 val resolved by produceState(initialValue = "", sound.uri) {
                     val title = soundDisplayNameResolver.resolveCustomSoundTitle(sound.uri)
                     value = title?.takeUnless { it.isBlank() } ?: customFallback

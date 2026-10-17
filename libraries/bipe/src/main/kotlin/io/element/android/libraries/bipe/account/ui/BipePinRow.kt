@@ -42,17 +42,13 @@ private sealed interface PinDialog {
 }
 
 /**
- * Settings rows of the device-first account (ADR 0057), under the handle and invite rows:
+ * The Senha row of Sua conta (ADR 0057, ADR 0112):
  * - beta account: "Create your PIN", which also moves the account to a hidden password;
  * - blocked PIN: the blocked state; a new PIN unblocks it;
- * - else: "Change PIN" after a biometric check (or the phone's screen lock);
- * - then the recovery email rows ([BipeRecoveryEmailRows]).
+ * - else: "Change PIN" after a biometric check (or the phone's screen lock).
  */
 @Composable
-fun BipeAccountRows(
-    account: BipeAccountSession,
-    modifier: Modifier = Modifier,
-) {
+fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
     val status by account.status.collectAsState()
     LaunchedEffect(Unit) { account.refresh() }
     val context = LocalContext.current
@@ -106,7 +102,6 @@ fun BipeAccountRows(
                 onClick = ::startChange,
             )
         }
-        BipeRecoveryEmailRows(account, current)
 
         when (val shown = dialog) {
             null -> Unit

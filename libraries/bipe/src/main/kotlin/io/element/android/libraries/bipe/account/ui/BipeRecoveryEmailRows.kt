@@ -9,6 +9,8 @@ package io.element.android.libraries.bipe.account.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +49,14 @@ private sealed interface EmailDialog {
  * "Remover e-mail" (`DELETE /v1/me/email`) after a confirmation.
  */
 @Composable
-internal fun BipeRecoveryEmailRows(
+fun BipeRecoveryEmailRows(account: BipeAccountSession, modifier: Modifier = Modifier) {
+    val status by account.status.collectAsState()
+    LaunchedEffect(Unit) { account.refresh() }
+    status?.let { BipeRecoveryEmailRows(account, it, modifier) }
+}
+
+@Composable
+private fun BipeRecoveryEmailRows(
     account: BipeAccountSession,
     status: BipeAccountStatus,
     modifier: Modifier = Modifier,

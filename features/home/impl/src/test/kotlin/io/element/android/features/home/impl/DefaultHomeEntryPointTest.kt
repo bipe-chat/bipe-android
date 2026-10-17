@@ -13,7 +13,6 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.features.home.api.HomeEntryPoint
 import io.element.android.features.invite.test.declineandblock.FakeDeclineInviteAndBlockEntryPoint
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
-import io.element.android.libraries.emoji.api.picker.NoOpEmojiPickerRenderer
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
@@ -44,7 +43,6 @@ class DefaultHomeEntryPointTest : RobolectricTest() {
                 leaveRoomRenderer = { _, _, _ -> lambdaError() },
                 sessionCoroutineScope = backgroundScope,
                 preferencesRootPresenter = lazy { lambdaError() },
-                emojiPickerRenderer = NoOpEmojiPickerRenderer,
                 bipeSelfChat = aBipeSelfChat(),
                 snackbarDispatcher = SnackbarDispatcher(),
             )
