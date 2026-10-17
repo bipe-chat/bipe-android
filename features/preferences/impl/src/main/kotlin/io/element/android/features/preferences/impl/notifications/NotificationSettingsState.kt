@@ -47,7 +47,7 @@ data class NotificationSettingsState(
      */
     val showAllActivityInRoomList: Boolean,
     /** Bipe: the push provider picker shows only in builds that are not release builds (ADR 0112). */
-    val bipeIsDeveloperBuild: Boolean = false,
+    val bipeIsDeveloperBuild: Boolean,
     val eventSink: (NotificationSettingsEvent) -> Unit,
 ) {
     sealed interface MatrixSettings {
