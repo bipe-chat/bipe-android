@@ -52,7 +52,8 @@ class BipeDeviceAccount(
         sessionObserver.addListener(object : SessionListener {
             override suspend fun onSessionDeleted(userId: String, wasLastSession: Boolean) {
                 vault.update { data ->
-                    if (data.userId == userId) data.copy(userId = null, password = null, signedInAt = data.signedInAt - userId) else data
+                    if (data.accounts[userId]?.password == null) return@update data
+                    data.updatingAccount(userId) { it.copy(password = null) }.copy(signedInAt = data.signedInAt - userId)
                 }
             }
         })
@@ -174,10 +175,10 @@ class BipeDeviceAccount(
         return inviterUserId
     }
 
-    /** Keeps new credentials: the password on this device, the token in the synced store. */
+    /** Keeps new credentials under their Matrix ID: the password on this device, the token in the synced store. */
     suspend fun storeCredentials(credentials: BipeCredentials) {
-        vault.update { it.copy(userId = credentials.userId, password = credentials.password) }
-        tokenStore.write(credentials.recoveryToken)
+        vault.update { it.withPassword(credentials.userId, credentials.password) }
+        tokenStore.write(credentials.userId, credentials.recoveryToken)
     }
 
     /**
@@ -194,11 +195,13 @@ class BipeDeviceAccount(
         sessionId
     }
 
-    /** App start without a session: signs in with the password this device keeps, if any. `null` when it keeps none. */
+    /**
+     * App start without a session: signs in with a password this device keeps, the newest first. `null` when it keeps none.
+     */
     suspend fun signInSilently(): Result<SessionId>? {
         val data = vault.read()
-        val userId = data.userId ?: return null
-        val password = data.password ?: return null
+        val (userId, account) = data.accounts.entries.lastOrNull { it.value.password != null } ?: return null
+        val password = account.password ?: return null
         Timber.i("Bipe: silent sign-in for $userId")
         // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for the app lock.
         return signIn(userId, password, pin = data.pendingSignup?.pin).onSuccess {
@@ -207,26 +210,26 @@ class BipeDeviceAccount(
     }
 
     /** `true` when the synced store has a recovery token (e.g. a new phone with the same Google account). */
-    suspend fun hasRecoveryToken(): Boolean = tokenStore.read() != null
+    suspend fun hasRecoveryToken(): Boolean = tokenStore.readAll().isNotEmpty()
 
-    /** `true` when the recovery token sits in the synced store (Block Store), so it reaches a new phone (ADR 0059). */
-    suspend fun hasSyncedRecoveryToken(): Boolean = tokenStore.hasSyncedToken()
-
-    /** Forgets the synced token, e.g. when the user wants a new account on this phone. */
-    suspend fun forgetRecoveryToken() = tokenStore.delete()
+    /** `true` when the token of [userId] sits in the synced store (Block Store), so it reaches a new phone (ADR 0059). */
+    suspend fun hasSyncedRecoveryToken(userId: String): Boolean = tokenStore.hasSyncedToken(userId)
 
     /**
      * The synced token, then the PIN (ADR 0059). On success the server sets a new password and token, and this device
      * signs in. An unknown token is deleted from the store.
      */
     suspend fun recoverWithToken(pin: String): Result<SessionId> = runCatchingExceptions {
-        val token = tokenStore.read() ?: throw BipeApiException.Server(BipeApiErrorCode.RECOVERY_INVALID, reason = null, statusCode = 403)
+        val (tokenUserId, token) = tokenStore.recoveryToken()
+            ?: throw BipeApiException.Server(BipeApiErrorCode.RECOVERY_INVALID, reason = null, statusCode = 403)
         val credentials = try {
             apiClient.recoverWithToken(token, pin)
         } catch (error: BipeApiException.Server) {
-            if (error.code == BipeApiErrorCode.RECOVERY_INVALID) tokenStore.delete()
+            if (error.code == BipeApiErrorCode.RECOVERY_INVALID) tokenStore.delete(tokenUserId)
             throw error
         }
+        // The server replaced the token. A token from before #265 had no Matrix ID: the new one is stored under it.
+        if (tokenUserId != credentials.userId) tokenStore.delete(tokenUserId)
         storeCredentials(credentials)
         signIn(credentials.userId, credentials.password, pin).getOrThrow()
     }
