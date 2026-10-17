@@ -17,8 +17,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * The version ("Versão x (n)") on the Você root and in Ajuda e sobre (ADR 0112). A long press copies the device ID,

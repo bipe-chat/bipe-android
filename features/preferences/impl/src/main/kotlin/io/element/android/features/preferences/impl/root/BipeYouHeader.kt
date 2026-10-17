@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.qrcode.BipeProfileQrSheet
 import io.element.android.libraries.bipe.qrcode.shareBipeProfile
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -33,13 +32,14 @@ import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
+import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.OutlinedButton
-import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
 import io.element.android.libraries.matrix.ui.model.getAvatarData
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * The top of the Você tab (ADR 0112): photo, name and @. Never the Matrix ID.

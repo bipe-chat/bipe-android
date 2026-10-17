@@ -11,8 +11,8 @@ import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipePinProblem
 import io.element.android.libraries.bipe.generated.BipeRegistries
-import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.bipe.settings.BipeDataExportFile
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException

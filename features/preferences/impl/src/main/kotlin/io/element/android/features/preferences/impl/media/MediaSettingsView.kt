@@ -33,9 +33,9 @@ import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarM
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.preferences.api.store.VideoCompressionPreset
 import io.element.android.libraries.ui.strings.CommonStrings
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.services.analytics.compose.LocalAnalyticsService
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun MediaSettingsView(

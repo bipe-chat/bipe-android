@@ -8,9 +8,6 @@
 
 package io.element.android.features.preferences.impl.notifications
 
-import io.element.android.libraries.bipe.R as BipeR
-import io.element.android.libraries.core.meta.BuildMeta
-import io.element.android.libraries.core.meta.BuildType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -29,6 +26,8 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runUpdatingStateNoSuccess
 import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.ShowAllActivityInRoomListFeature
@@ -61,6 +60,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
+import io.element.android.libraries.bipe.R as BipeR
 
 @Inject
 class NotificationSettingsPresenter(

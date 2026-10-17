@@ -14,10 +14,10 @@ import io.element.android.libraries.bipe.BipePublicProfiles
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.settings.BipePrivacySettings
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
-import io.element.android.libraries.bipe.settings.BipePrivacySettings
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CoroutineScope

@@ -36,8 +36,8 @@ import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDis
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
-import io.element.android.libraries.bipe.R as BipeR
 import kotlin.math.roundToInt
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun LocationSettingsView(
