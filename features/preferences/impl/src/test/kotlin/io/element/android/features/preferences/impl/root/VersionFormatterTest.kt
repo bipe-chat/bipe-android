@@ -25,7 +25,7 @@ class VersionFormatterTest {
                 versionCode = 123
             )
         )
-        assertThat(sut.get()).isEqualTo("${VERSION}versionName, 123")
+        assertThat(sut.get()).isEqualTo("${VERSION}versionName (123)") // Bipe: bipe_help_version with "name (code)"
     }
 
     companion object {

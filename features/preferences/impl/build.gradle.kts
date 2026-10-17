@@ -31,15 +31,15 @@ android {
     defaultConfig {
         buildConfigFieldStr(
             name = "URL_COPYRIGHT",
-            value = BuildTimeConfig.URL_COPYRIGHT ?: "https://element.io/copyright",
+            value = requireNotNull(BuildTimeConfig.URL_COPYRIGHT) { "Bipe: set URL_COPYRIGHT in BuildTimeConfig" },
         )
         buildConfigFieldStr(
             name = "URL_ACCEPTABLE_USE",
-            value = BuildTimeConfig.URL_ACCEPTABLE_USE ?: "https://element.io/acceptable-use-policy-terms",
+            value = requireNotNull(BuildTimeConfig.URL_ACCEPTABLE_USE) { "Bipe: set URL_ACCEPTABLE_USE in BuildTimeConfig" },
         )
         buildConfigFieldStr(
             name = "URL_PRIVACY",
-            value = BuildTimeConfig.URL_PRIVACY ?: "https://element.io/privacy",
+            value = requireNotNull(BuildTimeConfig.URL_PRIVACY) { "Bipe: set URL_PRIVACY in BuildTimeConfig" },
         )
     }
 }

@@ -11,6 +11,7 @@ import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipePinProblem
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.bipe.settings.BipeDataExportFile
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.services.toolbox.api.strings.StringProvider
@@ -22,6 +23,7 @@ import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -33,6 +35,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Locale
 
 /** Client for the Bipe API. Contract: bipe-shared/api/openapi.yaml. */
@@ -162,11 +165,48 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `DELETE /v1/me/profile/photo`. */
     suspend fun deleteMyProfilePhoto(accessToken: String): BipeMyProfile = call { service.deleteMyProfilePhoto(bearer(accessToken)) }
 
+    // Privacy (ADR 0016, ADR 0112)
+
+    /** `GET /v1/me/messaging`. Who can message the caller. */
+    suspend fun messaging(accessToken: String): BipeMessagingSetting = call { service.messaging(bearer(accessToken)) }
+
+    /** `PUT /v1/me/messaging`. */
+    suspend fun setMessaging(setting: BipeMessagingSetting, accessToken: String): BipeMessagingSetting =
+        call { service.setMessaging(bearer(accessToken), setting) }
+
+    /** `GET /v1/me/discovery`. */
+    suspend fun discovery(accessToken: String): BipeDiscoverySettings = call { service.discovery(bearer(accessToken)) }
+
+    /** `PUT /v1/me/discovery`. */
+    suspend fun setDiscovery(settings: BipeDiscoverySettings, accessToken: String): BipeDiscoverySettings =
+        call { service.setDiscovery(bearer(accessToken), settings) }
+
+    /** `GET /v1/me/phone`. The link status, never the number. */
+    suspend fun phone(accessToken: String): BipePhoneStatus = call { service.phone(bearer(accessToken)) }
+
+    /**
+     * `GET /v1/me/export` (LGPD art. 18, #364). The body is saved as it is, not parsed. The file name comes from
+     * `content-disposition` when it has the contract's form, else the app makes the same name for today.
+     */
+    suspend fun export(accessToken: String): BipeDataExportFile {
+        val response = checked { service.export(bearer(accessToken)) }
+        val body = response.body() ?: throw BipeApiException.UnexpectedResponse(statusCode = response.code())
+        val bytes = body.use { it.bytes() }
+        val fileName = response.headers()["content-disposition"]
+            ?.let { EXPORT_FILE_NAME.find(it)?.value }
+            ?: "bipe-dados-${LocalDate.now()}.json"
+        return BipeDataExportFile(fileName = fileName, bytes = bytes)
+    }
+
     companion object {
         private val JPEG = "image/jpeg".toMediaType()
+        private val EXPORT_FILE_NAME = Regex("""bipe-dados-\d{4}-\d{2}-\d{2}\.json""")
 
         /** The `lang` for emails Bipe sends: English for an English device, else Portuguese (the app's fallback). Same rule as iOS. */
-        fun emailLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
+        fun emailLanguage(): String = appLanguage()
+
+        /** The app language for Bipe pages and copy: `en` for an English device, else `pt` (the app's fallback). */
+        fun appLanguage(): String = if (Locale.getDefault().language == "en") "en" else "pt"
 
         /**
          * [baseUrl] is the API root, e.g. `https://api.bipe.net.br`.
@@ -319,6 +359,24 @@ internal interface BipeApiService {
 
     @DELETE("v1/me/handle")
     suspend fun removeMyHandle(@Header("Authorization") authorization: String): Response<BipeMyHandle>
+
+    @GET("v1/me/messaging")
+    suspend fun messaging(@Header("Authorization") authorization: String): Response<BipeMessagingSetting>
+
+    @PUT("v1/me/messaging")
+    suspend fun setMessaging(@Header("Authorization") authorization: String, @Body request: BipeMessagingSetting): Response<BipeMessagingSetting>
+
+    @GET("v1/me/discovery")
+    suspend fun discovery(@Header("Authorization") authorization: String): Response<BipeDiscoverySettings>
+
+    @PUT("v1/me/discovery")
+    suspend fun setDiscovery(@Header("Authorization") authorization: String, @Body request: BipeDiscoverySettings): Response<BipeDiscoverySettings>
+
+    @GET("v1/me/phone")
+    suspend fun phone(@Header("Authorization") authorization: String): Response<BipePhoneStatus>
+
+    @GET("v1/me/export")
+    suspend fun export(@Header("Authorization") authorization: String): Response<ResponseBody>
 
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>

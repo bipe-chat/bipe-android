@@ -11,8 +11,8 @@ package io.element.android.features.preferences.impl.root
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.core.meta.BuildMeta
-import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.toolbox.api.strings.StringProvider
+import io.element.android.libraries.bipe.R as BipeR
 
 interface VersionFormatter {
     fun get(): String
@@ -24,10 +24,10 @@ class DefaultVersionFormatter(
     private val buildMeta: BuildMeta,
 ) : VersionFormatter {
     override fun get(): String {
+        // Bipe: "Versão 26.10.2 (6)" from the Bipe strings (ADR 0112).
         return stringProvider.getString(
-            CommonStrings.settings_version_number,
-            buildMeta.versionName,
-            buildMeta.versionCode.toString()
+            BipeR.string.bipe_help_version,
+            "${buildMeta.versionName} (${buildMeta.versionCode})",
         )
     }
 }

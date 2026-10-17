@@ -20,19 +20,17 @@ import com.bumble.appyx.navmodel.backstack.operation.push
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
-import io.element.android.features.deactivation.api.AccountDeactivationEntryPoint
 import io.element.android.features.licenses.api.OpenSourceLicensesEntryPoint
-import io.element.android.features.lockscreen.api.LockScreenEntryPoint
 import io.element.android.features.logout.api.LogoutEntryPoint
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.preferences.impl.about.AboutNode
 import io.element.android.features.preferences.impl.analytics.AnalyticsSettingsNode
+import io.element.android.features.preferences.impl.bipe.BipeSettingsGroupNode
 import io.element.android.features.preferences.impl.blockedusers.BlockedUsersNode
 import io.element.android.features.preferences.impl.developer.DeveloperSettingsNode
 import io.element.android.features.preferences.impl.labs.LabsNode
 import io.element.android.features.preferences.impl.location.LocationSettingsNode
 import io.element.android.features.preferences.impl.media.MediaSettingsNode
-import io.element.android.features.preferences.impl.moderation.ModerationAndSafetyNode
 import io.element.android.features.preferences.impl.notifications.NotificationSettingsNode
 import io.element.android.features.preferences.impl.notifications.edit.EditDefaultNotificationSettingNode
 import io.element.android.features.preferences.impl.root.PreferencesRootNode
@@ -42,9 +40,11 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.canPop
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.handle.BipeHandleNode
 import io.element.android.libraries.bipe.invites.BipeInvitesNode
 import io.element.android.libraries.bipe.profile.BipePublicProfileNode
+import io.element.android.libraries.bipe.settings.BipeMessagingNode
 import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.core.EventId
@@ -61,13 +61,11 @@ import kotlinx.parcelize.Parcelize
 class PreferencesFlowNode(
     @Assisted buildContext: BuildContext,
     @Assisted plugins: List<Plugin>,
-    private val lockScreenEntryPoint: LockScreenEntryPoint,
     private val notificationTroubleShootEntryPoint: NotificationTroubleShootEntryPoint,
     private val pushHistoryEntryPoint: PushHistoryEntryPoint,
     private val fileViewerEntryPoint: FileViewerEntryPoint,
     private val logoutEntryPoint: LogoutEntryPoint,
     private val openSourceLicensesEntryPoint: OpenSourceLicensesEntryPoint,
-    private val accountDeactivationEntryPoint: AccountDeactivationEntryPoint,
 ) : BaseFlowNode<PreferencesFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = plugins.filterIsInstance<PreferencesEntryPoint.Params>().first().initialElement.toNavTarget(),
@@ -102,9 +100,6 @@ class PreferencesFlowNode(
         data object NotificationSettings : NavTarget
 
         @Parcelize
-        data object ModerationAndSafety : NavTarget
-
-        @Parcelize
         data object TroubleshootNotifications : NavTarget
 
         @Parcelize
@@ -112,9 +107,6 @@ class PreferencesFlowNode(
 
         @Parcelize
         data class PushRules(val filename: String, val content: String) : NavTarget
-
-        @Parcelize
-        data object LockScreenSettings : NavTarget
 
         @Parcelize
         data class EditDefaultNotificationSetting(val isOneToOne: Boolean) : NavTarget
@@ -129,9 +121,6 @@ class PreferencesFlowNode(
         data object SignOut : NavTarget
 
         @Parcelize
-        data object AccountDeactivation : NavTarget
-
-        @Parcelize
         data object OssLicenses : NavTarget
 
         @Parcelize
@@ -142,6 +131,14 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object BipePublicProfile : NavTarget
+
+        /** Bipe: Seu perfil and the group screens of ADR 0112. */
+        @Parcelize
+        data class BipeGroup(val group: BipeSettingsGroup) : NavTarget
+
+        /** Bipe: "Quem pode me mandar mensagem" (ADR 0016). */
+        @Parcelize
+        data object BipeMessaging : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -159,7 +156,7 @@ class PreferencesFlowNode(
                     }
 
                     override fun navigateToAbout() {
-                        backstack.push(NavTarget.About)
+                        backstack.push(BipeSettingsGroup.HELP.toNavTarget()) // Bipe: Ajuda e sobre (ADR 0112)
                     }
 
                     override fun navigateToDeveloperSettings() {
@@ -167,7 +164,8 @@ class PreferencesFlowNode(
                     }
 
                     override fun navigateToLockScreenSettings() {
-                        backstack.push(NavTarget.LockScreenSettings)
+                        // Bipe: the app lock is the Senha section of Sua conta; no "Remover PIN" (ADR 0112).
+                        backstack.push(BipeSettingsGroup.ACCOUNT.toNavTarget())
                     }
 
                     override fun navigateToMediaSettings() {
@@ -194,6 +192,10 @@ class PreferencesFlowNode(
                         backstack.push(NavTarget.BipePublicProfile)
                     }
 
+                    override fun navigateToBipeGroup(group: BipeSettingsGroup) {
+                        backstack.push(group.toNavTarget())
+                    }
+
                     override fun navigateToBugReport() {
                         callback.navigateToBugReport()
                     }
@@ -203,7 +205,8 @@ class PreferencesFlowNode(
                     }
 
                     override fun navigateToModerationAndSafety() {
-                        backstack.push(NavTarget.ModerationAndSafety)
+                        // Bipe: Moderation & safety is gone; its rows are in Privacidade and Conversas e mídia (ADR 0112).
+                        backstack.push(BipeSettingsGroup.PRIVACY.toNavTarget())
                     }
 
                     override fun navigateToNotificationSettings() {
@@ -223,7 +226,9 @@ class PreferencesFlowNode(
                     }
 
                     override fun startAccountDeactivationFlow() {
-                        backstack.push(NavTarget.AccountDeactivation)
+                        // Bipe: Element's "Delete account" asks for a password the account does not have (ADR 0057).
+                        // The Bipe flow comes with #363.
+                        backstack.push(BipeSettingsGroup.ACCOUNT.toNavTarget())
                     }
                 }
                 createNode<PreferencesRootNode>(buildContext, plugins = listOf(callback))
@@ -257,14 +262,6 @@ class PreferencesFlowNode(
                 }
                 createNode<LabsNode>(buildContext, listOf(callback))
             }
-            NavTarget.ModerationAndSafety -> {
-                val callback = object : ModerationAndSafetyNode.Callback {
-                    override fun navigateToBlockedUsers() {
-                        backstack.push(NavTarget.BlockedUsers)
-                    }
-                }
-                createNode<ModerationAndSafetyNode>(buildContext, listOf(callback))
-            }
             NavTarget.LocationSettings -> {
                 createNode<LocationSettingsNode>(buildContext)
             }
@@ -286,6 +283,57 @@ class PreferencesFlowNode(
                     }
                 }
                 createNode<BipePublicProfileNode>(buildContext, listOf(callback))
+            }
+            is NavTarget.BipeGroup -> {
+                val callback = object : BipeSettingsGroupNode.Callback {
+                    override fun navigateToEditProfile(matrixUser: MatrixUser) {
+                        backstack.push(NavTarget.UserProfile(matrixUser))
+                    }
+
+                    override fun navigateToHandle() {
+                        backstack.push(NavTarget.BipeHandle)
+                    }
+
+                    override fun navigateToPublicProfile() {
+                        backstack.push(NavTarget.BipePublicProfile)
+                    }
+
+                    override fun navigateToMediaSettings() {
+                        backstack.push(NavTarget.MediaSettings)
+                    }
+
+                    override fun navigateToLocationSettings() {
+                        backstack.push(NavTarget.LocationSettings)
+                    }
+
+                    override fun navigateToSecureBackup() {
+                        callback.navigateToSecureBackup()
+                    }
+
+                    override fun navigateToLinkNewDevice() {
+                        callback.navigateToLinkNewDevice()
+                    }
+
+                    override fun navigateToSignOut() {
+                        backstack.push(NavTarget.SignOut)
+                    }
+
+                    override fun navigateToMessaging() {
+                        backstack.push(NavTarget.BipeMessaging)
+                    }
+
+                    override fun navigateToBlockedUsers() {
+                        backstack.push(NavTarget.BlockedUsers)
+                    }
+
+                    override fun navigateToOssLicenses() {
+                        backstack.push(NavTarget.OssLicenses)
+                    }
+                }
+                createNode<BipeSettingsGroupNode>(buildContext, listOf(BipeSettingsGroupNode.Inputs(navTarget.group), callback))
+            }
+            NavTarget.BipeMessaging -> {
+                createNode<BipeMessagingNode>(buildContext)
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {
@@ -390,18 +438,6 @@ class PreferencesFlowNode(
                 }
                 createNode<EditUserProfileNode>(buildContext, listOf(inputs, callback))
             }
-            NavTarget.LockScreenSettings -> {
-                lockScreenEntryPoint.createNode(
-                    parentNode = this,
-                    buildContext = buildContext,
-                    navTarget = LockScreenEntryPoint.Target.Settings,
-                    callback = object : LockScreenEntryPoint.Callback {
-                        override fun onSetupDone() {
-                            // No op
-                        }
-                    }
-                )
-            }
             NavTarget.BlockedUsers -> {
                 createNode<BlockedUsersNode>(buildContext)
             }
@@ -420,9 +456,6 @@ class PreferencesFlowNode(
             is NavTarget.OssLicenses -> {
                 openSourceLicensesEntryPoint.createNode(this, buildContext)
             }
-            NavTarget.AccountDeactivation -> {
-                accountDeactivationEntryPoint.createNode(this, buildContext)
-            }
         }
     }
 
@@ -430,4 +463,11 @@ class PreferencesFlowNode(
     override fun View(modifier: Modifier) {
         BackstackView()
     }
+}
+
+/** Bipe: where a group row of the Você root goes (ADR 0112). Notificações keeps the Element screen. */
+internal fun BipeSettingsGroup.toNavTarget(): PreferencesFlowNode.NavTarget = when (this) {
+    BipeSettingsGroup.NOTIFICATIONS -> PreferencesFlowNode.NavTarget.NotificationSettings
+    BipeSettingsGroup.PROFILE, BipeSettingsGroup.PRIVACY, BipeSettingsGroup.ACCOUNT, BipeSettingsGroup.CHATS, BipeSettingsGroup.HELP ->
+        PreferencesFlowNode.NavTarget.BipeGroup(this)
 }

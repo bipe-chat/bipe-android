@@ -61,7 +61,8 @@ jobs:
               failures.push("Please provide a complete title that can be used as a changelog entry.");
             }
 
-            if (pr.labels.filter(label => label.name.startsWith("PR-")).length !== 1) {
+            // Bipe: the fork writes no Element changelog, so a PR- label is required only in element-hq.
+            if (context.repo.owner === "element-hq" && pr.labels.filter(label => label.name.startsWith("PR-")).length !== 1) {
               failures.push("Please add a single `PR-` label to categorise the changelog entry.");
             }
 

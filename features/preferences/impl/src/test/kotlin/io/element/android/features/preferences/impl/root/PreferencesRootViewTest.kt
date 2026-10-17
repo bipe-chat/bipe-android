@@ -20,7 +20,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import io.element.android.features.preferences.impl.R
-import io.element.android.libraries.emoji.api.picker.NoOpEmojiPickerRenderer
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.A_USER_ID_2
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
@@ -29,13 +28,9 @@ import io.element.android.tests.testutils.EnsureNeverCalled
 import io.element.android.tests.testutils.EnsureNeverCalledWithParam
 import io.element.android.tests.testutils.EventsRecorder
 import io.element.android.tests.testutils.assertNoNodeWithText
-import io.element.android.tests.testutils.assertNodeWithTextIsDisplayed
-import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.ensureCalledOnce
-import io.element.android.tests.testutils.ensureCalledOnceWithParam
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
-import kotlinx.collections.immutable.toImmutableList
 import org.junit.Test
 
 class PreferencesRootViewTest : RobolectricTest() {
@@ -57,13 +52,14 @@ class PreferencesRootViewTest : RobolectricTest() {
     fun `click on the user row invokes the expected callback`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         val user = aMatrixUser()
-        ensureCalledOnceWithParam(user) { callback ->
+        // Bipe: the header opens Seu perfil (ADR 0112).
+        ensureCalledOnce { callback ->
             setView(
                 aPreferencesRootState(
                     myUser = user,
                     eventSink = eventsRecorder,
                 ),
-                onEditProfileClick = callback,
+                onBipeProfileClick = callback,
             )
             onNodeWithText("Alice").performClick()
         }
@@ -131,43 +127,6 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on Add account of the expanded section invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    isMultiAccountEnabled = true,
-                    isOtherAccountsSectionExpanded = true,
-                    otherSessions = listOf(
-                        aMatrixUser(
-                            id = A_USER_ID_2.value,
-                            displayName = "Bob",
-                        )
-                    ),
-                    eventSink = eventsRecorder,
-                ),
-                onAddAccountClick = callback,
-            )
-            onNode(hasText(activity!!.getString(CommonStrings.common_add_another_account)) and hasClickAction()).performScrollTo().performClick()
-        }
-    }
-
-    @Test
-    fun `click on Add account invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    isMultiAccountEnabled = true,
-                    eventSink = eventsRecorder,
-                ),
-                onAddAccountClick = callback,
-            )
-            onNode(hasText(activity!!.getString(CommonStrings.common_add_another_account)) and hasClickAction()).performScrollTo().performClick()
-        }
-    }
-
-    @Test
     fun `when multi account is not enabled, item is not shown`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         setView(
@@ -180,99 +139,15 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `clicking on another theme emits the expected event`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>()
-        setView(
-            aPreferencesRootState(
-                eventSink = eventsRecorder,
-            ),
-        )
-        val appearance = activity!!.getString(CommonStrings.common_appearance)
-        onNode(hasText(appearance) and hasClickAction()).performScrollTo().performClick()
-        clickOn(R.string.theme_dark)
-        eventsRecorder.assertSingle(PreferencesRootEvent.SetTheme(ThemeOption.Dark))
-    }
-
-    @Test
-    fun `black theme is shown when available`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        setView(
-            aPreferencesRootState(
-                availableThemeOptions = ThemeOption.entries.toImmutableList(),
-                eventSink = eventsRecorder,
-            ),
-        )
-        val appearance = activity!!.getString(CommonStrings.common_appearance)
-        onNode(hasText(appearance) and hasClickAction()).performScrollTo().performClick()
-        assertNodeWithTextIsDisplayed(R.string.theme_black)
-    }
-
-    @Test
-    fun `black theme is hidden when unavailable`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        setView(
-            aPreferencesRootState(
-                availableThemeOptions = ThemeOption.entries.filterNot { it == ThemeOption.Black }.toImmutableList(),
-                eventSink = eventsRecorder,
-            ),
-        )
-        val appearance = activity!!.getString(CommonStrings.common_appearance)
-        onNode(hasText(appearance) and hasClickAction()).performScrollTo().performClick()
-        assertNoNodeWithText(R.string.theme_black)
-    }
-
-    @Test
-    fun `click on Media upload quality invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onOpenMediaSettings = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_media_upload_quality)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
-    }
-
-    @Test
-    fun `click on Screen lock invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onOpenLockScreenSettings = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_screen_lock)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
-    }
-
-    @Test
-    fun `click on Location sharing invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onOpenLocationSettings = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_location_sharing)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
-    }
-
-    @Test
     fun `click on Analytics invokes the expected callback`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         ensureCalledOnce { callback ->
             setView(
                 aPreferencesRootState(
                     showAnalyticsSettings = true,
+                    // Bipe: these rows sit with the developer options, in builds that are not release builds (ADR 0112).
+                    showDeveloperSettings = true,
+                    bipeIsDeveloperBuild = true,
                     eventSink = eventsRecorder,
                 ),
                 onOpenAnalytics = callback,
@@ -301,6 +176,9 @@ class PreferencesRootViewTest : RobolectricTest() {
             setView(
                 aPreferencesRootState(
                     showLabsItem = true,
+                    // Bipe: these rows sit with the developer options, in builds that are not release builds (ADR 0112).
+                    showDeveloperSettings = true,
+                    bipeIsDeveloperBuild = true,
                     eventSink = eventsRecorder,
                 ),
                 onOpenLabs = callback,
@@ -320,21 +198,6 @@ class PreferencesRootViewTest : RobolectricTest() {
             ),
         )
         onNodeWithText(activity!!.getString(R.string.screen_labs_title)).assertDoesNotExist()
-    }
-
-    @Test
-    fun `click on About invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onOpenAbout = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_about)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
     }
 
     @Test
@@ -395,46 +258,23 @@ class PreferencesRootViewTest : RobolectricTest() {
 private fun AndroidComposeUiTest<ComponentActivity>.setView(
     state: PreferencesRootState,
     onBackClick: () -> Unit = EnsureNeverCalled(),
-    onAddAccountClick: () -> Unit = EnsureNeverCalled(),
     onOpenAnalytics: () -> Unit = EnsureNeverCalled(),
-    onOpenLockScreenSettings: () -> Unit = EnsureNeverCalled(),
-    onOpenAbout: () -> Unit = EnsureNeverCalled(),
     onOpenDeveloperSettings: () -> Unit = EnsureNeverCalled(),
-    onOpenMediaSettings: () -> Unit = EnsureNeverCalled(),
-    onOpenLocationSettings: () -> Unit = EnsureNeverCalled(),
     onOpenLabs: () -> Unit = EnsureNeverCalled(),
     onEditProfileClick: (MatrixUser) -> Unit = EnsureNeverCalledWithParam(),
-    onSecureBackupClick: () -> Unit = EnsureNeverCalled(),
-    onManageAccountClick: (url: String) -> Unit = EnsureNeverCalledWithParam(),
-    onLinkNewDeviceClick: () -> Unit = EnsureNeverCalled(),
     onOpenRageShake: () -> Unit = EnsureNeverCalled(),
-    onModerationAndSafetyClick: () -> Unit = EnsureNeverCalled(),
-    onOpenNotificationSettings: () -> Unit = EnsureNeverCalled(),
-    onSignOutClick: () -> Unit = EnsureNeverCalled(),
-    onDeactivateClick: () -> Unit = EnsureNeverCalled(),
+    onBipeProfileClick: () -> Unit = EnsureNeverCalled(),
 ) {
     setContent {
         PreferencesRootView(
             state = state,
-            emojiPickerRenderer = NoOpEmojiPickerRenderer,
             onBackClick = onBackClick,
-            onAddAccountClick = onAddAccountClick,
             onOpenAnalytics = onOpenAnalytics,
-            onOpenLockScreenSettings = onOpenLockScreenSettings,
-            onOpenAbout = onOpenAbout,
             onOpenDeveloperSettings = onOpenDeveloperSettings,
-            onOpenMediaSettings = onOpenMediaSettings,
-            onOpenLocationSettings = onOpenLocationSettings,
             onOpenLabs = onOpenLabs,
-            onEditProfileClick = onEditProfileClick,
-            onSecureBackupClick = onSecureBackupClick,
-            onManageAccountClick = onManageAccountClick,
-            onLinkNewDeviceClick = onLinkNewDeviceClick,
             onOpenRageShake = onOpenRageShake,
-            onModerationAndSafetyClick = onModerationAndSafetyClick,
-            onOpenNotificationSettings = onOpenNotificationSettings,
-            onSignOutClick = onSignOutClick,
-            onDeactivateClick = onDeactivateClick,
+            onEditProfileClick = onEditProfileClick,
+            onBipeProfileClick = onBipeProfileClick,
         )
     }
 }
