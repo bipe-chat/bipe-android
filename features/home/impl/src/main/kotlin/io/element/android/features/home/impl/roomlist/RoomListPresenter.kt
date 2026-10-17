@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import dev.zacsweers.metro.Inject
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.BipeConfig
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
@@ -100,6 +101,7 @@ class RoomListPresenter(
     private val bipeInviterGreeting: BipeInviterGreeting,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
+    private val isBipeAccount = client.sessionId.value.endsWith(":${BipeConfig.SERVER_NAME}") // Bipe: bipe#201
 
     @Composable
     override fun present(): RoomListState {
@@ -267,7 +269,9 @@ class RoomListPresenter(
         }
 
         when (recoveryState) {
-            RecoveryState.DISABLED -> return SecurityBannerState.SetUpRecovery
+            // Bipe: no "set up recovery" banner for Bipe accounts. They recover with the PIN and the
+            // recovery token (ADR 0057, ADR 0073); the Bipe fallback prompt is bipe#202.
+            RecoveryState.DISABLED -> if (!isBipeAccount) return SecurityBannerState.SetUpRecovery
             RecoveryState.INCOMPLETE -> return SecurityBannerState.RecoveryKeyConfirmation
             RecoveryState.UNKNOWN,
             RecoveryState.WAITING_FOR_SYNC,
