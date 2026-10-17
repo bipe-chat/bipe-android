@@ -104,6 +104,8 @@ fun BipeSettingsGroupView(
 private fun isAvailable(row: BipeSettingsRow): Boolean = when (row) {
     // Android has no "Contatos no Bipe" screen (address-book matching) yet.
     BipeSettingsRow.PRIVACY_CONTACTS -> false
+    // A company account needs an attested device (ADR 0043, ADR 0087); Android has no attestation yet (#92).
+    BipeSettingsRow.ACCOUNT_CREATE_COMPANY -> false
     else -> true
 }
 
