@@ -41,7 +41,7 @@
     <string name="bipe_settings_language">Idioma</string>
     <string name="bipe_settings_language_footer">Escolha entre português e inglês nos Ajustes do iPhone.</string>
     <string name="bipe_settings_share_presence_footer">Se desligar, ninguém te vê digitando e você não vê os outros digitando. A confirmação de leitura fica sempre ligada.</string>
-    <string name="bipe_about_steward">O Bipe é um experimento da Envisioning, que cuida dele mas não quer ser dona. Os servidores ficam no Brasil.</string>
+    <string name="bipe_about_steward">Os dados e os servidores ficam no Brasil. O Bipe é um experimento da Envisioning, um instituto de pesquisa.</string>
     <string name="bipe_signup_title">Criar conta</string>
     <string name="bipe_signup_email">E-mail</string>
     <string name="bipe_signup_email_invalid">Confira o e-mail.</string>
@@ -254,6 +254,9 @@
     <string name="bipe_signup_terms_link">Termos de uso</string>
     <string name="bipe_signup_privacy_link">Política de privacidade</string>
     <string name="bipe_signup_terms_required">Para criar a conta, aceite os Termos de uso e a Política de privacidade.</string>
+    <string name="bipe_terms_reaccept_title">Termos de uso</string>
+    <string name="bipe_terms_reaccept_body">Para continuar usando o Bipe, leia e aceite os Termos de uso e a Política de privacidade.</string>
+    <string name="bipe_terms_reaccept_failed">Não deu para salvar o aceite. Tente de novo.</string>
     <string name="bipe_pin_create_title">Crie sua senha</string>
     <string name="bipe_pin_create_body">Escolha uma senha de %1$s números, como a do banco. Serve para travar o app e proteger a volta para sua conta.</string>
     <string name="bipe_pin_never_asked">Ninguém do Bipe pede a sua senha. Nem por mensagem, nem por ligação.</string>
@@ -626,4 +629,12 @@
     <string name="bipe_dm_invite_to_group_sent">Convite enviado</string>
     <string name="bipe_dm_invite_to_group_already_member">Essa pessoa já está nesse grupo</string>
     <string name="bipe_dm_leave_body">A conversa some da sua lista.</string>
+    <string name="bipe_dm_details_title">Informações da conversa</string>
+    <string name="bipe_dm_left">%1$s saiu da conversa</string>
+    <string name="bipe_dm_left_by_you">Você saiu da conversa</string>
+    <string name="bipe_dm_leaving">Saindo da conversa</string>
+    <string name="bipe_dm_error_muting">Não foi possível silenciar a conversa. Tente de novo.</string>
+    <string name="bipe_dm_error_unmuting">Não foi possível reativar o som da conversa. Tente de novo.</string>
+    <string name="bipe_dm_media_empty">As fotos e os vídeos desta conversa aparecem aqui.</string>
+    <string name="bipe_dm_files_empty">Os documentos, áudios e mensagens de voz desta conversa aparecem aqui.</string>
 </resources>

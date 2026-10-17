@@ -41,7 +41,7 @@
     <string name="bipe_settings_language">Language</string>
     <string name="bipe_settings_language_footer">Choose Portuguese or English in iPhone Settings.</string>
     <string name="bipe_settings_share_presence_footer">If you turn this off, nobody sees you typing and you don\'t see others typing. Read receipts always stay on.</string>
-    <string name="bipe_about_steward">Bipe is an experiment by Envisioning, which looks after it but does not want to own it. The servers are in Brazil.</string>
+    <string name="bipe_about_steward">Data and servers stay in Brazil. Bipe is an experiment by Envisioning, a research institute.</string>
     <string name="bipe_signup_title">Create account</string>
     <string name="bipe_signup_email">Email</string>
     <string name="bipe_signup_email_invalid">Check the email address.</string>
@@ -254,6 +254,9 @@
     <string name="bipe_signup_terms_link">Terms of use</string>
     <string name="bipe_signup_privacy_link">Privacy policy</string>
     <string name="bipe_signup_terms_required">To create your account, accept the Terms of use and the Privacy policy.</string>
+    <string name="bipe_terms_reaccept_title">Terms of use</string>
+    <string name="bipe_terms_reaccept_body">To keep using Bipe, read and accept the Terms of use and the Privacy policy.</string>
+    <string name="bipe_terms_reaccept_failed">We could not save your acceptance. Try again.</string>
     <string name="bipe_pin_create_title">Create your PIN</string>
     <string name="bipe_pin_create_body">Pick a PIN with %1$s digits, like your bank PIN. It locks the app and protects getting back into your account.</string>
     <string name="bipe_pin_never_asked">Nobody from Bipe asks for your PIN. Not by message, not by phone call.</string>
@@ -626,4 +629,12 @@
     <string name="bipe_dm_invite_to_group_sent">Invite sent</string>
     <string name="bipe_dm_invite_to_group_already_member">This person is already in this group</string>
     <string name="bipe_dm_leave_body">The chat disappears from your list.</string>
+    <string name="bipe_dm_details_title">Chat info</string>
+    <string name="bipe_dm_left">%1$s left the chat</string>
+    <string name="bipe_dm_left_by_you">You left the chat</string>
+    <string name="bipe_dm_leaving">Leaving the chat</string>
+    <string name="bipe_dm_error_muting">Could not mute the chat. Try again.</string>
+    <string name="bipe_dm_error_unmuting">Could not unmute the chat. Try again.</string>
+    <string name="bipe_dm_media_empty">Photos and videos from this chat show up here.</string>
+    <string name="bipe_dm_files_empty">Documents, audio and voice messages from this chat show up here.</string>
 </resources>

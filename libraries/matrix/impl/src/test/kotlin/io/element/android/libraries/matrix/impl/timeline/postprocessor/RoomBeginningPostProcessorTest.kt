@@ -91,8 +91,8 @@ class RoomBeginningPostProcessorTest {
             messageEvent,
             roomCreatorJoinEvent,
         )
+        // Bipe: a DM also drops the other person's join (BIPE.md "DMs are DMs").
         val expected = listOf(
-            otherMemberJoinEvent,
             messageEvent,
         )
         val processor = RoomBeginningPostProcessor(Timeline.Mode.Live)
@@ -149,6 +149,7 @@ class RoomBeginningPostProcessorTest {
             roomCreator = A_USER_ID,
             hasMoreToLoadBackwards = true
         )
-        assertThat(processedItems).isEqualTo(listOf(otherMemberJoinEvent))
+        // Bipe: a DM also drops the other person's join (BIPE.md "DMs are DMs").
+        assertThat(processedItems).isEmpty()
     }
 }

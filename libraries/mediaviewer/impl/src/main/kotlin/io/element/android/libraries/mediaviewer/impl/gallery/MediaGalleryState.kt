@@ -21,6 +21,7 @@ data class MediaGalleryState(
     val mediaBottomSheetState: MediaBottomSheetState,
     val snackbarMessage: SnackbarMessage?,
     val eventSink: (MediaGalleryEvent) -> Unit,
+    val isDm: Boolean = false, // Bipe: empty states say "conversa"
 )
 
 enum class MediaGalleryMode(val stringResource: Int) {

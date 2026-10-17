@@ -41,6 +41,7 @@ dependencies {
     implementation(projects.features.contentscanner.api)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe) // Bipe: DM empty states
     implementation(projects.libraries.audio.api)
     implementation(projects.libraries.core)
     implementation(projects.libraries.dateformatter.api)

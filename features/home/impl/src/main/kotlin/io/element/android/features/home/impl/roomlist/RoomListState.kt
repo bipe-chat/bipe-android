@@ -50,6 +50,7 @@ data class RoomListState(
             val isDm: Boolean,
             val isFavorite: Boolean,
             val hasNewContent: Boolean,
+            val isMuted: Boolean = false,
         ) : ContextMenu
     }
 

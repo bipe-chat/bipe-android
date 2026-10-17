@@ -14,8 +14,10 @@ import io.element.android.features.messages.impl.timeline.model.event.RtcNotific
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemEventContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemLegacyCallInviteContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemLocationContent
+import io.element.android.features.messages.impl.timeline.model.event.TimelineItemRoomMembershipContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemRtcNotificationContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemUnknownContent
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.dateformatter.api.DateFormatterMode
 import io.element.android.libraries.matrix.api.core.EventId
@@ -30,6 +32,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.FailedToParse
 import io.element.android.libraries.matrix.api.timeline.item.event.FailedToParseStateContent
 import io.element.android.libraries.matrix.api.timeline.item.event.LegacyCallInviteContent
 import io.element.android.libraries.matrix.api.timeline.item.event.LiveLocationContent
+import io.element.android.libraries.matrix.api.timeline.item.event.MembershipChange
 import io.element.android.libraries.matrix.api.timeline.item.event.MessageContent
 import io.element.android.libraries.matrix.api.timeline.item.event.PollContent
 import io.element.android.libraries.matrix.api.timeline.item.event.ProfileChangeContent
@@ -61,7 +64,7 @@ class TimelineItemContentFactory(
     private val dateFormatter: DateFormatter,
     private val stringProvider: StringProvider,
 ) {
-    suspend fun create(eventTimelineItem: EventTimelineItem, roomMembers: List<RoomMember>): TimelineItemEventContent {
+    suspend fun create(eventTimelineItem: EventTimelineItem, roomMembers: List<RoomMember>, isDm: Boolean = false): TimelineItemEventContent {
         return create(
             itemContent = eventTimelineItem.content,
             eventId = eventTimelineItem.eventId,
@@ -69,6 +72,7 @@ class TimelineItemContentFactory(
             sender = eventTimelineItem.sender,
             senderProfile = eventTimelineItem.senderProfile,
             roomMembers = roomMembers,
+            isDm = isDm,
         )
     }
 
@@ -79,6 +83,7 @@ class TimelineItemContentFactory(
         sender: UserId,
         senderProfile: ProfileDetails,
         roomMembers: List<RoomMember> = emptyList(),
+        isDm: Boolean = false, // Bipe
     ): TimelineItemEventContent {
         val isOutgoing = sessionId == sender
         return when (itemContent) {
@@ -99,6 +104,15 @@ class TimelineItemContentFactory(
             }
             is RedactedContent -> redactedMessageFactory.create(itemContent)
             is RoomMembershipContent -> {
+                // Bipe: in a DM you leave the conversation, not a room (BIPE.md "DMs are DMs").
+                if (isDm && itemContent.change == MembershipChange.LEFT) {
+                    val text = if (itemContent.userId == sessionId) {
+                        stringProvider.getString(BipeR.string.bipe_dm_left_by_you)
+                    } else {
+                        stringProvider.getString(BipeR.string.bipe_dm_left, itemContent.userDisplayName ?: itemContent.userId.value)
+                    }
+                    return TimelineItemRoomMembershipContent(text)
+                }
                 val senderDisambiguatedDisplayName = senderProfile.getDisambiguatedDisplayName(sender)
                 roomMembershipFactory.create(itemContent, isOutgoing, sender, senderDisambiguatedDisplayName)
             }

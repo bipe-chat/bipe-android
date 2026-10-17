@@ -137,6 +137,7 @@ class TimelinePresenter(
         config = TimelineItemsFactoryConfig(
             computeReadReceipts = true,
             computeReactions = true,
+            isDm = room.roomInfoFlow.value.isDm, // Bipe: DMs are DMs
         )
     )
     private var timelineItems by mutableStateOf<ImmutableList<TimelineItem>>(persistentListOf())
