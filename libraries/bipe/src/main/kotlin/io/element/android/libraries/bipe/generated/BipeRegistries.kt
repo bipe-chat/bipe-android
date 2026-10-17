@@ -698,6 +698,6 @@ object BipeRegistries {
 
     /** Badge signing keys a release build trusts (ADR 0123; registries/badge-keys.json): kid to raw Ed25519 public key, base64url. */
     val badgeKeys: Map<String, String> = mapOf(
-
+        "prod-2026-10" to "9j3_slBroZbxa3B6Tdgcm_U-O_LIdrNFXzDgY8oLwxE",
     )
 }
