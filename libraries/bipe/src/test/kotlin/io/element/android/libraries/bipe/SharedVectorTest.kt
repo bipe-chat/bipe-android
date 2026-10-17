@@ -137,6 +137,7 @@ class SharedVectorTest {
                 envelopeJson = vector.getValue("envelope").toString(),
                 sender = vector.string("sender")!!,
                 senderDevice = vector.string("senderDevice")!!,
+                senderMasterKey = vector.string("senderMasterKey"),
                 nowMillis = nowMillis,
             )
             val outcome = when (result) {
