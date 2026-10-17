@@ -17,13 +17,13 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
-import io.element.android.features.preferences.impl.R
 import io.element.android.tests.testutils.EnsureNeverCalled
 import io.element.android.tests.testutils.EventsRecorder
 import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
+import io.element.android.libraries.bipe.R as BipeR
 
 class LocationSettingsViewTest : RobolectricTest() {
     @Test
@@ -49,11 +49,7 @@ class LocationSettingsViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val text = activity!!.resources.getQuantityString(
-            R.plurals.screen_advanced_settings_live_location_update_distance,
-            50,
-            50,
-        )
+        val text = activity!!.getString(BipeR.string.bipe_chats_live_location_distance, "50 m")
         onNodeWithText(text).assertExists()
     }
 
