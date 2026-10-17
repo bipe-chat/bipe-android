@@ -41,18 +41,10 @@ import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.bipe.BipeVersionFooter
 import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
 import io.element.android.libraries.bipe.BipeTrustProfile
-import io.element.android.libraries.bipe.account.ui.BipeAccountRows
-import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
-import io.element.android.libraries.bipe.handle.BipeHandleRow
-import io.element.android.libraries.bipe.handle.BipeInvitesRow
-import io.element.android.libraries.bipe.handle.BipePublicProfileRow
-import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
-import io.element.android.libraries.bipe.ui.BipeTrustProfileSection
-import io.element.android.libraries.designsystem.components.async.AsyncActionIndicator
-import io.element.android.libraries.designsystem.components.async.AsyncIndicator
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.handle.BipeInvitesRow
+import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
 import io.element.android.libraries.bipe.ui.BipeTrustProfileCard
 import io.element.android.libraries.designsystem.components.avatar.AvatarRow
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
@@ -78,6 +70,7 @@ import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun PreferencesRootView(

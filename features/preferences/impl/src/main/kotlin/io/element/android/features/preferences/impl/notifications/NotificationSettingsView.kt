@@ -58,9 +58,9 @@ import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermiss
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.preferences.api.store.NotificationSound
 import io.element.android.libraries.ui.strings.CommonStrings
-import io.element.android.libraries.bipe.R as BipeR
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * A view that allows a user edit their global notification settings.
@@ -171,7 +171,8 @@ private fun NotificationSettingsContentView(
                 )
             }
         }
-        PreferenceCategory(title = stringResource(id = BipeR.string.bipe_notifications_notify_about) /* Bipe */) {
+        // Bipe: "Avisar sobre" (ADR 0112)
+        PreferenceCategory(title = stringResource(id = BipeR.string.bipe_notifications_notify_about)) {
             ListItem(
                 content = {
                     Text(stringResource(id = BipeR.string.bipe_notifications_groups)) // Bipe
@@ -285,7 +286,8 @@ private fun NotificationSettingsContentView(
 
 @Composable
 private fun SoundsPreferenceCategory(state: NotificationSettingsState) {
-    PreferenceCategory(title = stringResource(id = BipeR.string.bipe_notifications_sound)) { // Bipe
+    // Bipe: Bipe sound names (ADR 0112)
+    PreferenceCategory(title = stringResource(id = BipeR.string.bipe_notifications_sound)) {
         val launchMessageSoundPicker = rememberSoundPickerOnClick(
             type = RingtoneManager.TYPE_NOTIFICATION,
             current = state.messageSound.sound,

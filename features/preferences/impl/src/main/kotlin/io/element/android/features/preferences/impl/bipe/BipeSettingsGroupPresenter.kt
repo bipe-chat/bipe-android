@@ -20,7 +20,6 @@ import io.element.android.features.preferences.impl.root.VersionFormatter
 import io.element.android.features.preferences.impl.root.rememberThemeOptions
 import io.element.android.features.preferences.impl.root.setTheme
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
@@ -36,6 +35,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import io.element.android.libraries.bipe.R as BipeR
 
 @AssistedInject
 class BipeSettingsGroupPresenter(

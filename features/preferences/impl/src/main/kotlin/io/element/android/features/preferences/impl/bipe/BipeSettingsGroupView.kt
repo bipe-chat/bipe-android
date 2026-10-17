@@ -16,18 +16,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.libraries.bipe.R as BipeR
-import io.element.android.libraries.bipe.api.BipeWhoCanMessage
+import io.element.android.features.preferences.impl.root.ThemeOption
 import io.element.android.libraries.bipe.account.BipePin
 import io.element.android.libraries.bipe.account.ui.BipePinRow
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryEmailRows
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
+import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.generated.BipeSettingsRow
 import io.element.android.libraries.bipe.generated.BipeSettingsRowKind
 import io.element.android.libraries.bipe.settings.BipeDataExportRow
-import io.element.android.libraries.bipe.settings.BipeWayBack
 import io.element.android.libraries.bipe.settings.BipeSettingsGate
+import io.element.android.libraries.bipe.settings.BipeWayBack
 import io.element.android.libraries.bipe.settings.titleRes
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.DropdownOption
@@ -48,10 +48,10 @@ import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarM
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.matrix.api.media.MediaPreviewValue
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
-import io.element.android.features.preferences.impl.root.ThemeOption
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * A group screen of ADR 0112. The sections, rows, order and gates come from the settings registry in bipe-shared;
