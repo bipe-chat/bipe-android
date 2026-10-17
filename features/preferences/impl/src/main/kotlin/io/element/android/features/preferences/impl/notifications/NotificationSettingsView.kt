@@ -486,11 +486,11 @@ private fun InvalidNotificationSettingsView(
     modifier: Modifier = Modifier,
 ) {
     Announcement(
-        title = stringResource(R.string.screen_notification_settings_configuration_mismatch),
-        description = stringResource(R.string.screen_notification_settings_configuration_mismatch_description),
+        title = stringResource(BipeR.string.bipe_notifications_mismatch_title), // Bipe
+        description = stringResource(BipeR.string.bipe_notifications_mismatch_body), // Bipe
         type = AnnouncementType.Actionable(
             onActionClick = onContinueClick,
-            actionText = stringResource(CommonStrings.action_continue),
+            actionText = stringResource(BipeR.string.bipe_action_continue), // Bipe
             onDismissClick = null,
         ),
         modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),

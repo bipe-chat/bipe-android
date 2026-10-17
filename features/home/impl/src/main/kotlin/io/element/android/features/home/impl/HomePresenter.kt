@@ -29,6 +29,7 @@ import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
+import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.featureflag.api.FeatureFlagService
@@ -57,6 +58,7 @@ class HomePresenter(
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
     private val seenInvitesStore: SeenInvitesStore,
+    private val bipeYouTabWarning: BipeYouTabWarning,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -130,6 +132,7 @@ class HomePresenter(
                 BipeTabBadges.from(summaries, selfChatRoomId, seenInviteRoomIds)
             }.distinctUntilChanged()
         }.collectAsState(BipeTabBadges.NONE)
+        val bipeYouWarning by remember { bipeYouTabWarning.warning() }.collectAsState(false)
         // Avatar indicator
         val showAvatarIndicator by indicatorService.showRoomListTopBarIndicator()
 
@@ -159,7 +162,7 @@ class HomePresenter(
             canReportBug = canReportBug,
             showMultiAccountAnnouncement = showMultiAccountAnnouncement,
             eventSink = ::handleEvent,
-            bipeBadges = bipeBadges,
+            bipeBadges = bipeBadges.copy(youWarning = bipeYouWarning),
         )
     }
 }
