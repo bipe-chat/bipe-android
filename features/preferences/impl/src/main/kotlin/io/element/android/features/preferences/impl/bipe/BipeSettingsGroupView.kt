@@ -305,6 +305,7 @@ internal fun BipeSettingsGroupViewPreview() = ElementPreview {
             version = "Versão 26.10.2 (6)",
             deviceId = "ABCDEFGHIJ",
             eventSink = {},
+            hasSeparateDevicePin = false,
         ),
         onBackClick = {},
         onRowClick = {},
