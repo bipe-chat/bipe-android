@@ -8,9 +8,6 @@
 
 package io.element.android.appnav
 
-=======
-<<<<<<< HEAD
->>>>>>> origin/main
 import android.content.Context
 import android.os.Parcelable
 import android.widget.Toast
