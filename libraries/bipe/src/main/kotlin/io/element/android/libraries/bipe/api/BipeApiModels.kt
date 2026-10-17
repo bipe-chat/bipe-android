@@ -231,6 +231,8 @@ data class BipeAccountStatus(
     @SerialName("recoveries") val recoveries: List<BipeRecovery> = emptyList(),
     /** The last legal version this account accepted (ADR 0113). `null`: none recorded. */
     @SerialName("terms_version") val termsVersion: String? = null,
+    /** Personal accounts one phone may hold (ADR 0086). `null` from an older server: use the registry value. */
+    @SerialName("max_accounts") val maxAccounts: Int? = null,
 ) {
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }

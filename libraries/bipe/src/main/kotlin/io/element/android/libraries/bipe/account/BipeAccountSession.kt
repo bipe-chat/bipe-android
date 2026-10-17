@@ -46,6 +46,7 @@ class BipeAccountSession(
     suspend fun refresh(): Result<BipeAccountStatus> = runCatchingExceptions {
         deviceAccount.rememberSignedIn(userId)
         val status = BipeApiClient.withTokenRetry(accessToken) { apiClient.account(it) }
+        BipeAccountCap.onServerValue(status.maxAccounts)
         statusFlow.value = status
         alertsFlow.value = alertsFor(status)
         status
