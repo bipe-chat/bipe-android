@@ -28,16 +28,14 @@ data class BipeTabBadges(
             var groups = 0L
             for (summary in summaries) {
                 val info = summary.info
-                if (info.isSpace || summary.roomId == selfChatRoomId) continue
-                if (info.currentUserMembership == CurrentUserMembership.INVITED) {
-                    if (!info.isDm && summary.roomId !in seenInviteRoomIds) groups += 1
-                    continue
-                }
-                if (info.currentUserMembership != CurrentUserMembership.JOINED) continue
-                if (info.isDm) {
-                    chats += info.numUnreadNotifications
-                } else {
-                    groups += info.numUnreadNotifications
+                when {
+                    info.isSpace || summary.roomId == selfChatRoomId -> Unit
+                    info.currentUserMembership == CurrentUserMembership.INVITED -> {
+                        if (!info.isDm && summary.roomId !in seenInviteRoomIds) groups += 1
+                    }
+                    info.currentUserMembership != CurrentUserMembership.JOINED -> Unit
+                    info.isDm -> chats += info.numUnreadNotifications
+                    else -> groups += info.numUnreadNotifications
                 }
             }
             return BipeTabBadges(chats = chats, groups = groups)

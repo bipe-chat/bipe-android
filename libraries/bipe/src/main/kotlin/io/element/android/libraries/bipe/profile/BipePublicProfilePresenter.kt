@@ -17,10 +17,6 @@ import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
-import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
-import io.element.android.libraries.matrix.api.MatrixClient
-import io.element.android.libraries.mediapickers.api.PickerProvider
 import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.BipeProfileRules
 import io.element.android.libraries.bipe.R
@@ -30,6 +26,10 @@ import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.bipe.api.BipeMyProfile
 import io.element.android.libraries.bipe.api.BipeProfileUpdate
 import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
+import io.element.android.libraries.matrix.api.MatrixClient
+import io.element.android.libraries.mediapickers.api.PickerProvider
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch

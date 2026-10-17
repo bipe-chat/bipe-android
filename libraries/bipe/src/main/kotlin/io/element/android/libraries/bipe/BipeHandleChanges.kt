@@ -25,8 +25,6 @@ import kotlin.time.Duration.Companion.minutes
  * The timeline shows each change as a local line. One instance per user session; the cache lives in memory.
  *
  * The app asks on room open (the members of that room) and after each `resolve` refresh of [BipeHandleResolver].
- *
- * @param clock milliseconds since the epoch. Tests can pass a fake.
  */
 class BipeHandleChanges(
     private val apiClient: BipeApiClient,
@@ -34,6 +32,7 @@ class BipeHandleChanges(
     private val serverName: String,
     private val scope: CoroutineScope,
     private val accessToken: suspend () -> String?,
+    /** Milliseconds since the epoch. Tests can pass a fake. */
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val changesFlow = MutableStateFlow<Map<String, List<BipeHandleChange>>>(emptyMap())

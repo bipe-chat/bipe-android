@@ -6,11 +6,13 @@
 
 package io.element.android.libraries.bipe.handle
 
+import androidx.compose.runtime.Immutable
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.BipeHandle
 import io.element.android.libraries.bipe.BipeHandleStatus
 import java.time.Instant
 
+@Immutable
 data class BipeHandleState(
     val isLoading: Boolean,
     /** The handle the server holds now, without "@". */

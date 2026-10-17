@@ -12,6 +12,7 @@ package io.element.android.features.preferences.impl.root
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithText
@@ -84,7 +85,7 @@ class PreferencesRootViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        onNodeWithText("Bob").performClick()
+        onNodeWithText("Bob").performScrollTo().performClick()
         eventsRecorder.assertSingle(PreferencesRootEvent.SwitchToSession(A_USER_ID_2))
     }
 
@@ -104,7 +105,7 @@ class PreferencesRootViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        clickOn(CommonStrings.common_switch_account)
+        onNode(hasText(activity!!.getString(CommonStrings.common_switch_account)) and hasClickAction()).performScrollTo().performClick()
         eventsRecorder.assertSingle(PreferencesRootEvent.ToggleOtherAccountsExpanded)
     }
 
@@ -124,7 +125,7 @@ class PreferencesRootViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        assertNodeWithTextIsDisplayed(CommonStrings.common_switch_account)
+        onNodeWithText(activity!!.getString(CommonStrings.common_switch_account)).performScrollTo().assertIsDisplayed()
         onNodeWithText("Bob").assertDoesNotExist()
         assertNoNodeWithText(CommonStrings.common_add_another_account)
     }
@@ -147,7 +148,7 @@ class PreferencesRootViewTest : RobolectricTest() {
                 ),
                 onAddAccountClick = callback,
             )
-            clickOn(CommonStrings.common_add_another_account)
+            onNode(hasText(activity!!.getString(CommonStrings.common_add_another_account)) and hasClickAction()).performScrollTo().performClick()
         }
     }
 
@@ -162,7 +163,7 @@ class PreferencesRootViewTest : RobolectricTest() {
                 ),
                 onAddAccountClick = callback,
             )
-            clickOn(CommonStrings.common_add_another_account)
+            onNode(hasText(activity!!.getString(CommonStrings.common_add_another_account)) and hasClickAction()).performScrollTo().performClick()
         }
     }
 

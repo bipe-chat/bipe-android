@@ -15,11 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.matrix.ui.messages.RoomMemberProfilesCache
 import io.element.android.libraries.matrix.ui.messages.RoomNamesCache
 import io.element.android.libraries.matrix.ui.model.toEmojiText
-import io.element.android.libraries.bipe.di.BipeSession
 
 interface MentionSpanUpdater {
     fun updateMentionSpans(text: CharSequence): CharSequence

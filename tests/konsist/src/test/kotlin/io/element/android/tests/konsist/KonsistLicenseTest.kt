@@ -64,7 +64,7 @@ class KonsistLicenseTest {
             }
             .assertTrue {
                 it.text.count("Element Creations Ltd.") == 1 ||
-                    (it.text.count("Element Creations Ltd.") == 0 && bipeLicense.containsMatchIn(it.text))
+                    it.text.count("Element Creations Ltd.") == 0 && bipeLicense.containsMatchIn(it.text)
             }
     }
 }

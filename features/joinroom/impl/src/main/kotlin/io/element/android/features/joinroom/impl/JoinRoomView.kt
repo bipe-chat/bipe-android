@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.invite.api.InviteData
+import io.element.android.libraries.bipe.ui.BipeUnverifiedRequestCard
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.designsystem.atomic.atoms.CopiableTextAtom
 import io.element.android.libraries.designsystem.atomic.atoms.PlaceholderAtom
 import io.element.android.libraries.designsystem.atomic.atoms.RoomPreviewDescriptionAtom
@@ -78,8 +80,6 @@ import io.element.android.libraries.matrix.api.spaces.SpaceRoomVisibility
 import io.element.android.libraries.matrix.ui.components.SpaceInfoRow
 import io.element.android.libraries.matrix.ui.components.SpaceMembersView
 import io.element.android.libraries.matrix.ui.model.InviteSender
-import io.element.android.libraries.bipe.ui.BipeUnverifiedRequestCard
-import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.persistentListOf
 

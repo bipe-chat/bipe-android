@@ -9,14 +9,14 @@
 package io.element.android.libraries.usersearch.impl
 
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.libraries.bipe.BipeHandle
+import io.element.android.libraries.bipe.api.BipeApiException
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.MatrixPatterns
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
-import io.element.android.libraries.bipe.BipeHandle
-import io.element.android.libraries.bipe.api.BipeApiException
-import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.usersearch.api.UserListDataSource
 import io.element.android.libraries.usersearch.api.UserRepository
 import io.element.android.libraries.usersearch.api.UserSearchResult
@@ -47,7 +47,7 @@ class MatrixUserRepository(
             null
         }
         if (shouldQueryProfile || shouldFetchSearchResults) {
-            emit(UserSearchResultState(isSearching = shouldFetchSearchResults, results = listOfNotNull(fakeSearchResult)))
+            emit(UserSearchResultState(isSearching = shouldFetchSearchResults, results = listOfNotNull(fakeSearchResult), bipeHandleNotFound = null))
         }
         if (shouldFetchSearchResults) {
             val results = fetchSearchResults(query, shouldQueryProfile, shouldSearchDirectory)

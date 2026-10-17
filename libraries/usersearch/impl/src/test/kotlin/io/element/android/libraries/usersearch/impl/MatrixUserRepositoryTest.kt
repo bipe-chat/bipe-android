@@ -10,6 +10,9 @@ package io.element.android.libraries.usersearch.impl
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import io.element.android.libraries.bipe.BipeHandleResolver
+import io.element.android.libraries.bipe.api.BipeApiException
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -19,6 +22,9 @@ import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.ui.components.aMatrixUserList
 import io.element.android.libraries.usersearch.api.UserSearchResult
 import io.element.android.libraries.usersearch.test.FakeUserListDataSource
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -28,7 +34,7 @@ internal class MatrixUserRepositoryTest {
     @Test
     fun `search - emits nothing if the search query is too short`() = runTest {
         val dataSource = FakeUserListDataSource()
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search("x")
 
@@ -40,7 +46,7 @@ internal class MatrixUserRepositoryTest {
     @Test
     fun `search - returns empty list if no results are found`() = runTest {
         val dataSource = FakeUserListDataSource()
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search("some query")
 
@@ -61,7 +67,7 @@ internal class MatrixUserRepositoryTest {
     fun `search - returns users if results are found`() = runTest {
         val dataSource = FakeUserListDataSource()
         dataSource.givenSearchResult(aMatrixUserList())
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search("some query")
 
@@ -81,7 +87,7 @@ internal class MatrixUserRepositoryTest {
     @Test
     fun `search - immediately returns placeholder if search is mxid`() = runTest {
         val dataSource = FakeUserListDataSource()
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search(A_USER_ID.value)
 
@@ -97,7 +103,7 @@ internal class MatrixUserRepositoryTest {
     @Test
     fun `search - doesn't return placeholder if search is the local user's mxid`() = runTest {
         val dataSource = FakeUserListDataSource()
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search(SESSION_ID.value)
 
@@ -115,7 +121,7 @@ internal class MatrixUserRepositoryTest {
         val searchResults = aMatrixUserList() + MatrixUser(userId = SESSION_ID, displayName = A_USER_NAME)
         val dataSource = FakeUserListDataSource()
         dataSource.givenSearchResult(searchResults)
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search("some text")
 
@@ -131,7 +137,7 @@ internal class MatrixUserRepositoryTest {
         val searchResults = aMatrixUserListWithoutUserId(A_USER_ID) + MatrixUser(userId = A_USER_ID, displayName = A_USER_NAME)
         val dataSource = FakeUserListDataSource()
         dataSource.givenSearchResult(searchResults)
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search(A_USER_ID.value)
 
@@ -150,7 +156,7 @@ internal class MatrixUserRepositoryTest {
         val dataSource = FakeUserListDataSource()
         dataSource.givenSearchResult(searchResults)
         dataSource.givenUserProfile(userProfile)
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search(A_USER_ID.value)
 
@@ -169,7 +175,7 @@ internal class MatrixUserRepositoryTest {
         val dataSource = FakeUserListDataSource()
         dataSource.givenSearchResult(searchResults)
         dataSource.givenUserProfile(userProfile)
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search(SESSION_ID.value)
 
@@ -187,7 +193,7 @@ internal class MatrixUserRepositoryTest {
         val dataSource = FakeUserListDataSource()
         dataSource.givenSearchResult(searchResults)
         dataSource.givenUserProfile(null)
-        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource, aBipeSessionWithoutHandles())
 
         val result = repository.search(A_USER_ID.value)
 
@@ -203,4 +209,10 @@ internal class MatrixUserRepositoryTest {
     private fun List<MatrixUser>.toUserSearchResults() = map { UserSearchResult(it) }
 
     private fun placeholderResult(id: UserId = A_USER_ID, isUnresolved: Boolean = false) = UserSearchResult(MatrixUser(id), isUnresolved = isUnresolved)
+
+    // Bipe: the handle lookup fails, so search behaves as upstream (no handle match, no "nobody holds @x").
+    private fun aBipeSessionWithoutHandles(): BipeSession {
+        val resolver = mockk<BipeHandleResolver> { coEvery { userId(forHandle = any()) } throws BipeApiException.Network() }
+        return mockk { every { handleResolver } returns resolver }
+    }
 }

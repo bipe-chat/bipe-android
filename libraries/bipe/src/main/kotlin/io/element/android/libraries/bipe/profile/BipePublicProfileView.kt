@@ -35,6 +35,10 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
+import io.element.android.libraries.bipe.BipeProfileProblem
+import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.api.BipeMyProfile
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
@@ -50,10 +54,6 @@ import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TextFieldValidity
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
-import io.element.android.libraries.bipe.BipeProfileProblem
-import io.element.android.libraries.bipe.R
-import io.element.android.libraries.bipe.api.BipeMyProfile
-import io.element.android.libraries.bipe.generated.BipeRegistries
 
 /** "Perfil público" (ADR 0041): toggle, name, bio and photo of the public profile, and its link. */
 @Composable

@@ -9,8 +9,8 @@
 package io.element.android.features.home.impl.filters
 
 import io.element.android.features.home.impl.R
-import io.element.android.libraries.matrix.api.roomlist.RoomListFilter as MatrixRoomListFilter
 import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.matrix.api.roomlist.RoomListFilter as MatrixRoomListFilter
 
 /**
  * Enum class representing the different filters that can be applied to the room list.

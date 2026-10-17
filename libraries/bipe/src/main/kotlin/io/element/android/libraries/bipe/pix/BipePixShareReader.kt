@@ -11,8 +11,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import io.element.android.libraries.bipe.PixCheck
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.annotations.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,7 +26,6 @@ fun interface BipePixShareReader {
 }
 
 @ContributesBinding(AppScope::class)
-@Inject
 class DefaultBipePixShareReader(
     @ApplicationContext private val context: Context,
 ) : BipePixShareReader {
@@ -37,7 +36,7 @@ class DefaultBipePixShareReader(
         }.firstOrNull { PixCheck.check(it).foundPix }
     }
 
-    private fun qrTexts(uri: Uri): List<String> = runCatching {
+    private fun qrTexts(uri: Uri): List<String> = runCatchingExceptions {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
         // A QR code survives downscaling well. Large photos would cost memory for nothing.

@@ -16,6 +16,9 @@ import io.element.android.compound.theme.Theme
 import io.element.android.features.preferences.impl.account.aPreferencesAccountState
 import io.element.android.features.preferences.impl.userstatus.aUserStatusState
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
+import io.element.android.libraries.bipe.BipeHandleResolver
+import io.element.android.libraries.bipe.BipePublicProfiles
+import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.featureflag.api.FeatureFlagService
@@ -40,9 +43,13 @@ import io.element.android.tests.testutils.consumeItemsUntilPredicate
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.test
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -303,5 +310,19 @@ class PreferencesRootPresenterTest {
         userStatusPresenter = { aUserStatusState() },
         preferencesAccountPresenter = { aPreferencesAccountState() },
         sessionCoroutineScope = this,
+        bipeSession = aBipeSession(),
     )
+
+    // Bipe: no API. The server name matches no test user, so the resolver knows no handle; no public profile.
+    private fun CoroutineScope.aBipeSession(): BipeSession {
+        val resolver = BipeHandleResolver(apiClient = mockk(), serverName = "bipe.invalid", scope = this, accessToken = { null })
+        val profiles = mockk<BipePublicProfiles> {
+            every { myProfile } returns MutableStateFlow(null)
+            coEvery { refreshMine() } returns Unit
+        }
+        return mockk {
+            every { handleResolver } returns resolver
+            every { publicProfiles } returns profiles
+        }
+    }
 }

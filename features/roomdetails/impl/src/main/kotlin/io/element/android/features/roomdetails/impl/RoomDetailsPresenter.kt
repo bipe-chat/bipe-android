@@ -36,7 +36,6 @@ import io.element.android.features.securityandprivacy.api.securityAndPrivacyPerm
 import io.element.android.libraries.androidutils.clipboard.ClipboardHelper
 import io.element.android.libraries.androidutils.toast.ToastHelper
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.groups.BipeInviteGroup
 import io.element.android.libraries.bipe.groups.BipeInviteToGroup
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
@@ -69,6 +68,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import io.element.android.libraries.bipe.R as BipeR
 
 @AssistedInject
 class RoomDetailsPresenter(

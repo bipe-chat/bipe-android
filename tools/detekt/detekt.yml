@@ -242,6 +242,10 @@ Compose:
       - LocalUiTestMode
       - LocalSdkIntVersionProvider
       - LocalTimelineEventRendererConfig
+      # Bipe
+      - LocalBipeAccount
+      - LocalBipeHandleResolver
+      - LocalBipePublicProfiles
   CompositionLocalNaming:
     active: true
   ContentEmitterReturningValues:

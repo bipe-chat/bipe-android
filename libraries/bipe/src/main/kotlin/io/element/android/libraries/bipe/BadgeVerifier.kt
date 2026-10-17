@@ -7,6 +7,7 @@
 package io.element.android.libraries.bipe
 
 import com.google.crypto.tink.subtle.Ed25519Verify
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -31,13 +32,13 @@ class BadgeVerifier(trustedKeys: Map<String, ByteArray>) {
     /** Decodes and verifies envelope JSON. Undecodable JSON is `malformed`. */
     fun verify(envelopeJson: String, sender: String, senderDevice: String, nowMillis: Long = System.currentTimeMillis()): BadgeVerificationResult {
         // Check `v` before the full shape: a future version may have other fields.
-        val probe = runCatching { json.decodeFromString<JsonObject>(envelopeJson) }.getOrNull()
+        val probe = runCatchingExceptions { json.decodeFromString<JsonObject>(envelopeJson) }.getOrNull()
         val version = (probe?.get("v") as? JsonPrimitive)?.takeUnless { it.isString }?.intOrNull
             ?: return BadgeVerificationResult.Invalid(BadgeVerificationFailure.MALFORMED)
         if (version != BadgeEnvelope.SUPPORTED_VERSION) {
             return BadgeVerificationResult.Invalid(BadgeVerificationFailure.UNSUPPORTED_VERSION)
         }
-        val envelope = runCatching { json.decodeFromJsonElement(BadgeEnvelope.serializer(), probe) }.getOrNull()
+        val envelope = runCatchingExceptions { json.decodeFromJsonElement(BadgeEnvelope.serializer(), probe) }.getOrNull()
             ?: return BadgeVerificationResult.Invalid(BadgeVerificationFailure.MALFORMED)
         return verify(envelope, sender, senderDevice, nowMillis)
     }
@@ -57,7 +58,7 @@ class BadgeVerifier(trustedKeys: Map<String, ByteArray>) {
         } catch (_: GeneralSecurityException) {
             return invalid(BadgeVerificationFailure.INVALID_SIGNATURE)
         }
-        val payload = runCatching { json.decodeFromString(BadgePayload.serializer(), payloadBytes.decodeToString(throwOnInvalidSequence = true)) }
+        val payload = runCatchingExceptions { json.decodeFromString(BadgePayload.serializer(), payloadBytes.decodeToString(throwOnInvalidSequence = true)) }
             .getOrNull()
             ?.takeUnless { it.lvl == BadgeLevel.INSTITUTION && it.cnpj == null }
             ?: return invalid(BadgeVerificationFailure.MALFORMED)
@@ -145,11 +146,11 @@ internal object Base64Url {
             val value = ALPHABET.indexOf(c)
             if (value < 0) return null
             // Keep only the bits not yet written, so the buffer cannot overflow.
-            buffer = ((buffer shl 6) or value) and 0xFFF
+            buffer = buffer shl 6 or value and 0xFFF
             bits += 6
             if (bits >= 8) {
                 bits -= 8
-                out.write((buffer shr bits) and 0xFF)
+                out.write(buffer shr bits and 0xFF)
             }
         }
         return out.toByteArray()

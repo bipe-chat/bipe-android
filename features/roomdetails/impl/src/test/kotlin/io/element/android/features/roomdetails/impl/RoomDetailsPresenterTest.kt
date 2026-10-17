@@ -352,8 +352,8 @@ class RoomDetailsPresenterTest {
             // Then the asynchronous check completes, but editing is still disallowed because it's a DM
             val settledState = awaitItem()
             assertThat(settledState.canEdit).isFalse()
-            // If there is a topic, it's visible
-            assertThat(settledState.roomTopic).isEqualTo(RoomTopicState.ExistingTopic(room.info().topic!!))
+            // Bipe: a DM has no topic, even when the room has one.
+            assertThat(settledState.roomTopic).isEqualTo(RoomTopicState.Hidden)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -709,10 +709,6 @@ class RoomDetailsPresenterTest {
             room = room,
             notificationCleaner = notificationCleaner,
             sessionPreferencesStore = sessionPreferencesStore,
-            bipeInviteToGroup = BipeInviteToGroup(
-                matrixClient = matrixClient,
-                selfChat = BipeSelfChat(matrixClient, CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> })),
-            ),
         )
         presenter.testWithLifecycleOwner(lifecycleOwner = fakeLifecycleOwner) {
             skipItems(1)

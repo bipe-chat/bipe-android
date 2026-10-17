@@ -522,7 +522,7 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
     }
 
     @Test
-    fun `present - creating a private room when encryption is disabled by the HS creates it unencrypted`() = runTest {
+    fun `present - creating a private room when encryption is disabled by the HS still creates it encrypted`() = runTest {
         val sessionEnterpriseService = FakeSessionEnterpriseService(
             isEncryptionDisabledResult = { true },
             arePublicRoomsDisabledResult = { false },
@@ -544,7 +544,8 @@ class ConfigureRoomPresenterTest : RobolectricTest() {
             assertThat(awaitItem().createRoomAction.isLoading()).isTrue()
             assertThat(awaitItem().createRoomAction.isSuccess()).isTrue()
 
-            createRoomLambda.assertions().isCalledOnce().with(matching<CreateRoomParameters> { !it.isEncrypted })
+            // Bipe: every room is encrypted, whatever the homeserver advertises (docs/security.md rule 13).
+            createRoomLambda.assertions().isCalledOnce().with(matching<CreateRoomParameters> { it.isEncrypted })
         }
     }
 

@@ -8,9 +8,9 @@
 
 package io.element.android.features.messages.impl.timeline.model.event
 
+import io.element.android.libraries.bipe.ScamWarningKind
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.media.MediaSource
-import io.element.android.libraries.bipe.ScamWarningKind
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Duration
 

@@ -40,7 +40,12 @@ class MentionSpanFormatterTest {
 
     // Bipe: @handle pills. The server name matches no test user, so the resolver knows no handle and sends no request.
     private fun aBipeSession(): BipeSession {
-        val resolver = BipeHandleResolver(apiClient = mockk(), serverName = "bipe.invalid", scope = CoroutineScope(EmptyCoroutineContext), accessToken = { null })
+        val resolver = BipeHandleResolver(
+            apiClient = mockk(),
+            serverName = "bipe.invalid",
+            scope = CoroutineScope(EmptyCoroutineContext),
+            accessToken = { null },
+        )
         return mockk { every { handleResolver } returns resolver }
     }
 

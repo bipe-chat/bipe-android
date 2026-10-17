@@ -55,7 +55,7 @@ data class RoomDetailsState(
     val roomHistoryVisibility: RoomHistoryVisibility,
     val hasNewContent: Boolean,
     /** Bipe: the groups shown by "Convidar para um grupo" in a DM, or null when the picker is closed. */
-    val bipeInviteGroups: ImmutableList<BipeInviteGroup>? = null,
+    val bipeInviteGroups: ImmutableList<BipeInviteGroup>?,
     val eventSink: (RoomDetailsEvent) -> Unit
 ) {
     val roomBadges = buildList {

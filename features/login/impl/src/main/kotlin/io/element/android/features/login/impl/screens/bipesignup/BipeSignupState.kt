@@ -44,14 +44,14 @@ data class BipeSignupState(
     /** Account creation and sign-in. Failure carries the localised message. */
     val createAction: AsyncAction<Unit>,
     /** From `GET /v1/signup/config` (ADR 0072). `true` until the server says otherwise, and after an error. */
-    val isInviteRequired: Boolean = true,
+    val isInviteRequired: Boolean,
     /** The clickwrap box for the Termos de uso and the Política de privacidade (ADR 0113). Unticked at the start. */
-    val isTermsAccepted: Boolean = false,
+    val isTermsAccepted: Boolean,
     val eventSink: (BipeSignupEvent) -> Unit,
 ) {
     val inviteCode: BipeInviteCode? get() = BipeInviteCode.parse(inviteCodeInput)
 
-    val isInviteCodeAcceptable: Boolean get() = inviteCode != null || (inviteCodeInput.isBlank() && !isInviteRequired)
+    val isInviteCodeAcceptable: Boolean get() = inviteCode != null || inviteCodeInput.isBlank() && !isInviteRequired
 
     /** A typed code that is not a code. An empty field is not an error, even when an invite is required. */
     val isInviteCodeMalformed: Boolean get() = inviteCodeInput.isNotBlank() && inviteCode == null

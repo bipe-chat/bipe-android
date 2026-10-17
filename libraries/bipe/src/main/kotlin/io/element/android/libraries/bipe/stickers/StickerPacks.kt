@@ -7,6 +7,7 @@
 package io.element.android.libraries.bipe.stickers
 
 import androidx.compose.runtime.Immutable
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -84,7 +85,7 @@ data class StickerPack(
          * Returns null when the content is not a pack or holds no stickers.
          */
         fun parse(contentJson: String, source: Source): StickerPack? {
-            val content = runCatching { Json.parseToJsonElement(contentJson) as? JsonObject }.getOrNull() ?: return null
+            val content = runCatchingExceptions { Json.parseToJsonElement(contentJson) as? JsonObject }.getOrNull() ?: return null
             return parse(content, source)
         }
 
@@ -117,7 +118,7 @@ data class StickerPack(
 
         /** `im.ponies.emote_rooms` content: `{"rooms": {roomId: {stateKey: {}}}}`. */
         fun parseEnabledRooms(contentJson: String): List<Pair<String, String>> {
-            val content = runCatching { Json.parseToJsonElement(contentJson) as? JsonObject }.getOrNull() ?: return emptyList()
+            val content = runCatchingExceptions { Json.parseToJsonElement(contentJson) as? JsonObject }.getOrNull() ?: return emptyList()
             val rooms = content["rooms"] as? JsonObject ?: return emptyList()
             return rooms.keys.sorted().flatMap { roomId ->
                 val keys = (rooms[roomId] as? JsonObject)?.keys?.sorted().orEmpty()

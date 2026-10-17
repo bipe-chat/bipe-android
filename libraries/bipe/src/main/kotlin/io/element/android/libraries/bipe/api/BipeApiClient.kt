@@ -11,6 +11,7 @@ import io.element.android.libraries.bipe.BipeProfileProblem
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipePinProblem
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.uri.ensureTrailingSlash
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CancellationException
@@ -219,8 +220,8 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
         }
 
         if (!response.isSuccessful) {
-            val errorBody = runCatching { response.errorBody()?.string() }.getOrNull()
-                ?.let { runCatching { errorJson.decodeFromString(BipeErrorBody.serializer(), it) }.getOrNull() }
+            val errorBody = runCatchingExceptions { response.errorBody()?.string() }.getOrNull()
+                ?.let { runCatchingExceptions { errorJson.decodeFromString(BipeErrorBody.serializer(), it) }.getOrNull() }
             if (errorBody != null) {
                 throw BipeApiException.Server(
                     code = BipeApiErrorCode.fromId(errorBody.error) ?: BipeApiErrorCode.INTERNAL,
