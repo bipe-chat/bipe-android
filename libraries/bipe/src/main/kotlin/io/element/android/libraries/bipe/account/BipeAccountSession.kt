@@ -15,7 +15,6 @@ import io.element.android.libraries.bipe.api.BipeRecoveryMethod
 import io.element.android.libraries.bipe.api.BipeRecoveryPurpose
 import io.element.android.libraries.bipe.api.BipeRecoveryState
 import io.element.android.libraries.bipe.generated.BipeRegistries
-
 import io.element.android.libraries.bipe.settings.BipeDataExportFile
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.services.toolbox.api.strings.StringProvider
