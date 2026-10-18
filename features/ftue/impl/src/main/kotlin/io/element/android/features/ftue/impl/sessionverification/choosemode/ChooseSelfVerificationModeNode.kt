@@ -8,7 +8,6 @@
 
 package io.element.android.features.ftue.impl.sessionverification.choosemode
 
-import io.element.android.appconfig.LearnMoreConfig
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.core.modality.BuildContext
@@ -17,6 +16,7 @@ import com.bumble.appyx.core.plugin.Plugin
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
+import io.element.android.appconfig.LearnMoreConfig
 import io.element.android.features.logout.api.direct.DirectLogoutView
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.callback
@@ -48,7 +48,7 @@ class ChooseSelfVerificationModeNode(
             onUseAnotherDevice = callback::navigateToUseAnotherDevice,
             onUseRecoveryKey = callback::navigateToUseRecoveryKey,
             onResetKey = callback::navigateToResetKey,
-            onLearnMore = (callback::navigateToLearnMoreAboutEncryption).takeIf { LearnMoreConfig.DEVICE_VERIFICATION_URL != null },
+            onLearnMore = if (LearnMoreConfig.DEVICE_VERIFICATION_URL != null) callback::navigateToLearnMoreAboutEncryption else null,
             modifier = modifier,
         )
 

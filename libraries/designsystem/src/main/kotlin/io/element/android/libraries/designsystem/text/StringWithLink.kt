@@ -69,6 +69,8 @@ fun stringWithoutLink(text: String): String {
     var start = index
     while (start > 0 && text[start - 1].isWhitespace()) start--
     var end = index + BIPE_LINK_PLACEHOLDER.length
-    if (end < text.length && text[end] == '.' && start > 0 && text[start - 1] == '.') end++
+    val dotAfter = end < text.length && text[end] == '.'
+    val dotBefore = start > 0 && text[start - 1] == '.'
+    if (dotAfter && dotBefore) end++
     return text.removeRange(start, end)
 }
