@@ -38,6 +38,8 @@ data class BipeSignupRequest(
     @SerialName("signup_key") val signupKey: String? = null,
     /** The legal version the user ticked at sign-up (ADR 0113): `BipeRegistries.LEGAL_VERSION`, YYYY-MM-DD. */
     @SerialName("terms_version") val termsVersion: String? = null,
+    /** ADR 0087: `company` needs an attestation (ADR 0043). Android has none yet (#92), so it never sends `company`. */
+    @SerialName("account_type") val accountType: String? = null,
 ) {
     /** Never prints the PIN, the password, the email or the key. */
     override fun toString(): String = "BipeSignupRequest"
@@ -233,6 +235,8 @@ data class BipeAccountStatus(
     @SerialName("terms_version") val termsVersion: String? = null,
     /** Personal accounts one phone may hold (ADR 0086). `null` from an older server: use the registry value. */
     @SerialName("max_accounts") val maxAccounts: Int? = null,
+    /** ADR 0087: `personal` or `company`. `null` from an older server: personal. */
+    @SerialName("account_type") val accountType: String? = null,
 ) {
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }
