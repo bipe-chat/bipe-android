@@ -43,7 +43,7 @@ class OutgoingVerificationNode(
         OutgoingVerificationView(
             state = state,
             modifier = modifier,
-            onLearnMoreClick = if (LearnMoreConfig.ENCRYPTION_URL != null) callback::navigateToLearnMoreAboutEncryption else null,
+            onLearnMoreClick = LearnMoreConfig.ENCRYPTION_URL?.let { callback::navigateToLearnMoreAboutEncryption },
             onFinish = callback::onDone,
             onBack = callback::onBack,
         )

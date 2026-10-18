@@ -48,7 +48,7 @@ class ChooseSelfVerificationModeNode(
             onUseAnotherDevice = callback::navigateToUseAnotherDevice,
             onUseRecoveryKey = callback::navigateToUseRecoveryKey,
             onResetKey = callback::navigateToResetKey,
-            onLearnMore = if (LearnMoreConfig.DEVICE_VERIFICATION_URL != null) callback::navigateToLearnMoreAboutEncryption else null,
+            onLearnMore = LearnMoreConfig.DEVICE_VERIFICATION_URL?.let { callback::navigateToLearnMoreAboutEncryption },
             modifier = modifier,
         )
 
