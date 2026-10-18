@@ -16,6 +16,7 @@ import com.bumble.appyx.core.plugin.Plugin
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
+import io.element.android.appconfig.LearnMoreConfig
 import io.element.android.features.verifysession.api.OutgoingVerificationEntryPoint
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.inputs
@@ -42,7 +43,7 @@ class OutgoingVerificationNode(
         OutgoingVerificationView(
             state = state,
             modifier = modifier,
-            onLearnMoreClick = callback::navigateToLearnMoreAboutEncryption,
+            onLearnMoreClick = LearnMoreConfig.ENCRYPTION_URL?.let { callback::navigateToLearnMoreAboutEncryption },
             onFinish = callback::onDone,
             onBack = callback::onBack,
         )

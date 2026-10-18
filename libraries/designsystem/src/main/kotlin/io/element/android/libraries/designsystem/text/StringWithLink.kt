@@ -21,10 +21,15 @@ import io.element.android.libraries.ui.strings.CommonStrings
 @Composable
 fun stringWithLink(
     @StringRes textRes: Int,
-    url: String,
+    url: String?,
     onLinkClick: (String) -> Unit,
     @StringRes linkTextRes: Int = CommonStrings.action_learn_more,
 ) = buildAnnotatedString {
+    // Bipe: without a help page, drop the link text and keep the sentence (bipe#205).
+    if (url == null) {
+        append(stringWithoutLink(stringResource(textRes, BIPE_LINK_PLACEHOLDER)))
+        return@buildAnnotatedString
+    }
     val learnMoreStr = stringResource(linkTextRes)
     val fullText = stringResource(textRes, learnMoreStr)
     append(fullText)
@@ -48,4 +53,24 @@ fun stringWithLink(
         start = learnMoreStartIndex,
         end = learnMoreStartIndex + learnMoreStr.length,
     )
+}
+
+// Bipe: stands in for the link text when there is no help page (bipe#205).
+const val BIPE_LINK_PLACEHOLDER = "\u0000"
+
+/**
+ * Bipe: removes [BIPE_LINK_PLACEHOLDER] and the spaces before it, and a "." after it when the sentence already
+ * ended before the link ("… identity. Learn more." must not become "… identity. ."). Same rule as iOS
+ * `AttributedString.bipeReplaceLink`.
+ */
+fun stringWithoutLink(text: String): String {
+    val index = text.indexOf(BIPE_LINK_PLACEHOLDER)
+    if (index < 0) return text
+    var start = index
+    while (start > 0 && text[start - 1].isWhitespace()) start--
+    var end = index + BIPE_LINK_PLACEHOLDER.length
+    val dotAfter = end < text.length && text[end] == '.'
+    val dotBefore = start > 0 && text[start - 1] == '.'
+    if (dotAfter && dotBefore) end++
+    return text.removeRange(start, end)
 }
