@@ -23,7 +23,6 @@ import io.element.android.features.messages.api.timeline.voicemessages.composer.
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerState
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerStatePreviewParam
 import io.element.android.features.messages.api.timeline.voicemessages.composer.aVoiceMessageComposerState
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.generated.BipeOnboardingPrompt
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
@@ -34,6 +33,7 @@ import io.element.android.libraries.textcomposer.model.Suggestion
 import io.element.android.libraries.textcomposer.model.VoiceMessagePlayerEvent
 import io.element.android.libraries.textcomposer.model.VoiceMessageRecorderEvent
 import kotlinx.coroutines.launch
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 internal fun MessageComposerView(

@@ -190,7 +190,7 @@ private fun ColumnScope.FallbackStep(state: BipeSignupState, isLoading: Boolean)
             style = ElementTheme.typography.fontBodyMdRegular,
             color = ElementTheme.colors.textSecondary,
         )
-        val isEmailError = state.emailError != null || (state.email.isNotBlank() && !BipeSignupRules.isPlausibleEmail(state.email.trim()))
+        val isEmailError = state.emailError != null || state.email.isNotBlank() && !BipeSignupRules.isPlausibleEmail(state.email.trim())
         TextField(
             label = stringResource(R.string.bipe_signup_email),
             value = state.email,
@@ -244,7 +244,7 @@ private fun TextButtons(state: BipeSignupState, isLoading: Boolean) {
 @Composable
 private fun WaitlistSheet(state: BipeSignupState) {
     val eventSink = state.eventSink
-    ModalBottomSheet(onDismissRequest = { eventSink(BipeSignupEvent.CloseWaitlist) }) {
+    ModalBottomSheet(onDismissRequest = { eventSink(BipeSignupEvent.CloseWaitlist) }, scrollable = true) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 24.dp)

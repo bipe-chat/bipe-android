@@ -8,7 +8,6 @@ package io.element.android.libraries.bipe.onboarding
 
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 
@@ -22,7 +21,6 @@ interface BipeStartScreenInfo {
 }
 
 @ContributesBinding(AppScope::class)
-@Inject
 class DefaultBipeStartScreenInfo(
     private val apiClient: BipeApiClient,
 ) : BipeStartScreenInfo {

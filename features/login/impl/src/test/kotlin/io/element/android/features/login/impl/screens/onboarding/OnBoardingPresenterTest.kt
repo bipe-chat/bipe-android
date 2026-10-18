@@ -20,7 +20,6 @@ import io.element.android.features.login.impl.accountprovider.anAccountProviderD
 import io.element.android.features.login.impl.localnetwork.LocalNetworkPermissionGate
 import io.element.android.features.login.impl.login.LoginModePresenter
 import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.generated.BipeOnboardingButton
 import io.element.android.libraries.bipe.generated.BipeOnboardingStart
 import io.element.android.libraries.bipe.generated.BipeOnboardingTarget
@@ -57,6 +56,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
+import io.element.android.libraries.bipe.R as BipeR
 
 class OnBoardingPresenterTest {
     @get:Rule

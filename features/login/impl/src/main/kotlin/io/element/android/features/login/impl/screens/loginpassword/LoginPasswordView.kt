@@ -50,7 +50,6 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.error.loginError
 import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMolecule
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
@@ -70,6 +69,7 @@ import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun LoginPasswordView(
@@ -193,7 +193,11 @@ private fun LoginForm(
 
     Column {
         TextField(
-            label = if (OnBoardingConfig.USES_BIPE_SIGNUP) stringResource(BipeR.string.bipe_signup_email) else stringResource(R.string.screen_login_form_header),
+            label = if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+                stringResource(BipeR.string.bipe_signup_email)
+            } else {
+                stringResource(R.string.screen_login_form_header)
+            },
             value = loginFieldState,
             enabled = !isLoading,
             modifier = Modifier

@@ -29,7 +29,6 @@ import io.element.android.appconfig.BipeConfig
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
-import io.element.android.features.home.impl.filters.RoomListFilter as HomeRoomListFilter
 import io.element.android.features.home.impl.filters.RoomListFiltersEvent
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.into
@@ -79,6 +78,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import io.element.android.features.home.impl.filters.RoomListFilter as HomeRoomListFilter
 
 @Inject
 class RoomListPresenter(

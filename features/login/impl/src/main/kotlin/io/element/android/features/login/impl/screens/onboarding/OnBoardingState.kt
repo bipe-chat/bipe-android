@@ -29,9 +29,9 @@ data class OnBoardingState(
     val onBoardingLogoResId: Int?,
     val loginModeState: LoginModeState,
     /** Bipe: the start screen variant from bipe-shared `registries/onboarding.json` (bipe-chat/bipe#415). Null outside Bipe sign-up. */
-    val bipeStart: BipeOnboardingStart? = null,
+    val bipeStart: BipeOnboardingStart?,
     /** Bipe: the inviter's handle from the invite preview, without @. */
-    val bipeInviterHandle: String? = null,
+    val bipeInviterHandle: String?,
     val eventSink: (OnBoardingEvent) -> Unit,
 ) {
     val submitEnabled: Boolean

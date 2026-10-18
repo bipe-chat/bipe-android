@@ -92,9 +92,9 @@ fun HomeView(
     // Bipe: the Você tab content (ADR 0053), built by the node.
     youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
-    leaveRoomView: @Composable () -> Unit,
     // Bipe (bipe-chat/bipe#415): "Escolha seu @" opens the username screen.
     onBipeHandlePromptClick: () -> Unit = {},
+    leaveRoomView: @Composable () -> Unit,
 ) {
     val state: RoomListState = homeState.roomListState
     val coroutineScope = rememberCoroutineScope()

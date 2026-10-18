@@ -31,7 +31,6 @@ import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.login.LoginModeEvent
 import io.element.android.features.login.impl.login.LoginModeView
 import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.generated.BipeOnboardingStart
 import io.element.android.libraries.bipe.generated.BipeOnboardingTarget
 import io.element.android.libraries.bipe.ui.BipeWelcomeView
@@ -53,6 +52,7 @@ import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPer
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Ref: https://www.figma.com/design/pDlJZGBsri47FNTXMnEdXB/Compound-Android-Templates?node-id=41-6503

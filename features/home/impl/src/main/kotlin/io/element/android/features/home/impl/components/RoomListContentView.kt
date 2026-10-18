@@ -46,7 +46,6 @@ import io.element.android.features.home.impl.roomlist.RoomListEvent
 import io.element.android.features.home.impl.roomlist.SecurityBannerState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.ui.BipeHandlePromptRow
 import io.element.android.libraries.bipe.ui.BipeInviterRow
 import io.element.android.libraries.bipe.ui.BipeRequestsRow
@@ -59,6 +58,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun RoomListContentView(

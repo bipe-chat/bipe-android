@@ -68,6 +68,7 @@ internal fun aRoomListState(
     canReportRoom: Boolean = true,
     bipeInviterHandle: String? = null,
     bipeOpenInviterChat: suspend () -> RoomId? = { null },
+    bipeShowsHandlePrompt: Boolean = false,
     eventSink: (RoomListEvent) -> Unit = {}
 ) = RoomListState(
     contextMenu = contextMenu,
@@ -84,6 +85,7 @@ internal fun aRoomListState(
     bipeInviterHandle = bipeInviterHandle,
     bipeOpenInviterChat = bipeOpenInviterChat,
     eventSink = eventSink,
+    bipeShowsHandlePrompt = bipeShowsHandlePrompt,
 )
 
 internal fun aLeaveRoomState(

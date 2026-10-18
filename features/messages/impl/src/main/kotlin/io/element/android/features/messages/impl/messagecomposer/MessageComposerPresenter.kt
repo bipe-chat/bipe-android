@@ -48,7 +48,6 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.stickers.StickerPackRepository
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.mimetype.MimeTypes
-import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -80,6 +79,7 @@ import io.element.android.libraries.mediaviewer.api.local.LocalMediaFactory
 import io.element.android.libraries.permissions.api.PermissionStateProvider
 import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
+import io.element.android.libraries.permissions.api.PermissionsState
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.slashcommands.api.SlashCommand
@@ -99,7 +99,6 @@ import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
 import io.element.android.wysiwyg.compose.RichTextEditorState
 import io.element.android.wysiwyg.display.TextDisplay
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CancellationException
@@ -118,6 +117,8 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
+import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 
 @Suppress("LargeClass")
 @AssistedInject
@@ -163,6 +164,12 @@ class MessageComposerPresenter(
     }
 
     private val isInThread = threadRoot != null
+
+    /** Bipe: Android 13+ only, before that notifications are on without a permission. Once; a "no" never blocks. */
+    private fun bipeShouldAskForNotifications(state: PermissionsState): Boolean {
+        val isUndecided = !state.permissionGranted && !state.permissionAlreadyAsked && !state.permissionAlreadyDenied
+        return OnBoardingConfig.USES_BIPE_SIGNUP && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isUndecided
+    }
     private val mediaSender = mediaSenderFactory.create(timelineMode = timelineController.mainTimelineMode())
 
     private val cameraPermissionPresenter = permissionsPresenterFactory.create(Manifest.permission.CAMERA)
@@ -308,12 +315,7 @@ class MessageComposerPresenter(
                         richTextEditorState = richTextEditorState,
                         slashCommandAction = slashCommandAction,
                     )
-                    // Android 13+ only: before that, notifications are on without a permission. Once; a "no" never blocks.
-                    if (OnBoardingConfig.USES_BIPE_SIGNUP &&
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                        !notificationPermissionState.permissionGranted &&
-                        !notificationPermissionState.permissionAlreadyAsked &&
-                        !notificationPermissionState.permissionAlreadyDenied) {
+                    if (bipeShouldAskForNotifications(notificationPermissionState)) {
                         val info = room.info()
                         bipeNotificationAsk = BipeNotificationAsk(dmName = info.name.takeIf { info.isDm })
                     }
