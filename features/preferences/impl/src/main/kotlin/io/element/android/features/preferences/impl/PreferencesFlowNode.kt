@@ -329,6 +329,10 @@ class PreferencesFlowNode(
                     override fun navigateToOssLicenses() {
                         backstack.push(NavTarget.OssLicenses)
                     }
+
+                    override fun navigateToBugReport() {
+                        callback.navigateToBugReport()
+                    }
                 }
                 createNode<BipeSettingsGroupNode>(buildContext, listOf(BipeSettingsGroupNode.Inputs(navTarget.group), callback))
             }

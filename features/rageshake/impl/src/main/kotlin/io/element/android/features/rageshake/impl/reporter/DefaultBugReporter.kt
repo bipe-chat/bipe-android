@@ -325,6 +325,8 @@ class DefaultBugReporter(
                 val request = Request.Builder()
                     .url(url)
                     .post(requestBody)
+                    // Bipe: the Bipe API takes reports from signed-in users only (bipe#367).
+                    .apply { sessionData?.accessToken?.let { header("Authorization", "Bearer $it") } }
                     .build()
                 var errorMessage: String? = null
                 // trigger the request
