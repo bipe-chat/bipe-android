@@ -186,10 +186,10 @@ private fun EmptyView(
                         onDismissClick = { eventSink(RoomListEvent.DismissBanner) },
                     )
                 }
-                SecurityBannerState.None -> Unit
-            }
-            if (bipeInviterHandle != null) {
-                BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                // Bipe (ADR 0117): one account task at a time. The inviter row waits for the recovery key.
+                SecurityBannerState.None -> if (bipeInviterHandle != null) {
+                    BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                }
             }
         }
     }
@@ -266,8 +266,10 @@ private fun RoomsViewList(
         modifier = modifier,
         contentPadding = contentPadding,
     ) {
-        when (state.securityBannerState) {
-            SecurityBannerState.SetUpRecovery -> {
+        // Bipe (ADR 0117, bipe#385): the banner slot shows account tasks only, the first one in this order: recovery key,
+        // inviter row (ADR 0111), full-screen intent, battery optimization. Upstream's new notification sound banner never shows.
+        when {
+            state.securityBannerState == SecurityBannerState.SetUpRecovery -> {
                 item {
                     SetUpRecoveryKeyBanner(
                         onContinueClick = onSetUpRecoveryClick,
@@ -275,7 +277,7 @@ private fun RoomsViewList(
                     )
                 }
             }
-            SecurityBannerState.RecoveryKeyConfirmation -> {
+            state.securityBannerState == SecurityBannerState.RecoveryKeyConfirmation -> {
                 item {
                     ConfirmRecoveryKeyBanner(
                         onContinueClick = onConfirmRecoveryKeyClick,
@@ -283,33 +285,21 @@ private fun RoomsViewList(
                     )
                 }
             }
-            // Banner precedence (top-to-bottom): full-screen-intent > battery-optimization >
-            // new-notification-sound > sound-unavailable. At most one renders at a time.
-            SecurityBannerState.None -> when {
-                state.fullScreenIntentPermissionsState.shouldDisplayBanner -> {
-                    item {
-                        FullScreenIntentPermissionBanner(state = state.fullScreenIntentPermissionsState)
-                    }
-                }
-                state.batteryOptimizationState.shouldDisplayBanner -> {
-                    item {
-                        BatteryOptimizationBanner(state = state.batteryOptimizationState)
-                    }
-                }
-                state.showNewNotificationSoundBanner -> {
-                    item {
-                        NewNotificationSoundBanner(
-                            onDismissClick = { eventSink(RoomListEvent.DismissNewNotificationSoundBanner) },
-                        )
-                    }
+            bipeInviterHandle != null -> {
+                item {
+                    BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                    HorizontalDivider()
                 }
             }
-        }
-
-        if (bipeInviterHandle != null) {
-            item {
-                BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
-                HorizontalDivider()
+            state.fullScreenIntentPermissionsState.shouldDisplayBanner -> {
+                item {
+                    FullScreenIntentPermissionBanner(state = state.fullScreenIntentPermissionsState)
+                }
+            }
+            state.batteryOptimizationState.shouldDisplayBanner -> {
+                item {
+                    BatteryOptimizationBanner(state = state.batteryOptimizationState)
+                }
             }
         }
 
