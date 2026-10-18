@@ -21,6 +21,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import io.element.android.features.roomdetails.impl.members.aRoomMember
 import io.element.android.features.userprofile.shared.aUserProfileState
@@ -43,6 +44,7 @@ import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
 import org.robolectric.annotation.Config
+import io.element.android.libraries.bipe.R as BipeR
 
 class RoomDetailsViewTest : RobolectricTest() {
     @Test
@@ -353,21 +355,21 @@ class RoomDetailsViewTest : RobolectricTest() {
 
     @Config(qualifiers = "h1024dp")
     @Test
-    fun `click on invite invokes the expected callback`() = runAndroidComposeUiTest {
-        ensureCalledOnce { callback ->
-            setRoomDetailView(
-                state = aRoomDetailsState(
-                    eventSink = EventsRecorder(expectEvents = false),
-                    roomType = RoomDetailsType.Dm(
-                        aDmRoomMember(userId = UserId("@other:local.org")),
-                    ),
-                    dmOtherMemberDetailsState = aUserProfileState(userId = A_USER_ID),
-                    canInvite = true,
+    fun `click on invite to a group in a DM sends the expected event`() = runAndroidComposeUiTest {
+        // Bipe: a DM never gets more people. Its invite row opens the group picker instead.
+        val eventsRecorder = EventsRecorder<RoomDetailsEvent>()
+        setRoomDetailView(
+            state = aRoomDetailsState(
+                eventSink = eventsRecorder,
+                roomType = RoomDetailsType.Dm(
+                    aDmRoomMember(userId = UserId("@other:local.org")),
                 ),
-                invitePeople = callback,
-            )
-            onAllNodesWithText(activity!!.getString(R.string.screen_room_details_invite_title)).onLast().performClick()
-        }
+                dmOtherMemberDetailsState = aUserProfileState(userId = A_USER_ID),
+                canInvite = true,
+            ),
+        )
+        onAllNodesWithText(activity!!.getString(BipeR.string.bipe_dm_invite_to_group)).onLast().performScrollTo().performClick()
+        eventsRecorder.assertSingle(RoomDetailsEvent.BipeOpenInviteToGroup)
     }
 }
 

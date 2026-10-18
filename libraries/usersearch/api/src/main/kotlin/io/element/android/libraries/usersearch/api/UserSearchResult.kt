@@ -19,5 +19,5 @@ data class UserSearchResultState(
     val results: List<UserSearchResult>,
     val isSearching: Boolean,
     /** Bipe: the handle (without "@") in the query when it is a valid handle that nobody holds. */
-    val bipeHandleNotFound: String? = null,
+    val bipeHandleNotFound: String?,
 )

@@ -24,6 +24,9 @@ sealed interface MessagesEvent {
     data object ShowLiveLocationShare : MessagesEvent
     data object MarkAsFullyReadAndExit : MessagesEvent
     data object ConfirmSelectionAction : MessagesEvent
+
+    /** Bipe ADR 0034: the "say hi" button in the prompt to message the inviter. */
+    data object SayHiToBipeInviter : MessagesEvent
 }
 
 enum class InviteDialogAction {

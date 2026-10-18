@@ -51,6 +51,7 @@ import io.element.android.features.knockrequests.impl.R
 import io.element.android.features.knockrequests.impl.data.KnockRequestPresentable
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.components.ProgressDialog
@@ -75,7 +76,6 @@ import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.designsystem.utils.lazyColumnContentPadding
 import io.element.android.libraries.designsystem.utils.scaffoldScrollableContentInsets
-import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 

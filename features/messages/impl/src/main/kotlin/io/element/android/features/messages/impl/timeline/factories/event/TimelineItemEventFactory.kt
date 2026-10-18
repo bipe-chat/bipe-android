@@ -112,7 +112,7 @@ class TimelineItemEventFactory(
             senderId = currentSender,
             senderProfile = senderProfile,
             senderAvatar = senderAvatarData,
-            content = contentFactory.create(currentTimelineItem.event, roomMembers),
+            content = contentFactory.create(currentTimelineItem.event, roomMembers, isDm = config.isDm), // Bipe
             isMine = currentTimelineItem.event.isOwn,
             isEditable = currentTimelineItem.event.isEditable,
             canBeRepliedTo = currentTimelineItem.event.canBeRepliedTo,

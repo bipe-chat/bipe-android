@@ -43,7 +43,6 @@ import androidx.lifecycle.Lifecycle
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.lockscreen.impl.R
-import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.features.lockscreen.impl.components.PinEntryTextField
 import io.element.android.features.lockscreen.impl.pin.model.PinDigit
 import io.element.android.features.lockscreen.impl.pin.model.PinEntry
@@ -63,6 +62,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.utils.OnLifecycleEvent
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun PinUnlockView(

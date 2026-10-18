@@ -6,9 +6,9 @@
 
 package io.element.android.features.home.impl
 
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.test.FakeMatrixClient
-import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

@@ -11,18 +11,19 @@ package io.element.android.features.preferences.impl.root
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import dev.zacsweers.metro.Inject
-import io.element.android.compound.theme.Theme
-import io.element.android.compound.theme.mapToTheme
 import io.element.android.features.preferences.impl.account.PreferencesAccountState
+import io.element.android.features.preferences.impl.bipe.BipeSettingsValues
+import io.element.android.features.preferences.impl.notifications.SystemNotificationsEnabledProvider
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -31,7 +32,7 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.user.toMatrixUser
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
-import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.pushstore.api.UserPushStoreFactory
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
@@ -50,11 +51,13 @@ class PreferencesRootPresenter(
     private val featureFlagService: FeatureFlagService,
     private val sessionStore: SessionStore,
     private val appPreferencesStore: AppPreferencesStore,
-    private val userStatusPresenter: Presenter<UserStatusState>,
     private val preferencesAccountPresenter: Presenter<PreferencesAccountState>,
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
     private val bipeSession: BipeSession,
+    private val userPushStoreFactory: UserPushStoreFactory,
+    private val systemNotificationsEnabledProvider: SystemNotificationsEnabledProvider,
+    private val buildMeta: BuildMeta,
 ) : Presenter<PreferencesRootState> {
     @Composable
     override fun present(): PreferencesRootState {
@@ -71,16 +74,9 @@ class PreferencesRootPresenter(
         val isOtherAccountsSectionExpanded by remember {
             appPreferencesStore.isOtherAccountsExpandedFlow()
         }.collectAsState(initial = true)
-        val isUserStatusSupported by produceState(false) {
-            value = matrixClient.isUserStatusSupported().getOrDefault(false)
-        }
-        val userStatusState = if (isUserStatusSupported) userStatusPresenter.present() else null
-        val isBlackThemeAllowed by remember {
-            featureFlagService.isFeatureEnabledFlow(FeatureFlags.AllowBlackTheme)
-        }.collectAsState(initial = false)
-        val theme = remember(isBlackThemeAllowed) {
-            appPreferencesStore.getThemeFlow().mapToTheme(isBlackThemeAllowed)
-        }.collectAsState(initial = Theme.System)
+        // Bipe: no status row. Status is frozen (ADR 0030, ADR 0112).
+        val userStatusState: UserStatusState? = null
+        val themeOptions = rememberThemeOptions(featureFlagService, appPreferencesStore)
 
         val otherSessions by remember {
             sessionStore.sessionsFlow().map { list ->
@@ -90,25 +86,6 @@ class PreferencesRootPresenter(
                     .toImmutableList()
             }
         }.collectAsState(initial = persistentListOf())
-
-        val themeOption by remember {
-            derivedStateOf {
-                when (theme.value) {
-                    Theme.System -> ThemeOption.System
-                    Theme.Dark -> ThemeOption.Dark
-                    Theme.Black -> ThemeOption.Black
-                    Theme.Light -> ThemeOption.Light
-                }
-            }
-        }
-
-        val availableThemeOptions = remember(isBlackThemeAllowed) {
-            if (isBlackThemeAllowed) {
-                ThemeOption.entries
-            } else {
-                ThemeOption.entries.filterNot { it == ThemeOption.Black }
-            }.toImmutableList()
-        }
 
         val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
         val hasAnalyticsProviders = remember { analyticsService.getAvailableAnalyticsProviders().isNotEmpty() }
@@ -129,12 +106,7 @@ class PreferencesRootPresenter(
                     appPreferencesStore.setOtherAccountsExpanded(!isOtherAccountsSectionExpanded)
                 }
                 is PreferencesRootEvent.SetTheme -> sessionCoroutineScope.launch {
-                    when (event.theme) {
-                        ThemeOption.System -> appPreferencesStore.setTheme(Theme.System.name)
-                        ThemeOption.Dark -> appPreferencesStore.setTheme(Theme.Dark.name)
-                        ThemeOption.Black -> appPreferencesStore.setTheme(Theme.Black.name)
-                        ThemeOption.Light -> appPreferencesStore.setTheme(Theme.Light.name)
-                    }
+                    appPreferencesStore.setTheme(event.theme)
                 }
             }
         }
@@ -146,12 +118,18 @@ class PreferencesRootPresenter(
         val bipeMyProfile by bipeSession.publicProfiles.myProfile.collectAsState()
         LaunchedEffect(Unit) { bipeSession.publicProfiles.refreshMine() }
 
+        // Bipe: the subtitles of the group rows (ADR 0112).
+        val bipeWhoCanMessage by bipeSession.privacy.messaging.collectAsState()
+        LaunchedEffect(Unit) { bipeSession.privacy.refreshMessaging() }
+        val bipeWaysBack = BipeSettingsValues.waysBack(bipeSession, matrixClient)
+        val bipeNotificationsOn = BipeSettingsValues.notificationsOn(userPushStoreFactory, systemNotificationsEnabledProvider, matrixClient)
+
         return PreferencesRootState(
             myUser = matrixUser.value,
             userStatusState = userStatusState,
             preferencesAccountState = preferencesAccountState,
-            theme = themeOption,
-            availableThemeOptions = availableThemeOptions,
+            theme = themeOptions.selected,
+            availableThemeOptions = themeOptions.available,
             version = remember { versionFormatter.get() },
             isMultiAccountEnabled = isMultiAccountEnabled,
             isOtherAccountsSectionExpanded = isOtherAccountsSectionExpanded,
@@ -162,6 +140,11 @@ class PreferencesRootPresenter(
             snackbarMessage = snackbarMessage,
             bipeHandle = bipeHandle,
             bipePublicProfileEnabled = bipeMyProfile?.enabled,
+            bipeWhoCanMessage = bipeWhoCanMessage,
+            bipeWaysBackCount = bipeWaysBack?.size,
+            bipeNotificationsOn = bipeNotificationsOn,
+            bipeDeviceId = matrixClient.deviceId.value,
+            bipeIsDeveloperBuild = buildMeta.buildType != BuildType.RELEASE,
             eventSink = ::handleEvent,
         )
     }

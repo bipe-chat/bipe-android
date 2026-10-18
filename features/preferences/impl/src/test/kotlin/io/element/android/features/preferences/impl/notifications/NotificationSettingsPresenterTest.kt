@@ -19,6 +19,7 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.matrix.test.FakeMatrixClient
+import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.libraries.matrix.test.notificationsettings.FakeNotificationSettingsService
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.preferences.api.store.NotificationSound
@@ -1176,6 +1177,7 @@ class NotificationSettingsPresenterTest {
             stringProvider = FakeStringProvider(),
             sessionCoroutineScope = backgroundScope,
             featureFlagService = featureFlagService,
+            buildMeta = aBuildMeta(),
         )
     }
 }

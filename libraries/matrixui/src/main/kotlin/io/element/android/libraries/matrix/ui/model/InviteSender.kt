@@ -14,12 +14,12 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.ui.R
-import io.element.android.libraries.bipe.ui.bipeDisplayText
 
 data class InviteSender(
     val userId: UserId,

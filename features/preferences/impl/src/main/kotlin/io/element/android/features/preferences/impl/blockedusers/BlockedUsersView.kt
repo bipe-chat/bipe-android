@@ -36,6 +36,7 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun BlockedUsersView(
@@ -48,7 +49,7 @@ fun BlockedUsersView(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    titleStr = stringResource(CommonStrings.common_blocked_users),
+                    titleStr = stringResource(BipeR.string.bipe_privacy_blocked), // Bipe: the Privacidade row name (ADR 0112)
                     navigationIcon = {
                         BackButton(onClick = onBackClick)
                     }

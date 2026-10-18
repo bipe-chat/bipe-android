@@ -109,6 +109,7 @@ import io.element.android.features.messages.impl.voicemessages.composer.VoiceMes
 import io.element.android.features.messages.impl.voicemessages.composer.VoiceMessageSendingFailedDialog
 import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.libraries.androidutils.ui.hideKeyboard
+import io.element.android.libraries.bipe.ui.BipeInviterHint
 import io.element.android.libraries.designsystem.atomic.molecules.ComposerAlertMolecule
 import io.element.android.libraries.designsystem.components.ExpandableBottomSheetLayout
 import io.element.android.libraries.designsystem.components.ExpandableBottomSheetLayoutState
@@ -697,6 +698,12 @@ private fun MessagesViewComposerBottomSheetContents(
                     IdentityChangeStateView(
                         state = state.identityChangeState,
                         onLinkClick = onLinkClick,
+                    )
+                }
+                if (state.bipeInviterHandle != null) {
+                    BipeInviterHint(
+                        inviterHandle = state.bipeInviterHandle,
+                        onSayHiClick = { state.eventSink(MessagesEvent.SayHiToBipeInviter) },
                     )
                 }
                 val verificationViolation = state.identityChangeState.roomMemberIdentityStateChanges.firstOrNull {

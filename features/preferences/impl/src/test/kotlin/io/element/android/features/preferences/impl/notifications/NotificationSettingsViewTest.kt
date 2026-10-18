@@ -24,6 +24,7 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.tests.testutils.EnsureNeverCalled
 import io.element.android.tests.testutils.EnsureNeverCalledWithParam
 import io.element.android.tests.testutils.EventsRecorder
+import io.element.android.tests.testutils.assertNodeWithTextIsDisplayed
 import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.ensureCalledOnceWithParam
@@ -31,6 +32,7 @@ import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
 import org.robolectric.annotation.Config
+import io.element.android.libraries.bipe.R as BipeR
 
 class NotificationSettingsViewTest : RobolectricTest() {
     @Test
@@ -75,7 +77,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 ),
                 onOpenEditDefault = it
             )
-            clickOn(R.string.screen_notification_settings_group_chats)
+            clickOn(BipeR.string.bipe_notifications_groups)
         }
         eventsRecorder.assertSingle(NotificationSettingsEvent.RefreshSystemNotificationsEnabled)
     }
@@ -91,7 +93,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 ),
                 onOpenEditDefault = it
             )
-            clickOn(R.string.screen_notification_settings_direct_chats)
+            clickOn(BipeR.string.bipe_notifications_chats)
         }
         eventsRecorder.assertSingle(NotificationSettingsEvent.RefreshSystemNotificationsEnabled)
     }
@@ -116,7 +118,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 eventSink = eventsRecorder
             ),
         )
-        clickOn(R.string.screen_notification_settings_enable_notifications)
+        clickOn(BipeR.string.bipe_notifications_enable)
         eventsRecorder.assertList(
             listOf(
                 NotificationSettingsEvent.RefreshSystemNotificationsEnabled,
@@ -145,7 +147,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 eventSink = eventsRecorder
             ),
         )
-        clickOn(R.string.screen_notification_settings_room_mention_label)
+        clickOn(BipeR.string.bipe_notifications_whole_group)
         eventsRecorder.assertList(
             listOf(
                 NotificationSettingsEvent.RefreshSystemNotificationsEnabled,
@@ -174,40 +176,11 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 eventSink = eventsRecorder
             ),
         )
-        clickOn(R.string.screen_notification_settings_invite_for_me_label)
+        clickOn(BipeR.string.bipe_notifications_invites)
         eventsRecorder.assertList(
             listOf(
                 NotificationSettingsEvent.RefreshSystemNotificationsEnabled,
                 NotificationSettingsEvent.SetInviteForMeNotificationsEnabled(!initialState)
-            )
-        )
-    }
-
-    @Config(qualifiers = "h1024dp")
-    @Test
-    fun `clicking on disable show all activity emits the expected events`() {
-        testShowAllActivityToggle(true)
-    }
-
-    @Config(qualifiers = "h1024dp")
-    @Test
-    fun `clicking on enable show all activity emits the expected events`() {
-        testShowAllActivityToggle(false)
-    }
-
-    private fun testShowAllActivityToggle(initialState: Boolean) = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<NotificationSettingsEvent>()
-        setNotificationSettingsView(
-            state = aValidNotificationSettingsState(
-                showAllActivityInRoomList = initialState,
-                eventSink = eventsRecorder
-            ),
-        )
-        clickOn(R.string.screen_notification_settings_show_all_activity_title)
-        eventsRecorder.assertList(
-            listOf(
-                NotificationSettingsEvent.RefreshSystemNotificationsEnabled,
-                NotificationSettingsEvent.ToggleShowAllActivityInRoomList(!initialState),
             )
         )
     }
@@ -241,7 +214,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 eventSink = eventsRecorder
             ),
         )
-        clickOn(CommonStrings.action_continue)
+        clickOn(BipeR.string.bipe_action_continue)
         eventsRecorder.assertList(
             listOf(
                 NotificationSettingsEvent.RefreshSystemNotificationsEnabled,
@@ -317,9 +290,9 @@ class NotificationSettingsViewTest : RobolectricTest() {
                 callRingtoneDisplayName = "Pixel ringtone",
             ),
         )
-        onNodeWithText("Sound").assertIsDisplayed()
-        onNodeWithText("Message sound").assertIsDisplayed()
-        onNodeWithText("Call ringtone").assertIsDisplayed()
+        assertNodeWithTextIsDisplayed(BipeR.string.bipe_notifications_sound)
+        assertNodeWithTextIsDisplayed(BipeR.string.bipe_notifications_message_sound)
+        assertNodeWithTextIsDisplayed(BipeR.string.bipe_notifications_call_sound)
         onNodeWithText("Pixel notification").assertIsDisplayed()
         onNodeWithText("Pixel ringtone").assertIsDisplayed()
     }
@@ -334,7 +307,7 @@ class NotificationSettingsViewTest : RobolectricTest() {
         // The click now opens the in-app preset dialog instead of launching the system picker
         // directly; the picker only fires from the dialog's "Choose another sound..." option
         // (covered by Presenter tests + NotificationSoundPickerTest).
-        onNodeWithText("Message sound").performClick()
+        clickOn(BipeR.string.bipe_notifications_message_sound)
         eventsRecorder.assertList(
             listOf(
                 NotificationSettingsEvent.RefreshSystemNotificationsEnabled,

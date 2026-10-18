@@ -135,6 +135,7 @@ fun aMessagesState(
     dmUserStatus: DisplayedStatus? = null,
     eventSink: (MessagesEvent) -> Unit = {},
     redactEventAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
+    bipeInviterHandle: String? = null,
 ) = MessagesState(
     roomId = RoomId("!id:domain"),
     roomName = roomName,
@@ -166,6 +167,7 @@ fun aMessagesState(
     showLiveLocationShareBanner = isCurrentlySharingLiveLocationInRoom,
     dmUserStatus = dmUserStatus,
     redactEventAction = redactEventAction,
+    bipeInviterHandle = bipeInviterHandle,
     eventSink = eventSink,
 )
 

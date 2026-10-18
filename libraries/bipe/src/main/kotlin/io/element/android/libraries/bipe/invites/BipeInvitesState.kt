@@ -6,12 +6,14 @@
 
 package io.element.android.libraries.bipe.invites
 
+import androidx.compose.runtime.Immutable
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.api.BipeInvite
 import io.element.android.libraries.bipe.api.BipeInviteStatus
 import java.time.Instant
 
 /** Port of BipeInvitesScreenViewState on iOS. */
+@Immutable
 data class BipeInvitesState(
     val isLoading: Boolean,
     val quota: Int,
@@ -44,6 +46,7 @@ data class BipeInvitesState(
 sealed interface BipeInvitesEvent {
     /** Creates an invite and opens the share sheet. */
     data object InviteByLink : BipeInvitesEvent
+
     /** Creates an invite and shows its QR code. */
     data object InviteInPerson : BipeInvitesEvent
     data class Share(val inviteId: String) : BipeInvitesEvent

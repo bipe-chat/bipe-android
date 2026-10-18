@@ -142,7 +142,8 @@ class RootFlowNodeTest : RobolectricTest() {
                             imageLoaderHolder = FakeImageLoaderHolder(),
                             analyticsColdStartWatcher = FakeAnalyticsColdStartWatcher(),
                             featureFlagService = FakeFeatureFlagService(),
-                            announcementService = FakeAnnouncementService(),
+                            // Bipe: multi-account is on (#267), so the login flow dismisses the announcement.
+                            announcementService = FakeAnnouncementService(onAnnouncementDismissedResult = {}),
                         )
                     }
                 )

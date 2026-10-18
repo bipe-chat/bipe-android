@@ -8,7 +8,7 @@
 
 package io.element.android.features.home.impl.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -62,6 +62,7 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersEvent
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.aSelectedSpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.designsystem.atomic.atoms.RedIndicatorAtom
 import io.element.android.libraries.designsystem.components.TopAppBarScrollBehaviorLayout
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -92,6 +93,7 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun HomeTopBar(
@@ -109,6 +111,10 @@ fun HomeTopBar(
     filtersState: RoomListFiltersState,
     spaceFiltersState: SpaceFiltersState,
     modifier: Modifier = Modifier,
+    bipeAccounts: ImmutableList<MatrixUser> = persistentListOf(),
+    bipeCanAddAccount: Boolean = false,
+    bipeMaxAccounts: Int = BipeRegistries.MAX_PERSONAL_ACCOUNTS,
+    onBipeAddAccount: () -> Unit = {},
 ) {
     val contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
     Column(modifier) {
@@ -151,12 +157,21 @@ fun HomeTopBar(
                 }
             },
             navigationIcon = {
-                NavigationIcon(
-                    currentUserAndNeighbors = currentUserAndNeighbors,
-                    showAvatarIndicator = showAvatarIndicator,
+                BipeAccountMenuAnchor(
+                    accounts = bipeAccounts,
+                    canAddAccount = bipeCanAddAccount,
+                    maxAccounts = bipeMaxAccounts,
                     onAccountSwitch = onAccountSwitch,
-                    onClick = onOpenSettings,
-                )
+                    onAddAccount = onBipeAddAccount,
+                ) { openMenu ->
+                    NavigationIcon(
+                        currentUserAndNeighbors = currentUserAndNeighbors,
+                        showAvatarIndicator = showAvatarIndicator,
+                        onAccountSwitch = onAccountSwitch,
+                        onClick = onOpenSettings,
+                        onLongClick = openMenu,
+                    )
+                }
             },
             actions = {
                 if (selectedNavigationItem.isBipeRoomList) { // Bipe: search on Conversas and Grupos
@@ -292,6 +307,7 @@ private fun NavigationIcon(
     showAvatarIndicator: Boolean,
     onAccountSwitch: (SessionId) -> Unit,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     // Reserve the status emoji slot for all the accounts, else the width of the navigation icon,
     // and so the position of the title, would change while scrolling the pager.
@@ -303,6 +319,7 @@ private fun NavigationIcon(
             showAvatarIndicator = showAvatarIndicator,
             reserveStatusEmojiSlot = reserveStatusEmojiSlot,
             onClick = onClick,
+            onLongClick = onLongClick,
         )
     } else {
         // Render a vertical pager
@@ -323,12 +340,69 @@ private fun NavigationIcon(
                 isCurrentAccount = page == 1,
                 showAvatarIndicator = page == 1 && showAvatarIndicator,
                 reserveStatusEmojiSlot = reserveStatusEmojiSlot,
+                // Bipe: a tap on the current avatar switches to the next account; a long press lists them (ADR 0086, #267).
                 onClick = if (page == 1) {
-                    onClick
+                    { latestOnAccountSwitch(SessionId(currentUserAndNeighbors[2].userId.value)) }
                 } else {
                     {}
                 },
+                onLongClick = if (page == 1) onLongClick else null,
             )
+        }
+    }
+}
+
+/**
+ * Bipe: the account menu on a long press of the avatar (ADR 0086, #267). Every account, the current one first, then
+ * "Adicionar conta" up to the cap of personal accounts.
+ */
+@Composable
+private fun BipeAccountMenuAnchor(
+    accounts: ImmutableList<MatrixUser>,
+    canAddAccount: Boolean,
+    maxAccounts: Int,
+    onAccountSwitch: (SessionId) -> Unit,
+    onAddAccount: () -> Unit,
+    content: @Composable (openMenu: () -> Unit) -> Unit,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    Box {
+        content { showMenu = true }
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            accounts.forEachIndexed { index, account ->
+                DropdownMenuItem(
+                    text = { Text(account.displayName ?: account.userId.value) },
+                    leadingIcon = { Avatar(avatarData = account.getAvatarData(size = AvatarSize.AccountItem), avatarType = AvatarType.User) },
+                    trailingIcon = if (index == 0) {
+                        { Icon(imageVector = CompoundIcons.Check(), contentDescription = null) }
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        showMenu = false
+                        if (index != 0) onAccountSwitch(SessionId(account.userId.value))
+                    },
+                )
+            }
+            if (canAddAccount) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(BipeR.string.bipe_account_add)) },
+                    leadingIcon = { Icon(imageVector = CompoundIcons.Plus(), contentDescription = null) },
+                    onClick = {
+                        showMenu = false
+                        onAddAccount()
+                    },
+                )
+            } else {
+                DropdownMenuItem(
+                    text = { Text(stringResource(BipeR.string.bipe_account_cap_reached, maxAccounts.toString())) },
+                    onClick = {},
+                    enabled = false,
+                )
+            }
         }
     }
 }
@@ -341,17 +415,19 @@ private fun AccountIcon(
     reserveStatusEmojiSlot: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val testTag = if (isCurrentAccount) Modifier.testTag(TestTags.homeScreenSettings) else Modifier
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
             .then(testTag)
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
-                onClick = onClick,
                 // The ripple is rendered on the avatar only, see below.
                 indication = null,
+                onLongClick = onLongClick,
+                onClick = onClick,
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -38,6 +38,7 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
+
     // Bipe: own server only (closed federation), like allowOtherAccountProviders = false on iOS.
     override fun accountProviderAllowList(): List<AccountProvider> = listOf(BipeConfig.accountProvider)
     override fun canConnectToAnyAccountProvider(): Boolean = false

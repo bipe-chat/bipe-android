@@ -43,8 +43,15 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
         data class BipeEditProfile(val matrixUser: MatrixUser) : InitialTarget
     }
 
-    /** Bipe: the settings screens that the Você tab rows open (ADR 0053). */
+    /** Bipe: the settings screens that the Você tab rows open (ADR 0053). Old values map to the ADR 0112 screens. */
     enum class BipeSettingsScreen {
+        // ADR 0112: Seu perfil and the groups under "Configurações".
+        Profile,
+        Privacy,
+        Account,
+        Chats,
+        Help,
+
         Analytics,
         About,
         DeveloperSettings,
@@ -79,7 +86,7 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
         fun navigateToEvent(roomId: RoomId, eventId: EventId)
 
         /** Bipe: another user's profile, e.g. someone who joined through the user's invite. */
-        fun navigateToUserProfile(userId: UserId) = Unit
+        fun navigateToUserProfile(userId: UserId) {}
     }
 
     fun createAppDeveloperSettingsNode(

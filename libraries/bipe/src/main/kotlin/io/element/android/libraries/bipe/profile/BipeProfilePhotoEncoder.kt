@@ -15,9 +15,9 @@ import dev.zacsweers.metro.Inject
 import io.element.android.libraries.androidutils.bitmap.calculateInSampleSize
 import io.element.android.libraries.androidutils.bitmap.resizeToMax
 import io.element.android.libraries.androidutils.bitmap.rotateToExifMetadataOrientation
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.di.annotations.ApplicationContext
-import io.element.android.libraries.bipe.generated.BipeRegistries
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream

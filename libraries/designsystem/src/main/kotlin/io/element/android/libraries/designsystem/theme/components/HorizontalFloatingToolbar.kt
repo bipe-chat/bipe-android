@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.libraries.designsystem.atomic.atoms.RedIndicatorAtom
 import io.element.android.libraries.designsystem.atomic.atoms.UnreadIndicatorAtom
 import io.element.android.libraries.designsystem.components.tooltip.PlainTooltip
 import io.element.android.libraries.designsystem.components.tooltip.TooltipBox
@@ -114,6 +115,8 @@ fun HorizontalFloatingToolbarItem(
     modifier: Modifier = Modifier,
     counter: Int? = null,
     forceRenderingTooltip: Boolean = false,
+    // Bipe: a red dot instead of a count (ADR 0112, the Você tab)
+    showWarning: Boolean = false,
 ) {
     TooltipBox(
         positionProvider =
@@ -139,12 +142,14 @@ fun HorizontalFloatingToolbarItem(
         }
         BadgedBox(
             badge = {
-                counter?.let {
+                if (counter != null) {
                     UnreadIndicatorAtom(
-                        count = it.toLong(),
+                        count = counter.toLong(),
                         // Tweak the offset so it's centered on the icon
                         modifier = Modifier.offset(x = (-16).dp, y = 10.dp),
                     )
+                } else if (showWarning) {
+                    RedIndicatorAtom(modifier = Modifier.offset(x = (-16).dp, y = 10.dp)) // Bipe
                 }
             }
         ) {

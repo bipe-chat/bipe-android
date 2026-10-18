@@ -81,11 +81,18 @@ import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.waitForChildAttached
 import io.element.android.libraries.architecture.waitForNavTargetAttached
+import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
+import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
+import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.terms.BipeTermsReaccept
 import io.element.android.libraries.bipe.threads.BipeThreadsCacheRebuild
+import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
+import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
-import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -99,16 +106,11 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.core.toRoomIdOrAlias
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.libraries.matrix.api.room.JoinedRoom
+import io.element.android.libraries.matrix.api.room.StartDMResult
+import io.element.android.libraries.matrix.api.room.startDM
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
-import io.element.android.libraries.bipe.R as BipeR
-import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
-import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
-import io.element.android.libraries.bipe.di.BipeSession
-import io.element.android.libraries.bipe.groups.BipeQuietGroups
-import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
-import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.ui.common.nodes.EmptyState
 import io.element.android.libraries.ui.common.nodes.emptyNode
@@ -129,6 +131,7 @@ import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import im.vector.app.features.analytics.plan.JoinedRoom as JoinedRoomAnalyticsEvent
+import io.element.android.libraries.bipe.R as BipeR
 
 // The maximum number of room nodes that should be kept in the backstack at the same time.
 // Having 5 rooms in the backstack seems reasonable and shouldn't grow the saved state size too much.
@@ -228,6 +231,7 @@ class LoggedInFlowNode(
                 sessionCoroutineScope.launch { BipeQuietGroups(matrixClient.notificationSettingsService).run() } // Bipe: bipe#97
                 // Bipe: not the session scope, clearing the cache destroys the client and cancels it.
                 if (BipeThreadsCacheRebuild.takePending(context, matrixClient.sessionId.value)) lifecycleScope.launch { clearCacheUseCase() }
+                lifecycleScope.launch { bipeOpenInviterChat() } // Bipe: ADR 0034
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }
@@ -697,6 +701,28 @@ class LoggedInFlowNode(
         }
     }
 
+    /**
+     * Bipe ADR 0034: after a personal-invite sign-up, open a chat with the inviter. Their app accepts it without a tap.
+     * Port of `runPostSessionSetupTasks` on iOS. The stored inviter is removed first, so a failure does not repeat.
+     * The chat list card and the in-chat prompt (`BipeInviterGreeting`) stay until the user messages the inviter.
+     */
+    private suspend fun bipeOpenInviterChat() {
+        val inviterUserId = bipeSession.account.takePendingInviter()
+            ?.let { runCatchingExceptions { UserId(it) }.getOrNull() }
+            ?: return
+        val result = matrixClient.startDM(
+            userId = inviterUserId,
+            createIfDmDoesNotExist = true,
+            isEncryped = !sessionEnterpriseService.isEncryptionDisabledByHomeserver(),
+        )
+        if (result is StartDMResult.Success) {
+            attachRoom(result.roomId.toRoomIdOrAlias())
+        } else {
+            // The chat list stays: its card to message the inviter retries.
+            Timber.e("Bipe: could not open a chat with the inviter $inviterUserId: $result")
+        }
+    }
+
     /** Bipe: the Matrix ID behind a `bipe.chat/@handle` link (bipe#299). Shows a notice when nobody holds the handle. */
     suspend fun resolveBipeHandle(handle: String): UserId? {
         val userId = runCatchingExceptions { bipeSession.handleResolver.userId(forHandle = handle) }.getOrNull()
@@ -769,6 +795,7 @@ class LoggedInFlowNode(
                             if (ftueState is FtueState.Complete) {
                                 PermanentChild(permanentNavModel = permanentNavModel, navTarget = NavTarget.LoggedInPermanent)
                                 BipeRecoveryAlerts(bipeSession.account) // Bipe: recovery alerts on the old devices (ADR 0057)
+                                BipeTermsReaccept(bipeSession.account) // Bipe: re-accept the terms (ADR 0113, bipe#366)
                             }
                         }
                     }

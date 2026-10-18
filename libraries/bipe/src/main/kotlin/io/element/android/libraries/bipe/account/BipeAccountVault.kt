@@ -47,21 +47,70 @@ internal data class BipePendingSignup(
     override fun toString(): String = "BipePendingSignup"
 }
 
+/** The device-only secrets of one account. Never shown, never logged. */
 @Serializable
-internal data class BipeVaultData(
-    /** The account whose hidden password is in [password]. */
-    @SerialName("user_id") val userId: String? = null,
-    /** The hidden MAS password (ADR 0059: this device only). Never shown, never logged. */
+internal data class BipeVaultAccount(
+    /** The hidden MAS password (ADR 0059: this device only). */
     @SerialName("password") val password: String? = null,
     /** The recovery token when no synced store is available (F-Droid build). */
     @SerialName("local_token") val localToken: String? = null,
+) {
+    val isEmpty: Boolean get() = password == null && localToken == null
+
+    override fun toString(): String = "BipeVaultAccount"
+}
+
+@Serializable
+internal data class BipeVaultData(
+    /**
+     * Matrix ID to that account's secrets (ADR 0086: a second account never replaces the first). The order is the order
+     * of the last stored password: the last entry is the newest.
+     */
+    @SerialName("accounts") val accounts: Map<String, BipeVaultAccount> = emptyMap(),
+    /** Before #265: the one account. Read once by [migrated], never written. */
+    @SerialName("user_id") val legacyUserId: String? = null,
+    @SerialName("password") val legacyPassword: String? = null,
+    /** A recovery token from before #265 whose account is unknown (F-Droid build): the account had signed out. */
+    @SerialName("local_token") val legacyLocalToken: String? = null,
+    /** The account of the synced token from before #265, until [BipeRecoveryTokenStore] moves that token to its own key. */
+    @SerialName("legacy_token_owner") val legacyTokenOwner: String? = null,
     @SerialName("claim") val claim: BipePendingClaim? = null,
     /** Matrix ID to the time (ms) this device signed in to it. Older recoveries are not alerts for this device. */
     @SerialName("signed_in_at") val signedInAt: Map<String, Long> = emptyMap(),
     /** Recovery IDs the user answered with "It was me" on this device. */
     @SerialName("dismissed") val dismissedRecoveries: List<String> = emptyList(),
     @SerialName("pending_signup") val pendingSignup: BipePendingSignup? = null,
+    /** New account's Matrix ID to its inviter's Matrix ID, until the first session opens the chat (ADR 0034). */
+    @SerialName("pending_inviters") val pendingInviters: Map<String, String> = emptyMap(),
+    /** Account's Matrix ID to its inviter's Matrix ID, until the user sends the inviter a first message (ADR 0034). */
+    @SerialName("inviter_greetings") val inviterGreetings: Map<String, String> = emptyMap(),
 ) {
+    /** Changes the secrets of [userId] in place. An account with no secret left is removed. */
+    fun updatingAccount(userId: String, transform: (BipeVaultAccount) -> BipeVaultAccount): BipeVaultData {
+        val account = transform(accounts[userId] ?: BipeVaultAccount())
+        return copy(accounts = if (account.isEmpty) accounts - userId else accounts + (userId to account))
+    }
+
+    /** Stores the password of [userId] and makes it the newest account. */
+    fun withPassword(userId: String, password: String): BipeVaultData {
+        val account = (accounts[userId] ?: BipeVaultAccount()).copy(password = password)
+        return copy(accounts = accounts - userId + (userId to account))
+    }
+
+    /** The data of a vault written before #265 (one account) in the per-account shape. `this` when nothing is old. */
+    fun migrated(): BipeVaultData {
+        // Before #265 a sign-out cleared the user ID and the password together, so a password never lacks its user ID.
+        val userId = legacyUserId ?: return this
+        val account = BipeVaultAccount(password = legacyPassword, localToken = legacyLocalToken)
+        return copy(
+            accounts = if (account.isEmpty) accounts else accounts + (userId to account),
+            legacyUserId = null,
+            legacyPassword = null,
+            legacyLocalToken = null,
+            legacyTokenOwner = userId,
+        )
+    }
+
     override fun toString(): String = "BipeVaultData"
 }
 
@@ -93,7 +142,22 @@ class BipeAccountVault(
     }
 
     /** `null` when the file exists but cannot be read now (a Keystore error that may pass). */
-    private suspend fun load(): BipeVaultData? = withContext(Dispatchers.IO) {
+    private suspend fun load(): BipeVaultData? {
+        val data = decode() ?: return null
+        val migrated = data.migrated()
+        if (migrated != data) {
+            // A failed write keeps the old file; the next read migrates it again.
+            try {
+                save(migrated)
+                Timber.i("Bipe vault: moved the account secrets to per-account entries")
+            } catch (error: Exception) {
+                Timber.e(error, "Bipe vault: migration not written")
+            }
+        }
+        return migrated
+    }
+
+    private suspend fun decode(): BipeVaultData? = withContext(Dispatchers.IO) {
         if (!file.exists()) return@withContext BipeVaultData()
         try {
             val key = secretKeyRepository.getOrCreateKey(KEY_ALIAS, false)

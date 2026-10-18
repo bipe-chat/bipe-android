@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import io.element.android.libraries.bipe.R as BipeR
 
 @AssistedInject
 class LoggedInEventProcessor(
@@ -61,6 +62,8 @@ class LoggedInEventProcessor(
                         displayMessage(
                             if (roomMemberShipUpdate.isSpace) {
                                 CommonStrings.common_current_user_left_space
+                            } else if (roomMemberShipUpdate.isDm) {
+                                BipeR.string.bipe_dm_left_by_you // Bipe: a DM is a conversation
                             } else {
                                 CommonStrings.common_current_user_left_room
                             }

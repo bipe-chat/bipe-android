@@ -15,8 +15,12 @@ import io.element.android.features.announcement.test.FakeAnnouncementService
 import io.element.android.features.home.impl.roomlist.aRoomListState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.features.home.impl.spaces.aHomeSpacesState
+import io.element.android.features.invite.api.SeenInvitesStore
+import io.element.android.features.invite.test.InMemorySeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
+import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
@@ -32,7 +36,6 @@ import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.sync.FakeSyncService
-import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
 import io.element.android.libraries.sessionstorage.test.aSessionData
@@ -259,6 +262,8 @@ internal fun createHomePresenter(
     announcementService: AnnouncementService = FakeAnnouncementService(),
     featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
     bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
+    seenInvitesStore: SeenInvitesStore = InMemorySeenInvitesStore(),
+    bipeYouTabWarning: BipeYouTabWarning = BipeYouTabWarning { flowOf(false) },
 ) = HomePresenter(
     client = client,
     syncService = syncService,
@@ -271,4 +276,6 @@ internal fun createHomePresenter(
     announcementService = announcementService,
     featureFlagService = featureFlagService,
     bipeSelfChat = bipeSelfChat,
+    seenInvitesStore = seenInvitesStore,
+    bipeYouTabWarning = bipeYouTabWarning,
 )

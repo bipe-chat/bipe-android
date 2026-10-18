@@ -8,6 +8,7 @@ package io.element.android.features.login.impl.screens.biperecovery
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -104,7 +105,7 @@ private fun Body(text: String) {
 }
 
 @Composable
-private fun ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, onSignInWithQrCode: () -> Unit) {
+private fun ColumnScope.ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, onSignInWithQrCode: () -> Unit) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
@@ -178,7 +179,7 @@ private fun ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, on
 }
 
 @Composable
-private fun LinkPinContent(state: BipeRecoveryScreenState, isLoading: Boolean) {
+private fun ColumnScope.LinkPinContent(state: BipeRecoveryScreenState, isLoading: Boolean) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
@@ -208,7 +209,7 @@ private fun LinkPinContent(state: BipeRecoveryScreenState, isLoading: Boolean) {
 }
 
 @Composable
-private fun LinkNewPinContent(state: BipeRecoveryScreenState, isLoading: Boolean) {
+private fun ColumnScope.LinkNewPinContent(state: BipeRecoveryScreenState, isLoading: Boolean) {
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
         iconStyle = BigIcon.Style.Default(CompoundIcons.LockSolid()),

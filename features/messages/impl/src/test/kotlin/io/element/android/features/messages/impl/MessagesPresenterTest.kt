@@ -122,6 +122,8 @@ import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import io.element.android.tests.testutils.testWithLifecycleOwner
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -1643,6 +1645,7 @@ class MessagesPresenterTest {
             sessionCoroutineScope = backgroundScope,
             mediaLoader = FakeMatrixMediaLoader(),
             stickerPackRepository = FakeStickerPackRepository(),
+            bipeInviterGreeting = mockk { every { inviter } returns MutableStateFlow(null) },
         )
     }
 }

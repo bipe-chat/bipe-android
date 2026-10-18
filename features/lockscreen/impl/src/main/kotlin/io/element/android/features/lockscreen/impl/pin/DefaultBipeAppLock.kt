@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.first
 
 /** Bipe: the account PIN (ADR 0057) is also the lock screen PIN. */
 @ContributesBinding(AppScope::class)
-class BipeAppLockImpl(
+class DefaultBipeAppLock(
     private val pinCodeManager: PinCodeManager,
 ) : BipeAppLock {
     override suspend fun setPin(pin: String) = pinCodeManager.createPinCode(pin)

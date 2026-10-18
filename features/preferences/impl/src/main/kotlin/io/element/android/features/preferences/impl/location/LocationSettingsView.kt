@@ -21,16 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
-import io.element.android.features.preferences.impl.R
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.text.stringWithLink
-import io.element.android.libraries.designsystem.theme.components.ListSectionHeader
 import io.element.android.libraries.designsystem.theme.components.ListSupportingText
 import io.element.android.libraries.designsystem.theme.components.ListSupportingTextDefaults
 import io.element.android.libraries.designsystem.theme.components.Slider
@@ -39,8 +36,8 @@ import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDis
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
-import io.element.android.libraries.ui.strings.CommonStrings
 import kotlin.math.roundToInt
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun LocationSettingsView(
@@ -56,7 +53,7 @@ fun LocationSettingsView(
     PreferencePage(
         modifier = modifier,
         onBackClick = onBackClick,
-        title = stringResource(id = CommonStrings.common_location_sharing),
+        title = stringResource(id = BipeR.string.bipe_chats_live_location), // Bipe
         snackbarHost = {
             SnackbarHost(
                 snackbarHostState,
@@ -80,27 +77,15 @@ private fun ColumnScope.LiveLocationUpdatesSection(
     onSaveValue: (Int) -> Unit,
     onOpenAppPermissionsClick: () -> Unit,
 ) {
-    ListSectionHeader(
-        title = stringResource(R.string.screen_advanced_settings_live_location_section_title),
-        description = {
-            ListSupportingText(
-                text = stringResource(R.string.screen_advanced_settings_live_location_section_description),
-                contentPadding = ListSupportingTextDefaults.Padding.None,
-            )
-        },
-        hasDivider = false,
-    )
+    // Bipe: the screen title says "Localização ao vivo"; the Bipe footer explains the distance (ADR 0112).
+    ListSupportingText(text = stringResource(BipeR.string.bipe_chats_live_location_footer))
     var sliderValue by remember(value) { mutableIntStateOf(value) }
     Column(
         modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = pluralStringResource(
-                R.plurals.screen_advanced_settings_live_location_update_distance,
-                sliderValue,
-                sliderValue,
-            ),
+            text = stringResource(BipeR.string.bipe_chats_live_location_distance, "$sliderValue m"), // Bipe
             style = ElementTheme.typography.fontBodyLgRegular,
             color = ElementTheme.colors.textPrimary,
         )
@@ -130,9 +115,9 @@ private fun ColumnScope.LiveLocationUpdatesSection(
         }
     }
     val footerText = stringWithLink(
-        textRes = R.string.screen_advanced_settings_live_location_section_footer,
+        textRes = BipeR.string.bipe_chats_live_location_permission, // Bipe
         url = "",
-        linkTextRes = R.string.screen_advanced_settings_live_location_section_footer_link,
+        linkTextRes = BipeR.string.bipe_chats_live_location_permission_link, // Bipe
         onLinkClick = { onOpenAppPermissionsClick() },
     )
     ListSupportingText(

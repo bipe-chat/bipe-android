@@ -24,6 +24,7 @@ import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Suppress("LambdaParameterEventTrailing")
 @Composable
@@ -63,9 +64,10 @@ private fun LeaveRoomConfirmationDialog(
     val defaultOnSubmitClick = { roomId: RoomId -> { eventSink(LeaveRoomEvent.LeaveRoom(roomId, needsConfirmation = false)) } }
     val defaultDismissAction = { eventSink(InternalLeaveRoomEvent.ResetState) }
     when (confirmation) {
+        // Bipe: a DM is a conversation, not a private room.
         is Confirmation.Dm -> LeaveRoomConfirmationDialog(
-            text = stringResource(R.string.leave_room_alert_private_subtitle),
-            isDm = false,
+            text = stringResource(BipeR.string.bipe_dm_leave_body),
+            isDm = true,
             onSubmitClick = defaultOnSubmitClick(confirmation.roomId),
             onDismiss = defaultDismissAction,
         )

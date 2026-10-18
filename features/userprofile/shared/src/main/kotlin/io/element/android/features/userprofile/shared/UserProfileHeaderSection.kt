@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.userprofile.api.UserProfileVerificationState
+import io.element.android.libraries.bipe.ui.BipePublicBio
+import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.designsystem.atomic.atoms.MatrixBadgeAtom
 import io.element.android.libraries.designsystem.atomic.molecules.MatrixBadgeRowMolecule
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -44,8 +46,6 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.model.toText
-import io.element.android.libraries.bipe.ui.BipePublicBio
-import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings

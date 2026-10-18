@@ -688,4 +688,18 @@ object BipeRegistries {
     const val GUARDIAN_APPROVALS_MAX = 2
     const val RECOVERY_LINK_MINUTES = 60
     const val EMAIL_VERIFY_LINK_HOURS = 24
+    // Personal accounts on one phone (ADR 0086). Fallback for max_accounts in GET /v1/me/account.
+    const val MAX_PERSONAL_ACCOUNTS = 2
+
+    // Terms and privacy accepted at sign-up (ADR 0113; registries/legal.json). Paths are on the public site.
+    const val LEGAL_VERSION = "2026-10-16"
+    const val TERMS_PATH = "/termos/"
+    const val PRIVACY_PATH = "/privacidade/"
+    const val EN_TERMS_PATH = "/en/terms/"
+    const val EN_PRIVACY_PATH = "/en/privacy/"
+
+    /** Badge signing keys a release build trusts (ADR 0123; registries/badge-keys.json): kid to raw Ed25519 public key, base64url. */
+    val badgeKeys: Map<String, String> = mapOf(
+        "prod-2026-10" to "9j3_slBroZbxa3B6Tdgcm_U-O_LIdrNFXzDgY8oLwxE",
+    )
 }

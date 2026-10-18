@@ -22,6 +22,8 @@ import io.element.android.libraries.androidutils.clipboard.FakeClipboardHelper
 import io.element.android.libraries.androidutils.toast.FakeToastHelper
 import io.element.android.libraries.androidutils.toast.ToastHelper
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.groups.BipeInviteToGroup
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.SessionId
@@ -64,7 +66,10 @@ import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import io.element.android.tests.testutils.testWithLifecycleOwner
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -123,6 +128,10 @@ class RoomDetailsPresenterTest {
             appPreferencesStore = appPreferencesStore,
             notificationCleaner = notificationCleaner,
             sessionPreferencesStore = sessionPreferencesStore,
+            bipeInviteToGroup = BipeInviteToGroup(
+                matrixClient = matrixClient,
+                selfChat = BipeSelfChat(matrixClient, CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> })),
+            ),
         )
     }
 
@@ -343,8 +352,8 @@ class RoomDetailsPresenterTest {
             // Then the asynchronous check completes, but editing is still disallowed because it's a DM
             val settledState = awaitItem()
             assertThat(settledState.canEdit).isFalse()
-            // If there is a topic, it's visible
-            assertThat(settledState.roomTopic).isEqualTo(RoomTopicState.ExistingTopic(room.info().topic!!))
+            // Bipe: a DM has no topic, even when the room has one.
+            assertThat(settledState.roomTopic).isEqualTo(RoomTopicState.Hidden)
 
             cancelAndIgnoreRemainingEvents()
         }

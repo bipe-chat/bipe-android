@@ -64,6 +64,8 @@ data class MessagesState(
     val threads: Threads,
     val showLiveLocationShareBanner: Boolean,
     val redactEventAction: AsyncAction<Unit>,
+    /** Bipe ADR 0034: the inviter's handle while this is the chat with the inviter and the user has not messaged them yet. */
+    val bipeInviterHandle: String?,
     val eventSink: (MessagesEvent) -> Unit
 ) {
     val isTombstoned = successorRoom != null

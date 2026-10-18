@@ -1595,7 +1595,8 @@ private fun createActionListPresenter(
     isDeveloperModeEnabled: Boolean,
     room: BaseRoom = FakeBaseRoom(),
     timelineMode: Timeline.Mode = Timeline.Mode.Live,
-    featureFlagService: FakeFeatureFlagService = FakeFeatureFlagService(),
+    // Bipe: threads are on by default. These cases check the presenter without them; the thread cases turn them on.
+    featureFlagService: FakeFeatureFlagService = FakeFeatureFlagService(initialState = mapOf(FeatureFlags.Threads.key to false)),
     recentEmojis: GetRecentEmojis = GetRecentEmojis { Result.success(persistentListOf()) },
 ): ActionListPresenter {
     val preferencesStore = InMemoryAppPreferencesStore(isDeveloperModeEnabled = isDeveloperModeEnabled)

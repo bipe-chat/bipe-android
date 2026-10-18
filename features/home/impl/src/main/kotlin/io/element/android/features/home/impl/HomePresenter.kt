@@ -24,8 +24,13 @@ import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.roomlist.RoomListEvent
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
+import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.account.BipeAccountCap
+import io.element.android.libraries.bipe.selfchat.BipeSelfChat
+import io.element.android.libraries.bipe.tabs.BipeTabBadges
+import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.featureflag.api.FeatureFlagService
@@ -33,10 +38,9 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.indicator.api.IndicatorService
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.sync.SyncService
-import io.element.android.libraries.bipe.selfchat.BipeSelfChat
-import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -55,6 +59,8 @@ class HomePresenter(
     private val announcementService: AnnouncementService,
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
+    private val seenInvitesStore: SeenInvitesStore,
+    private val bipeYouTabWarning: BipeYouTabWarning,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -69,6 +75,15 @@ class HomePresenter(
                 currentUserWithNeighborsBuilder::build,
             )
         }.collectAsState(initial = persistentListOf(matrixUser))
+        // Bipe: the avatar menu lists the accounts, the current one first (ADR 0086, #267). The neighbours hold every account
+        // up to three, which covers the cap; no second flow, so the presenter emits no extra state.
+        val bipeAccounts by remember {
+            derivedStateOf {
+                val current = currentUserAndNeighbors.getOrNull(1) ?: currentUserAndNeighbors.first()
+                (listOf(current) + currentUserAndNeighbors).distinctBy { it.userId }.toImmutableList()
+            }
+        }
+        val bipeMaxAccounts by BipeAccountCap.maxPersonalAccounts.collectAsState()
         val isOnline by syncService.isOnline.collectAsState()
         val canReportBug by remember { rageshakeFeatureAvailability.isAvailable() }.collectAsState(false)
         val showMultiAccountAnnouncement by remember {
@@ -120,10 +135,15 @@ class HomePresenter(
         // from account data, so the room lists and the badges can leave it out.
         LaunchedEffect(Unit) { bipeSelfChat.refresh() }
         val bipeBadges by remember {
-            combine(client.roomListService.allRooms.summaries, bipeSelfChat.roomId) { summaries, selfChatRoomId ->
-                BipeTabBadges.from(summaries, selfChatRoomId)
+            combine(
+                client.roomListService.allRooms.summaries,
+                bipeSelfChat.roomId,
+                seenInvitesStore.seenRoomIds(),
+            ) { summaries, selfChatRoomId, seenInviteRoomIds ->
+                BipeTabBadges.from(summaries, selfChatRoomId, seenInviteRoomIds)
             }.distinctUntilChanged()
         }.collectAsState(BipeTabBadges.NONE)
+        val bipeYouWarning by remember { bipeYouTabWarning.warning() }.collectAsState(false)
         // Avatar indicator
         val showAvatarIndicator by indicatorService.showRoomListTopBarIndicator()
 
@@ -153,7 +173,9 @@ class HomePresenter(
             canReportBug = canReportBug,
             showMultiAccountAnnouncement = showMultiAccountAnnouncement,
             eventSink = ::handleEvent,
-            bipeBadges = bipeBadges,
+            bipeBadges = bipeBadges.copy(youWarning = bipeYouWarning),
+            bipeAccounts = bipeAccounts,
+            bipeMaxAccounts = bipeMaxAccounts,
         )
     }
 }

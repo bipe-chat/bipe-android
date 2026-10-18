@@ -36,6 +36,10 @@ data class BipeSignupRequest(
     @SerialName("display_name") val displayName: String? = null,
     /** Same key on a retry: the same account (ADR 0094). From the pending sign-up in the vault. */
     @SerialName("signup_key") val signupKey: String? = null,
+    /** The legal version the user ticked at sign-up (ADR 0113): `BipeRegistries.LEGAL_VERSION`, YYYY-MM-DD. */
+    @SerialName("terms_version") val termsVersion: String? = null,
+    /** ADR 0087: `company` needs an attestation (ADR 0043). Android has none yet (#92), so it never sends `company`. */
+    @SerialName("account_type") val accountType: String? = null,
 ) {
     /** Never prints the PIN, the password, the email or the key. */
     override fun toString(): String = "BipeSignupRequest"
@@ -45,6 +49,8 @@ data class BipeSignupRequest(
 @Serializable
 data class BipeSignupConfig(
     @SerialName("invite_required") val inviteRequired: Boolean,
+    /** The current legal version (ADR 0113). `null` from a server older than the clickwrap. */
+    @SerialName("terms_version") val termsVersion: String? = null,
 )
 
 @Serializable
@@ -225,6 +231,12 @@ data class BipeAccountStatus(
     @SerialName("email_pending") val emailPending: String? = null,
     /** Newest first. */
     @SerialName("recoveries") val recoveries: List<BipeRecovery> = emptyList(),
+    /** The last legal version this account accepted (ADR 0113). `null`: none recorded. */
+    @SerialName("terms_version") val termsVersion: String? = null,
+    /** Personal accounts one phone may hold (ADR 0086). `null` from an older server: use the registry value. */
+    @SerialName("max_accounts") val maxAccounts: Int? = null,
+    /** ADR 0087: `personal` or `company`. `null` from an older server: personal. */
+    @SerialName("account_type") val accountType: String? = null,
 ) {
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }
@@ -308,6 +320,38 @@ internal data class EmailRecoveryConfirmRequest(
 internal data class ClaimRequest(@SerialName("claim_secret") val claimSecret: String) {
     override fun toString(): String = "ClaimRequest"
 }
+
+/** Who can message the caller (ADR 0016). The server enforces it. */
+enum class BipeWhoCanMessage(val id: String) {
+    EVERYONE("everyone"),
+    VERIFIED("verified"),
+    CONTACTS("contacts"),
+}
+
+@Serializable
+data class BipeMessagingSetting(
+    @SerialName("who_can_message") private val whoCanMessageId: String,
+) {
+    constructor(whoCanMessage: BipeWhoCanMessage) : this(whoCanMessage.id)
+
+    /** An unknown value from a newer server reads as the strictest one the app knows. */
+    val whoCanMessage: BipeWhoCanMessage
+        get() = BipeWhoCanMessage.entries.firstOrNull { it.id == whoCanMessageId } ?: BipeWhoCanMessage.CONTACTS
+}
+
+/** Who can find the caller (ADR 0063). */
+@Serializable
+data class BipeDiscoverySettings(
+    /** People who have the caller's number can find them. Default `true`. */
+    @SerialName("by_phone") val byPhone: Boolean,
+)
+
+/** The caller's linked phone number status. Never the number. */
+@Serializable
+data class BipePhoneStatus(
+    @SerialName("linked") val linked: Boolean,
+    @SerialName("discoverable_by_phone") val discoverableByPhone: Boolean,
+)
 
 @Serializable
 internal data class HandleChangesRequest(

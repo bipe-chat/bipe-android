@@ -260,23 +260,6 @@ class RoomListViewTest : RobolectricTest() {
             )
         )
     }
-
-    @Test
-    fun `clicking on add account in the multi-account announcement emits the expected Event and invokes the callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<HomeEvent>()
-        ensureCalledOnce { callback ->
-            setRoomListView(
-                state = aRoomListState(),
-                showMultiAccountAnnouncement = true,
-                homeEventSink = eventsRecorder,
-                onAddAccountClick = callback,
-            )
-            clickOn(R.string.screen_multi_account_announcement_action)
-            // Wait for the bottom sheet to be hidden
-            waitForIdle()
-        }
-        eventsRecorder.assertSingle(HomeEvent.DismissMultiAccountAnnouncement)
-    }
 }
 
 private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
@@ -286,6 +269,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
     onSetUpRecoveryClick: () -> Unit = EnsureNeverCalled(),
     onConfirmRecoveryKeyClick: () -> Unit = EnsureNeverCalled(),
     onCreateRoomClick: () -> Unit = EnsureNeverCalled(),
+    onBipeCreateGroupClick: () -> Unit = EnsureNeverCalled(),
     onCreateSpaceClick: () -> Unit = EnsureNeverCalled(),
     onRoomSettingsClick: (RoomId) -> Unit = EnsureNeverCalledWithParam(),
     onMenuActionClick: (RoomListMenuAction) -> Unit = EnsureNeverCalledWithParam(),
@@ -308,12 +292,14 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
             onSetUpRecoveryClick = onSetUpRecoveryClick,
             onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
             onStartChatClick = onCreateRoomClick,
+            onBipeCreateGroupClick = onBipeCreateGroupClick,
             onCreateSpaceClick = onCreateSpaceClick,
             onRoomSettingsClick = onRoomSettingsClick,
             onMenuActionClick = onMenuActionClick,
             onDeclineInviteAndBlockUser = onDeclineInviteAndBlockUser,
             onReportRoomClick = onReportRoomClick,
             acceptDeclineInviteView = {},
+            youTabView = { _, _ -> },
             leaveRoomView = {},
         )
     }

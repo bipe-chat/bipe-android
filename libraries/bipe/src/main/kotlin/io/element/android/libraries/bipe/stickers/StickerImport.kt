@@ -15,6 +15,7 @@ import java.security.MessageDigest
 import java.util.zip.ZipInputStream
 
 /** A sticker file ready to go into the user's pack. Mirrors StickerImport.swift in BipeKit. */
+@Suppress("UseDataClass") // A ByteArray has no structural equality.
 class StickerImportCandidate(
     val bytes: ByteArray,
     val mimeType: String,
@@ -56,7 +57,7 @@ object StickerImporter {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         val width = options.outWidth
         val height = options.outHeight
-        if (width <= 0 || height <= 0 || width > MAX_SIDE || height > MAX_SIDE) return null
+        if (width !in 1..MAX_SIDE || height !in 1..MAX_SIDE) return null
         val digest = MessageDigest.getInstance("SHA-256").digest(bytes).take(8).joinToString("") { "%02x".format(it) }
         return StickerImportCandidate(bytes, mimeType, width, height, "st_$digest")
     }

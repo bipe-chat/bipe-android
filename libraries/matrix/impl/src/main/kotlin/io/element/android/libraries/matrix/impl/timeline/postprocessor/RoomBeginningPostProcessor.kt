@@ -62,10 +62,10 @@ class RoomBeginningPostProcessor(private val mode: Timeline.Mode) {
             }.takeIf { it >= 0 }
         }
 
-        val indicesToRemove = listOfNotNull(
+        val indicesToRemove = (listOfNotNull(
             roomCreationEventIndex,
             selfUserJoinedEventIndex,
-        )
+        ) + bipeDmSetupIndices(items)).distinct()
         if (indicesToRemove.isEmpty()) {
             // Nothing to do, return the list as is
             return items
@@ -78,4 +78,15 @@ class RoomBeginningPostProcessor(private val mode: Timeline.Mode) {
         }
         return newItems
     }
+
+    // Bipe: a DM has no room setup lines: invites, joins and "encryption enabled" (BIPE.md "DMs are DMs").
+    private fun bipeDmSetupIndices(items: List<MatrixTimelineItem>): List<Int> = items.indices.filter { index ->
+        when (val content = (items[index] as? MatrixTimelineItem.Event)?.event?.content) {
+            is RoomMembershipContent -> content.change in bipeDmHiddenChanges
+            is StateContent -> content.content is OtherState.RoomEncryption
+            else -> false
+        }
+    }
+
+    private val bipeDmHiddenChanges = setOf(MembershipChange.JOINED, MembershipChange.INVITED, MembershipChange.INVITATION_ACCEPTED)
 }

@@ -49,18 +49,55 @@ jobs:
           sudo swapon /mnt/swapfile
           sudo swapon --show
       - name: ⏬ Checkout with LFS
+        if: ${{ github.repository == 'element-hq/element-x-android' }}
         uses: nschloe/action-cached-lfs-checkout@385a8ecc719e50b8c71af6ab01a624b486b7c3bc # v1.2.5
         with:
           # Ensure we are building the branch and not the branch after being merged on develop
           # https://github.com/actions/checkout/issues/881
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
+      # Bipe: the fork has no LFS objects of its own. Unit tests need only the media upload
+      # test assets, which are fetched from the public Element repository.
+      - name: ⏬ Checkout
+        if: ${{ github.repository != 'element-hq/element-x-android' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
+          persist-credentials: false
+      - name: ⏬ Fetch test assets from Element LFS
+        if: ${{ github.repository != 'element-hq/element-x-android' }}
+        run: |
+          git config lfs.url https://github.com/element-hq/element-x-android.git/info/lfs
+          git lfs pull --include "libraries/mediaupload/impl/src/test/assets/*"
+      # Bipe: SharedVectorTest reads the shared test vectors from bipe-shared. On a pull request, use the
+      # bipe-shared branch with the same name where it exists, so a cross-repo change tests against its own
+      # vectors. Else use bipe-shared main.
+      - name: Pick the bipe-shared ref
+        id: shared-ref
+        if: ${{ github.repository != 'element-hq/element-x-android' }}
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if [ -n "$BRANCH" ] && git ls-remote --exit-code --heads https://github.com/bipe-chat/bipe-shared.git "$BRANCH" > /dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
+      - name: ⏬ Checkout bipe-shared test vectors
+        if: ${{ github.repository != 'element-hq/element-x-android' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: bipe-chat/bipe-shared
+          ref: ${{ steps.shared-ref.outputs.ref }}
+          path: .bipe-shared
+          persist-credentials: false
+          sparse-checkout: test-vectors
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'element-hq/element-x-android' }}
+        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'element-hq/element-x-android') }}
         with:
           ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'element-hq/element-x-android' }}
+        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'element-hq/element-x-android') }}
         run: git submodule update --init --recursive
       - name: ☕️ Use JDK 21
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
@@ -73,9 +110,13 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
 
       - name: ⚙️ Run unit tests
-        run: ./gradlew :app:testGplayDebugUnitTest testDebugUnitTest -x :tests:konsist:testDebugUnitTest $CI_GRADLE_ARG_PROPERTIES
+        env:
+          BIPE_SHARED: ${{ github.workspace }}/.bipe-shared
+        run: ./gradlew :app:testGplayDebugUnitTest testDebugUnitTest -x :tests:konsist:testDebugUnitTest $CI_GRADLE_ARG_PROPERTIES --continue
 
+      # Bipe: the Element screenshots do not match the Bipe theme. Skip until the fork records its own.
       - name: ⚙️ Run screenshot tests
+        if: ${{ github.repository == 'element-hq/element-x-android' }}
         run: ./gradlew verifyPaparazziDebug $CI_GRADLE_ARG_PROPERTIES
 
       - name: ⚙️ Generate kover coverage report
@@ -113,6 +154,7 @@ jobs:
 
       # https://github.com/codecov/codecov-action
       - name: ☂️ Upload coverage reports to codecov
+        if: ${{ github.repository == 'element-hq/element-x-android' }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           fail_ci_if_error: true

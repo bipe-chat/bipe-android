@@ -70,6 +70,8 @@ fun <T> SearchBar(
     contentSuffix: @Composable ColumnScope.() -> Unit = {},
     // Bipe: replaces "No results" when the caller knows why, e.g. a handle nobody holds.
     noResultsText: String? = null,
+    // Bipe: shown below the "No results" text, e.g. a hint and a way to reach someone (ADR 0111).
+    noResultsContent: @Composable ColumnScope.() -> Unit = {},
     resultHandler: @Composable ColumnScope.(T) -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
@@ -149,6 +151,7 @@ fun <T> SearchBar(
                         color = ElementTheme.colors.textSecondary,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    noResultsContent()
                 }
 
                 else -> {
