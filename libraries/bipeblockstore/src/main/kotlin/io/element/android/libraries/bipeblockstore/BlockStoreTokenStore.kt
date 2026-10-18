@@ -19,15 +19,18 @@ import io.element.android.libraries.bipe.account.BipeCloudTokenStore
 import io.element.android.libraries.di.annotations.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
+import java.security.MessageDigest
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * The recovery token in Google Block Store, backed up to the Google account (`shouldBackupToCloud`). A new phone signed in
- * to the same Google account gets the token back at setup or on reinstall. Google backs the data up end-to-end encrypted
+ * The recovery tokens in Google Block Store, backed up to the Google account (`shouldBackupToCloud`). A new phone signed in
+ * to the same Google account gets the tokens back at setup or on reinstall. Google backs the data up end-to-end encrypted
  * only when the phone has a screen lock; without one, Block Store keeps it on the device.
  *
- * Only the token goes here. The hidden password stays on the device (ADR 0059).
+ * One entry per account (ADR 0086): the key holds a hash of the Matrix ID; the value holds the Matrix ID, a line break and
+ * the token. The entry [LEGACY_KEY] from before #265 holds a bare token. Only tokens go here. The hidden password stays on
+ * the device (ADR 0059).
  */
 @ContributesIntoSet(AppScope::class, binding = binding<BipeCloudTokenStore>())
 class BlockStoreTokenStore(
@@ -35,18 +38,27 @@ class BlockStoreTokenStore(
 ) : BipeCloudTokenStore {
     private val client = Blockstore.getClient(context)
 
-    override suspend fun read(): String? = try {
-        val request = RetrieveBytesRequest.Builder().setKeys(listOf(KEY)).build()
-        client.retrieveBytes(request).await().blockstoreDataMap[KEY]?.bytes?.decodeToString()?.takeIf { it.isNotEmpty() }
+    override suspend fun readAll(): Map<String?, String>? = try {
+        val request = RetrieveBytesRequest.Builder().setRetrieveAll(true).build()
+        val entries = client.retrieveBytes(request).await().blockstoreDataMap
+        buildMap<String?, String> {
+            entries[LEGACY_KEY]?.bytes?.decodeToString()?.takeIf { it.isNotEmpty() }?.let { put(null, it) }
+            entries.filterKeys { it.startsWith(KEY_PREFIX) }.values.forEach { entry ->
+                val value = entry.bytes.decodeToString()
+                val userId = value.substringBefore(SEPARATOR, missingDelimiterValue = "")
+                val token = value.substringAfter(SEPARATOR, missingDelimiterValue = "")
+                if (userId.isNotEmpty() && token.isNotEmpty()) put(userId, token)
+            }
+        }
     } catch (error: Exception) {
         Timber.w(error, "Bipe: Block Store read failed")
         null
     }
 
-    override suspend fun write(token: String): Boolean = try {
+    override suspend fun write(userId: String, token: String): Boolean = try {
         val data = StoreBytesData.Builder()
-            .setKey(KEY)
-            .setBytes(token.encodeToByteArray())
+            .setKey(key(userId))
+            .setBytes("$userId$SEPARATOR$token".encodeToByteArray())
             .setShouldBackupToCloud(true)
             .build()
         client.storeBytes(data).await()
@@ -56,16 +68,27 @@ class BlockStoreTokenStore(
         false
     }
 
-    override suspend fun delete() {
+    override suspend fun delete(userId: String?) {
         try {
-            client.deleteBytes(DeleteBytesRequest.Builder().setKeys(listOf(KEY)).build()).await()
+            val key = if (userId == null) LEGACY_KEY else key(userId)
+            client.deleteBytes(DeleteBytesRequest.Builder().setKeys(listOf(key)).build()).await()
         } catch (error: Exception) {
             Timber.w(error, "Bipe: Block Store delete failed")
         }
     }
 
+    /** A Matrix ID has characters that a Block Store key may not; a hash has none. */
+    private fun key(userId: String): String {
+        val hash = MessageDigest.getInstance("SHA-256").digest(userId.encodeToByteArray())
+        return KEY_PREFIX + hash.take(16).joinToString("") { "%02x".format(it) }
+    }
+
     private companion object {
-        const val KEY = "chat.bipe.recovery_token"
+        const val LEGACY_KEY = "chat.bipe.recovery_token"
+        const val KEY_PREFIX = "chat.bipe.recovery_token."
+
+        /** A Matrix ID never holds a line break. */
+        const val SEPARATOR = "\n"
     }
 }
 
