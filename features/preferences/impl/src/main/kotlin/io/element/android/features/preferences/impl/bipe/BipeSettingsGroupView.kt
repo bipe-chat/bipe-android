@@ -86,7 +86,7 @@ fun BipeSettingsGroupView(
                     SettingsRow(row = row, state = state, onClick = { onRowClick(row) }, biometricUnlockRow = biometricUnlockRow)
                     row.footer?.let { ListSupportingText(text = stringResource(it)) }
                 }
-                section.footer?.let { ListSupportingText(text = footerText(it)) }
+                section.footer?.let { ListSupportingText(text = footerText(it, state.hasSeparateDevicePin)) }
             }
             first = false
         }
@@ -107,10 +107,14 @@ private fun isAvailable(row: BipeSettingsRow): Boolean = when (row) {
     else -> true
 }
 
-/** Footers with a value to fill in. */
+/** Footers with a value to fill in. With more than one account, the PIN footer says the device PIN stays (ADR 0086). */
 @Composable
-private fun footerText(@StringRes footer: Int): String = when (footer) {
-    BipeR.string.bipe_account_pin_footer -> stringResource(footer, BipePin.LENGTH.toString())
+private fun footerText(@StringRes footer: Int, hasSeparateDevicePin: Boolean): String = when (footer) {
+    BipeR.string.bipe_account_pin_footer -> if (hasSeparateDevicePin) {
+        stringResource(BipeR.string.bipe_account_pin_footer_device)
+    } else {
+        stringResource(footer, BipePin.LENGTH.toString())
+    }
     else -> stringResource(footer)
 }
 
@@ -301,6 +305,7 @@ internal fun BipeSettingsGroupViewPreview() = ElementPreview {
             version = "Versão 26.10.2 (6)",
             deviceId = "ABCDEFGHIJ",
             eventSink = {},
+            hasSeparateDevicePin = false,
         ),
         onBackClick = {},
         onRowClick = {},
