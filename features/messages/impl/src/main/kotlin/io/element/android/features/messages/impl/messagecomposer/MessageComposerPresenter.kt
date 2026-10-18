@@ -11,6 +11,7 @@ package io.element.android.features.messages.impl.messagecomposer
 import android.Manifest
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +32,7 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.Composer
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.contentscanner.api.ContentScannerService
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.messages.impl.MessagesNavigator
@@ -46,6 +48,7 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.stickers.StickerPackRepository
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.mimetype.MimeTypes
+import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -74,6 +77,7 @@ import io.element.android.libraries.mediapickers.api.PickerProvider
 import io.element.android.libraries.mediaupload.api.MediaOptimizationConfigProvider
 import io.element.android.libraries.mediaupload.api.MediaSenderFactory
 import io.element.android.libraries.mediaviewer.api.local.LocalMediaFactory
+import io.element.android.libraries.permissions.api.PermissionStateProvider
 import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
@@ -95,6 +99,7 @@ import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
 import io.element.android.wysiwyg.compose.RichTextEditorState
 import io.element.android.wysiwyg.display.TextDisplay
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CancellationException
@@ -113,8 +118,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import kotlin.time.Duration.Companion.seconds
-import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 
 @Suppress("LargeClass")
 @AssistedInject
@@ -148,6 +151,7 @@ class MessageComposerPresenter(
     private val contentScannerService: ContentScannerService,
     private val contentValidationCache: EventContentValidationCache,
     private val stickerPackRepository: StickerPackRepository,
+    private val permissionStateProvider: PermissionStateProvider, // Bipe
 ) : Presenter<MessageComposerState> {
     @AssistedFactory
     interface Factory {
@@ -162,6 +166,9 @@ class MessageComposerPresenter(
     private val mediaSender = mediaSenderFactory.create(timelineMode = timelineController.mainTimelineMode())
 
     private val cameraPermissionPresenter = permissionsPresenterFactory.create(Manifest.permission.CAMERA)
+
+    // Bipe (bipe-chat/bipe#199, bipe-chat/bipe#415): the first sent message is the moment to ask for notifications.
+    private val notificationPermissionPresenter = permissionsPresenterFactory.create(Manifest.permission.POST_NOTIFICATIONS)
     private var pendingEvent: MessageComposerEvent? = null
     private val suggestionSearchTrigger = MutableStateFlow<Suggestion?>(null)
 
@@ -186,6 +193,8 @@ class MessageComposerPresenter(
         val markdownTextEditorState = rememberMarkdownTextEditorState(initialText = null, initialFocus = false)
 
         val cameraPermissionState = cameraPermissionPresenter.present()
+        val notificationPermissionState = notificationPermissionPresenter.present()
+        var bipeNotificationAsk by remember { mutableStateOf<BipeNotificationAsk?>(null) }
 
         val canShareLocation = remember { mutableStateOf(false) }
         val isDm by remember { room.roomInfoFlow.map { it.isDm } }.collectAsState(initial = room.info().isDm)
@@ -299,6 +308,25 @@ class MessageComposerPresenter(
                         richTextEditorState = richTextEditorState,
                         slashCommandAction = slashCommandAction,
                     )
+                    // Android 13+ only: before that, notifications are on without a permission. Once; a "no" never blocks.
+                    if (OnBoardingConfig.USES_BIPE_SIGNUP &&
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        !notificationPermissionState.permissionGranted &&
+                        !notificationPermissionState.permissionAlreadyAsked &&
+                        !notificationPermissionState.permissionAlreadyDenied) {
+                        val info = room.info()
+                        bipeNotificationAsk = BipeNotificationAsk(dmName = info.name.takeIf { info.isDm })
+                    }
+                }
+                MessageComposerEvent.BipeAllowNotifications -> {
+                    bipeNotificationAsk = null
+                    notificationPermissionState.eventSink(PermissionsEvent.RequestPermissions)
+                }
+                MessageComposerEvent.BipeSkipNotifications -> {
+                    bipeNotificationAsk = null
+                    sessionCoroutineScope.launch {
+                        permissionStateProvider.setPermissionDenied(Manifest.permission.POST_NOTIFICATIONS, true)
+                    }
                 }
                 is MessageComposerEvent.SendUri -> {
                     val inReplyToEventId = (messageComposerContext.composerMode as? MessageComposerMode.Reply)?.eventId
@@ -485,6 +513,7 @@ class MessageComposerPresenter(
             showTextFormatting = showTextFormatting,
             canShareLocation = canShareLocation.value,
             isDm = isDm,
+            bipeNotificationAsk = bipeNotificationAsk,
             stickerPicker = stickerPicker,
             suggestions = suggestions.toImmutableList(),
             resolveMentionDisplay = resolveMentionDisplay,

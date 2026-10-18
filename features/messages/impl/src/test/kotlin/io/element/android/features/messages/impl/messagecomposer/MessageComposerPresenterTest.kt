@@ -90,6 +90,7 @@ import io.element.android.libraries.mediaupload.test.FakeMediaOptimizationConfig
 import io.element.android.libraries.mediaupload.test.FakeMediaPreProcessor
 import io.element.android.libraries.mediaviewer.test.FakeLocalMediaFactory
 import io.element.android.libraries.permissions.api.PermissionsPresenter
+import io.element.android.libraries.permissions.test.FakePermissionStateProvider
 import io.element.android.libraries.permissions.test.FakePermissionsPresenter
 import io.element.android.libraries.permissions.test.FakePermissionsPresenterFactory
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
@@ -117,6 +118,7 @@ import io.element.android.tests.testutils.test
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import io.element.android.tests.testutils.waitForPredicate
 import io.mockk.mockk
+import java.io.File
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -126,7 +128,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import uniffi.wysiwyg_composer.MentionsState
-import java.io.File
 
 class MessageComposerPresenterTest : RobolectricTest() {
     @get:Rule
@@ -1725,6 +1726,7 @@ class MessageComposerPresenterTest : RobolectricTest() {
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
         stickerPackRepository = FakeStickerPackRepository(),
+        permissionStateProvider = FakePermissionStateProvider(),
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

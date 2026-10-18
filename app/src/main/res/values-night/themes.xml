@@ -9,7 +9,8 @@
 
     <style name="Theme.ElementX.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splashscreen_bg_dark</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/transparent</item>
+        <!-- Bipe (bipe-chat/bipe#415): the Bipe icon on the splash, as on iOS. -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
         <item name="postSplashScreenTheme">@style/Theme.ElementX</item>
         <item name="android:windowBackground">@color/splashscreen_bg_dark</item>
         <item name="android:statusBarColor">@color/splashscreen_bg_dark</item>

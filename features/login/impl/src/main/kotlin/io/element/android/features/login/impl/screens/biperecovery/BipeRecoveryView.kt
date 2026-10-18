@@ -33,6 +33,7 @@ import io.element.android.libraries.bipe.account.ui.BipeNewPinFields
 import io.element.android.libraries.bipe.account.ui.BipePinField
 import io.element.android.libraries.bipe.account.ui.formatTime
 import io.element.android.libraries.bipe.api.BipeRecoveryPurpose
+import io.element.android.libraries.bipe.generated.BipeOnboardingRecoveryRow
 import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
@@ -57,6 +58,7 @@ fun BipeRecoveryView(
     onBackClick: () -> Unit,
     onSignInWithQrCode: () -> Unit,
     modifier: Modifier = Modifier,
+    onBetaAccount: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val isLoading = state.action is AsyncAction.Loading
@@ -79,7 +81,7 @@ fun BipeRecoveryView(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (state.mode) {
-                BipeRecoveryMode.CHOOSE -> ChooseContent(state, isLoading, onSignInWithQrCode)
+                BipeRecoveryMode.CHOOSE -> ChooseContent(state, isLoading, onSignInWithQrCode, onBetaAccount)
                 BipeRecoveryMode.LINK_PIN -> LinkPinContent(state, isLoading)
                 BipeRecoveryMode.LINK_NEW_PIN -> LinkNewPinContent(state, isLoading)
                 BipeRecoveryMode.WAITING -> WaitingContent(state)
@@ -105,7 +107,12 @@ private fun Body(text: String) {
 }
 
 @Composable
-private fun ColumnScope.ChooseContent(state: BipeRecoveryScreenState, isLoading: Boolean, onSignInWithQrCode: () -> Unit) {
+private fun ColumnScope.ChooseContent(
+    state: BipeRecoveryScreenState,
+    isLoading: Boolean,
+    onSignInWithQrCode: () -> Unit,
+    onBetaAccount: () -> Unit,
+) {
     val eventSink = state.eventSink
     IconTitleSubtitleMolecule(
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
@@ -113,68 +120,89 @@ private fun ColumnScope.ChooseContent(state: BipeRecoveryScreenState, isLoading:
         title = stringResource(R.string.bipe_recovery_title),
         subTitle = state.notice,
     )
-    if (state.hasToken) {
-        Body(stringResource(R.string.bipe_recovery_token_found))
-        BipePinField(
-            value = state.pin,
-            onValueChange = { eventSink(BipeRecoveryEvent.UpdatePin(it)) },
-            label = stringResource(R.string.bipe_pin_enter_title),
-            error = state.pinError,
-            enabled = !isLoading,
-            hint = stringResource(R.string.bipe_pin_never_asked),
-        )
-        Button(
-            text = stringResource(CommonStrings.action_continue),
-            enabled = state.pin.length == BipePin.LENGTH && !isLoading,
-            onClick = { eventSink(BipeRecoveryEvent.SubmitTokenPin) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        TextButton(
-            text = stringResource(R.string.bipe_pin_forgot),
-            onClick = { eventSink(BipeRecoveryEvent.ForgotPin) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        HorizontalDivider()
-    }
-
-    SectionTitle(stringResource(R.string.bipe_recovery_qr))
-    Body(stringResource(R.string.bipe_recovery_qr_body))
-    Body(stringResource(R.string.bipe_recovery_qr_never_from_others))
-    OutlinedButton(
-        text = stringResource(R.string.bipe_recovery_qr),
-        onClick = onSignInWithQrCode,
-        modifier = Modifier.fillMaxWidth(),
-    )
-    HorizontalDivider()
-
-    SectionTitle(stringResource(R.string.bipe_recovery_email))
-    Body(stringResource(R.string.bipe_recovery_email_body, BipeRegistries.RECOVERY_DELAY_HOURS_EMAIL.toString()))
-    if (state.isEmailOpen || !state.hasToken) {
-        TextField(
-            label = stringResource(R.string.bipe_recovery_email_field),
-            value = state.email,
-            supportingText = if (state.isEmailSent) stringResource(R.string.bipe_recovery_email_sent) else null,
-            singleLine = true,
-            enabled = !isLoading,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, autoCorrectEnabled = false, imeAction = ImeAction.Done),
-            onValueChange = { eventSink(BipeRecoveryEvent.UpdateEmail(it)) },
-        )
-        OutlinedButton(
-            text = stringResource(CommonStrings.action_send),
-            enabled = BipeSignupRules.isPlausibleEmail(state.email.trim()) && !state.isEmailSent && !isLoading,
-            onClick = { eventSink(BipeRecoveryEvent.SendEmail) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-        )
-    } else {
-        OutlinedButton(
-            text = stringResource(R.string.bipe_recovery_email),
-            onClick = { eventSink(BipeRecoveryEvent.OpenEmail) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-        )
+    // Rows in the order of bipe-shared `registries/onboarding.json` (bipe-chat/bipe#415), the same as iOS.
+    // A row with a `planned:` gate stays hidden until its issue ships.
+    BipeOnboardingRecoveryRow.entries.filter { it.gate == null }.forEach { row ->
+        when (row) {
+            BipeOnboardingRecoveryRow.TOKEN -> if (state.hasToken) {
+                Body(stringResource(R.string.bipe_recovery_token_found))
+                BipePinField(
+                    value = state.pin,
+                    onValueChange = { eventSink(BipeRecoveryEvent.UpdatePin(it)) },
+                    label = stringResource(R.string.bipe_pin_enter_title),
+                    error = state.pinError,
+                    enabled = !isLoading,
+                    hint = stringResource(R.string.bipe_pin_never_asked),
+                )
+                Button(
+                    text = stringResource(CommonStrings.action_continue),
+                    enabled = state.pin.length == BipePin.LENGTH && !isLoading,
+                    onClick = { eventSink(BipeRecoveryEvent.SubmitTokenPin) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                TextButton(
+                    text = stringResource(R.string.bipe_pin_forgot),
+                    onClick = { eventSink(BipeRecoveryEvent.ForgotPin) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                HorizontalDivider()
+            }
+            BipeOnboardingRecoveryRow.OLD_PHONE -> {
+                SectionTitle(stringResource(R.string.bipe_recovery_qr))
+                Body(stringResource(R.string.bipe_recovery_qr_body))
+                Body(stringResource(R.string.bipe_recovery_qr_never_from_others))
+                OutlinedButton(
+                    text = stringResource(R.string.bipe_recovery_qr),
+                    onClick = onSignInWithQrCode,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                HorizontalDivider()
+            }
+            BipeOnboardingRecoveryRow.EMAIL -> {
+                SectionTitle(stringResource(R.string.bipe_recovery_email))
+                Body(stringResource(R.string.bipe_recovery_email_body, BipeRegistries.RECOVERY_DELAY_HOURS_EMAIL.toString()))
+                if (state.isEmailOpen || !state.hasToken) {
+                    TextField(
+                        label = stringResource(R.string.bipe_recovery_email_field),
+                        value = state.email,
+                        supportingText = if (state.isEmailSent) stringResource(R.string.bipe_recovery_email_sent) else null,
+                        singleLine = true,
+                        enabled = !isLoading,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, autoCorrectEnabled = false, imeAction = ImeAction.Done),
+                        onValueChange = { eventSink(BipeRecoveryEvent.UpdateEmail(it)) },
+                    )
+                    OutlinedButton(
+                        text = stringResource(CommonStrings.action_send),
+                        enabled = BipeSignupRules.isPlausibleEmail(state.email.trim()) && !state.isEmailSent && !isLoading,
+                        onClick = { eventSink(BipeRecoveryEvent.SendEmail) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                    )
+                } else {
+                    OutlinedButton(
+                        text = stringResource(R.string.bipe_recovery_email),
+                        onClick = { eventSink(BipeRecoveryEvent.OpenEmail) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                    )
+                }
+                HorizontalDivider()
+            }
+            // Beta accounts made before ADR 0057 still sign in with their e-mail and password.
+            BipeOnboardingRecoveryRow.BETA -> {
+                SectionTitle(stringResource(R.string.bipe_recovery_beta))
+                Body(stringResource(R.string.bipe_recovery_beta_body))
+                OutlinedButton(
+                    text = stringResource(R.string.bipe_recovery_beta),
+                    onClick = onBetaAccount,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                )
+            }
+        }
     }
 }
 

@@ -44,11 +44,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.error.loginError
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMolecule
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
@@ -127,11 +129,17 @@ fun LoginPasswordView(
             IconTitleSubtitleMolecule(
                 modifier = Modifier.padding(top = 20.dp, start = 16.dp, end = 16.dp),
                 iconStyle = BigIcon.Style.Default(CompoundIcons.UserProfileSolid()),
-                title = stringResource(
-                    id = R.string.screen_account_provider_signin_title,
-                    state.accountProvider.friendlyServerName()
-                ),
-                subTitle = stringResource(id = R.string.screen_login_subtitle)
+                // Bipe (bipe-chat/bipe#415): no server domain and no Matrix line. Only beta accounts reach this screen.
+                title = if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+                    stringResource(BipeR.string.bipe_recovery_beta)
+                } else {
+                    stringResource(id = R.string.screen_account_provider_signin_title, state.accountProvider.friendlyServerName())
+                },
+                subTitle = if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+                    stringResource(BipeR.string.bipe_recovery_beta_body)
+                } else {
+                    stringResource(id = R.string.screen_login_subtitle)
+                }
             )
             Spacer(Modifier.height(40.dp))
             LoginForm(
@@ -185,7 +193,7 @@ private fun LoginForm(
 
     Column {
         TextField(
-            label = stringResource(R.string.screen_login_form_header),
+            label = if (OnBoardingConfig.USES_BIPE_SIGNUP) stringResource(BipeR.string.bipe_signup_email) else stringResource(R.string.screen_login_form_header),
             value = loginFieldState,
             enabled = !isLoading,
             modifier = Modifier
@@ -197,7 +205,7 @@ private fun LoginForm(
                     contentType = ContentType.Username
                 },
             // Bipe: beta accounts sign in with their e-mail, not a username.
-            placeholder = stringResource(io.element.android.libraries.bipe.R.string.bipe_signup_email),
+            placeholder = stringResource(BipeR.string.bipe_signup_email),
             onValueChange = {
                 val sanitized = it.sanitize()
                 loginFieldState = sanitized
@@ -255,7 +263,12 @@ private fun LoginForm(
                 passwordFieldState = sanitized
                 eventSink(LoginPasswordEvent.SetPassword(sanitized))
             },
-            placeholder = stringResource(CommonStrings.common_password),
+            // Bipe: the account password, never the 8-digit PIN, so the two never share a label.
+            placeholder = if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+                stringResource(BipeR.string.bipe_recovery_beta_password)
+            } else {
+                stringResource(CommonStrings.common_password)
+            },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 PasswordVisibilityToggle(

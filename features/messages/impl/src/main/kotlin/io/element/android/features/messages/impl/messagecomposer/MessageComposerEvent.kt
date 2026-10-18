@@ -14,6 +14,10 @@ import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.textcomposer.model.Suggestion
 
 sealed interface MessageComposerEvent {
+    /** Bipe (bipe-chat/bipe#199): "Ligar notificações" and "Agora não" on the ask after the first sent message. */
+    data object BipeAllowNotifications : MessageComposerEvent
+    data object BipeSkipNotifications : MessageComposerEvent
+
     data object ToggleFullScreenState : MessageComposerEvent
     data object SendMessage : MessageComposerEvent
     data class SendUri(val uri: Uri) : MessageComposerEvent

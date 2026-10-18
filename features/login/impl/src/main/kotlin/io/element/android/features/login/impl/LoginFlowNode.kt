@@ -50,6 +50,7 @@ import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.inputs
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.di.annotations.AppCoroutineScope
+import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.oauth.api.OAuthAction
 import io.element.android.libraries.oauth.api.OAuthActionFlow
@@ -57,6 +58,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import timber.log.Timber
 
 @ContributesNode(AppScope::class)
 @AssistedInject
@@ -70,9 +72,11 @@ class LoginFlowNode(
     private val elementClassicConnection: ElementClassicConnection,
     private val preferencesEntryPoint: PreferencesEntryPoint,
     private val bipeDeviceAccount: BipeDeviceAccount, // Bipe
+    private val authenticationService: MatrixAuthenticationService, // Bipe: "Conta do beta"
 ) : BaseFlowNode<LoginFlowNode.NavTarget>(
     backstack = BackStack(
-        initialElement = NavTarget.CheckClassicFlow,
+        // Bipe (bipe-chat/bipe#415): no Element Classic check, so no spinner before the start screen.
+        initialElement = if (OnBoardingConfig.USES_BIPE_SIGNUP) NavTarget.OnBoarding(showBackButton = false) else NavTarget.CheckClassicFlow,
         savedStateMap = buildContext.savedStateMap,
     ),
     buildContext = buildContext,
@@ -94,8 +98,19 @@ class LoginFlowNode(
 
     private var externalAppStarted = false
 
+    // Bipe: a restored back stack already holds the screens the links opened.
+    private val isRestored = buildContext.savedStateMap != null
+
     override fun onBuilt() {
         super.onBuilt()
+        if (OnBoardingConfig.USES_BIPE_SIGNUP && !isRestored) {
+            // An invite link shows its start screen variant (bipe-chat/bipe#415); a recovery link opens the recovery screen.
+            val params = inputs<Params>()
+            params.bipeRecoveryToken?.let { backstack.push(NavTarget.BipeRecovery(linkToken = it)) }
+            if (params.bipeInviteCode == null && params.bipeRecoveryToken == null) {
+                bipeStartDeviceAccount()
+            }
+        }
         lifecycle.subscribe(
             onResume = {
                 if (externalAppStarted) {
@@ -138,7 +153,7 @@ class LoginFlowNode(
 
         // Bipe: invite sign-up. inviteCode is a normalised code from an invite link.
         @Parcelize
-        data class BipeSignup(val inviteCode: String? = null) : NavTarget
+        data class BipeSignup(val inviteCode: String? = null, val startsWithInviteCode: Boolean = true) : NavTarget
 
         // Bipe: get back into a device-first account. linkToken is the token of an e-mail recovery link.
         @Parcelize
@@ -161,13 +176,6 @@ class LoginFlowNode(
                             backstack.push(NavTarget.OnBoarding(showBackButton = true))
                         } else {
                             backstack.replace(NavTarget.OnBoarding(showBackButton = false))
-                        }
-                        // Bipe: an invite link opens the sign-up screen on top of onboarding, a recovery link the recovery screen.
-                        val params = inputs<Params>()
-                        params.bipeInviteCode?.let { backstack.push(NavTarget.BipeSignup(inviteCode = it)) }
-                        params.bipeRecoveryToken?.let { backstack.push(NavTarget.BipeRecovery(linkToken = it)) }
-                        if (!allowBackNavigation && params.bipeInviteCode == null && params.bipeRecoveryToken == null) {
-                            bipeStartDeviceAccount()
                         }
                     }
 
@@ -211,6 +219,10 @@ class LoginFlowNode(
                         backstack.push(NavTarget.BipeRecovery())
                     }
 
+                    override fun navigateToBipeSignup(startsWithInviteCode: Boolean) {
+                        backstack.push(NavTarget.BipeSignup(inviteCode = inputs<Params>().bipeInviteCode, startsWithInviteCode = startsWithInviteCode))
+                    }
+
                     override fun navigateToBugReport() {
                         callback.navigateToBugReport()
                     }
@@ -240,6 +252,7 @@ class LoginFlowNode(
                     accountProvider = params.accountProvider,
                     loginHint = params.loginHint,
                     showBackButton = navTarget.showBackButton,
+                    bipeInviteCode = params.bipeInviteCode,
                 )
                 createNode<OnBoardingNode>(buildContext, listOf(callback, inputs))
             }
@@ -291,13 +304,23 @@ class LoginFlowNode(
                 createNode<ConfirmAccountProviderNode>(buildContext, plugins = listOf(inputs, callback))
             }
             is NavTarget.BipeSignup -> {
-                val inputs = BipeSignupNode.Inputs(inviteCode = navTarget.inviteCode)
+                val inputs = BipeSignupNode.Inputs(inviteCode = navTarget.inviteCode, startsWithInviteCode = navTarget.startsWithInviteCode)
                 createNode<BipeSignupNode>(buildContext, plugins = listOf(inputs))
             }
             is NavTarget.BipeRecovery -> {
                 val callback = object : BipeRecoveryNode.Callback {
                     override fun navigateToQrCode() {
                         backstack.push(NavTarget.QrCode)
+                    }
+
+                    override fun navigateToBetaLogin() {
+                        // The password screen signs in on the configured server, so set it first (the old start button did).
+                        lifecycleScope.launch {
+                            accountProviderDataSource.reset()
+                            authenticationService.setHomeserver(accountProviderDataSource.flow.value.serverNameOrBaseUrl())
+                                .onSuccess { backstack.push(NavTarget.LoginPassword()) }
+                                .onFailure { Timber.e(it, "Bipe beta login: the server did not answer") }
+                        }
                     }
                 }
                 val inputs = BipeRecoveryNode.Inputs(linkToken = navTarget.linkToken)

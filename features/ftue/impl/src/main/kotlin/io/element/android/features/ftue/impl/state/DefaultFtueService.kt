@@ -12,6 +12,7 @@ import android.Manifest
 import android.os.Build
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
+import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.ftue.api.state.FtueService
 import io.element.android.features.ftue.api.state.FtueState
 import io.element.android.features.lockscreen.api.LockScreenService
@@ -128,6 +129,8 @@ class DefaultFtueService(
     }
 
     private suspend fun shouldAskNotificationPermissions(): Boolean {
+        // Bipe (bipe-chat/bipe#199, bipe-chat/bipe#415): the notification ask comes after the first sent message, not in first run.
+        if (OnBoardingConfig.USES_BIPE_SIGNUP) return false
         return if (sdkVersionProvider.isAtLeast(Build.VERSION_CODES.TIRAMISU)) {
             val permission = Manifest.permission.POST_NOTIFICATIONS
             val isPermissionDenied = permissionStateProvider.isPermissionDenied(permission).first()

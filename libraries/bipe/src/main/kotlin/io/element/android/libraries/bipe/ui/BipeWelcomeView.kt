@@ -51,7 +51,11 @@ import io.element.android.libraries.designsystem.R as DesignSystemR
  * iOS: `BipeWelcomeView`.
  */
 @Composable
-fun BipeWelcomeView(modifier: Modifier = Modifier) {
+fun BipeWelcomeView(
+    modifier: Modifier = Modifier,
+    /** "@ana te chamou para o Bipe." replaces the welcome line and the title when an invite is pending (bipe-chat/bipe#415). */
+    invitedBy: String? = null,
+) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         // iOS hides the logo only in compact height (landscape). Here the buttons below take part of the
         // screen, so the logo shrinks first and hides only when the space is very short.
@@ -81,15 +85,17 @@ fun BipeWelcomeView(modifier: Modifier = Modifier) {
                 )
                 Spacer(modifier = Modifier.height(32.dp))
             }
+            if (invitedBy == null) {
+                Text(
+                    text = stringResource(R.string.bipe_onboarding_welcome),
+                    style = ElementTheme.typography.fontBodyLgMedium,
+                    color = ElementTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Text(
-                text = stringResource(R.string.bipe_onboarding_welcome),
-                style = ElementTheme.typography.fontBodyLgMedium,
-                color = ElementTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.bipe_onboarding_title),
+                text = invitedBy ?: stringResource(R.string.bipe_onboarding_title),
                 style = ElementTheme.typography.fontHeadingXlBold,
                 color = ElementTheme.colors.textPrimary,
                 textAlign = TextAlign.Center,

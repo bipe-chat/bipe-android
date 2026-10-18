@@ -56,6 +56,14 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/me/account`. PIN state and the recoveries of the caller's account. */
     suspend fun account(accessToken: String): BipeAccountStatus = call { service.account(bearer(accessToken)) }
 
+    /**
+     * `POST /v1/waitlist`. No auth. HTTP 202 for every well-formed request, so it never tells whether the address is known (ADR 0025).
+     * [lang] is "pt" or "en", the language of the one e-mail Bipe sends. From the "Não tem convite?" sheet (bipe-chat/bipe#415).
+     */
+    suspend fun joinWaitlist(email: String, lang: String) {
+        checked { service.joinWaitlist(WaitlistRequest(email = email, platform = "android", lang = lang, source = "app")) }
+    }
+
     /** `POST /v1/me/terms`. Records that the caller accepted the legal texts of [termsVersion] (ADR 0113). HTTP 204. */
     suspend fun acceptTerms(termsVersion: String, accessToken: String) {
         checked { service.acceptTerms(bearer(accessToken), TermsRequest(termsVersion)) }
@@ -280,6 +288,15 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 @Serializable
 internal data class TermsRequest(@SerialName("terms_version") val termsVersion: String)
 
+/** `POST /v1/waitlist` body. Internal for the same reason as [TermsRequest]. */
+@Serializable
+internal data class WaitlistRequest(
+    val email: String,
+    val platform: String,
+    val lang: String,
+    val source: String,
+)
+
 /** Retrofit encodes each `@Path` value, so a handle cannot add path segments. */
 internal interface BipeApiService {
     @POST("v1/signup")
@@ -293,6 +310,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/account")
     suspend fun account(@Header("Authorization") authorization: String): Response<BipeAccountStatus>
+
+    @POST("v1/waitlist")
+    suspend fun joinWaitlist(@Body request: WaitlistRequest): Response<Unit>
 
     @POST("v1/me/terms")
     suspend fun acceptTerms(@Header("Authorization") authorization: String, @Body request: TermsRequest): Response<Unit>

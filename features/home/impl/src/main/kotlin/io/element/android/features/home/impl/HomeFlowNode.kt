@@ -53,7 +53,10 @@ import io.element.android.libraries.architecture.BackstackView
 import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.launchMolecule
 import io.element.android.libraries.architecture.callback
+import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.R as BipeR
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.handle.BipeHandleNode
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.deeplink.api.usecase.InviteFriendsUseCase
@@ -67,6 +70,8 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.services.analytics.api.AnalyticsService
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -78,9 +83,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import timber.log.Timber
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration.Companion.milliseconds
-import io.element.android.libraries.bipe.R as BipeR
 
 @ContributesNode(SessionScope::class)
 @AssistedInject
@@ -147,6 +149,10 @@ class HomeFlowNode(
 
         @Parcelize
         data class SelectNewOwnersWhenLeavingRoom(val roomId: RoomId) : NavTarget
+
+        // Bipe (bipe-chat/bipe#415): the username screen from the "Escolha seu @" card.
+        @Parcelize
+        data object BipeHandle : NavTarget
     }
 
     private fun navigateToReportRoom(roomId: RoomId) {
@@ -285,6 +291,7 @@ class HomeFlowNode(
                 onAddAccountClick = callback::navigateToAddAccount,
                 onStartChatClick = callback::navigateToCreateRoom,
                 onBipeCreateGroupClick = callback::bipeNavigateToCreateGroup,
+                onBipeHandlePromptClick = { backstack.push(NavTarget.BipeHandle) },
                 onCreateSpaceClick = callback::navigateToCreateSpace,
                 onSetUpRecoveryClick = callback::navigateToSetUpRecovery,
                 onConfirmRecoveryKeyClick = callback::navigateToEnterRecoveryKey,
@@ -351,6 +358,7 @@ class HomeFlowNode(
                 )
             }
             NavTarget.Root -> rootNode(buildContext)
+            NavTarget.BipeHandle -> createNode<BipeHandleNode>(buildContext)
         }
     }
 }

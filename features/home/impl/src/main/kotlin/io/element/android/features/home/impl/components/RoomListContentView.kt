@@ -46,6 +46,8 @@ import io.element.android.features.home.impl.roomlist.RoomListEvent
 import io.element.android.features.home.impl.roomlist.SecurityBannerState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
+import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.bipe.ui.BipeHandlePromptRow
 import io.element.android.libraries.bipe.ui.BipeInviterRow
 import io.element.android.libraries.bipe.ui.BipeRequestsRow
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -57,7 +59,6 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
-import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun RoomListContentView(
@@ -76,6 +77,7 @@ fun RoomListContentView(
     modifier: Modifier = Modifier,
     bipeInviterHandle: String? = null,
     onBipeInviterClick: () -> Unit = {},
+    bipeHandlePrompt: BipeHandlePromptActions? = null,
 ) {
     when (contentState) {
         is RoomListContentState.Skeleton -> {
@@ -95,6 +97,7 @@ fun RoomListContentView(
                 onCreateRoomClick = if (contentState.bipeGroups) onBipeCreateGroupClick else onCreateRoomClick,
                 bipeInviterHandle = bipeInviterHandle,
                 onBipeInviterClick = onBipeInviterClick,
+                bipeHandlePrompt = bipeHandlePrompt,
             )
         }
         is RoomListContentState.Rooms -> {
@@ -112,6 +115,7 @@ fun RoomListContentView(
                 contentPadding = contentPadding,
                 bipeInviterHandle = bipeInviterHandle,
                 onBipeInviterClick = onBipeInviterClick,
+                bipeHandlePrompt = bipeHandlePrompt,
             )
         }
     }
@@ -150,6 +154,7 @@ private fun EmptyView(
     onCreateRoomClick: () -> Unit,
     bipeInviterHandle: String?,
     onBipeInviterClick: () -> Unit,
+    bipeHandlePrompt: BipeHandlePromptActions?,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
@@ -186,9 +191,12 @@ private fun EmptyView(
                         onDismissClick = { eventSink(RoomListEvent.DismissBanner) },
                     )
                 }
-                // Bipe (ADR 0117): one account task at a time. The inviter row waits for the recovery key.
+                // Bipe (ADR 0117): one account task at a time. The inviter row waits for the recovery key,
+                // "Escolha seu @" (bipe-chat/bipe#415) waits for the inviter row.
                 SecurityBannerState.None -> if (bipeInviterHandle != null) {
                     BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                } else if (bipeHandlePrompt != null) {
+                    BipeHandlePromptRow(onClick = bipeHandlePrompt.onClick, onDismiss = bipeHandlePrompt.onDismiss)
                 }
             }
         }
@@ -209,6 +217,7 @@ private fun RoomsView(
     lazyListState: LazyListState,
     bipeInviterHandle: String?,
     onBipeInviterClick: () -> Unit,
+    bipeHandlePrompt: BipeHandlePromptActions?,
     modifier: Modifier = Modifier,
 ) {
     val isSpaceFilterSelected = spaceFiltersState is SpaceFiltersState.Selected
@@ -231,6 +240,7 @@ private fun RoomsView(
             // Bipe ADR 0034: hidden while any filter is on.
             bipeInviterHandle = bipeInviterHandle.takeUnless { hasAnyFilterSelected },
             onBipeInviterClick = onBipeInviterClick,
+            bipeHandlePrompt = bipeHandlePrompt.takeUnless { hasAnyFilterSelected },
             hideInvitesAvatars = hideInvitesAvatars,
             eventSink = eventSink,
             onSetUpRecoveryClick = onSetUpRecoveryClick,
@@ -249,6 +259,7 @@ private fun RoomsViewList(
     onRequestsClick: (() -> Unit)?,
     bipeInviterHandle: String?,
     onBipeInviterClick: () -> Unit,
+    bipeHandlePrompt: BipeHandlePromptActions?,
     hideInvitesAvatars: Boolean,
     eventSink: (RoomListEvent) -> Unit,
     onSetUpRecoveryClick: () -> Unit,
@@ -288,6 +299,12 @@ private fun RoomsViewList(
             bipeInviterHandle != null -> {
                 item {
                     BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                    HorizontalDivider()
+                }
+            }
+            bipeHandlePrompt != null -> {
+                item {
+                    BipeHandlePromptRow(onClick = bipeHandlePrompt.onClick, onDismiss = bipeHandlePrompt.onDismiss)
                     HorizontalDivider()
                 }
             }
@@ -407,3 +424,6 @@ internal fun RoomListContentViewPreview(@PreviewParameter(RoomListContentStatePr
         contentPadding = PaddingValues(0.dp),
     )
 }
+
+/** Bipe (bipe-chat/bipe#415): the "Escolha seu @" card's actions. Null when the card does not show. */
+data class BipeHandlePromptActions(val onClick: () -> Unit, val onDismiss: () -> Unit)
