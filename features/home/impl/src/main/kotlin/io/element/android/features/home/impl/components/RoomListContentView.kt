@@ -252,6 +252,7 @@ private fun RoomsView(
             bipeInviterHandle = bipeInviterHandle.takeUnless { hasAnyFilterSelected },
             onBipeInviterClick = onBipeInviterClick,
             bipeHandlePrompt = bipeHandlePrompt.takeUnless { hasAnyFilterSelected },
+            bipeRemoteBanner = bipeRemoteBanner.takeUnless { hasAnyFilterSelected },
             hideInvitesAvatars = hideInvitesAvatars,
             eventSink = eventSink,
             onSetUpRecoveryClick = onSetUpRecoveryClick,
