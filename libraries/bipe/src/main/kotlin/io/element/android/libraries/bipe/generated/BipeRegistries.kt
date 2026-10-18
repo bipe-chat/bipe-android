@@ -28,6 +28,8 @@ object BipeRegistries {
         "suporte bipe" to ReservedNameCategory.BIPE,
         "equipe bipe" to ReservedNameCategory.BIPE,
         "seguranca bipe" to ReservedNameCategory.BIPE,
+        "novidades do bipe" to ReservedNameCategory.BIPE,
+        "novidades bipe" to ReservedNameCategory.BIPE,
         "banco do brasil" to ReservedNameCategory.BANK,
         "caixa" to ReservedNameCategory.BANK,
         "caixa economica federal" to ReservedNameCategory.BANK,
@@ -578,6 +580,14 @@ object BipeRegistries {
     const val HANDLE_OWNER_MIN_LENGTH = 2
     val ownedHandles: Set<String> = setOf(
         "mz",
+        "bipe",
+        "suporte",
+    )
+
+    /** Full Matrix user IDs of official Bipe accounts. Match exactly; names and handles are not proof. */
+    val officialAccountIds: Set<String> = setOf(
+        "@suporte:bipe.net.br",
+        "@bipe:bipe.net.br",
     )
 
     /** Public profile rules (ADR 0041). Lengths count code points. The server is the authority. */
