@@ -1,0 +1,51 @@
+#!/bin/sh
+# Fast check before a push: compile (app, both flavors, and unit-test sources), Android lint, detekt, ktlint,
+# and the dependency check. The pre-push hook in .bipe-hooks calls it. CI only: unit tests, Konsist,
+# compose stability, screenshots and tools/check/check_code_quality.sh (downloads a Perl script).
+# Without a local Android SDK it builds on the host in `git config bipe.androidBuildHost` (ssh, BatchMode):
+# it copies the tracked files there with tar and runs the same Gradle tasks.
+# Usage: scripts/verify [--all]
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+base=$(git merge-base HEAD origin/main 2>/dev/null || echo HEAD)
+if [ "${1:-}" != --all ] && [ -z "$(git diff --name-only "$base" HEAD | grep -v '\.md$' || true)" ]; then
+  echo "verify: only Markdown changed since origin/main, nothing to check (scripts/verify --all forces it)"
+  exit 0
+fi
+
+python3 ./tools/dependencies/checkDependencies.py
+
+TASKS=":app:compileGplayDebugKotlin :app:compileFdroidDebugKotlin compileDebugUnitTestKotlin :app:lintGplayDebug :app:lintFdroidDebug lintDebug detekt ktlintCheck"
+
+sdk="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+if [ -d "$sdk" ] || grep -qs '^sdk.dir=' local.properties; then
+  # shellcheck disable=SC2086
+  ./gradlew $TASKS --continue
+  echo "verify: ok"
+  exit 0
+fi
+
+host=$(git config bipe.androidBuildHost || true)
+if [ -z "$host" ]; then
+  echo "verify: no Android SDK on $(uname -n) and no build host. Set one: git config bipe.androidBuildHost <ssh host>" >&2
+  exit 1
+fi
+slug=$(git rev-parse --abbrev-ref HEAD | tr -c 'A-Za-z0-9\n' '-')
+dir="Dev/Bipe/verify/$slug"
+echo "verify: no local Android SDK, building on $host in ~/$dir"
+list=$(mktemp)
+trap 'rm -f "$list"' EXIT
+# Tracked files that exist: skips deleted files and LFS gaps. Includes uncommitted edits to tracked files.
+git ls-files | while IFS= read -r f; do [ -f "$f" ] && printf '%s\n' "$f"; done > "$list"
+ssh -o BatchMode=yes "$host" "rm -rf ~/$dir && mkdir -p ~/$dir/bipe-android"
+tar -cf - -T "$list" | ssh -o BatchMode=yes "$host" "tar -xf - -C ~/$dir/bipe-android"
+# The build reads the git revision, so the copy gets a one-commit repository.
+ssh -o BatchMode=yes "$host" "bash -s" <<REMOTE
+set -eu
+cd ~/$dir/bipe-android
+export JAVA_HOME="\$HOME/opt/jdk-21/Contents/Home"
+echo "sdk.dir=\$HOME/Library/Android/sdk" > local.properties
+git init -q -b main && git add -A && git -c user.email=verify@bipe.chat -c user.name=verify commit -qm snapshot
+./gradlew $TASKS --continue --max-workers=4
+REMOTE
+echo "verify: ok (on $host)"
