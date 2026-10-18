@@ -16,6 +16,7 @@ import io.element.android.features.home.impl.search.RoomListSearchState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteState
 import io.element.android.features.leaveroom.api.LeaveRoomState
+import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.push.api.battery.BatteryOptimizationState
@@ -41,6 +42,8 @@ data class RoomListState(
     val eventSink: (RoomListEvent) -> Unit,
     /** Bipe (bipe-chat/bipe#200, bipe-chat/bipe#415): "Escolha seu @" while the account has no @. */
     val bipeShowsHandlePrompt: Boolean,
+    /** Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner, above the account tasks. */
+    val bipeRemoteBanner: BipeRemoteBannerShown? = null,
 ) {
     val displayFilters = contentState is RoomListContentState.Rooms
 
