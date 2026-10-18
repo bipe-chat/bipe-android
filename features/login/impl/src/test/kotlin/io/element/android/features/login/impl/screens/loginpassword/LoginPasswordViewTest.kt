@@ -35,6 +35,7 @@ import io.element.android.tests.testutils.pressBack
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
 import org.robolectric.annotation.Config
+import io.element.android.libraries.bipe.R as BipeR
 
 class LoginPasswordViewTest : RobolectricTest() {
     @Test
@@ -123,7 +124,7 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_password)
+        val userNameHint = activity!!.getString(BipeR.string.bipe_recovery_beta_password) // Bipe: beta accounts only (bipe-chat/bipe#415)
         onNodeWithText(userNameHint).performTextInput(A_PASSWORD)
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetPassword(A_PASSWORD)
@@ -138,7 +139,7 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val passwordHint = activity!!.getString(CommonStrings.common_password)
+        val passwordHint = activity!!.getString(BipeR.string.bipe_recovery_beta_password) // Bipe: beta accounts only (bipe-chat/bipe#415)
         onNodeWithText(passwordHint).performTextInput("a\r\nb")
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetPassword("ab")

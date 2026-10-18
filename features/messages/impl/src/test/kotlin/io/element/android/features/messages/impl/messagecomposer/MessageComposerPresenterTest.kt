@@ -1761,8 +1761,8 @@ fun aReplyMode() = MessageComposerMode.Reply(
  * Bipe (bipe-chat/bipe#199): notifications count as granted here, so the ask after the first sent message stays out of these
  * tests. Other permissions use [permissionPresenter].
  */
-internal fun aBipeNotificationsGrantedFactory(permissionPresenter: PermissionsPresenter) = PermissionsPresenter.Factory { permission ->
-    if (permission == Manifest.permission.POST_NOTIFICATIONS) {
+internal fun aBipeNotificationsGrantedFactory(permissionPresenter: PermissionsPresenter) = object : PermissionsPresenter.Factory {
+    override fun create(permission: String): PermissionsPresenter = if (permission == Manifest.permission.POST_NOTIFICATIONS) {
         FakePermissionsPresenter(aPermissionsState(showDialog = false, permissionGranted = true))
     } else {
         permissionPresenter
