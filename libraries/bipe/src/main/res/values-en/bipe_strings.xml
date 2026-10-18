@@ -736,4 +736,26 @@
     <string name="bipe_chats_live_location_precise">For live location to work, turn on Precise Location for Bipe in iPhone Settings.</string>
     <string name="bipe_chats_live_location_permission">For live location to work, keep precise location on for Bipe. To change it, open %1$s.</string>
     <string name="bipe_chats_live_location_permission_link">app settings</string>
+    <string name="bipe_onboarding_invited_by">%1$s invited you to Bipe.</string>
+    <string name="bipe_onboarding_join_with_invite">Join with the invite</string>
+    <string name="bipe_onboarding_have_invite">I have an invite</string>
+    <string name="bipe_onboarding_have_account">I already have an account</string>
+    <string name="bipe_invite_code_title">Invite code</string>
+    <string name="bipe_invite_code_body">Ask the person who invited you for the code.</string>
+    <string name="bipe_invite_code_none">No invite?</string>
+    <string name="bipe_waitlist_body">Bipe is opening up slowly. Ask someone who already uses it for an invite, or join the waitlist and we\'ll let you know.</string>
+    <string name="bipe_waitlist_join">Join the waitlist</string>
+    <string name="bipe_waitlist_done">You\'re on the list. We\'ll email you.</string>
+    <string name="bipe_signup_name_title">What\'s your name?</string>
+    <string name="bipe_signup_signin_failed">Your account was created, but signing in didn\'t work. Try again.</string>
+    <string name="bipe_recovery_beta">Beta account</string>
+    <string name="bipe_recovery_beta_body">For people who joined the beta with an email and a password.</string>
+    <string name="bipe_recovery_beta_password">Beta account password</string>
+    <string name="bipe_notifications_prompt_title">%1$s will reply. Want to know right away?</string>
+    <string name="bipe_notifications_prompt_title_generic">Want to know right away when someone replies?</string>
+    <string name="bipe_notifications_prompt_body">Bipe tells you when a new message arrives. You can change this later in Settings.</string>
+    <string name="bipe_notifications_prompt_allow">Turn on notifications</string>
+    <string name="bipe_handle_prompt_title">Pick your @</string>
+    <string name="bipe_handle_prompt_body">With an @, people can find you on Bipe.</string>
+    <string name="bipe_handle_prompt_action">Pick an @</string>
 </resources>
