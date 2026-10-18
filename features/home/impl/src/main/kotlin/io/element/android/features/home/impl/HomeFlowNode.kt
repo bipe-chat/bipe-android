@@ -53,7 +53,9 @@ import io.element.android.libraries.architecture.BackstackView
 import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.launchMolecule
 import io.element.android.libraries.architecture.callback
+import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.handle.BipeHandleNode
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.deeplink.api.usecase.InviteFriendsUseCase
@@ -147,6 +149,10 @@ class HomeFlowNode(
 
         @Parcelize
         data class SelectNewOwnersWhenLeavingRoom(val roomId: RoomId) : NavTarget
+
+        // Bipe (bipe-chat/bipe#415): the username screen from the "Escolha seu @" card.
+        @Parcelize
+        data object BipeHandle : NavTarget
     }
 
     private fun navigateToReportRoom(roomId: RoomId) {
@@ -285,6 +291,7 @@ class HomeFlowNode(
                 onAddAccountClick = callback::navigateToAddAccount,
                 onStartChatClick = callback::navigateToCreateRoom,
                 onBipeCreateGroupClick = callback::bipeNavigateToCreateGroup,
+                onBipeHandlePromptClick = { backstack.push(NavTarget.BipeHandle) },
                 onCreateSpaceClick = callback::navigateToCreateSpace,
                 onSetUpRecoveryClick = callback::navigateToSetUpRecovery,
                 onConfirmRecoveryKeyClick = callback::navigateToEnterRecoveryKey,
@@ -351,6 +358,7 @@ class HomeFlowNode(
                 )
             }
             NavTarget.Root -> rootNode(buildContext)
+            NavTarget.BipeHandle -> createNode<BipeHandleNode>(buildContext)
         }
     }
 }

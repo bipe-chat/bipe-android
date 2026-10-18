@@ -12,6 +12,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.element.android.features.login.impl.login.LoginModeState
 import io.element.android.features.login.impl.login.aLoginModeState
+import io.element.android.libraries.bipe.generated.BipeOnboardingStart
 import io.element.android.libraries.designsystem.R
 import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 
@@ -38,6 +39,8 @@ open class OnBoardingStatePreviewParam : PreviewParameterProvider<OnBoardingStat
                 showBackButton = true,
                 showDeveloperSettings = true,
             ),
+            anOnBoardingState(bipeStart = BipeOnboardingStart.INVITE_ONLY),
+            anOnBoardingState(bipeStart = BipeOnboardingStart.INVITED, bipeInviterHandle = "ana"),
         )
 }
 
@@ -55,6 +58,8 @@ fun anOnBoardingState(
     @DrawableRes
     customLogoResId: Int? = null,
     loginModeState: LoginModeState = aLoginModeState(),
+    bipeStart: BipeOnboardingStart? = null,
+    bipeInviterHandle: String? = null,
     eventSink: (OnBoardingEvent) -> Unit = {},
 ) = OnBoardingState(
     isAddingAccount = isAddingAccount,
@@ -69,5 +74,7 @@ fun anOnBoardingState(
     version = version,
     loginModeState = loginModeState,
     onBoardingLogoResId = customLogoResId,
+    bipeStart = bipeStart,
+    bipeInviterHandle = bipeInviterHandle,
     eventSink = eventSink,
 )

@@ -39,6 +39,7 @@ class OnBoardingNode(
         fun navigateToSignInFlow(mustChooseAccountProvider: Boolean)
         fun navigateToQrCode()
         fun navigateToBipeRecovery() // Bipe
+        fun navigateToBipeSignup(startsWithInviteCode: Boolean) // Bipe (bipe-chat/bipe#415)
         fun navigateToBugReport()
         fun navigateToLoginPassword()
         fun navigateToOAuth(oAuthDetails: OAuthDetails)
@@ -50,6 +51,8 @@ class OnBoardingNode(
         val accountProvider: String?,
         val loginHint: String?,
         val showBackButton: Boolean,
+        /** Bipe: the code from an invite link. The start screen says who invited (bipe-chat/bipe#415). */
+        val bipeInviteCode: String? = null,
     ) : NodeInputs
 
     private val callback: Callback = callback()
@@ -71,6 +74,7 @@ class OnBoardingNode(
             onCreateAccount = callback::navigateToSignUpFlow,
             onSignInWithQrCode = callback::navigateToQrCode,
             onBipeRecovery = callback::navigateToBipeRecovery,
+            onBipeSignup = callback::navigateToBipeSignup,
             onReportProblem = callback::navigateToBugReport,
             onOAuthDetails = callback::navigateToOAuth,
             onNeedLoginPassword = callback::navigateToLoginPassword,

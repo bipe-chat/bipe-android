@@ -30,11 +30,16 @@ class BipeSignupNode(
     data class Inputs(
         /** Normalised code from an invite link, or null. */
         val inviteCode: String?,
+        /** False when the start screen's button goes straight to the name (bipe-chat/bipe#415). */
+        val startsWithInviteCode: Boolean = true,
     ) : NodeInputs
 
     private val inputs: Inputs = inputs()
     private val presenter = presenterFactory.create(
-        BipeSignupPresenter.Params(inviteCode = inputs.inviteCode?.let(BipeInviteCode::parse))
+        BipeSignupPresenter.Params(
+            inviteCode = inputs.inviteCode?.let(BipeInviteCode::parse),
+            startsWithInviteCode = inputs.startsWithInviteCode,
+        )
     )
 
     @Composable

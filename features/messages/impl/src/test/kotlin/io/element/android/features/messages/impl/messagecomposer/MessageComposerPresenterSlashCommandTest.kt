@@ -49,8 +49,8 @@ import io.element.android.libraries.mediaupload.test.FakeMediaOptimizationConfig
 import io.element.android.libraries.mediaupload.test.FakeMediaPreProcessor
 import io.element.android.libraries.mediaviewer.test.FakeLocalMediaFactory
 import io.element.android.libraries.permissions.api.PermissionsPresenter
+import io.element.android.libraries.permissions.test.FakePermissionStateProvider
 import io.element.android.libraries.permissions.test.FakePermissionsPresenter
-import io.element.android.libraries.permissions.test.FakePermissionsPresenterFactory
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.preferences.api.store.VideoCompressionPreset
 import io.element.android.libraries.preferences.test.InMemorySessionPreferencesStore
@@ -306,7 +306,7 @@ class MessageComposerPresenterSlashCommandTest {
         messageComposerContext = DefaultMessageComposerContext(),
         richTextEditorStateFactory = TestRichTextEditorStateFactory(),
         roomAliasSuggestionsDataSource = FakeRoomAliasSuggestionsDataSource(),
-        permissionsPresenterFactory = FakePermissionsPresenterFactory(permissionPresenter),
+        permissionsPresenterFactory = aBipeNotificationsGrantedFactory(permissionPresenter),
         permalinkParser = permalinkParser,
         permalinkBuilder = permalinkBuilder,
         timelineController = TimelineController(
@@ -326,6 +326,7 @@ class MessageComposerPresenterSlashCommandTest {
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
         stickerPackRepository = FakeStickerPackRepository(),
+        permissionStateProvider = FakePermissionStateProvider(),
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

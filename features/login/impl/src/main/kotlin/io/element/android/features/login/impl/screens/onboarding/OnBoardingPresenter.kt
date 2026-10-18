@@ -9,6 +9,7 @@
 package io.element.android.features.login.impl.screens.onboarding
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,8 @@ import io.element.android.features.login.impl.login.LoginModeEvent
 import io.element.android.features.login.impl.login.LoginModeState
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.generated.BipeOnboardingStart
+import io.element.android.libraries.bipe.onboarding.BipeStartScreenInfo
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
@@ -47,6 +50,7 @@ class OnBoardingPresenter(
     private val onBoardingLogoResIdProvider: OnBoardingLogoResIdProvider,
     private val sessionStore: SessionStore,
     private val accountProviderDataSource: AccountProviderDataSource,
+    private val bipeStartScreenInfo: BipeStartScreenInfo, // Bipe
 ) : Presenter<OnBoardingState> {
     @AssistedFactory
     interface Factory {
@@ -110,6 +114,18 @@ class OnBoardingPresenter(
 
         val loginModeState = loginModePresenter.present()
 
+        // Bipe (bipe-chat/bipe#415): the start screen variant follows the server's sign-up mode (ADR 0072) and shows who invited.
+        // A failed read keeps the invite-first variant.
+        val bipeInvitePending = params.bipeInviteCode != null
+        var bipeInviteRequired by remember { mutableStateOf(true) }
+        var bipeInviterHandle by remember { mutableStateOf<String?>(null) }
+        if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+            LaunchedEffect(Unit) {
+                params.bipeInviteCode?.let { bipeInviterHandle = bipeStartScreenInfo.inviterHandle(it) }
+                bipeStartScreenInfo.isInviteRequired()?.let { bipeInviteRequired = it }
+            }
+        }
+
         fun handleEvent(event: OnBoardingEvent) {
             when (event) {
                 is OnBoardingEvent.OnSignIn -> localCoroutineScope.launch {
@@ -149,6 +165,12 @@ class OnBoardingPresenter(
             loginModeState = loginModeState,
             version = buildMeta.versionName,
             onBoardingLogoResId = onBoardingLogoResId,
+            bipeStart = if (OnBoardingConfig.USES_BIPE_SIGNUP) {
+                BipeOnboardingStart.variant(invitePending = bipeInvitePending, inviteRequired = bipeInviteRequired)
+            } else {
+                null
+            },
+            bipeInviterHandle = bipeInviterHandle,
             eventSink = ::handleEvent,
         )
     }

@@ -50,6 +50,7 @@ import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
@@ -99,6 +100,7 @@ class RoomListPresenter(
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
     private val bipeInviterGreeting: BipeInviterGreeting,
+    private val bipeHandlePrompt: BipeHandlePrompt,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
     private val isBipeAccount = client.sessionId.value.endsWith(":${BipeConfig.SERVER_NAME}") // Bipe: bipe#201
@@ -131,6 +133,7 @@ class RoomListPresenter(
         var bipeShowsGroups by rememberSaveable { mutableStateOf(false) }
         val bipeSelfChatRoomId by bipeSelfChat.roomId.collectAsState()
         val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
+        val bipeShowsHandlePrompt by bipeHandlePrompt.shows.collectAsState()
 
         val contextMenu = remember { mutableStateOf<RoomListState.ContextMenu>(RoomListState.ContextMenu.Hidden) }
         val declineInviteMenu = remember { mutableStateOf<RoomListState.DeclineInviteMenu>(RoomListState.DeclineInviteMenu.Hidden) }
@@ -175,6 +178,7 @@ class RoomListPresenter(
                 }
                 is RoomListEvent.ShowDeclineInviteMenu -> declineInviteMenu.value = RoomListState.DeclineInviteMenu.Shown(event.roomSummary)
                 RoomListEvent.HideDeclineInviteMenu -> declineInviteMenu.value = RoomListState.DeclineInviteMenu.Hidden
+                RoomListEvent.BipeDismissHandlePrompt -> bipeHandlePrompt.dismiss()
                 is RoomListEvent.BipeShowGroups -> {
                     // Pedidos (the invites filter) belongs to Conversas only.
                     if (event.showGroups && HomeRoomListFilter.Invites in filtersState.selectedFilters()) {
@@ -232,6 +236,7 @@ class RoomListPresenter(
             bipeInviterHandle = bipeInviter?.handle,
             bipeOpenInviterChat = bipeInviterGreeting::openChat,
             eventSink = ::handleEvent,
+            bipeShowsHandlePrompt = bipeShowsHandlePrompt,
         )
     }
 

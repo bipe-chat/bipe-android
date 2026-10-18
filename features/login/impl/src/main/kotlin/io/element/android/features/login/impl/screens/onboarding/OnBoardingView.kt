@@ -25,13 +25,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.login.LoginModeEvent
 import io.element.android.features.login.impl.login.LoginModeView
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.generated.BipeOnboardingStart
+import io.element.android.libraries.bipe.generated.BipeOnboardingTarget
 import io.element.android.libraries.bipe.ui.BipeWelcomeView
 import io.element.android.libraries.bipe.ui.bipeWelcomeBackground
 import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMolecule
@@ -51,6 +52,7 @@ import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPer
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Ref: https://www.figma.com/design/pDlJZGBsri47FNTXMnEdXB/Compound-Android-Templates?node-id=41-6503
@@ -69,6 +71,7 @@ fun OnBoardingView(
     onReportProblem: () -> Unit,
     modifier: Modifier = Modifier,
     onBipeRecovery: () -> Unit = {},
+    onBipeSignup: (startsWithInviteCode: Boolean) -> Unit = {},
 ) {
     val loginView = @Composable {
         LoginModeView(
@@ -98,6 +101,7 @@ fun OnBoardingView(
             onCreateAccount = onCreateAccount,
             onReportProblem = onReportProblem,
             onBipeRecovery = onBipeRecovery,
+            onBipeSignup = onBipeSignup,
         )
     }
 
@@ -142,7 +146,7 @@ private fun AddFirstAccountScaffold(
                         onBoardingLogoResId = state.onBoardingLogoResId,
                     )
                 } else {
-                    OnBoardingContent()
+                    OnBoardingContent(state)
                 }
                 if (state.showDeveloperSettings) {
                     IconButton(
@@ -197,8 +201,11 @@ private fun AddOtherAccountScaffold(
 
 // Bipe: logo, promise and value points instead of Element's logo and welcome text.
 @Composable
-private fun OnBoardingContent() {
-    BipeWelcomeView()
+private fun OnBoardingContent(state: OnBoardingState) {
+    val invitedBy = state.bipeInviterHandle
+        ?.takeIf { state.bipeStart == BipeOnboardingStart.INVITED }
+        ?.let { stringResource(BipeR.string.bipe_onboarding_invited_by, "@$it") }
+    BipeWelcomeView(invitedBy = invitedBy)
 }
 
 @Composable
@@ -227,6 +234,7 @@ private fun OnBoardingButtons(
     onCreateAccount: () -> Unit,
     onReportProblem: () -> Unit,
     onBipeRecovery: () -> Unit,
+    onBipeSignup: (startsWithInviteCode: Boolean) -> Unit,
 ) {
     val isLoading by remember(state.loginModeState.loginMode) {
         derivedStateOf {
@@ -235,6 +243,31 @@ private fun OnBoardingButtons(
     }
 
     ButtonColumnMolecule {
+        // Bipe (bipe-chat/bipe#415): one filled button and its text buttons, from bipe-shared `registries/onboarding.json`.
+        state.bipeStart?.let { start ->
+            fun open(target: BipeOnboardingTarget) = when (target) {
+                BipeOnboardingTarget.RECOVERY -> onBipeRecovery()
+                BipeOnboardingTarget.INVITE_CODE -> onBipeSignup(true)
+                BipeOnboardingTarget.NAME -> onBipeSignup(false)
+                else -> Unit
+            }
+            Button(
+                text = stringResource(start.primary.title),
+                onClick = { open(start.primary.target) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.onBoardingSignIn)
+            )
+            start.text.forEach { button ->
+                TextButton(
+                    text = stringResource(button.title),
+                    onClick = { open(button.target) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            OnBoardingVersion(state, onReportProblem)
+            return@ButtonColumnMolecule
+        }
         val signInButtonStringRes = if (state.canLoginWithQrCode || state.canCreateAccount) {
             R.string.screen_onboarding_sign_in_manually
         } else {
@@ -279,38 +312,34 @@ private fun OnBoardingButtons(
                     .fillMaxWidth()
             )
         }
-        // Bipe: a device-first account on a new phone (ADR 0057).
-        if (OnBoardingConfig.USES_BIPE_SIGNUP && !state.isAddingAccount) {
-            TextButton(
-                text = stringResource(id = io.element.android.libraries.bipe.R.string.bipe_recovery_title),
-                onClick = onBipeRecovery,
+        OnBoardingVersion(state, onReportProblem)
+    }
+}
+
+@Composable
+private fun OnBoardingVersion(state: OnBoardingState, onReportProblem: () -> Unit) {
+    if (state.isAddingAccount.not()) {
+        if (state.canReportBug) {
+            // Add a report problem text button. Use a Text since we need a special theme here.
+            Text(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .clickable(onClick = onReportProblem)
+                    .padding(16.dp),
+                text = stringResource(id = CommonStrings.common_report_a_problem),
+                style = ElementTheme.typography.fontBodySmRegular,
+                color = ElementTheme.colors.textSecondary,
             )
-        }
-        if (state.isAddingAccount.not()) {
-            if (state.canReportBug) {
-                // Add a report problem text button. Use a Text since we need a special theme here.
-                Text(
-                    modifier = Modifier
-                        .clickable(onClick = onReportProblem)
-                        .padding(16.dp),
-                    text = stringResource(id = CommonStrings.common_report_a_problem),
-                    style = ElementTheme.typography.fontBodySmRegular,
-                    color = ElementTheme.colors.textSecondary,
-                )
-            } else {
-                Text(
-                    modifier = Modifier
-                        .clickable(role = Role.Button) {
-                            state.eventSink(OnBoardingEvent.OnVersionClick)
-                        }
-                        .padding(16.dp),
-                    text = stringResource(id = R.string.screen_onboarding_app_version, state.version),
-                    style = ElementTheme.typography.fontBodySmRegular,
-                    color = ElementTheme.colors.textSecondary,
-                )
-            }
+        } else {
+            Text(
+                modifier = Modifier
+                    .clickable(role = Role.Button) {
+                        state.eventSink(OnBoardingEvent.OnVersionClick)
+                    }
+                    .padding(16.dp),
+                text = stringResource(id = R.string.screen_onboarding_app_version, state.version),
+                style = ElementTheme.typography.fontBodySmRegular,
+                color = ElementTheme.colors.textSecondary,
+            )
         }
     }
 }

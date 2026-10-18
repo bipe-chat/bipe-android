@@ -20,6 +20,10 @@ import io.element.android.features.login.impl.accountprovider.anAccountProviderD
 import io.element.android.features.login.impl.localnetwork.LocalNetworkPermissionGate
 import io.element.android.features.login.impl.login.LoginModePresenter
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.generated.BipeOnboardingButton
+import io.element.android.libraries.bipe.generated.BipeOnboardingStart
+import io.element.android.libraries.bipe.generated.BipeOnboardingTarget
+import io.element.android.libraries.bipe.onboarding.BipeStartScreenInfo
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 import io.element.android.libraries.matrix.api.accountprovider.matrixOrgAccountProvider
@@ -52,6 +56,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
+import io.element.android.libraries.bipe.R as BipeR
 
 class OnBoardingPresenterTest {
     @get:Rule
@@ -99,6 +104,47 @@ class OnBoardingPresenterTest {
             assertThat(initialState.isAddingAccount).isFalse()
             val finalState = awaitItem()
             assertThat(finalState.canLoginWithQrCode).isTrue()
+        }
+    }
+
+    // Bipe (bipe-chat/bipe#415): the start screen buttons come from bipe-shared registries/onboarding.json. iOS asserts the same
+    // variants in AuthenticationStartScreenViewModelTests, so a start screen that drifts from the registry fails on both.
+    @Test
+    fun `present - bipe start screen is invite first when sign-up needs an invite`() = runTest {
+        val presenter = createPresenter(bipeStartScreenInfo = FakeBipeStartScreenInfo(inviteRequired = true))
+        presenter.test {
+            val state = awaitItem()
+            assertThat(state.bipeStart).isEqualTo(BipeOnboardingStart.INVITE_ONLY)
+            assertThat(state.bipeStart?.primary).isEqualTo(BipeOnboardingButton(BipeR.string.bipe_onboarding_have_invite, BipeOnboardingTarget.INVITE_CODE))
+            assertThat(state.bipeStart?.text).containsExactly(BipeOnboardingButton(BipeR.string.bipe_onboarding_have_account, BipeOnboardingTarget.RECOVERY))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - bipe start screen with an invite link names the inviter`() = runTest {
+        val presenter = createPresenter(
+            params = OnBoardingNode.Params(accountProvider = null, loginHint = null, showBackButton = false, bipeInviteCode = "ABCD-EFGH-JKMN"),
+            bipeStartScreenInfo = FakeBipeStartScreenInfo(inviterHandle = "ana"),
+        )
+        presenter.test {
+            var state = awaitItem()
+            while (state.bipeInviterHandle == null) state = awaitItem()
+            assertThat(state.bipeStart).isEqualTo(BipeOnboardingStart.INVITED)
+            assertThat(state.bipeInviterHandle).isEqualTo("ana")
+            assertThat(state.bipeStart?.primary).isEqualTo(BipeOnboardingButton(BipeR.string.bipe_onboarding_join_with_invite, BipeOnboardingTarget.NAME))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - bipe start screen goes to the name when sign-up is open`() = runTest {
+        val presenter = createPresenter(bipeStartScreenInfo = FakeBipeStartScreenInfo(inviteRequired = false))
+        presenter.test {
+            var state = awaitItem()
+            while (state.bipeStart != BipeOnboardingStart.OPEN) state = awaitItem()
+            assertThat(state.bipeStart?.primary).isEqualTo(BipeOnboardingButton(BipeR.string.bipe_signup_title, BipeOnboardingTarget.NAME))
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -354,6 +400,7 @@ private fun createPresenter(
     onBoardingLogoResIdProvider: OnBoardingLogoResIdProvider = OnBoardingLogoResIdProvider { null },
     sessionStore: SessionStore = InMemorySessionStore(),
     accountProviderDataSource: AccountProviderDataSource = anAccountProviderDataSource(),
+    bipeStartScreenInfo: BipeStartScreenInfo = FakeBipeStartScreenInfo(),
 ) = OnBoardingPresenter(
     params = params,
     buildMeta = buildMeta,
@@ -367,7 +414,18 @@ private fun createPresenter(
     onBoardingLogoResIdProvider = onBoardingLogoResIdProvider,
     sessionStore = sessionStore,
     accountProviderDataSource = accountProviderDataSource,
+    bipeStartScreenInfo = bipeStartScreenInfo,
 )
+
+/** Null reads keep the defaults, so tests that do not care see no extra states. */
+private class FakeBipeStartScreenInfo(
+    private val inviteRequired: Boolean? = null,
+    private val inviterHandle: String? = null,
+) : BipeStartScreenInfo {
+    override suspend fun isInviteRequired(): Boolean? = inviteRequired
+
+    override suspend fun inviterHandle(code: String): String? = inviterHandle
+}
 
 fun createLoginModePresenter(
     oAuthActionFlow: OAuthActionFlow = FakeOAuthActionFlow(),

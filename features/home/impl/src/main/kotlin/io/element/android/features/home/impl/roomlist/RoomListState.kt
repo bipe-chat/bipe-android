@@ -39,6 +39,8 @@ data class RoomListState(
     /** Bipe ADR 0034: the chat with the inviter, found or created. `null` when it cannot open. */
     val bipeOpenInviterChat: suspend () -> RoomId?,
     val eventSink: (RoomListEvent) -> Unit,
+    /** Bipe (bipe-chat/bipe#200, bipe-chat/bipe#415): "Escolha seu @" while the account has no @. */
+    val bipeShowsHandlePrompt: Boolean,
 ) {
     val displayFilters = contentState is RoomListContentState.Rooms
 

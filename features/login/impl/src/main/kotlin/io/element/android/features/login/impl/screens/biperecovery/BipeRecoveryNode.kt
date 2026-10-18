@@ -36,6 +36,9 @@ class BipeRecoveryNode(
 
     interface Callback : Plugin {
         fun navigateToQrCode()
+
+        /** "Conta do beta": the e-mail and password login of accounts made before ADR 0057. */
+        fun navigateToBetaLogin()
     }
 
     private val callback: Callback = callback()
@@ -48,6 +51,7 @@ class BipeRecoveryNode(
             state = state,
             onBackClick = ::navigateUp,
             onSignInWithQrCode = callback::navigateToQrCode,
+            onBetaAccount = callback::navigateToBetaLogin,
             modifier = modifier,
         )
     }

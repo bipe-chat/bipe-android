@@ -16,13 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerEvent
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerState
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerStatePreviewParam
 import io.element.android.features.messages.api.timeline.voicemessages.composer.aVoiceMessageComposerState
+import io.element.android.libraries.bipe.generated.BipeOnboardingPrompt
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
+import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.textcomposer.TextComposer
@@ -30,6 +33,7 @@ import io.element.android.libraries.textcomposer.model.Suggestion
 import io.element.android.libraries.textcomposer.model.VoiceMessagePlayerEvent
 import io.element.android.libraries.textcomposer.model.VoiceMessageRecorderEvent
 import kotlinx.coroutines.launch
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 internal fun MessageComposerView(
@@ -124,6 +128,19 @@ internal fun MessageComposerView(
         onSuccess = {},
         onErrorDismiss = { state.eventSink(MessageComposerEvent.ClearSlashError) },
     )
+
+    state.bipeNotificationAsk?.let { ask ->
+        val prompt = BipeOnboardingPrompt.NOTIFICATIONS
+        ConfirmationDialog(
+            title = ask.dmName?.let { stringResource(BipeR.string.bipe_notifications_prompt_title, it) }
+                ?: stringResource(BipeR.string.bipe_notifications_prompt_title_generic),
+            content = stringResource(prompt.body ?: BipeR.string.bipe_notifications_prompt_body),
+            submitText = stringResource(prompt.primary.title),
+            cancelText = stringResource(prompt.text.first().title),
+            onSubmitClick = { state.eventSink(MessageComposerEvent.BipeAllowNotifications) },
+            onDismiss = { state.eventSink(MessageComposerEvent.BipeSkipNotifications) },
+        )
+    }
 }
 
 @PreviewsDayNight

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.features.home.impl.components.BipeHandlePromptActions
 import io.element.android.features.home.impl.components.HomeTopBar
 import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
@@ -91,6 +92,8 @@ fun HomeView(
     // Bipe: the Você tab content (ADR 0053), built by the node.
     youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
+    // Bipe (bipe-chat/bipe#415): "Escolha seu @" opens the username screen.
+    onBipeHandlePromptClick: () -> Unit = {},
     leaveRoomView: @Composable () -> Unit,
 ) {
     val state: RoomListState = homeState.roomListState
@@ -131,6 +134,7 @@ fun HomeView(
             onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
             onMenuActionClick = onMenuActionClick,
             onAddAccountClick = { if (firstThrottler.canHandle()) onAddAccountClick() },
+            onBipeHandlePromptClick = { if (firstThrottler.canHandle()) onBipeHandlePromptClick() },
             youTabView = youTabView,
         )
 
@@ -172,6 +176,7 @@ private fun HomeScaffold(
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     onAddAccountClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onBipeHandlePromptClick: () -> Unit = {},
     youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
 ) {
     fun onRoomClick(room: RoomListRoomSummary) {
@@ -330,6 +335,16 @@ private fun HomeScaffold(
                                 .takeIf { state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats },
                             onBipeInviterClick = {
                                 bipeCoroutineScope.launch { roomListState.bipeOpenInviterChat()?.let(onRoomClick) }
+                            },
+                            // Bipe (bipe-chat/bipe#415): "Escolha seu @" in Conversas only, after the inviter card.
+                            bipeHandlePrompt = BipeHandlePromptActions(
+                                onClick = {
+                                    roomListState.eventSink(RoomListEvent.BipeDismissHandlePrompt)
+                                    onBipeHandlePromptClick()
+                                },
+                                onDismiss = { roomListState.eventSink(RoomListEvent.BipeDismissHandlePrompt) },
+                            ).takeIf {
+                                roomListState.bipeShowsHandlePrompt && state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats
                             },
                             modifier = Modifier
                                 .padding(outerPadding)

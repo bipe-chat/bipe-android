@@ -11,6 +11,7 @@ package io.element.android.features.login.impl.screens.onboarding
 import androidx.annotation.DrawableRes
 import io.element.android.features.login.impl.login.LoginModeState
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.generated.BipeOnboardingStart
 import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 
 data class OnBoardingState(
@@ -27,6 +28,10 @@ data class OnBoardingState(
     @DrawableRes
     val onBoardingLogoResId: Int?,
     val loginModeState: LoginModeState,
+    /** Bipe: the start screen variant from bipe-shared `registries/onboarding.json` (bipe-chat/bipe#415). Null outside Bipe sign-up. */
+    val bipeStart: BipeOnboardingStart?,
+    /** Bipe: the inviter's handle from the invite preview, without @. */
+    val bipeInviterHandle: String?,
     val eventSink: (OnBoardingEvent) -> Unit,
 ) {
     val submitEnabled: Boolean

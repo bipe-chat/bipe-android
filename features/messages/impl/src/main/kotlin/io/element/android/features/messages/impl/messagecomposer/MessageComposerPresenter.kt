@@ -11,6 +11,7 @@ package io.element.android.features.messages.impl.messagecomposer
 import android.Manifest
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +32,7 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.Composer
 import im.vector.app.features.analytics.plan.Interaction
+import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.contentscanner.api.ContentScannerService
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.messages.impl.MessagesNavigator
@@ -74,8 +76,10 @@ import io.element.android.libraries.mediapickers.api.PickerProvider
 import io.element.android.libraries.mediaupload.api.MediaOptimizationConfigProvider
 import io.element.android.libraries.mediaupload.api.MediaSenderFactory
 import io.element.android.libraries.mediaviewer.api.local.LocalMediaFactory
+import io.element.android.libraries.permissions.api.PermissionStateProvider
 import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
+import io.element.android.libraries.permissions.api.PermissionsState
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.libraries.slashcommands.api.SlashCommand
@@ -148,6 +152,7 @@ class MessageComposerPresenter(
     private val contentScannerService: ContentScannerService,
     private val contentValidationCache: EventContentValidationCache,
     private val stickerPackRepository: StickerPackRepository,
+    private val permissionStateProvider: PermissionStateProvider, // Bipe
 ) : Presenter<MessageComposerState> {
     @AssistedFactory
     interface Factory {
@@ -159,9 +164,18 @@ class MessageComposerPresenter(
     }
 
     private val isInThread = threadRoot != null
+
+    /** Bipe: Android 13+ only, before that notifications are on without a permission. Once; a "no" never blocks. */
+    private fun bipeShouldAskForNotifications(state: PermissionsState): Boolean {
+        val isUndecided = !state.permissionGranted && !state.permissionAlreadyAsked && !state.permissionAlreadyDenied
+        return OnBoardingConfig.USES_BIPE_SIGNUP && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isUndecided
+    }
     private val mediaSender = mediaSenderFactory.create(timelineMode = timelineController.mainTimelineMode())
 
     private val cameraPermissionPresenter = permissionsPresenterFactory.create(Manifest.permission.CAMERA)
+
+    // Bipe (bipe-chat/bipe#199, bipe-chat/bipe#415): the first sent message is the moment to ask for notifications.
+    private val notificationPermissionPresenter = permissionsPresenterFactory.create(Manifest.permission.POST_NOTIFICATIONS)
     private var pendingEvent: MessageComposerEvent? = null
     private val suggestionSearchTrigger = MutableStateFlow<Suggestion?>(null)
 
@@ -186,6 +200,8 @@ class MessageComposerPresenter(
         val markdownTextEditorState = rememberMarkdownTextEditorState(initialText = null, initialFocus = false)
 
         val cameraPermissionState = cameraPermissionPresenter.present()
+        val notificationPermissionState = notificationPermissionPresenter.present()
+        var bipeNotificationAsk by remember { mutableStateOf<BipeNotificationAsk?>(null) }
 
         val canShareLocation = remember { mutableStateOf(false) }
         val isDm by remember { room.roomInfoFlow.map { it.isDm } }.collectAsState(initial = room.info().isDm)
@@ -299,6 +315,20 @@ class MessageComposerPresenter(
                         richTextEditorState = richTextEditorState,
                         slashCommandAction = slashCommandAction,
                     )
+                    if (bipeShouldAskForNotifications(notificationPermissionState)) {
+                        val info = room.info()
+                        bipeNotificationAsk = BipeNotificationAsk(dmName = info.name.takeIf { info.isDm })
+                    }
+                }
+                MessageComposerEvent.BipeAllowNotifications -> {
+                    bipeNotificationAsk = null
+                    notificationPermissionState.eventSink(PermissionsEvent.RequestPermissions)
+                }
+                MessageComposerEvent.BipeSkipNotifications -> {
+                    bipeNotificationAsk = null
+                    sessionCoroutineScope.launch {
+                        permissionStateProvider.setPermissionDenied(Manifest.permission.POST_NOTIFICATIONS, true)
+                    }
                 }
                 is MessageComposerEvent.SendUri -> {
                     val inReplyToEventId = (messageComposerContext.composerMode as? MessageComposerMode.Reply)?.eventId
@@ -485,6 +515,7 @@ class MessageComposerPresenter(
             showTextFormatting = showTextFormatting,
             canShareLocation = canShareLocation.value,
             isDm = isDm,
+            bipeNotificationAsk = bipeNotificationAsk,
             stickerPicker = stickerPicker,
             suggestions = suggestions.toImmutableList(),
             resolveMentionDisplay = resolveMentionDisplay,

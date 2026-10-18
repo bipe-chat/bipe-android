@@ -16,6 +16,7 @@ import io.element.android.features.login.api.LoginEntryPoint
 import io.element.android.features.login.impl.accountprovider.anAccountProviderDataSource
 import io.element.android.features.login.impl.classic.FakeElementClassicConnection
 import io.element.android.features.preferences.test.FakePreferencesEntryPoint
+import io.element.android.libraries.matrix.test.auth.FakeMatrixAuthenticationService
 import io.element.android.libraries.oauth.test.FakeOAuthActionFlow
 import io.element.android.tests.testutils.lambda.lambdaError
 import io.element.android.tests.testutils.node.TestParentNode
@@ -44,6 +45,7 @@ class DefaultLoginEntryPointTest {
                 elementClassicConnection = FakeElementClassicConnection(),
                 preferencesEntryPoint = FakePreferencesEntryPoint(),
                 bipeDeviceAccount = mockk(relaxed = true), // Bipe: device-first sign-in (ADR 0057), not used by this test
+                authenticationService = FakeMatrixAuthenticationService(),
             )
         }
         val callback = object : LoginEntryPoint.Callback {

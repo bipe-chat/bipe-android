@@ -34,4 +34,9 @@ data class MessageComposerState(
     val resolveAtRoomMentionDisplay: () -> TextDisplay,
     val slashCommandAction: AsyncAction<Unit>,
     val eventSink: (MessageComposerEvent) -> Unit,
+    /** Bipe (bipe-chat/bipe#199, bipe-chat/bipe#415): the notification ask after the first sent message. Null when hidden. */
+    val bipeNotificationAsk: BipeNotificationAsk?,
 )
+
+/** [dmName] is the other person's name in a DM, for "Ana vai responder. Quer saber na hora?". */
+data class BipeNotificationAsk(val dmName: String?)

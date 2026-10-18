@@ -37,6 +37,7 @@ fun aMessageComposerState(
     suggestions: ImmutableList<ResolvedSuggestion> = persistentListOf(),
     slashCommandAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     isDm: Boolean = false,
+    bipeNotificationAsk: BipeNotificationAsk? = null,
     eventSink: (MessageComposerEvent) -> Unit = {},
 ) = MessageComposerState(
     textEditorState = textEditorState,
@@ -53,4 +54,5 @@ fun aMessageComposerState(
     slashCommandAction = slashCommandAction,
     isDm = isDm,
     eventSink = eventSink,
+    bipeNotificationAsk = bipeNotificationAsk,
 )
