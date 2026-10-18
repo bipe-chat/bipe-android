@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bipe copy lives in bipe-shared. These aliases replace inherited labels without editing Localazy files. -->
+<resources>
+    <item type="string" name="a11y_room_avatar">@string/bipe_a11y_chat_photo</item>
+    <item type="string" name="action_create_room">@string/bipe_groups_empty_action</item>
+    <item type="string" name="action_manage_devices">@string/bipe_account_devices</item>
+    <item type="string" name="action_report_bug">@string/bipe_help_report_problem</item>
+    <item type="string" name="action_start_chat">@string/bipe_action_start_chat</item>
+    <item type="string" name="common_link_new_device">@string/bipe_account_link_device</item>
+    <item type="string" name="common_sticker">@string/bipe_sticker_label</item>
+    <item type="string" name="common_unable_to_decrypt">@string/bipe_chat_message_unavailable</item>
+    <item type="string" name="common_unable_to_decrypt_insecure_device">@string/bipe_chat_sender_device_unconfirmed</item>
+    <item type="string" name="common_unable_to_decrypt_no_access">@string/bipe_chat_message_no_access</item>
+    <item type="string" name="common_unable_to_decrypt_verification_violation">@string/bipe_chat_sender_keys_changed</item>
+    <item type="string" name="common_verify_device">@string/bipe_device_confirm_action</item>
+    <item type="string" name="common_verify_identity">@string/bipe_keys_confirm_action</item>
+    <item type="string" name="dialog_permission_camera">@string/bipe_camera_permission_body</item>
+    <item type="string" name="dialog_permission_microphone">@string/bipe_microphone_permission_body</item>
+    <item type="string" name="dialog_permission_microphone_description_ios">@string/bipe_microphone_permission_body</item>
+    <item type="string" name="rich_text_editor_composer_placeholder">@string/bipe_chats_message_placeholder</item>
+    <item type="string" name="screen_blocked_users_empty">@string/bipe_privacy_blocked_none</item>
+    <item type="string" name="screen_bug_report_editor_description">@string/bipe_help_problem_description</item>
+    <item type="string" name="screen_bug_report_editor_supporting">@string/bipe_help_problem_language</item>
+    <item type="string" name="screen_dm_details_block_user">@string/bipe_action_block_person</item>
+    <item type="string" name="screen_dm_details_unblock_user">@string/bipe_action_unblock_person</item>
+    <item type="string" name="screen_notification_optin_subtitle">@string/bipe_notifications_permission_body</item>
+    <item type="string" name="screen_notification_optin_title">@string/bipe_notifications_permission_title</item>
+    <item type="string" name="screen_report_content_explanation">@string/bipe_report_message_body</item>
+    <item type="string" name="screen_report_content_hint">@string/bipe_report_message_reason</item>
+    <item type="string" name="screen_roomlist_empty_message">@string/bipe_chats_empty_body</item>
+    <item type="string" name="screen_roomlist_empty_title">@string/bipe_chats_empty_title</item>
+</resources>
