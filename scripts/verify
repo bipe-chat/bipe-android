@@ -40,6 +40,7 @@ git ls-files | while IFS= read -r f; do [ -f "$f" ] && printf '%s\n' "$f"; done 
 ssh -o BatchMode=yes "$host" "rm -rf ~/$dir && mkdir -p ~/$dir/bipe-android"
 tar -cf - -T "$list" | ssh -o BatchMode=yes "$host" "tar -xf - -C ~/$dir/bipe-android"
 # The build reads the git revision, so the copy gets a one-commit repository.
+# shellcheck disable=SC2087 # $dir and $TASKS expand here on purpose; \$HOME expands on the host.
 ssh -o BatchMode=yes "$host" "bash -s" <<REMOTE
 set -eu
 cd ~/$dir/bipe-android
