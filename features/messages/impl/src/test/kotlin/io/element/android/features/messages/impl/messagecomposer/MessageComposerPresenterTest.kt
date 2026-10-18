@@ -10,6 +10,7 @@
 
 package io.element.android.features.messages.impl.messagecomposer
 
+import android.Manifest
 import android.net.Uri
 import androidx.compose.runtime.remember
 import app.cash.molecule.RecompositionMode
@@ -90,9 +91,9 @@ import io.element.android.libraries.mediaupload.test.FakeMediaOptimizationConfig
 import io.element.android.libraries.mediaupload.test.FakeMediaPreProcessor
 import io.element.android.libraries.mediaviewer.test.FakeLocalMediaFactory
 import io.element.android.libraries.permissions.api.PermissionsPresenter
+import io.element.android.libraries.permissions.api.aPermissionsState
 import io.element.android.libraries.permissions.test.FakePermissionStateProvider
 import io.element.android.libraries.permissions.test.FakePermissionsPresenter
-import io.element.android.libraries.permissions.test.FakePermissionsPresenterFactory
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.preferences.api.store.VideoCompressionPreset
 import io.element.android.libraries.preferences.test.InMemorySessionPreferencesStore
@@ -1706,7 +1707,7 @@ class MessageComposerPresenterTest : RobolectricTest() {
         messageComposerContext = DefaultMessageComposerContext(),
         richTextEditorStateFactory = TestRichTextEditorStateFactory(),
         roomAliasSuggestionsDataSource = FakeRoomAliasSuggestionsDataSource(),
-        permissionsPresenterFactory = FakePermissionsPresenterFactory(permissionPresenter),
+        permissionsPresenterFactory = aBipeNotificationsGrantedFactory(permissionPresenter),
         permalinkParser = permalinkParser,
         permalinkBuilder = permalinkBuilder,
         timelineController = TimelineController(
@@ -1755,3 +1756,15 @@ fun aReplyMode() = MessageComposerMode.Reply(
     replyToDetails = InReplyToDetails.Loading(AN_EVENT_ID),
     hideImage = false,
 )
+
+/**
+ * Bipe (bipe-chat/bipe#199): notifications count as granted here, so the ask after the first sent message stays out of these
+ * tests. Other permissions use [permissionPresenter].
+ */
+internal fun aBipeNotificationsGrantedFactory(permissionPresenter: PermissionsPresenter) = PermissionsPresenter.Factory { permission ->
+    if (permission == Manifest.permission.POST_NOTIFICATIONS) {
+        FakePermissionsPresenter(aPermissionsState(showDialog = false, permissionGranted = true))
+    } else {
+        permissionPresenter
+    }
+}

@@ -36,6 +36,7 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.dateformatter.test.FakeDateFormatter
@@ -731,6 +732,7 @@ class RoomListPresenterTest {
         markRoomAsRead: MarkRoomAsRead? = null,
         bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
         bipeInviterGreeting: BipeInviterGreeting = mockk { every { inviter } returns MutableStateFlow(null) },
+        bipeHandlePrompt: BipeHandlePrompt = mockk { every { shows } returns MutableStateFlow(false) },
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -765,5 +767,6 @@ class RoomListPresenterTest {
         featureFlagService = featureFlagService,
         bipeSelfChat = bipeSelfChat,
         bipeInviterGreeting = bipeInviterGreeting,
+        bipeHandlePrompt = bipeHandlePrompt,
     )
 }

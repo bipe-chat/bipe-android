@@ -121,11 +121,7 @@ class DefaultFtueServiceTest {
             sessionVerificationService.emitVerifiedStatus(SessionVerifiedStatus.Verified)
             // User completes verification
             service.onUserCompletedSessionVerification()
-            // Notifications opt in
-            assertThat(awaitItem()).isEqualTo(InternalFtueState.Incomplete(FtueStep.NotificationsOptIn))
-            permissionStateProvider.setPermissionGranted()
-            // Simulate event from NotificationsOptInNode.Callback.onNotificationsOptInFinished
-            service.updateFtueStep()
+            // Bipe (bipe-chat/bipe#199): no notifications opt in here. The app asks after the first sent message.
             // Entering PIN code
             assertThat(awaitItem()).isEqualTo(InternalFtueState.Incomplete(FtueStep.LockscreenSetup))
             lockScreenService.setIsPinSetup(true)

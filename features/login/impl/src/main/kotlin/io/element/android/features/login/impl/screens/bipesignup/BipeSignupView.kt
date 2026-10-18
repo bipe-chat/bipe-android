@@ -65,6 +65,7 @@ fun BipeSignupView(
 ) {
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    val createdText = stringResource(BipeOnboarding.created)
     val eventSink = state.eventSink
     val isLoading = state.createAction is AsyncAction.Loading
     fun back() {
@@ -102,7 +103,7 @@ fun BipeSignupView(
         AsyncActionView(
             async = state.createAction,
             onSuccess = {
-                Toast.makeText(context, context.getString(BipeOnboarding.created), Toast.LENGTH_LONG).show()
+                Toast.makeText(context, createdText, Toast.LENGTH_LONG).show()
             },
             errorMessage = { it.message.orEmpty() },
             onErrorDismiss = { eventSink(BipeSignupEvent.ClearError) },
