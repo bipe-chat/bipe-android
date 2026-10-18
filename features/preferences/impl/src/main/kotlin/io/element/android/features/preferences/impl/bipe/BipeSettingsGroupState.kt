@@ -44,6 +44,8 @@ data class BipeSettingsGroupState(
     val version: String,
     val deviceId: String,
     val eventSink: (BipeSettingsGroupEvent) -> Unit,
+    /** The phone holds more than one account, so the account PIN is not the PIN that locks the app (ADR 0086). */
+    val hasSeparateDevicePin: Boolean,
 )
 
 sealed interface BipeSettingsGroupEvent {

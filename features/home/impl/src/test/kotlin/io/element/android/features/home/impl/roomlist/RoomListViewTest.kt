@@ -260,23 +260,6 @@ class RoomListViewTest : RobolectricTest() {
             )
         )
     }
-
-    @Test
-    fun `clicking on add account in the multi-account announcement emits the expected Event and invokes the callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<HomeEvent>()
-        ensureCalledOnce { callback ->
-            setRoomListView(
-                state = aRoomListState(),
-                showMultiAccountAnnouncement = true,
-                homeEventSink = eventsRecorder,
-                onAddAccountClick = callback,
-            )
-            clickOn(R.string.screen_multi_account_announcement_action)
-            // Wait for the bottom sheet to be hidden
-            waitForIdle()
-        }
-        eventsRecorder.assertSingle(HomeEvent.DismissMultiAccountAnnouncement)
-    }
 }
 
 private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(

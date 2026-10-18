@@ -698,6 +698,8 @@ object BipeRegistries {
     const val GUARDIAN_APPROVALS_MAX = 2
     const val RECOVERY_LINK_MINUTES = 60
     const val EMAIL_VERIFY_LINK_HOURS = 24
+    // Personal accounts on one phone (ADR 0086). Fallback for max_accounts in GET /v1/me/account.
+    const val MAX_PERSONAL_ACCOUNTS = 2
 
     // Terms and privacy accepted at sign-up (ADR 0113; registries/legal.json). Paths are on the public site.
     const val LEGAL_VERSION = "2026-10-16"
