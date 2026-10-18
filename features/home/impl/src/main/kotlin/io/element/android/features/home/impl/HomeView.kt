@@ -39,7 +39,6 @@ import androidx.compose.ui.zIndex
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.HomeTopBar
-import io.element.android.features.home.impl.components.MultiAccountAnnouncementBottomSheet
 import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -116,12 +115,8 @@ fun HomeView(
             )
         }
 
-        if (homeState.showMultiAccountAnnouncement) {
-            MultiAccountAnnouncementBottomSheet(
-                onDismiss = { homeState.eventSink(HomeEvent.DismissMultiAccountAnnouncement) },
-                onAddAccountClick = { if (firstThrottler.canHandle()) onAddAccountClick() },
-            )
-        }
+        // Bipe: no Element multi-account announcement (MultiAccountAnnouncementBottomSheet: Element's copy). The avatar menu
+        // on the chat list adds accounts (ADR 0086, #267).
 
         leaveRoomView()
 
@@ -135,6 +130,7 @@ fun HomeView(
             onBipeCreateGroupClick = { if (firstThrottler.canHandle()) onBipeCreateGroupClick() },
             onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
             onMenuActionClick = onMenuActionClick,
+            onAddAccountClick = { if (firstThrottler.canHandle()) onAddAccountClick() },
             youTabView = youTabView,
         )
 
@@ -174,6 +170,7 @@ private fun HomeScaffold(
     onBipeCreateGroupClick: () -> Unit,
     onCreateSpaceClick: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
+    onAddAccountClick: () -> Unit,
     modifier: Modifier = Modifier,
     youTabView: @Composable (contentPadding: PaddingValues, modifier: Modifier) -> Unit,
 ) {
@@ -226,6 +223,10 @@ private fun HomeScaffold(
                 onAccountSwitch = {
                     state.eventSink(HomeEvent.SwitchToAccount(it))
                 },
+                bipeAccounts = state.bipeAccounts,
+                bipeCanAddAccount = state.bipeCanAddAccount,
+                bipeMaxAccounts = state.bipeMaxAccounts,
+                onBipeAddAccount = onAddAccountClick,
                 scrollBehavior = scrollBehavior,
                 displayFilters = state.displayRoomListFilters,
                 filtersState = roomListState.filtersState,

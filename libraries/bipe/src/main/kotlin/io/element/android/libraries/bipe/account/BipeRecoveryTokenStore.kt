@@ -70,10 +70,10 @@ class BipeRecoveryTokenStore(
 
     /**
      * The token for a recovery on the sign-in screen, with its Matrix ID: the newest account's token first.
-     * Phase 2 (#267) lets the user pick the account.
+     * Accounts in [signedIn] are left out: they are on the phone already (ADR 0086).
      */
-    suspend fun recoveryToken(): Pair<String?, String>? {
-        val tokens = readAll()
+    suspend fun recoveryToken(signedIn: Set<String> = emptySet()): Pair<String?, String>? {
+        val tokens = readAll().filterKeys { it !in signedIn }
         if (tokens.isEmpty()) return null
         // A `null` key is a real entry (the token from before #265), so `firstOrNull` cannot mean "none" here.
         val userId = vault.read().accounts.keys.reversed().firstOrNull { it in tokens } ?: tokens.keys.first()

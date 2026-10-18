@@ -294,7 +294,8 @@ class PreferencesRootPresenterTest {
     private fun CoroutineScope.createPreferencesRootPresenter(
         matrixClient: FakeMatrixClient = FakeMatrixClient(),
         showDeveloperSettingsProvider: ShowDeveloperSettingsProvider = ShowDeveloperSettingsProvider(aBuildMeta(BuildType.DEBUG)),
-        featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
+        // Bipe: multi-account is on by default (#267); these tests check other parts, so it starts off here.
+        featureFlagService: FeatureFlagService = FakeFeatureFlagService(initialState = mapOf(FeatureFlags.MultiAccount.key to false)),
         sessionStore: SessionStore = InMemorySessionStore(),
         appPreferencesStore: AppPreferencesStore = InMemoryAppPreferencesStore(),
     ) = PreferencesRootPresenter(
