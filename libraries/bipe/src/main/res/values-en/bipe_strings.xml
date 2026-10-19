@@ -705,6 +705,8 @@
     <string name="bipe_link_computer_error_title">Couldn\'t link the computer</string>
     <string name="bipe_link_computer_error_sign_in">Bipe couldn\'t open the approval page. Try again.</string>
     <string name="bipe_link_computer_not_supported">This phone can\'t link a computer right now.</string>
+    <string name="bipe_link_computer_needs_pin">To link a computer, create your %1$s-digit PIN first.</string>
+    <string name="bipe_link_computer_create_pin">Create PIN</string>
     <string name="bipe_link_computer_done">Computer linked.</string>
     <string name="bipe_account_sign_out">Sign out of this device</string>
     <string name="bipe_privacy_who_can_talk">Who can talk to you</string>
