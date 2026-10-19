@@ -142,7 +142,7 @@
     <string name="bipe_invites_other_device">Made on another device. Share it from there.</string>
     <string name="bipe_invites_name_action">Who is it for?</string>
     <string name="bipe_invites_name_placeholder">Name</string>
-    <string name="bipe_invites_name_footer">Only you see this name, and only on this phone.</string>
+    <string name="bipe_invites_name_footer">Only you see this name.</string>
     <string name="bipe_invites_share_message">Join me on Bipe: %1$s</string>
     <string name="bipe_invites_none_left">No invites available right now.</string>
     <string name="bipe_invites_empty">Invite someone to chat with you on Bipe.</string>
