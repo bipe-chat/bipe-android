@@ -74,7 +74,7 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.PRIVACY_MESSAGING -> callback.navigateToMessaging()
                     BipeSettingsRow.PRIVACY_BLOCKED -> callback.navigateToBlockedUsers()
                     BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> callback.navigateToSecureBackup()
-                    BipeSettingsRow.ACCOUNT_LINK_DEVICE -> callback.navigateToLinkNewDevice()
+                    BipeSettingsRow.ACCOUNT_LINKED_DEVICES -> callback.navigateToLinkNewDevice()
                     BipeSettingsRow.ACCOUNT_SIGN_OUT -> callback.navigateToSignOut()
                     BipeSettingsRow.CHATS_MEDIA_QUALITY -> callback.navigateToMediaSettings()
                     BipeSettingsRow.CHATS_LIVE_LOCATION -> callback.navigateToLocationSettings()

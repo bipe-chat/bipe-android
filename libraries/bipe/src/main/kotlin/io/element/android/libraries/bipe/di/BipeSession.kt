@@ -15,6 +15,8 @@ import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.settings.BipePrivacySettings
+import io.element.android.libraries.bipe.weblink.BipeMatrixAccountApi
+import io.element.android.libraries.bipe.weblink.BipeWebLinkSession
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -31,6 +33,7 @@ class BipeSession(
     @SessionCoroutineScope sessionCoroutineScope: CoroutineScope,
     val apiClient: BipeApiClient,
     deviceAccount: BipeDeviceAccount,
+    matrixAccountApi: BipeMatrixAccountApi,
     stringProvider: StringProvider,
 ) {
     private val sessionId = matrixClient.sessionId
@@ -69,6 +72,17 @@ class BipeSession(
         apiClient = apiClient,
         scope = sessionCoroutineScope,
         accessToken = accessToken,
+    )
+
+    /** Web sign-in by QR code and the linked devices (ADR 0116, ADR 0118). */
+    val webLink = BipeWebLinkSession(
+        userId = sessionId.value,
+        deviceId = matrixClient.deviceId.value,
+        homeserverUrl = { sessionStore.getSession(sessionId.value)?.homeserverUrl },
+        accessToken = accessToken,
+        apiClient = apiClient,
+        matrixAccountApi = matrixAccountApi,
+        deviceAccount = deviceAccount,
     )
 
     /** Who can message and find the user (ADR 0112, Privacidade). */

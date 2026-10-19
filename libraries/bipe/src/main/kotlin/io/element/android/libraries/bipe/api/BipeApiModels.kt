@@ -384,3 +384,22 @@ internal object InstantSerializer : KSerializer<Instant> {
     override fun serialize(encoder: Encoder, value: Instant) = encoder.encodeString(value.toString())
     override fun deserialize(decoder: Decoder): Instant = OffsetDateTime.parse(decoder.decodeString()).toInstant()
 }
+
+/** `GET /v1/web-link/place` (ADR 0118). Every field is optional. */
+@Serializable
+data class BipeWebLinkPlace(
+    @SerialName("city") val city: String? = null,
+    @SerialName("region") val region: String? = null,
+    /** ISO 3166-1 alpha-2. */
+    @SerialName("country") val country: String? = null,
+) {
+    /** "City, Region" in Brazil; the country name is added for a place abroad. `null` when the place is unknown. Same rule as iOS. */
+    fun label(locale: java.util.Locale = java.util.Locale.getDefault()): String? {
+        val parts = listOfNotNull(city?.takeIf { it.isNotEmpty() }, region?.takeIf { it.isNotEmpty() }).toMutableList()
+        val country = country?.takeIf { it.isNotEmpty() }
+        if (country != null && (!country.equals("BR", ignoreCase = true) || parts.isEmpty())) {
+            parts += java.util.Locale.Builder().setRegion(country).build().getDisplayCountry(locale).ifEmpty { country }
+        }
+        return parts.takeIf { it.isNotEmpty() }?.joinToString(", ")
+    }
+}

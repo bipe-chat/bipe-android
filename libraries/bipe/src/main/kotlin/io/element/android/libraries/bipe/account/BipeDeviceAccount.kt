@@ -210,6 +210,12 @@ class BipeDeviceAccount(
         }
     }
 
+    /**
+     * The hidden MAS password of [userId] on this device (ADR 0118: the web sign-in fills the MAS login form with it).
+     * Read it only after the biometric check. Never show or log it.
+     */
+    suspend fun hiddenPassword(userId: String): String? = vault.read().accounts[userId]?.password
+
     /** `true` when the synced store has a recovery token (e.g. a new phone with the same Google account). */
     suspend fun hasRecoveryToken(): Boolean = tokenStore.recoveryToken(signedInUserIds()) != null
 

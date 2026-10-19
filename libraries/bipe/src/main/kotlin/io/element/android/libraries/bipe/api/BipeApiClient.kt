@@ -34,6 +34,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
@@ -114,6 +115,15 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `POST /v1/handle-changes`. At most 100 IDs. Oldest first. */
     suspend fun handleChanges(userIds: List<String>, since: Instant?, accessToken: String): List<BipeHandleChange> =
         call { service.handleChanges(bearer(accessToken), HandleChangesRequest(userIds, since?.toString())) }.changes
+
+    // Web sign-in (ADR 0118)
+
+    /** `GET /v1/web-link/place`. The approximate place of the browser IP that the MAS consent page shows. */
+    suspend fun webLinkPlace(ip: String, accessToken: String): BipeWebLinkPlace = call { service.webLinkPlace(bearer(accessToken), ip) }
+
+    /** `POST /v1/web-link/finish`. Ends the MAS browser sessions that the private web view made since [since]. */
+    suspend fun finishWebLink(since: Instant, accessToken: String): Int =
+        call { service.finishWebLink(bearer(accessToken), WebLinkFinishRequest(since.toString())) }.finished
 
     // Invites
 
@@ -302,6 +312,13 @@ internal data class WaitlistRequest(
     val source: String,
 )
 
+/** `POST /v1/web-link/finish` body. Internal for the same reason as [TermsRequest]. */
+@Serializable
+internal data class WebLinkFinishRequest(val since: String)
+
+@Serializable
+internal data class WebLinkFinishResponse(val finished: Int)
+
 /** `POST /v1/me/support` answer. */
 @Serializable
 internal data class SupportRoomResponse(@SerialName("room_id") val roomId: String)
@@ -358,6 +375,12 @@ internal interface BipeApiService {
 
     @POST("v1/handle-changes")
     suspend fun handleChanges(@Header("Authorization") authorization: String, @Body request: HandleChangesRequest): Response<HandleChangesResponse>
+
+    @GET("v1/web-link/place")
+    suspend fun webLinkPlace(@Header("Authorization") authorization: String, @Query("ip") ip: String): Response<BipeWebLinkPlace>
+
+    @POST("v1/web-link/finish")
+    suspend fun finishWebLink(@Header("Authorization") authorization: String, @Body request: WebLinkFinishRequest): Response<WebLinkFinishResponse>
 
     @GET("v1/invites/{code}")
     suspend fun invitePreview(@Path("code") code: String): Response<BipeInvitePreview>

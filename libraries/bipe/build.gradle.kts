@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.google.tink)
     implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.webkit) // Web sign-in: a WebView profile of its own (ADR 0118)
     implementation(libs.coil.compose)
     implementation(libs.zxing.cpp) // "Conferir no Bipe": QR codes in shared images
     implementation(projects.appconfig)
@@ -37,6 +38,7 @@ dependencies {
     implementation(projects.libraries.cryptography.api)
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.di)
+    implementation(projects.libraries.featureflag.api)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.mediapickers.api)
     implementation(projects.libraries.network)

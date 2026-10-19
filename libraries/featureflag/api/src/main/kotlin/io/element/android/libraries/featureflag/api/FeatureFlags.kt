@@ -86,7 +86,8 @@ enum class FeatureFlags(
         key = "feature.qr_code_login",
         title = "QR Code Login",
         description = "Allow logging in on other devices using a QR code.",
-        defaultValue = { false },
+        // Bipe: Settings > Linked devices > Link a computer, on for everyone (ADR 0116, ADR 0118).
+        defaultValue = { true },
         isFinished = false,
     ),
     AllowBlackTheme(
