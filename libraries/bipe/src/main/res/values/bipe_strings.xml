@@ -826,4 +826,9 @@
     <string name="bipe_support_welcome">Oi! Aqui você fala com a equipe do Bipe. Conte o que aconteceu ou o que você quer ver no app. A gente responde nesta conversa.</string>
     <string name="bipe_support_report_received">Recebemos seu relato de problema. A equipe vai ler e responde nesta conversa.</string>
     <string name="bipe_support_already_open">Você já tem uma conversa com o suporte. Continue por aqui.</string>
+    <string name="bipe_app_lock_title">Bipe bloqueado</string>
+    <string name="bipe_app_lock_biometric">Use o %1$s para abrir</string>
+    <string name="bipe_archive_action">Arquivar</string>
+    <string name="bipe_unarchive_action">Desarquivar</string>
+    <string name="bipe_archived_title">Arquivadas</string>
 </resources>
