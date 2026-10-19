@@ -152,9 +152,13 @@ class BipeDeviceAccount(
     private val BipeApiException.Server.isSignupInProgress: Boolean
         get() = code == BipeApiErrorCode.RATE_LIMITED && reason == "signup_in_progress"
 
-    /** Kept before the sign-in, so the first session finds it (ADR 0034). */
+    /**
+     * Kept before the sign-in, so the first session finds it (ADR 0034). An invite from an account signed in on this phone
+     * ("Nova conta", bipe#445) is the user's own: no inviter, so no card or chat with their other account.
+     */
     private suspend fun rememberInviter(response: BipeSignupResponse) {
-        val inviterUserId = response.inviterUserId ?: return
+        val signedInUserIds = sessionStore.getAllSessions().map { it.userId }.toSet()
+        val inviterUserId = inviterToRemember(response.inviterUserId, signedInUserIds) ?: return
         vault.update {
             it.copy(
                 pendingInviters = it.pendingInviters + (response.userId to inviterUserId),
@@ -328,3 +332,7 @@ class BipeDeviceAccount(
         const val MAX_DISMISSED = 50
     }
 }
+
+/** The inviter to keep after a sign-up: none when the invite came from an account signed in on this phone (bipe#445). */
+internal fun inviterToRemember(inviterUserId: String?, signedInUserIds: Set<String>): String? =
+    inviterUserId?.takeUnless { it in signedInUserIds }

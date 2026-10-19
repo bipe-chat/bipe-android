@@ -38,6 +38,7 @@ internal class MapTilerTileServerStyleUriBuilder(
             customMapTilerConfig?.lightStyleId ?: lightMapId
         }
 
-        return "$baseUrl/$mapId/style.json?key=$apiKey"
+        val styleUrl = "$baseUrl/$mapId/style.json"
+        return if (apiKey.isEmpty()) styleUrl else "$styleUrl?key=$apiKey"
     }
 }

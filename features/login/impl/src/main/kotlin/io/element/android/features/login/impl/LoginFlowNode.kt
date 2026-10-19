@@ -87,6 +87,7 @@ class LoginFlowNode(
         val loginHint: String?,
         val bipeInviteCode: String? = null, // Bipe
         val bipeRecoveryToken: String? = null, // Bipe: e-mail recovery link (ADR 0057)
+        val bipeStartsSignup: Boolean = false, // Bipe: "Nova conta" (bipe#445)
     ) : NodeInputs {
         // Bipe: the recovery token is a secret.
         override fun toString(): String = "Params(accountProvider=$accountProvider, hasRecoveryToken=${bipeRecoveryToken != null})"
@@ -105,9 +106,11 @@ class LoginFlowNode(
         super.onBuilt()
         if (OnBoardingConfig.USES_BIPE_SIGNUP && !isRestored) {
             // An invite link shows its start screen variant (bipe-chat/bipe#415); a recovery link opens the recovery screen.
+            // "Nova conta" (bipe#445) opens the sign-up; with an invite code from the account on screen it starts at the name step.
             val params = inputs<Params>()
             params.bipeRecoveryToken?.let { backstack.push(NavTarget.BipeRecovery(linkToken = it)) }
-            if (params.bipeInviteCode == null && params.bipeRecoveryToken == null) {
+            if (params.bipeStartsSignup) backstack.push(NavTarget.BipeSignup(inviteCode = params.bipeInviteCode))
+            if (params.bipeInviteCode == null && params.bipeRecoveryToken == null && !params.bipeStartsSignup) {
                 bipeStartDeviceAccount()
             }
         }
@@ -252,7 +255,8 @@ class LoginFlowNode(
                     accountProvider = params.accountProvider,
                     loginHint = params.loginHint,
                     showBackButton = navTarget.showBackButton,
-                    bipeInviteCode = params.bipeInviteCode,
+                    // The code from "Nova conta" is the user's own invite, not an invitation to show on the start screen.
+                    bipeInviteCode = params.bipeInviteCode.takeUnless { params.bipeStartsSignup },
                 )
                 createNode<OnBoardingNode>(buildContext, listOf(callback, inputs))
             }

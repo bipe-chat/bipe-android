@@ -31,6 +31,7 @@ class DefaultLoginEntryPoint : LoginEntryPoint {
                     loginHint = params.loginHint,
                     bipeInviteCode = params.bipeInviteCode,
                     bipeRecoveryToken = params.bipeRecoveryToken,
+                    bipeStartsSignup = params.bipeStartsSignup,
                 ),
                 callback,
             )

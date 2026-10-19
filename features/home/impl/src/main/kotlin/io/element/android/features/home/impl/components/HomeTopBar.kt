@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -42,6 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.element.android.appconfig.RoomListConfig
@@ -56,7 +61,6 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersEvent
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.aSelectedSpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
-import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.designsystem.atomic.atoms.RedIndicatorAtom
 import io.element.android.libraries.designsystem.components.TopAppBarScrollBehaviorLayout
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -69,8 +73,10 @@ import io.element.android.libraries.designsystem.preview.USER_NAME_ALICE
 import io.element.android.libraries.designsystem.text.AdaptativeTitle
 import io.element.android.libraries.designsystem.theme.components.DropdownMenu
 import io.element.android.libraries.designsystem.theme.components.DropdownMenuItem
+import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
+import io.element.android.libraries.designsystem.theme.components.RadioButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.matrix.api.core.SessionId
@@ -106,8 +112,6 @@ fun HomeTopBar(
     spaceFiltersState: SpaceFiltersState,
     modifier: Modifier = Modifier,
     bipeAccounts: ImmutableList<MatrixUser> = persistentListOf(),
-    bipeCanAddAccount: Boolean = false,
-    bipeMaxAccounts: Int = BipeRegistries.MAX_PERSONAL_ACCOUNTS,
     onBipeAddAccount: () -> Unit = {},
 ) {
     val contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -153,8 +157,6 @@ fun HomeTopBar(
             navigationIcon = {
                 BipeAccountMenuAnchor(
                     accounts = bipeAccounts,
-                    canAddAccount = bipeCanAddAccount,
-                    maxAccounts = bipeMaxAccounts,
                     onAccountSwitch = onAccountSwitch,
                     onAddAccount = onBipeAddAccount,
                 ) { openMenu ->
@@ -322,14 +324,12 @@ private fun NavigationIcon(
 }
 
 /**
- * Bipe: the account menu on a long press of the avatar (ADR 0086, #267). Every account, the current one first, then
- * "Adicionar conta" up to the cap of personal accounts.
+ * Bipe: the account menu on a long press of the avatar (ADR 0086, #267, bipe#446). Every account as a single choice, the
+ * current one first and selected, then "Nova conta", which opens the "Nova conta" window. The window shows the cap.
  */
 @Composable
 private fun BipeAccountMenuAnchor(
     accounts: ImmutableList<MatrixUser>,
-    canAddAccount: Boolean,
-    maxAccounts: Int,
     onAccountSwitch: (SessionId) -> Unit,
     onAddAccount: () -> Unit,
     content: @Composable (openMenu: () -> Unit) -> Unit,
@@ -340,38 +340,34 @@ private fun BipeAccountMenuAnchor(
         DropdownMenu(
             expanded = showMenu,
             onDismissRequest = { showMenu = false },
+            modifier = Modifier.selectableGroup(),
         ) {
             accounts.forEachIndexed { index, account ->
+                val isCurrent = index == 0
                 DropdownMenuItem(
                     text = { Text(account.displayName ?: account.userId.value) },
                     leadingIcon = { Avatar(avatarData = account.getAvatarData(size = AvatarSize.AccountItem), avatarType = AvatarType.User) },
-                    trailingIcon = if (index == 0) {
-                        { Icon(imageVector = CompoundIcons.Check(), contentDescription = null) }
-                    } else {
-                        null
-                    },
+                    // The row handles the click; the radio button only shows the choice.
+                    trailingIcon = { RadioButton(selected = isCurrent, onClick = null) },
                     onClick = {
                         showMenu = false
-                        if (index != 0) onAccountSwitch(SessionId(account.userId.value))
+                        if (!isCurrent) onAccountSwitch(SessionId(account.userId.value))
+                    },
+                    modifier = Modifier.semantics {
+                        role = Role.RadioButton
+                        selected = isCurrent
                     },
                 )
             }
-            if (canAddAccount) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(BipeR.string.bipe_account_add)) },
-                    leadingIcon = { Icon(imageVector = CompoundIcons.Plus(), contentDescription = null) },
-                    onClick = {
-                        showMenu = false
-                        onAddAccount()
-                    },
-                )
-            } else {
-                DropdownMenuItem(
-                    text = { Text(stringResource(BipeR.string.bipe_account_cap_reached, maxAccounts.toString())) },
-                    onClick = {},
-                    enabled = false,
-                )
-            }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(BipeR.string.bipe_account_add)) },
+                leadingIcon = { Icon(imageVector = CompoundIcons.Plus(), contentDescription = null) },
+                onClick = {
+                    showMenu = false
+                    onAddAccount()
+                },
+            )
         }
     }
 }

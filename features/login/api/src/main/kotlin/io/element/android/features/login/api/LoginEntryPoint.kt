@@ -19,6 +19,7 @@ interface LoginEntryPoint : FeatureEntryPoint {
         val loginHint: String?,
         val bipeInviteCode: String? = null, // Bipe
         val bipeRecoveryToken: String? = null, // Bipe: e-mail recovery link (ADR 0057)
+        val bipeStartsSignup: Boolean = false, // Bipe: "Nova conta" (bipe#445)
     ) {
         // Bipe: the recovery token is a secret.
         override fun toString(): String = "Params(accountProvider=$accountProvider, hasRecoveryToken=${bipeRecoveryToken != null})"

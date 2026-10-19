@@ -100,6 +100,7 @@ class NotLoggedInFlowNode(
                         loginHint = inputs.loginParams?.loginHint,
                         bipeInviteCode = inputs.loginParams?.bipeInviteCode,
                         bipeRecoveryToken = inputs.loginParams?.bipeRecoveryToken,
+                        bipeStartsSignup = inputs.loginParams?.bipeStartsSignup == true,
                     ),
                     callback = callback,
                 )

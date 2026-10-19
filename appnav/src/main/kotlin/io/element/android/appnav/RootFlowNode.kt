@@ -410,6 +410,13 @@ class RootFlowNode(
                         backstack.push(NavTarget.NotLoggedInFlow(null))
                     }
 
+                    // Bipe: "Nova conta" (bipe#445). The same path as an invite link opened with a session (onLoginLink).
+                    override fun bipeNavigateToSignup(inviteCode: String?) {
+                        val serverName = navTarget.sessionId.domainName ?: return navigateToAddAccount()
+                        val params = LoginParams(accountProvider = serverName, loginHint = null, bipeInviteCode = inviteCode, bipeStartsSignup = true)
+                        backstack.push(NavTarget.NotLoggedInFlow(params))
+                    }
+
                     override fun switchAccountAndOpenRoom(sessionId: SessionId, roomId: RoomId?) {
                         lifecycleScope.launch {
                             val loggedInFlowNode = attachSession(sessionId)
