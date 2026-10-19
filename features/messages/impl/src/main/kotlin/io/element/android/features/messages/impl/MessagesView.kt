@@ -66,6 +66,7 @@ import io.element.android.features.messages.api.timeline.voicemessages.composer.
 import io.element.android.features.messages.impl.actionlist.ActionListEvent
 import io.element.android.features.messages.impl.actionlist.ActionListView
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemAction
+import io.element.android.features.messages.impl.actionlist.model.bipeIsCopy
 import io.element.android.features.messages.impl.crypto.identity.IdentityChangeStateView
 import io.element.android.features.messages.impl.link.LinkEvent
 import io.element.android.features.messages.impl.link.LinkView
@@ -110,6 +111,8 @@ import io.element.android.features.messages.impl.voicemessages.composer.VoiceMes
 import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.libraries.androidutils.ui.hideKeyboard
 import io.element.android.libraries.bipe.company.BipeCompanySealNotice
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.bipeHaptic
 import io.element.android.libraries.bipe.ui.BipeInviterHint
 import io.element.android.libraries.designsystem.atomic.molecules.ComposerAlertMolecule
 import io.element.android.libraries.designsystem.components.ExpandableBottomSheetLayout
@@ -226,10 +229,12 @@ fun MessagesView(
     }
 
     fun onActionSelected(action: TimelineItemAction, event: TimelineItem.Event) {
+        if (action.bipeIsCopy()) localView.bipeHaptic(BipeHaptic.Tap) // Bipe: copy (ADR 0134)
         state.eventSink(MessagesEvent.HandleAction(action, event))
     }
 
     fun onEmojiReactionClick(emoji: String, event: TimelineItem.Event) {
+        localView.bipeHaptic(BipeHaptic.Tick) // Bipe: reaction_toggle (ADR 0134)
         state.eventSink(MessagesEvent.ToggleReaction(emoji, event.eventOrTransactionId))
     }
 

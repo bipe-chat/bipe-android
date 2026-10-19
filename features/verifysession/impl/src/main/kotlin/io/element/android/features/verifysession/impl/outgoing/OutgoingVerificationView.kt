@@ -36,6 +36,8 @@ import io.element.android.features.verifysession.impl.R
 import io.element.android.features.verifysession.impl.outgoing.OutgoingVerificationState.Step
 import io.element.android.features.verifysession.impl.ui.VerificationBottomMenu
 import io.element.android.features.verifysession.impl.ui.VerificationContentVerifying
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticWhen
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.atomic.pages.HeaderFooterPage
 import io.element.android.libraries.designsystem.components.BigIcon
@@ -61,6 +63,7 @@ fun OutgoingVerificationView(
     modifier: Modifier = Modifier,
 ) {
     val step = state.step
+    BipeHapticWhen(BipeHaptic.Success, step is Step.Completed) // Bipe: verification_done (ADR 0134)
     fun cancelOrResetFlow() {
         when (step) {
             is Step.Canceled -> state.eventSink(OutgoingVerificationViewEvent.Reset)

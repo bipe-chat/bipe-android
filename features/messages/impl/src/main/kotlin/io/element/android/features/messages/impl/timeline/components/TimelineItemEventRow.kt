@@ -97,6 +97,7 @@ import io.element.android.features.messages.impl.timeline.protection.TimelinePro
 import io.element.android.features.messages.impl.timeline.protection.mustBeProtected
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.bipe.company.BipeCompanySeal
+import io.element.android.libraries.bipe.haptics.BipeSwipeHaptics
 import io.element.android.libraries.designsystem.colors.AvatarColorsProvider
 import io.element.android.libraries.designsystem.components.EqualWidthColumn
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -247,6 +248,7 @@ fun TimelineItemEventRow(
             val offset = state.offset.floatValue
             val swipeThresholdPx = 40.dp.toPx()
             val thresholdCrossed = abs(offset) > swipeThresholdPx
+            BipeSwipeHaptics({ state.offset.floatValue }, swipeThresholdPx, { state.isResettingOnRelease }) // Bipe: swipe_reply (ADR 0134)
             SwipeSensitivity(3f) {
                 Box(Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.matchParentSize()) {

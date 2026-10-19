@@ -22,6 +22,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import io.element.android.emojibasebindings.Emoji
 import io.element.android.features.messages.impl.timeline.a11y.a11yReactionAction
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
 import io.element.android.libraries.designsystem.theme.components.hide
 import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
@@ -37,12 +39,14 @@ fun CustomReactionBottomSheet(
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
+    val bipeHaptics = rememberBipeHaptics()
 
     when (state.target) {
         CustomReactionState.Target.None,
         is CustomReactionState.Target.Loading -> Unit
         is CustomReactionState.Target.Success -> {
             fun onEmojiSelectedDismiss(emoji: Emoji) {
+                bipeHaptics(BipeHaptic.Tick) // Bipe: emoji_pick (ADR 0134)
                 sheetState.hide(coroutineScope) {
                     state.eventSink(CustomReactionEvent.DismissCustomReactionSheet)
                     onSelectEmoji(state.target.event.eventOrTransactionId, emoji)

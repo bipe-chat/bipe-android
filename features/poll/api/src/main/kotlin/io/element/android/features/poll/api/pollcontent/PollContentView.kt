@@ -26,6 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -80,6 +82,8 @@ fun PollContentView(
 ) {
     val votesCount = remember(answerItems) { answerItems.sumOf { it.votesCount } }
 
+    val bipeHaptics = rememberBipeHaptics()
+
     fun onSelectAnswer(pollAnswer: PollAnswer) {
         eventId?.let {
             if (isMultipleSelection) {
@@ -92,9 +96,11 @@ fun PollContentView(
                 }.filter { it.isSelected }.map { it.answer.id }
                 // Only send the response if the selection count is within the limit
                 if (newSelections.size <= maxSelections.toInt()) {
+                    bipeHaptics(BipeHaptic.Tick) // Bipe: poll_answer (ADR 0134)
                     onSendPollResponse(it, newSelections)
                 }
             } else {
+                bipeHaptics(BipeHaptic.Tick) // Bipe: poll_answer (ADR 0134)
                 onSendPollResponse(it, listOf(pollAnswer.id))
             }
         }

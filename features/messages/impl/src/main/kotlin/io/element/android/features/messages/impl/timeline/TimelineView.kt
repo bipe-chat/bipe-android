@@ -8,7 +8,6 @@
 
 package io.element.android.features.messages.impl.timeline
 
-import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
@@ -95,6 +94,8 @@ import io.element.android.features.messages.impl.timeline.model.event.TimelineIt
 import io.element.android.features.messages.impl.timeline.model.event.aTimelineItemTextContent
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
 import io.element.android.features.messages.impl.timeline.protection.aTimelineProtectionState
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.bipeHaptic
 import io.element.android.libraries.designsystem.atomic.atoms.UnreadIndicatorAtom
 import io.element.android.libraries.designsystem.components.dialogs.AlertDialog
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -175,9 +176,8 @@ fun TimelineView(
     }
 
     fun onLinkLongClick(link: Link) {
-        view.performHapticFeedback(
-            HapticFeedbackConstants.LONG_PRESS
-        )
+        // Bipe: the long press copies the link (ADR 0134, use copy)
+        view.bipeHaptic(BipeHaptic.Tap)
         state.eventSink(TimelineEvent.CopyToClipboard(link.url))
     }
 
@@ -409,7 +409,10 @@ private fun BoxScope.TimelineScrollHelper(
         }
     }
 
+    val bipeView = LocalView.current
+
     fun jumpToBottom() {
+        bipeView.bipeHaptic(BipeHaptic.Tap) // Bipe: jump_to_latest (ADR 0134)
         if (isLive) {
             scrollToBottom(force = false)
         } else {

@@ -9,7 +9,6 @@
 package io.element.android.features.messages.impl.pinned.list
 
 import android.content.Context
-import android.view.HapticFeedbackConstants
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -29,6 +28,8 @@ import io.element.android.libraries.androidutils.clipboard.ClipboardHelper
 import io.element.android.libraries.androidutils.system.openUrlInExternalApp
 import io.element.android.libraries.androidutils.toast.ToastHelper
 import io.element.android.libraries.architecture.callback
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.bipeHaptic
 import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
 import io.element.android.libraries.matrix.api.core.EventId
@@ -130,9 +131,8 @@ class PinnedMessagesListNode(
                 onUserDataClick = { callback.navigateToRoomMemberDetails(it.userId) },
                 onLinkClick = { link -> onLinkClick(context, link.url) },
                 onLinkLongClick = {
-                    view.performHapticFeedback(
-                        HapticFeedbackConstants.LONG_PRESS
-                    )
+                    // Bipe: the long press copies the link (ADR 0134, use copy)
+                    view.bipeHaptic(BipeHaptic.Tap)
                     clipboardHelper.copyPlainText(it.url) {
                         toastHelper.show(CommonStrings.common_copied_to_clipboard)
                     }

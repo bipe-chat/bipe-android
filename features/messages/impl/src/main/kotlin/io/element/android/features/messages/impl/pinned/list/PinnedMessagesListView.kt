@@ -28,6 +28,7 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.actionlist.ActionListEvent
 import io.element.android.features.messages.impl.actionlist.ActionListView
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemAction
+import io.element.android.features.messages.impl.actionlist.model.bipeIsCopy
 import io.element.android.features.messages.impl.link.LinkEvent
 import io.element.android.features.messages.impl.link.LinkView
 import io.element.android.features.messages.impl.timeline.TimelineEvent
@@ -42,6 +43,8 @@ import io.element.android.features.messages.impl.timeline.model.TimelineItemSele
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemPollContent
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
 import io.element.android.features.poll.api.pollcontent.PollTitleView
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.components.button.BackButton
@@ -192,7 +195,10 @@ private fun PinnedMessagesListLoaded(
     emojiPickerRenderer: EmojiPickerRenderer,
     modifier: Modifier = Modifier,
 ) {
+    val bipeHaptics = rememberBipeHaptics()
+
     fun onActionSelected(timelineItemAction: TimelineItemAction, event: TimelineItem.Event) {
+        if (timelineItemAction.bipeIsCopy()) bipeHaptics(BipeHaptic.Tap) // Bipe: copy (ADR 0134)
         state.actionListState.eventSink(
             ActionListEvent.Clear
         )
@@ -214,6 +220,7 @@ private fun PinnedMessagesListLoaded(
     }
 
     fun onReactionClick(emoji: String, event: TimelineItem.Event) {
+        bipeHaptics(BipeHaptic.Tick) // Bipe: reaction_toggle (ADR 0134)
         state.eventSink(PinnedMessagesListEvent.ToggleReaction(emoji, event.eventOrTransactionId))
     }
 

@@ -32,6 +32,8 @@ import androidx.fragment.app.FragmentActivity
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.ui.BipeBiometricCheck
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticWhen
 import io.element.android.libraries.designsystem.atomic.pages.FlowStepPage
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.theme.components.Button
@@ -72,6 +74,7 @@ fun BipeWebApprovalView(
         onDispose { controller.end() }
     }
     BackHandler(enabled = step != BipeWebApprovalController.Step.FINISHING) { controller.close() }
+    BipeHapticWhen(BipeHaptic.Warning, step == BipeWebApprovalController.Step.WARNING) // web_link_warning (ADR 0134)
 
     when (step) {
         BipeWebApprovalController.Step.WARNING -> Warning(controller = controller, onContinue = ::verifyOwner, modifier = modifier)
