@@ -705,8 +705,6 @@
     <string name="bipe_link_computer_error_title">Não deu para conectar o computador</string>
     <string name="bipe_link_computer_error_sign_in">O Bipe não conseguiu abrir a página de aprovação. Tente de novo.</string>
     <string name="bipe_link_computer_not_supported">Este celular não pode conectar um computador agora.</string>
-    <string name="bipe_link_computer_needs_pin">Para conectar um computador, crie primeiro sua senha de %1$s números.</string>
-    <string name="bipe_link_computer_create_pin">Criar senha</string>
     <string name="bipe_link_computer_done">Computador conectado.</string>
     <string name="bipe_account_sign_out">Sair deste aparelho</string>
     <string name="bipe_privacy_who_can_talk">Quem pode falar com você</string>
@@ -826,4 +824,9 @@
     <string name="bipe_support_welcome">Oi! Aqui você fala com a equipe do Bipe. Conte o que aconteceu ou o que você quer ver no app. A gente responde nesta conversa.</string>
     <string name="bipe_support_report_received">Recebemos seu relato de problema. A equipe vai ler e responde nesta conversa.</string>
     <string name="bipe_support_already_open">Você já tem uma conversa com o suporte. Continue por aqui.</string>
+    <string name="bipe_app_lock_title">Bipe bloqueado</string>
+    <string name="bipe_app_lock_biometric">Use o %1$s para abrir</string>
+    <string name="bipe_archive_action">Arquivar</string>
+    <string name="bipe_unarchive_action">Desarquivar</string>
+    <string name="bipe_archived_title">Arquivadas</string>
 </resources>
