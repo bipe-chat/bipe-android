@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.rageshake.impl.R
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
+import io.element.android.libraries.designsystem.components.dialogs.AlertDialog
 import io.element.android.libraries.designsystem.components.form.textFieldState
 import io.element.android.libraries.designsystem.components.preferences.PreferenceDivider
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
@@ -51,6 +54,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TextFieldValidity
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun BugReportView(
@@ -61,6 +65,7 @@ fun BugReportView(
     modifier: Modifier = Modifier,
 ) {
     val eventSink = state.eventSink
+    var reportSent by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = modifier) {
         PreferencePage(
@@ -217,7 +222,7 @@ fun BugReportView(
             progressDialog = { },
             onSuccess = {
                 eventSink(BugReportEvent.ResetAll)
-                onSuccess()
+                reportSent = true
             },
             errorMessage = { error ->
                 when (error) {
@@ -227,6 +232,17 @@ fun BugReportView(
             },
             onErrorDismiss = { eventSink(BugReportEvent.ClearError) },
         )
+        // Bipe: the person sees that the report arrived and where the answer comes, then the screen closes (bipe#367).
+        if (reportSent) {
+            AlertDialog(
+                title = stringResource(BipeR.string.bipe_help_report_sent_title),
+                content = stringResource(BipeR.string.bipe_help_report_sent_body),
+                onDismiss = {
+                    reportSent = false
+                    onSuccess()
+                },
+            )
+        }
     }
 }
 

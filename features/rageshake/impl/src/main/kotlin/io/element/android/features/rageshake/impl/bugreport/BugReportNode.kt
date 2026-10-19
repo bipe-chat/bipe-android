@@ -8,7 +8,6 @@
 
 package io.element.android.features.rageshake.impl.bugreport
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.core.modality.BuildContext
@@ -19,9 +18,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
 import io.element.android.features.rageshake.api.reporter.BugReporter
-import io.element.android.libraries.androidutils.system.toast
 import io.element.android.libraries.architecture.callback
-import io.element.android.libraries.ui.strings.CommonStrings
 
 @ContributesNode(AppScope::class)
 @AssistedInject
@@ -41,13 +38,11 @@ class BugReportNode(
     @Composable
     override fun View(modifier: Modifier) {
         val state = presenter.present()
-        val activity = LocalActivity.current
         BugReportView(
             state = state,
             modifier = modifier,
             onBackClick = { navigateUp() },
             onSuccess = {
-                activity?.toast(CommonStrings.common_report_submitted)
                 callback.onDone()
             },
             onViewLogs = {
