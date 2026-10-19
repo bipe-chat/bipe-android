@@ -8,10 +8,7 @@
 
 package io.element.android.features.lockscreen.impl.unlock
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Arrangement.spacedBy
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
@@ -25,7 +22,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -43,9 +39,8 @@ import androidx.lifecycle.Lifecycle
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.lockscreen.impl.R
+import io.element.android.features.lockscreen.impl.components.PinDotsRow
 import io.element.android.features.lockscreen.impl.components.PinEntryTextField
-import io.element.android.features.lockscreen.impl.pin.model.PinDigit
-import io.element.android.features.lockscreen.impl.pin.model.PinEntry
 import io.element.android.features.lockscreen.impl.unlock.keypad.PinKeypad
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
@@ -261,36 +256,6 @@ private fun PinUnlockExpandedView(
         }
         footer()
     }
-}
-
-@Composable
-private fun PinDotsRow(
-    pinEntry: PinEntry,
-) {
-    Row(
-        horizontalArrangement = spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        for (digit in pinEntry.digits) {
-            PinDot(isFilled = digit is PinDigit.Filled)
-        }
-    }
-}
-
-@Composable
-private fun PinDot(
-    isFilled: Boolean,
-) {
-    val backgroundColor = if (isFilled) {
-        ElementTheme.colors.iconPrimary
-    } else {
-        ElementTheme.colors.bgSubtlePrimary
-    }
-    Box(
-        modifier = Modifier
-            .size(14.dp)
-            .background(backgroundColor, CircleShape)
-    )
 }
 
 @Composable

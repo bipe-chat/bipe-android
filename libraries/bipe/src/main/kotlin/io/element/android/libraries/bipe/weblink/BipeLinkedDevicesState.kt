@@ -16,6 +16,10 @@ data class BipeLinkedDevicesState(
     val devices: ImmutableList<BipeMatrixDevice>,
     val loadFailed: Boolean,
     val notSupported: Boolean,
+    /** This phone has no hidden password for the account (a beta account): the PIN comes first (ADR 0057). */
+    val needsPin: Boolean,
+    val showsCreatePin: Boolean,
+    val createPinError: String?,
     /** The device that the sign-out dialog asks about. */
     val signOutCandidate: BipeMatrixDevice?,
     val eventSink: (BipeLinkedDevicesEvent) -> Unit,
@@ -23,6 +27,7 @@ data class BipeLinkedDevicesState(
 
 sealed interface BipeLinkedDevicesEvent {
     data object LinkComputer : BipeLinkedDevicesEvent
+    data class CreatePin(val pin: String) : BipeLinkedDevicesEvent
     data class AskSignOut(val device: BipeMatrixDevice) : BipeLinkedDevicesEvent
     data object ConfirmSignOut : BipeLinkedDevicesEvent
     data object DismissDialog : BipeLinkedDevicesEvent
