@@ -24,8 +24,8 @@ object BuildTimeConfig {
     val SERVICES_MAPTILER_APIKEY: String? = null
     val SERVICES_MAPTILER_LIGHT_MAPID: String? = null
     val SERVICES_MAPTILER_DARK_MAPID: String? = null
-    val BUG_REPORT_URL: String? = null
-    val BUG_REPORT_APP_NAME: String? = null
+    val BUG_REPORT_URL: String? = "https://api.bipe.net.br/v1/bug-reports/submit" // Bipe: the Bipe API only (ADR 0114)
+    val BUG_REPORT_APP_NAME: String? = "bipe-android" // Bipe
     const val PUSH_CONFIG_INCLUDE_FIREBASE: Boolean = true
     const val PUSH_CONFIG_INCLUDE_UNIFIED_PUSH: Boolean = true
     // Bipe: Sygnal app IDs, same scheme as iOS (<base id>.ios.prod / .ios.dev). Sygnal must list them.
