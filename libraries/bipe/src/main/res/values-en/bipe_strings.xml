@@ -824,4 +824,9 @@
     <string name="bipe_support_welcome">Hi! This is where you talk to the Bipe team. Tell us what happened or what you want to see in the app. We answer in this chat.</string>
     <string name="bipe_support_report_received">We got your problem report. The team will read it and answer in this chat.</string>
     <string name="bipe_support_already_open">You already have a chat with support. Continue here.</string>
+    <string name="bipe_app_lock_title">Bipe is locked</string>
+    <string name="bipe_app_lock_biometric">Use %1$s to open</string>
+    <string name="bipe_archive_action">Archive</string>
+    <string name="bipe_unarchive_action">Unarchive</string>
+    <string name="bipe_archived_title">Archived</string>
 </resources>
