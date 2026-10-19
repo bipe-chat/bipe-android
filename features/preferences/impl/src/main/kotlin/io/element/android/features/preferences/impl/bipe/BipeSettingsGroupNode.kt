@@ -51,6 +51,7 @@ class BipeSettingsGroupNode(
         fun navigateToMessaging()
         fun navigateToBlockedUsers()
         fun navigateToOssLicenses()
+        fun navigateToBugReport()
     }
 
     private val callback: Callback = callback()
@@ -77,6 +78,8 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.CHATS_MEDIA_QUALITY -> callback.navigateToMediaSettings()
                     BipeSettingsRow.CHATS_LIVE_LOCATION -> callback.navigateToLocationSettings()
                     BipeSettingsRow.HELP_LICENSES -> callback.navigateToOssLicenses()
+                    // "Avisar sobre um problema" (bipe#367): the report goes to the Bipe API.
+                    BipeSettingsRow.HELP_REPORT_PROBLEM -> callback.navigateToBugReport()
                     else -> if (row.kind == BipeSettingsRowKind.URL) {
                         row.localizedUrl()?.let { activity.openUrlInChromeCustomTab(null, isDark, it) }
                     }
