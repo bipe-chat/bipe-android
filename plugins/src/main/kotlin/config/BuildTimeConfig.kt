@@ -20,10 +20,12 @@ object BuildTimeConfig {
     val URL_ACCEPTABLE_USE: String? = "https://bipe.chat/termos" // Bipe
     val URL_PRIVACY: String? = "https://bipe.chat/privacidade" // Bipe
     val URL_POLICY: String? = "https://bipe.chat/privacidade" // Bipe
-    val SERVICES_MAPTILER_BASE_URL: String? = null
+    // Bipe: maps come from our tileserver-gl in Brazil, which needs no key (bipe ADR 0131). Never use MapTiler:
+    // every tile and static map request carries the shared location.
+    val SERVICES_MAPTILER_BASE_URL: String? = "https://maps.bipe.net.br/styles"
     val SERVICES_MAPTILER_APIKEY: String? = null
-    val SERVICES_MAPTILER_LIGHT_MAPID: String? = null
-    val SERVICES_MAPTILER_DARK_MAPID: String? = null
+    val SERVICES_MAPTILER_LIGHT_MAPID: String? = "light"
+    val SERVICES_MAPTILER_DARK_MAPID: String? = "dark"
     // Bipe: problem reports go to the Bipe API on the server in Brazil (bipe#367).
     val BUG_REPORT_URL: String? = "https://api.bipe.net.br/v1/bug-reports/submit"
     val BUG_REPORT_APP_NAME: String? = "chat.bipe.app"

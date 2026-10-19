@@ -65,6 +65,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 | Locales | `plugins/.../extension/locales.kt`, `app/src/main/res/xml/locales_config.xml` | pt-BR and en only. Edited by hand: do not re-run the Localazy import. |
 | Accent colour | Compound tokens | Açaí from `../bipe-tokens`: `./tools/compound/import_bipe_tokens.sh`. Notification accent `#80307B` in `NotificationConfig`. |
 | App links | `app/src/main/AndroidManifest.xml` | `bipe.chat` (and www) paths `/@`, `/convite/` and `/recuperar/` (recovery link, token in the fragment). Old `proseio.com.br` links still open the app (second filter, no autoVerify). Element hosts removed. |
+| Location maps | `plugins/src/main/kotlin/config/BuildTimeConfig.kt` | `https://maps.bipe.net.br/styles`, styles `light` and `dark`, no key (bipe ADR 0131; tileserver-gl in bipe-infra). `MAPTILER_KEY_REQUIRED` is true only for `api.maptiler.com`. Never set a MapTiler key or URL: every tile and static map request carries the shared location. |
 
 ## Device-first accounts (ADR 0057, ADR 0059, bipe#154)
 

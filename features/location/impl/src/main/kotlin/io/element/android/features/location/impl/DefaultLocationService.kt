@@ -16,6 +16,6 @@ import io.element.android.features.location.api.LocationService
 @ContributesBinding(AppScope::class)
 class DefaultLocationService : LocationService {
     override fun isServiceAvailable(): Boolean {
-        return BuildConfig.MAPTILER_API_KEY.isNotEmpty()
+        return !BuildConfig.MAPTILER_KEY_REQUIRED || BuildConfig.MAPTILER_API_KEY.isNotEmpty()
     }
 }

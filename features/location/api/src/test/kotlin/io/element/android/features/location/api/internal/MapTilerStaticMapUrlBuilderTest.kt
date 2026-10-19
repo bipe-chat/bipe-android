@@ -36,6 +36,29 @@ class MapTilerStaticMapUrlBuilderTest {
     }
 
     @Test
+    fun `server without a key is available and sends no key`() {
+        val keylessBuilder = MapTilerStaticMapUrlBuilder(
+            baseUrl = "https://base.url",
+            apiKey = "",
+            lightMapId = "aLightMapId",
+            darkMapId = "aDarkMapId",
+            keyRequired = false,
+        )
+        assertThat(keylessBuilder.isServiceAvailable()).isTrue()
+        assertThat(
+            keylessBuilder.build(
+                lat = 1.23,
+                lon = -4.56,
+                zoom = 7.8,
+                darkMode = false,
+                width = 800,
+                height = 600,
+                density = 1f,
+            )
+        ).isEqualTo("https://base.url/aLightMapId/static/-4.56,1.23,7.8/800x600.webp?attribution=topright")
+    }
+
+    @Test
     fun `static map 1x density`() {
         assertThat(
             builder.build(
