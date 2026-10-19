@@ -19,6 +19,16 @@
     <string name="bipe_device_approval_never_for_others">Bipe never asks you to approve someone else\'s phone.</string>
     <string name="bipe_badge_verified_contact">Confirmed in person</string>
     <string name="bipe_badge_suspended_body">This account signed in on a new device. The seal comes back when the person verifies again on that device.</string>
+    <string name="bipe_badge_company">Verified business</string>
+    <string name="bipe_badge_company_legal_name">Legal name</string>
+    <string name="bipe_badge_company_trade_name">Trade name</string>
+    <string name="bipe_badge_company_cnpj">CNPJ</string>
+    <string name="bipe_badge_company_checked">Checked with the Receita Federal in</string>
+    <string name="bipe_badge_company_valid_until">Seal valid until</string>
+    <string name="bipe_badge_company_body">Bipe checked that the CNPJ is active at the Receita Federal and that this account belongs to the business. The seal does not vouch for every offer or charge. Before you pay, check the name your bank app shows.</string>
+    <string name="bipe_badge_company_revoked">This business is no longer verified.</string>
+    <string name="bipe_badge_company_revoked_not_active">This business is no longer verified. The CNPJ no longer shows as active at the Receita Federal.</string>
+    <string name="bipe_badge_company_suspended">This business\'s seal is suspended until Bipe checks the account again.</string>
     <string name="bipe_warning_nickname_confirm_title">Is this the person you know?</string>
     <string name="bipe_warning_nickname_confirm_body">You saved this contact as %1$s. The account is verified as %2$s. Is it the same person?</string>
     <string name="bipe_action_nickname_confirm_yes">Yes, same person</string>
