@@ -11,20 +11,25 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 open class BipeNewAccountStatePreviewParam : PreviewParameterProvider<BipeNewAccountState> {
     override val values: Sequence<BipeNewAccountState>
         get() = sequenceOf(
-            aBipeNewAccountState(invite = BipeNewAccountInvite.Created(code = "ABCD1234")),
-            aBipeNewAccountState(invite = BipeNewAccountInvite.Loading),
-            aBipeNewAccountState(invite = BipeNewAccountInvite.NoneLeft(nextAvailableAt = null)),
-            aBipeNewAccountState(canAddPersonalAccount = false, invite = BipeNewAccountInvite.NotCreated),
-            aBipeNewAccountState(invite = BipeNewAccountInvite.NotCreated),
+            aBipeNewAccountState(quota = BipeNewAccountQuota.Available),
+            aBipeNewAccountState(quota = BipeNewAccountQuota.Loading),
+            aBipeNewAccountState(quota = BipeNewAccountQuota.NoneLeft(nextAvailableAt = null)),
+            aBipeNewAccountState(canAddPersonalAccount = false, quota = BipeNewAccountQuota.Unknown),
+            aBipeNewAccountState(quota = BipeNewAccountQuota.Unknown),
+            aBipeNewAccountState(quota = BipeNewAccountQuota.Available, creatingFor = BipeNewAccountKind.PERSONAL),
         )
 }
 
 internal fun aBipeNewAccountState(
     canAddPersonalAccount: Boolean? = true,
-    invite: BipeNewAccountInvite = BipeNewAccountInvite.Loading,
+    quota: BipeNewAccountQuota = BipeNewAccountQuota.Loading,
+    creatingFor: BipeNewAccountKind? = null,
 ) = BipeNewAccountState(
     accountName = "Ana Souza",
     maxPersonalAccounts = 2,
     canAddPersonalAccount = canAddPersonalAccount,
-    invite = invite,
+    quota = quota,
+    creatingFor = creatingFor,
+    signup = null,
+    eventSink = {},
 )

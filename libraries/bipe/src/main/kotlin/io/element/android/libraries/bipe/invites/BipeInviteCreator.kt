@@ -9,6 +9,7 @@ package io.element.android.libraries.bipe.invites
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.api.BipeCreatedInvite
+import io.element.android.libraries.bipe.api.BipeMyInvites
 import io.element.android.libraries.bipe.di.BipeSession
 import java.time.Instant
 
@@ -34,9 +35,13 @@ class BipeInviteCreator(
         return created
     }
 
+    /** `GET /v1/me/invites`: the invites of the account and its quota. Creates nothing. */
+    suspend fun myInvites(): BipeMyInvites =
+        BipeApiClient.withTokenRetry(bipeSession.accessToken) { token -> bipeSession.apiClient.myInvites(token) }
+
     /** Reads the quota, then creates an invite only when one is left. For screens that do not show the quota. */
     suspend fun createIfAvailable(): Result {
-        val myInvites = BipeApiClient.withTokenRetry(bipeSession.accessToken) { token -> bipeSession.apiClient.myInvites(token) }
+        val myInvites = myInvites()
         if (myInvites.available <= 0) return Result.NoneLeft(myInvites.nextAvailableAt)
         return Result.Created(create())
     }
