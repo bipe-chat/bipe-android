@@ -46,8 +46,10 @@ import io.element.android.features.home.impl.roomlist.RoomListEvent
 import io.element.android.features.home.impl.roomlist.SecurityBannerState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
+import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
 import io.element.android.libraries.bipe.ui.BipeHandlePromptRow
 import io.element.android.libraries.bipe.ui.BipeInviterRow
+import io.element.android.libraries.bipe.ui.BipeRemoteBannerRow
 import io.element.android.libraries.bipe.ui.BipeRequestsRow
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -78,6 +80,7 @@ fun RoomListContentView(
     bipeInviterHandle: String? = null,
     onBipeInviterClick: () -> Unit = {},
     bipeHandlePrompt: BipeHandlePromptActions? = null,
+    bipeRemoteBanner: BipeRemoteBannerActions? = null,
 ) {
     when (contentState) {
         is RoomListContentState.Skeleton -> {
@@ -98,6 +101,7 @@ fun RoomListContentView(
                 bipeInviterHandle = bipeInviterHandle,
                 onBipeInviterClick = onBipeInviterClick,
                 bipeHandlePrompt = bipeHandlePrompt,
+                bipeRemoteBanner = bipeRemoteBanner,
             )
         }
         is RoomListContentState.Rooms -> {
@@ -116,6 +120,7 @@ fun RoomListContentView(
                 bipeInviterHandle = bipeInviterHandle,
                 onBipeInviterClick = onBipeInviterClick,
                 bipeHandlePrompt = bipeHandlePrompt,
+                bipeRemoteBanner = bipeRemoteBanner,
             )
         }
     }
@@ -155,6 +160,7 @@ private fun EmptyView(
     bipeInviterHandle: String?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
+    bipeRemoteBanner: BipeRemoteBannerActions?,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
@@ -178,6 +184,10 @@ private fun EmptyView(
             modifier = Modifier.align(Alignment.Center),
         )
         Column {
+            // Bipe (ADR 0117, bipe#386): the remote critical banner sits above the account tasks.
+            if (bipeRemoteBanner != null) {
+                BipeRemoteBannerRow(banner = bipeRemoteBanner.banner, onClick = bipeRemoteBanner.onClick, onDismiss = bipeRemoteBanner.onDismiss)
+            }
             when (state.securityBannerState) {
                 SecurityBannerState.SetUpRecovery -> {
                     SetUpRecoveryKeyBanner(
@@ -218,6 +228,7 @@ private fun RoomsView(
     bipeInviterHandle: String?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
+    bipeRemoteBanner: BipeRemoteBannerActions?,
     modifier: Modifier = Modifier,
 ) {
     val isSpaceFilterSelected = spaceFiltersState is SpaceFiltersState.Selected
@@ -241,6 +252,7 @@ private fun RoomsView(
             bipeInviterHandle = bipeInviterHandle.takeUnless { hasAnyFilterSelected },
             onBipeInviterClick = onBipeInviterClick,
             bipeHandlePrompt = bipeHandlePrompt.takeUnless { hasAnyFilterSelected },
+            bipeRemoteBanner = bipeRemoteBanner.takeUnless { hasAnyFilterSelected },
             hideInvitesAvatars = hideInvitesAvatars,
             eventSink = eventSink,
             onSetUpRecoveryClick = onSetUpRecoveryClick,
@@ -260,6 +272,7 @@ private fun RoomsViewList(
     bipeInviterHandle: String?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
+    bipeRemoteBanner: BipeRemoteBannerActions?,
     hideInvitesAvatars: Boolean,
     eventSink: (RoomListEvent) -> Unit,
     onSetUpRecoveryClick: () -> Unit,
@@ -277,6 +290,13 @@ private fun RoomsViewList(
         modifier = modifier,
         contentPadding = contentPadding,
     ) {
+        // Bipe (ADR 0117, bipe#386): the remote critical banner sits above the account tasks.
+        if (bipeRemoteBanner != null) {
+            item {
+                BipeRemoteBannerRow(banner = bipeRemoteBanner.banner, onClick = bipeRemoteBanner.onClick, onDismiss = bipeRemoteBanner.onDismiss)
+                HorizontalDivider()
+            }
+        }
         // Bipe (ADR 0117, bipe#385): the banner slot shows account tasks only, the first one in this order: recovery key,
         // inviter row (ADR 0111), full-screen intent, battery optimization. Upstream's new notification sound banner never shows.
         when {
@@ -427,3 +447,6 @@ internal fun RoomListContentViewPreview(@PreviewParameter(RoomListContentStatePr
 
 /** Bipe (bipe-chat/bipe#415): the "Escolha seu @" card's actions. Null when the card does not show. */
 data class BipeHandlePromptActions(val onClick: () -> Unit, val onDismiss: () -> Unit)
+
+/** Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner and its actions. */
+data class BipeRemoteBannerActions(val banner: BipeRemoteBannerShown, val onClick: () -> Unit, val onDismiss: () -> Unit)
