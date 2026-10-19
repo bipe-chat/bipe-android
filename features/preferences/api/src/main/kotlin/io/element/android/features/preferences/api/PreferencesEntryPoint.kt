@@ -87,6 +87,9 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
 
         /** Bipe: another user's profile, e.g. someone who joined through the user's invite. */
         fun navigateToUserProfile(userId: UserId) {}
+
+        /** Bipe: the support DM (ADR 0114). */
+        fun navigateToBipeSupport() {}
     }
 
     fun createAppDeveloperSettingsNode(

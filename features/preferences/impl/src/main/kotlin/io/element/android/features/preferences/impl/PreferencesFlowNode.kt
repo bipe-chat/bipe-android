@@ -330,6 +330,10 @@ class PreferencesFlowNode(
                         backstack.push(NavTarget.OssLicenses)
                     }
 
+                    override fun navigateToSupport() {
+                        callback.navigateToBipeSupport()
+                    }
+
                     override fun navigateToBugReport() {
                         callback.navigateToBugReport()
                     }

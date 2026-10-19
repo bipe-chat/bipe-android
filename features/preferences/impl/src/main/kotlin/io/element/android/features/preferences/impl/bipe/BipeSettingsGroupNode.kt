@@ -51,6 +51,7 @@ class BipeSettingsGroupNode(
         fun navigateToMessaging()
         fun navigateToBlockedUsers()
         fun navigateToOssLicenses()
+        fun navigateToSupport()
         fun navigateToBugReport()
     }
 
@@ -78,6 +79,7 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.CHATS_MEDIA_QUALITY -> callback.navigateToMediaSettings()
                     BipeSettingsRow.CHATS_LIVE_LOCATION -> callback.navigateToLocationSettings()
                     BipeSettingsRow.HELP_LICENSES -> callback.navigateToOssLicenses()
+                    BipeSettingsRow.HELP_SUPPORT -> callback.navigateToSupport()
                     // "Avisar sobre um problema" (bipe#367): the report goes to the Bipe API.
                     BipeSettingsRow.HELP_REPORT_PROBLEM -> callback.navigateToBugReport()
                     else -> if (row.kind == BipeSettingsRowKind.URL) {

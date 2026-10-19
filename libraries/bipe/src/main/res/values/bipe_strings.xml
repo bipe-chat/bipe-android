@@ -781,4 +781,11 @@
     <string name="bipe_handle_prompt_title">Escolha seu @</string>
     <string name="bipe_handle_prompt_body">Com um @, as pessoas te acham no Bipe.</string>
     <string name="bipe_handle_prompt_action">Escolher @</string>
+    <string name="bipe_settings_support">Falar com o suporte</string>
+    <string name="bipe_support_open_failed">Não foi possível abrir o suporte agora. Tente de novo.</string>
+    <string name="bipe_support_room_name">Suporte Bipe</string>
+    <string name="bipe_support_room_topic">Conversa com a equipe do Bipe. A equipe lê o que você escreve aqui numa ferramenta de atendimento. Fotos e arquivos ficam no servidor do Bipe.</string>
+    <string name="bipe_support_welcome">Oi! Aqui você fala com a equipe do Bipe. Conte o que aconteceu ou o que você quer ver no app. A gente responde nesta conversa.</string>
+    <string name="bipe_support_report_received">Recebemos seu relato de problema. A equipe vai ler e responde nesta conversa.</string>
+    <string name="bipe_support_already_open">Você já tem uma conversa com o suporte. Continue por aqui.</string>
 </resources>
