@@ -96,6 +96,7 @@ import io.element.android.features.messages.impl.timeline.model.event.ensureActi
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
 import io.element.android.features.messages.impl.timeline.protection.mustBeProtected
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.company.BipeCompanySeal
 import io.element.android.libraries.designsystem.colors.AvatarColorsProvider
 import io.element.android.libraries.designsystem.components.EqualWidthColumn
 import io.element.android.libraries.designsystem.components.avatar.Avatar
@@ -669,6 +670,7 @@ private fun MessageSenderInformation(
             senderProfile = senderProfile,
             senderNameMode = SenderNameMode.Timeline(avatarColors.foreground),
         )
+        BipeCompanySeal(userId = senderId.value, modifier = Modifier.align(Alignment.CenterVertically)) // Bipe: company seal (bipe#252)
     }
 }
 

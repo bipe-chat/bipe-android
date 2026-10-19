@@ -9,7 +9,9 @@
 package io.element.android.features.userprofile.shared
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.userprofile.api.UserProfileVerificationState
+import io.element.android.libraries.bipe.company.BipeCompanySeal
 import io.element.android.libraries.bipe.ui.BipePublicBio
 import io.element.android.libraries.bipe.ui.bipeDisplayText
 import io.element.android.libraries.designsystem.atomic.atoms.MatrixBadgeAtom
@@ -85,16 +88,21 @@ fun UserProfileHeaderSection(
         )
         Spacer(modifier = Modifier.height(24.dp))
         if (userName != null) {
-            Text(
-                modifier = Modifier
-                    .clipToBounds()
-                    .semantics {
-                        heading()
-                    },
-                text = userName,
-                style = ElementTheme.typography.fontHeadingLgBold,
-                textAlign = TextAlign.Center,
-            )
+            // Bipe: the company seal after the name (bipe#252)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .clipToBounds()
+                        .semantics {
+                            heading()
+                        },
+                    text = userName,
+                    style = ElementTheme.typography.fontHeadingLgBold,
+                    textAlign = TextAlign.Center,
+                )
+                BipeCompanySeal(userId = userId.value, size = 24.dp)
+            }
             Spacer(modifier = Modifier.height(12.dp))
         }
         displayedStatus?.let { status ->

@@ -391,6 +391,7 @@ class MessagesPresenter(
             showLiveLocationShareBanner = isCurrentlySharingLiveLocationInRoom && timelineState.timelineMode !is Timeline.Mode.Thread,
             redactEventAction = redactEventAction.value,
             bipeInviterHandle = bipeInviterHandle,
+            bipeDmUserId = dmRoomMember?.userId?.value,
             eventSink = ::handleEvent,
         )
     }

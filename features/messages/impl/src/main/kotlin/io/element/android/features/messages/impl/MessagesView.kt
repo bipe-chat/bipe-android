@@ -109,6 +109,7 @@ import io.element.android.features.messages.impl.voicemessages.composer.VoiceMes
 import io.element.android.features.messages.impl.voicemessages.composer.VoiceMessageSendingFailedDialog
 import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.libraries.androidutils.ui.hideKeyboard
+import io.element.android.libraries.bipe.company.BipeCompanySealNotice
 import io.element.android.libraries.bipe.ui.BipeInviterHint
 import io.element.android.libraries.designsystem.atomic.molecules.ComposerAlertMolecule
 import io.element.android.libraries.designsystem.components.ExpandableBottomSheetLayout
@@ -289,6 +290,7 @@ fun MessagesView(
                                 dmUserIdentityState = state.dmUserVerificationState,
                                 sharedHistoryIcon = state.topBarSharedHistoryIcon,
                                 dmUserStatus = state.dmUserStatus,
+                                bipeDmUserId = state.bipeDmUserId,
                                 onBackClick = { hidingKeyboard { onBackClick() } },
                                 onRoomDetailsClick = { hidingKeyboard { onRoomDetailsClick() } },
                                 menuActions = {
@@ -661,6 +663,7 @@ private fun MessagesViewContent(
                             onStopClick = { state.eventSink(MessagesEvent.StopLiveLocationShare) }
                         )
                     }
+                    state.bipeDmUserId?.let { BipeCompanySealNotice(userId = it) } // Bipe: the company seal ended (bipe#252)
                 }
             }
 
