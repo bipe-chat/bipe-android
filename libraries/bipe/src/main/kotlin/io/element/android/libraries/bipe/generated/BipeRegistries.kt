@@ -582,12 +582,14 @@ object BipeRegistries {
         "mz",
         "bipe",
         "suporte",
+        "bipechat",
     )
 
     /** Full Matrix user IDs of official Bipe accounts. Match exactly; names and handles are not proof. */
     val officialAccountIds: Set<String> = setOf(
         "@suporte:bipe.net.br",
         "@bipe:bipe.net.br",
+        "@r2vrihsgkqd5:bipe.net.br",
     )
 
     /** Public profile rules (ADR 0041). Lengths count code points. The server is the authority. */
