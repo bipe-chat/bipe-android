@@ -17,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
@@ -54,6 +55,8 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.launchMolecule
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.account.newaccount.BipeNewAccountPresenter
+import io.element.android.libraries.bipe.account.newaccount.BipeNewAccountView
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.handle.BipeHandleNode
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
@@ -103,6 +106,7 @@ class HomeFlowNode(
     private val preferencesRootPresenter: Lazy<PreferencesRootPresenter>,
     private val bipeSelfChat: BipeSelfChat,
     private val snackbarDispatcher: SnackbarDispatcher,
+    private val bipeNewAccountPresenter: Lazy<BipeNewAccountPresenter>, // Bipe: "Nova conta" (bipe#445)
 ) : BaseFlowNode<HomeFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Root,
@@ -234,6 +238,15 @@ class HomeFlowNode(
             val activity = requireNotNull(LocalActivity.current)
 
             val loadingJoinedRoomJob = remember { mutableStateOf<AsyncData<Job>>(AsyncData.Uninitialized) }
+            var showBipeNewAccount by remember { mutableStateOf(false) }
+            if (showBipeNewAccount) {
+                BipeNewAccountView(
+                    state = bipeNewAccountPresenter.value.present(),
+                    onDismiss = { showBipeNewAccount = false },
+                    onPersonalClick = callback::bipeNavigateToSignup,
+                    onExistingClick = callback::navigateToAddAccount,
+                )
+            }
             if (loadingJoinedRoomJob.value.isLoading()) {
                 DelayedVisibility(duration = 400.milliseconds) {
                     ProgressDialog(
@@ -288,7 +301,8 @@ class HomeFlowNode(
                 onRoomClick = ::navigateToRoom,
                 // Bipe: the avatar opens the Você tab, which holds the settings (ADR 0053).
                 onSettingsClick = { state.eventSink(HomeEvent.SelectHomeNavigationBarItem(HomeNavigationBarItem.You)) },
-                onAddAccountClick = callback::navigateToAddAccount,
+                // Bipe: "Nova conta" opens its window (bipe#445).
+                onAddAccountClick = { showBipeNewAccount = true },
                 onStartChatClick = callback::navigateToCreateRoom,
                 onBipeCreateGroupClick = callback::bipeNavigateToCreateGroup,
                 onBipeHandlePromptClick = { backstack.push(NavTarget.BipeHandle) },

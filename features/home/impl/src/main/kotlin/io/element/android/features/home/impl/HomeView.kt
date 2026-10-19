@@ -232,8 +232,6 @@ private fun HomeScaffold(
                     state.eventSink(HomeEvent.SwitchToAccount(it))
                 },
                 bipeAccounts = state.bipeAccounts,
-                bipeCanAddAccount = state.bipeCanAddAccount,
-                bipeMaxAccounts = state.bipeMaxAccounts,
                 onBipeAddAccount = onAddAccountClick,
                 scrollBehavior = scrollBehavior,
                 displayFilters = state.displayRoomListFilters,

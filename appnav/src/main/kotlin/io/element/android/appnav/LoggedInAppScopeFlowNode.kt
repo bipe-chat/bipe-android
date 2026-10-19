@@ -61,6 +61,7 @@ class LoggedInAppScopeFlowNode(
     interface Callback : Plugin {
         fun navigateToBugReport()
         fun navigateToAddAccount()
+        fun bipeNavigateToSignup(inviteCode: String?) // Bipe: "Nova conta" (bipe#445)
         fun switchAccountAndOpenRoom(sessionId: SessionId, roomId: RoomId?)
     }
 
@@ -93,6 +94,10 @@ class LoggedInAppScopeFlowNode(
 
             override fun navigateToAddAccount() {
                 callback.navigateToAddAccount()
+            }
+
+            override fun bipeNavigateToSignup(inviteCode: String?) {
+                callback.bipeNavigateToSignup(inviteCode)
             }
 
             override fun switchAccountAndOpenRoom(sessionId: SessionId, roomId: RoomId?) {

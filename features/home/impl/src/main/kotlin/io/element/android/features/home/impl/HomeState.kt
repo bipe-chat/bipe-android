@@ -11,7 +11,6 @@ package io.element.android.features.home.impl
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
-import io.element.android.libraries.bipe.account.BipeAccountCap
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -35,10 +34,7 @@ data class HomeState(
     val bipeBadges: BipeTabBadges,
     /** Bipe: every account on the phone, current first, for the avatar menu (ADR 0086, #267). */
     val bipeAccounts: ImmutableList<MatrixUser>,
-    /** Bipe: the cap of personal accounts per phone (ADR 0086). */
-    val bipeMaxAccounts: Int,
 ) {
-    val bipeCanAddAccount: Boolean get() = BipeAccountCap.canAdd(bipeAccounts.size, bipeMaxAccounts)
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem.isBipeRoomList && roomListState.displayFilters // Bipe: Conversas and Grupos
 }

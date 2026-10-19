@@ -196,6 +196,7 @@ class LoggedInFlowNode(
     interface Callback : Plugin {
         fun navigateToBugReport()
         fun navigateToAddAccount()
+        fun bipeNavigateToSignup(inviteCode: String?) // Bipe: "Nova conta" (bipe#445)
         fun switchAccountAndOpenRoom(sessionId: SessionId, roomId: RoomId?)
     }
 
@@ -408,6 +409,10 @@ class LoggedInFlowNode(
                     override fun navigateToAddAccount() {
                         callback.navigateToAddAccount()
                     }
+
+                    override fun bipeNavigateToSignup(inviteCode: String?) {
+                        callback.bipeNavigateToSignup(inviteCode)
+                    }
                 }
                 homeEntryPoint.createNode(
                     parentNode = this,
@@ -498,6 +503,10 @@ class LoggedInFlowNode(
                 val callback = object : PreferencesEntryPoint.Callback {
                     override fun navigateToAddAccount() {
                         callback.navigateToAddAccount()
+                    }
+
+                    override fun bipeNavigateToSignup(inviteCode: String?) {
+                        callback.bipeNavigateToSignup(inviteCode)
                     }
 
                     override fun navigateToLinkNewDevice() {
