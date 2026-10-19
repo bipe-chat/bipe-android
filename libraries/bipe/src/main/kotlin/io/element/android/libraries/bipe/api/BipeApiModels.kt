@@ -99,6 +99,8 @@ data class BipeInvite(
     @Serializable(with = InstantSerializer::class) @SerialName("expires_at") val expiresAt: Instant,
     /** Only when [status] is `USED`. */
     @SerialName("joined_user_id") val joinedUserId: String? = null,
+    /** The name the user gave the invite. Only they see it. */
+    @SerialName("name") val name: String? = null,
 ) {
     /** An unknown status from a newer server must not fail the whole list. */
     val status: BipeInviteStatus

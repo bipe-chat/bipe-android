@@ -38,6 +38,9 @@ interface HomeEntryPoint : FeatureEntryPoint {
         fun navigateToBugReport()
         fun navigateToAddAccount()
 
+        /** Bipe: "Nova conta" (bipe#445): the sign-up, with an invite code from the account on screen, or `null` for the invite step. */
+        fun bipeNavigateToSignup(inviteCode: String?)
+
         /** Bipe: opens a settings screen from a row of the Você tab (ADR 0053). */
         fun bipeNavigateToSettings(initialTarget: PreferencesEntryPoint.InitialTarget) = navigateToSettings()
 

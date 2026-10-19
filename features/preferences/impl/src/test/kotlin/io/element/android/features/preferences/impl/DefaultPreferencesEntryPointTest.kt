@@ -48,6 +48,7 @@ class DefaultPreferencesEntryPointTest {
         }
         val callback = object : PreferencesEntryPoint.Callback {
             override fun navigateToAddAccount() = lambdaError()
+            override fun bipeNavigateToSignup(inviteCode: String?) = lambdaError()
             override fun navigateToLinkNewDevice() = lambdaError()
             override fun navigateToBugReport() = lambdaError()
             override fun navigateToSecureBackup() = lambdaError()
