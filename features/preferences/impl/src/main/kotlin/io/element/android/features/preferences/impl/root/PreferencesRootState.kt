@@ -27,7 +27,6 @@ data class PreferencesRootState(
     val availableThemeOptions: ImmutableList<ThemeOption>,
     val userStatusState: UserStatusState?,
     val version: String,
-    val isMultiAccountEnabled: Boolean,
     val isOtherAccountsSectionExpanded: Boolean,
     val otherSessions: ImmutableList<MatrixUser>,
     val showAnalyticsSettings: Boolean,

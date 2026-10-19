@@ -121,9 +121,6 @@ fun HomeView(
             )
         }
 
-        // Bipe: no Element multi-account announcement (MultiAccountAnnouncementBottomSheet: Element's copy). The avatar menu
-        // on the chat list adds accounts (ADR 0086, #267).
-
         leaveRoomView()
 
         HomeScaffold(

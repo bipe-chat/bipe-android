@@ -70,7 +70,6 @@ class PreferencesRootViewTest : RobolectricTest() {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>()
         setView(
             aPreferencesRootState(
-                isMultiAccountEnabled = true,
                 isOtherAccountsSectionExpanded = true,
                 otherSessions = listOf(
                     aMatrixUser(
@@ -90,7 +89,6 @@ class PreferencesRootViewTest : RobolectricTest() {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>()
         setView(
             aPreferencesRootState(
-                isMultiAccountEnabled = true,
                 isOtherAccountsSectionExpanded = false,
                 otherSessions = listOf(
                     aMatrixUser(
@@ -110,7 +108,6 @@ class PreferencesRootViewTest : RobolectricTest() {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         setView(
             aPreferencesRootState(
-                isMultiAccountEnabled = true,
                 isOtherAccountsSectionExpanded = false,
                 otherSessions = listOf(
                     aMatrixUser(
@@ -127,11 +124,11 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `when multi account is not enabled, item is not shown`() = runAndroidComposeUiTest {
+    fun `when there is no other account, item is not shown`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         setView(
             aPreferencesRootState(
-                isMultiAccountEnabled = false,
+                otherSessions = emptyList(),
                 eventSink = eventsRecorder,
             ),
         )

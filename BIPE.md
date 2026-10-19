@@ -92,11 +92,11 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 
 ## Several accounts (ADR 0086, bipe#267)
 
-- `FeatureFlags.MultiAccount` is on. Upstream's multi-account code does the sessions, the add-account flow (`RootFlowNode` pushes `NotLoggedInFlow`, whose login flow runs with `allowBackNavigation`, so no silent sign-in) and the switch (`HomeEvent.SwitchToAccount`).
-- **Chat list avatar:** a tap with two or more accounts switches to the next one (one account: settings, as before); a long press opens the account menu (`BipeAccountMenuAnchor` in `HomeTopBar`): every account, then "Adicionar conta" (`bipe_account_add`) up to the cap, else `bipe_account_cap_reached`. The vertical swipe of upstream stays.
+- Multi-account is always on, with no feature flag. Upstream's multi-account code does the sessions, the add-account flow (`RootFlowNode` pushes `NotLoggedInFlow`, whose login flow runs with `allowBackNavigation`, so no silent sign-in) and the switch (`HomeEvent.SwitchToAccount`).
+- **Chat list avatar:** a tap with two or more accounts switches to the next one (one account: settings, as before); a long press opens the account menu (`BipeAccountMenuAnchor` in `HomeTopBar`): every account, then "Adicionar conta" (`bipe_account_add`) up to the cap, else `bipe_account_cap_reached`.
 - **Cap:** `BipeAccountCap` (libraries/bipe): the last `max_accounts` from `GET /v1/me/account`, else `BipeRegistries.MAX_PERSONAL_ACCOUNTS` (2). Company accounts do not count (#269).
 - An account with a session is never signed in again: `BipeDeviceAccount` leaves signed-in accounts out of the silent sign-in and the token recovery.
-- Element's multi-account announcement sheet does not show (Element copy).
+- Element's upstream multi-account extras (feature flag, announcement, vertical swipe on the avatar) are removed (bipe#434). The avatar tap and long press match iOS.
 - Not done: the account avatar in the composer, the account name in notifications (unverified), the rounded-square avatar for a verified company (ADR 0120, needs #252).
 
 ## Handle change lines (ADR 0066, bipe#166)

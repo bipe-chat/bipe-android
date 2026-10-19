@@ -75,7 +75,6 @@ class PreferencesRootPresenterTest {
                 )
             )
             assertThat(initialState.version).isEqualTo("A Version")
-            assertThat(initialState.isMultiAccountEnabled).isFalse()
             assertThat(initialState.isOtherAccountsSectionExpanded).isTrue()
             assertThat(initialState.otherSessions).isEmpty()
             assertThat(initialState.preferencesAccountState).isEqualTo(aPreferencesAccountState())
@@ -232,9 +231,6 @@ class PreferencesRootPresenterTest {
     fun `present - multiple accounts`() = runTest {
         createPreferencesRootPresenter(
             matrixClient = FakeMatrixClient(sessionId = A_SESSION_ID),
-            featureFlagService = FakeFeatureFlagService(
-                initialState = mapOf(FeatureFlags.MultiAccount.key to true)
-            ),
             sessionStore = InMemorySessionStore(
                 initialList = listOf(
                     aSessionData(sessionId = A_SESSION_ID.value),
@@ -248,7 +244,6 @@ class PreferencesRootPresenterTest {
             )
         ).test {
             val state = consumeItemsUntilPredicate { it.otherSessions.isNotEmpty() }.last()
-            assertThat(state.isMultiAccountEnabled).isTrue()
             assertThat(state.otherSessions).hasSize(1)
             assertThat(state.otherSessions[0]).isEqualTo(
                 MatrixUser(
@@ -294,8 +289,7 @@ class PreferencesRootPresenterTest {
     private fun CoroutineScope.createPreferencesRootPresenter(
         matrixClient: FakeMatrixClient = FakeMatrixClient(),
         showDeveloperSettingsProvider: ShowDeveloperSettingsProvider = ShowDeveloperSettingsProvider(aBuildMeta(BuildType.DEBUG)),
-        // Bipe: multi-account is on by default (#267); these tests check other parts, so it starts off here.
-        featureFlagService: FeatureFlagService = FakeFeatureFlagService(initialState = mapOf(FeatureFlags.MultiAccount.key to false)),
+        featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         sessionStore: SessionStore = InMemorySessionStore(),
         appPreferencesStore: AppPreferencesStore = InMemoryAppPreferencesStore(),
     ) = PreferencesRootPresenter(

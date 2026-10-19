@@ -276,14 +276,12 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
     onReportRoomClick: (RoomId) -> Unit = EnsureNeverCalledWithParam(),
     onDeclineInviteAndBlockUser: (RoomListRoomSummary) -> Unit = EnsureNeverCalledWithParam(),
     onAddAccountClick: () -> Unit = EnsureNeverCalled(),
-    showMultiAccountAnnouncement: Boolean = false,
     homeEventSink: (HomeEvent) -> Unit = {},
 ) {
     setSafeContent {
         HomeView(
             homeState = aHomeState(
                 roomListState = state,
-                showMultiAccountAnnouncement = showMultiAccountAnnouncement,
                 eventSink = homeEventSink,
             ),
             onRoomClick = { roomId, _ -> onRoomClick(roomId) },

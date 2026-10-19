@@ -33,7 +33,6 @@ class DefaultAnnouncementService(
             Announcement.NewNotificationSound -> {
                 announcementStore.setAnnouncementStatus(Announcement.NewNotificationSound, AnnouncementStatus.Show)
             }
-            Announcement.MultiAccount -> showAnnouncementIfNeverShown(announcement)
         }
     }
 
@@ -45,16 +44,10 @@ class DefaultAnnouncementService(
         return combine(
             flowOf(Unit),
             announcementStore.announcementStatusFlow(Announcement.NewNotificationSound),
-            announcementStore.announcementStatusFlow(Announcement.MultiAccount),
-        ) { _, newNotificationSoundStatus, multiAccountStatus ->
+        ) { _, newNotificationSoundStatus ->
             buildList {
                 if (newNotificationSoundStatus == AnnouncementStatus.Show) {
                     add(Announcement.NewNotificationSound)
-                }
-                // The multi-account announcement is pending until it is dismissed. Users who were already
-                // logged in when the feature became available still have the default NeverShown status.
-                if (multiAccountStatus != AnnouncementStatus.Shown) {
-                    add(Announcement.MultiAccount)
                 }
             }
         }

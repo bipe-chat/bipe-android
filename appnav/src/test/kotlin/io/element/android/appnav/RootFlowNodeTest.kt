@@ -38,7 +38,6 @@ import io.element.android.features.share.test.FakeShareIntentHandler
 import io.element.android.features.signedout.test.FakeSignedOutEntryPoint
 import io.element.android.libraries.accountselect.test.FakeAccountSelectEntryPoint
 import io.element.android.libraries.architecture.AssistedNodeFactory
-import io.element.android.libraries.featureflag.test.FakeFeatureFlagService
 import io.element.android.libraries.matrix.test.FakeSdkMetadata
 import io.element.android.libraries.matrix.test.auth.FakeMatrixAuthenticationService
 import io.element.android.libraries.matrix.test.permalink.FakePermalinkParser
@@ -141,9 +140,6 @@ class RootFlowNodeTest : RobolectricTest() {
                             loginEntryPoint = loginEntryPoint,
                             imageLoaderHolder = FakeImageLoaderHolder(),
                             analyticsColdStartWatcher = FakeAnalyticsColdStartWatcher(),
-                            featureFlagService = FakeFeatureFlagService(),
-                            // Bipe: multi-account is on (#267), so the login flow dismisses the announcement.
-                            announcementService = FakeAnnouncementService(onAnnouncementDismissedResult = {}),
                         )
                     }
                 )
@@ -184,7 +180,6 @@ class RootFlowNodeTest : RobolectricTest() {
                 shareIntentHandler = FakeShareIntentHandler(),
             ),
             oAuthActionFlow = FakeOAuthActionFlow(),
-            featureFlagService = FakeFeatureFlagService(),
             announcementService = FakeAnnouncementService(),
             analyticsService = FakeAnalyticsService(),
             analyticsColdStartWatcher = FakeAnalyticsColdStartWatcher(),
