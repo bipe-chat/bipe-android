@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -39,6 +40,7 @@ import androidx.compose.ui.zIndex
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.BipeHandlePromptActions
+import io.element.android.features.home.impl.components.BipeRemoteBannerActions
 import io.element.android.features.home.impl.components.HomeTopBar
 import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
@@ -55,6 +57,7 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersView
 import io.element.android.features.home.impl.spaces.HomeSpacesView
 import io.element.android.libraries.androidutils.throttler.FirstThrottler
+import io.element.android.libraries.bipe.banner.BipeOnForeground
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -188,6 +191,9 @@ private fun HomeScaffold(
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
     val roomListState: RoomListState = state.roomListState
     val bipeCoroutineScope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
+    // Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner, read on launch and on foreground.
+    BipeOnForeground { roomListState.eventSink(RoomListEvent.BipeRefreshRemoteBanner) }
 
     BackHandler(enabled = state.isBackHandlerEnabled) {
         if (state.currentHomeNavigationBarItem != HomeNavigationBarItem.Chats) {
@@ -346,6 +352,16 @@ private fun HomeScaffold(
                             ).takeIf {
                                 roomListState.bipeShowsHandlePrompt && state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats
                             },
+                            // Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner in Conversas only.
+                            bipeRemoteBanner = roomListState.bipeRemoteBanner
+                                ?.takeIf { state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats }
+                                ?.let { banner ->
+                                    BipeRemoteBannerActions(
+                                        banner = banner,
+                                        onClick = { uriHandler.openUri(banner.url) },
+                                        onDismiss = { roomListState.eventSink(RoomListEvent.BipeDismissRemoteBanner) },
+                                    )
+                                },
                             modifier = Modifier
                                 .padding(outerPadding)
                                 .consumeWindowInsets(outerPadding)

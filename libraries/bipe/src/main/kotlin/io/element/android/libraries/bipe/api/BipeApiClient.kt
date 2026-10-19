@@ -49,6 +49,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/signup/config`. No auth. The sign-up mode (ADR 0072). */
     suspend fun signupConfig(): BipeSignupConfig = call { service.signupConfig() }
 
+    /** `GET /v1/banner`. No auth. The remote critical banner (ADR 0117), or null. */
+    suspend fun remoteBanner(): BipeRemoteBanner? = call { service.remoteBanner() }.banner
+
     /** `POST /v1/signup/resume`. No auth. The answer of an earlier sign-up with this key (ADR 0094); `not_found` when none. */
     suspend fun resumeSignup(signupKey: String): BipeSignupResponse = call { service.resumeSignup(BipeSignupResumeRequest(signupKey)) }
 
@@ -356,6 +359,9 @@ internal interface BipeApiService {
 
     @GET("v1/signup/config")
     suspend fun signupConfig(): Response<BipeSignupConfig>
+
+    @GET("v1/banner")
+    suspend fun remoteBanner(): Response<BipeRemoteBannerResponse>
 
     @POST("v1/signup/resume")
     suspend fun resumeSignup(@Body request: BipeSignupResumeRequest): Response<BipeSignupResponse>

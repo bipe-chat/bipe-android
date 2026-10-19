@@ -812,6 +812,8 @@
     <string name="bipe_notifications_prompt_title_generic">Want to know right away when someone replies?</string>
     <string name="bipe_notifications_prompt_body">Bipe tells you when a new message arrives. You can change this later in Settings.</string>
     <string name="bipe_notifications_prompt_allow">Turn on notifications</string>
+    <string name="bipe_remote_banner_update">Update Bipe</string>
+    <string name="bipe_remote_banner_dismiss">Close notice</string>
     <string name="bipe_handle_prompt_title">Pick your @</string>
     <string name="bipe_handle_prompt_body">With an @, people can find you on Bipe.</string>
     <string name="bipe_handle_prompt_action">Pick an @</string>
