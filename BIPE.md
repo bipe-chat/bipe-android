@@ -202,5 +202,6 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | App lock screen during biometrics | Element's lock screen | Bipe logo, Bipe bloqueado and the Face ID or Touch ID prompt | Built on iOS first (#435) **Gap** |
 | Terms screen and a recovery alert due together | Recovery alert first, then the terms screen | Terms screen first, the alert right after Continue | On iOS a root alert cannot show over the full-screen terms cover; on Android the terms screen is an overlay that waits for the alert |
 | Settings: Idioma | No row | Row that opens the iPhone Ajustes | iOS sets the app language in system settings; Android follows the system language |
+| Company avatar shape | Circle | Rounded square for a company account, verified or not (ADR 0132) | Built on iOS first (#397) **Gap** |
 
 <!-- /parity:differences -->
