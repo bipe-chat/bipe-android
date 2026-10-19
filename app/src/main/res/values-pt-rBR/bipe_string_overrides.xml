@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Bipe copy lives in bipe-shared. These aliases replace inherited labels without editing Localazy files. -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
     <item type="string" name="a11y_room_avatar">@string/bipe_a11y_chat_photo</item>
     <item type="string" name="action_create_room">@string/bipe_groups_empty_action</item>
     <item type="string" name="action_manage_devices">@string/bipe_account_devices</item>
