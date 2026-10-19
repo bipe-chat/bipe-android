@@ -37,7 +37,7 @@ data class BugReportFormState(
     companion object {
         val Default = BugReportFormState(
             description = "",
-            sendLogs = false, // Bipe: logs only when the user turns them on (ADR 0114)
+            sendLogs = false, // Bipe: logs are off until the person turns them on (bipe#367)
             canContact = false,
             sendScreenshot = false,
             sendPushRules = false,

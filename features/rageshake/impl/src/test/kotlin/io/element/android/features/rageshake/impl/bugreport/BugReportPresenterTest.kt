@@ -75,7 +75,7 @@ class BugReportPresenterTest {
         val presenter = createPresenter()
         presenter.test {
             val initialState = awaitItem()
-            // Bipe: off by default (ADR 0114), so start by enabling
+            // Bipe: false by default (bipe#367), so start by enabling
             initialState.eventSink.invoke(BugReportEvent.SetSendLog(true))
             assertThat(awaitItem().formState).isEqualTo(BugReportFormState.Default.copy(sendLogs = true))
             initialState.eventSink.invoke(BugReportEvent.SetSendLog(false))

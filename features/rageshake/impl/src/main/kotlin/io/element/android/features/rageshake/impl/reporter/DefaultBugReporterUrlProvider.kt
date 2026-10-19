@@ -34,7 +34,9 @@ class DefaultBugReporterUrlProvider(
     override fun provide(): Flow<HttpUrl?> {
         if (bugReportAppNameProvider.provide().isEmpty()) return flowOf(null)
         return sessionStore.sessionIdFlow().flatMapLatest { sessionId ->
-            enterpriseService.bugReportUrlFlow(sessionId?.let(::SessionId))
+            // Bipe: the Bipe API takes reports from signed-in users only (bipe#367), so no report before sign-in.
+            if (sessionId == null) return@flatMapLatest flowOf(null)
+            enterpriseService.bugReportUrlFlow(SessionId(sessionId))
                 .map { bugReportUrl ->
                     when (bugReportUrl) {
                         is BugReportUrl.Custom -> bugReportUrl.url

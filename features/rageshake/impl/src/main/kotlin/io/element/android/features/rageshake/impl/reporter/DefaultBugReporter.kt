@@ -322,12 +322,11 @@ class DefaultBugReporter(
                     listener.onProgress(percentage)
                 }
                 // build the request
-                // Bipe: the Bipe API takes reports only with the session's access token (ADR 0114).
-                val accessToken = sessionStore.getLatestSession()?.accessToken
                 val request = Request.Builder()
                     .url(url)
-                    .apply { if (accessToken != null) header("Authorization", "Bearer $accessToken") }
                     .post(requestBody)
+                    // Bipe: the Bipe API takes reports from signed-in users only (bipe#367).
+                    .apply { sessionData?.accessToken?.let { header("Authorization", "Bearer $it") } }
                     .build()
                 var errorMessage: String? = null
                 // trigger the request
