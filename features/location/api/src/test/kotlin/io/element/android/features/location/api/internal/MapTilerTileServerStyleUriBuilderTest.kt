@@ -84,4 +84,20 @@ class MapTilerTileServerStyleUriBuilderTest {
             )
         ).isEqualTo("https://base.url/light/style.json?key=API_KEY")
     }
+
+    @Test
+    fun `map uri without a key`() {
+        val keylessBuilder = MapTilerTileServerStyleUriBuilder(
+            baseUrl = "https://base.url",
+            apiKey = "",
+            lightMapId = "aLightMapId",
+            darkMapId = "aDarkMapId",
+        )
+        assertThat(
+            keylessBuilder.build(
+                customMapTilerConfig = null,
+                darkMode = false,
+            )
+        ).isEqualTo("https://base.url/aLightMapId/style.json")
+    }
 }
