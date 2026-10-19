@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.di
 
+import android.content.Context
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.bipe.BipeHandleChanges
@@ -14,12 +15,16 @@ import io.element.android.libraries.bipe.BipePublicProfiles
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.company.BipeCompanySeals
+import io.element.android.libraries.bipe.company.BipeCompanySealsSeen
 import io.element.android.libraries.bipe.settings.BipePrivacySettings
 import io.element.android.libraries.bipe.weblink.BipeMatrixAccountApi
 import io.element.android.libraries.bipe.weblink.BipeWebLinkSession
 import io.element.android.libraries.di.SessionScope
+import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
+import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +40,7 @@ class BipeSession(
     deviceAccount: BipeDeviceAccount,
     matrixAccountApi: BipeMatrixAccountApi,
     stringProvider: StringProvider,
+    @ApplicationContext context: Context,
 ) {
     private val sessionId = matrixClient.sessionId
 
@@ -72,6 +78,18 @@ class BipeSession(
         apiClient = apiClient,
         scope = sessionCoroutineScope,
         accessToken = accessToken,
+    )
+
+    /** Verified company seals (ADR 0042, bipe#252). */
+    val companySeals = BipeCompanySeals(
+        apiClient = apiClient,
+        serverName = matrixClient.userIdServerName(),
+        scope = sessionCoroutineScope,
+        masterKey = { userId -> matrixClient.encryptionService.getUserMasterKey(UserId(userId)).getOrThrow() },
+        seen = BipeCompanySealsSeen(
+            preferences = lazy { context.getSharedPreferences("bipe_company_seals", Context.MODE_PRIVATE) },
+            sessionUserId = sessionId.value,
+        ),
     )
 
     /** Web sign-in by QR code and the linked devices (ADR 0116, ADR 0118). */

@@ -28,6 +28,7 @@ class FakeEncryptionService(
     private val pinUserIdentityResult: (UserId) -> Result<Unit> = { lambdaError() },
     private val withdrawVerificationResult: (UserId) -> Result<Unit> = { lambdaError() },
     private val getUserIdentityResult: (UserId) -> Result<IdentityState?> = { lambdaError() },
+    private val getUserMasterKeyResult: (UserId) -> Result<String?> = { lambdaError() },
     private val enableRecoveryLambda: (Boolean, String?) -> Result<String> = { _, _ -> lambdaError() },
     private val resetRecoveryKeyLambda: () -> Result<String> = { Result.success(FAKE_RECOVERY_KEY) },
 ) : EncryptionService {
@@ -141,6 +142,10 @@ class FakeEncryptionService(
 
     override suspend fun getUserIdentity(userId: UserId, fallbackToServer: Boolean): Result<IdentityState?> = simulateLongTask {
         return getUserIdentityResult(userId)
+    }
+
+    override suspend fun getUserMasterKey(userId: UserId, fallbackToServer: Boolean): Result<String?> = simulateLongTask {
+        return getUserMasterKeyResult(userId)
     }
 
     companion object {

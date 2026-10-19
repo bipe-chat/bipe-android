@@ -268,6 +268,11 @@ class RustEncryptionService(
         }
     }
 
+    // Bipe: the master key for company badges (bipe#252)
+    override suspend fun getUserMasterKey(userId: UserId, fallbackToServer: Boolean): Result<String?> = runCatchingExceptions {
+        service.userIdentity(userId = userId.value, fallbackToServer = fallbackToServer)?.use { it.masterKey() }
+    }
+
     private suspend fun getUserIdentityInternal(userId: UserId, fallbackToServer: Boolean = true): UserIdentity {
         return service.userIdentity(
             userId = userId.value,
