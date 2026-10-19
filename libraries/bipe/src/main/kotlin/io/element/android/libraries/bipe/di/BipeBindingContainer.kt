@@ -14,6 +14,7 @@ import dev.zacsweers.metro.SingleIn
 import io.element.android.appconfig.BipeConfig
 import io.element.android.libraries.androidutils.json.JsonProvider
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.weblink.BipeMatrixAccountApi
 import io.element.android.libraries.network.interceptors.UserAgentInterceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -31,16 +32,26 @@ object BipeBindingContainer {
         userAgentInterceptor: UserAgentInterceptor,
         jsonProvider: JsonProvider,
     ): BipeApiClient {
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(userAgentInterceptor)
-            .build()
+        val okHttpClient = bipeOkHttpClient(userAgentInterceptor)
         return BipeApiClient.create(
             callFactory = { request -> okHttpClient.newCall(request) },
             json = jsonProvider(),
             baseUrl = BipeConfig.API_BASE_URL,
         )
     }
+
+    /** The Matrix and MAS calls of the web sign-in (ADR 0118). Same client rules: no body or header logs. */
+    @Provides
+    @SingleIn(AppScope::class)
+    fun providesBipeMatrixAccountApi(userAgentInterceptor: UserAgentInterceptor): BipeMatrixAccountApi {
+        val okHttpClient = bipeOkHttpClient(userAgentInterceptor)
+        return BipeMatrixAccountApi(callFactory = { request -> okHttpClient.newCall(request) })
+    }
+
+    private fun bipeOkHttpClient(userAgentInterceptor: UserAgentInterceptor): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(userAgentInterceptor)
+        .build()
 }

@@ -9,6 +9,7 @@ package io.element.android.features.linknewdevice.impl
 
 import android.app.Activity
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -36,8 +37,6 @@ import io.element.android.features.linknewdevice.impl.screens.error.ErrorNode
 import io.element.android.features.linknewdevice.impl.screens.error.ErrorScreenType
 import io.element.android.features.linknewdevice.impl.screens.number.EnterNumberNode
 import io.element.android.features.linknewdevice.impl.screens.qrcode.ShowQrCodeNode
-import io.element.android.features.linknewdevice.impl.screens.root.LinkDeviceType
-import io.element.android.features.linknewdevice.impl.screens.root.LinkNewDeviceRootNode
 import io.element.android.features.linknewdevice.impl.screens.scan.ScanQrCodeNode
 import io.element.android.features.lockscreen.api.DeviceUnlockEntryPoint
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
@@ -45,6 +44,10 @@ import io.element.android.libraries.architecture.BackstackView
 import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.bipe.weblink.BipeLinkedDevicesNode
+import io.element.android.libraries.bipe.weblink.BipeWebApprovalController
+import io.element.android.libraries.bipe.weblink.BipeWebApprovalNode
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -59,6 +62,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import timber.log.Timber
+import io.element.android.libraries.bipe.R as BipeR
 
 private val tag = LoggerTag("LinkNewDeviceFlowNode", LoggerTags.linkNewDevice)
 
@@ -73,6 +77,7 @@ class LinkNewDeviceFlowNode(
     private val linkNewDesktopHandler: LinkNewDesktopHandler,
     private val sessionEnterpriseService: SessionEnterpriseService,
     private val deviceUnlockEntryPoint: DeviceUnlockEntryPoint,
+    private val bipeSession: BipeSession,
 ) : BaseFlowNode<LinkNewDeviceFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Root,
@@ -138,6 +143,14 @@ class LinkNewDeviceFlowNode(
         @Parcelize
         data object LockScreen : NavTarget
 
+        /** Bipe: the warning, cooldown, biometric check and private MAS web view (ADR 0118). */
+        @Parcelize
+        data object BipeWebApproval : NavTarget
+
+        /** Bipe: ends the session of a linked device on the MAS account page. */
+        @Parcelize
+        data class BipeSignOut(val deviceId: String) : NavTarget
+
         @Parcelize
         data class Error(
             val errorScreenType: ErrorScreenType,
@@ -190,7 +203,12 @@ class LinkNewDeviceFlowNode(
         return linkNewDesktopHandler.stepFlow.onEach { linkDesktopStep ->
             Timber.tag(tag.value).d("step: ${linkDesktopStep::class.java.simpleName}")
             when (linkDesktopStep) {
-                LinkDesktopStep.Done -> callback.onDone()
+                LinkDesktopStep.Done -> {
+                    // Bipe: back to Linked devices, which now lists the computer.
+                    bipeSession.webLink.notifyDevicesChanged()
+                    backstack.newRoot(NavTarget.Root)
+                    activity?.let { Toast.makeText(it, BipeR.string.bipe_link_computer_done, Toast.LENGTH_SHORT).show() }
+                }
                 is LinkDesktopStep.Error -> {
                     navigateToError(linkDesktopStep.errorType)
                 }
@@ -204,7 +222,10 @@ class LinkNewDeviceFlowNode(
                 LinkDesktopStep.SyncingSecrets -> Unit
                 LinkDesktopStep.Uninitialized -> Unit
                 is LinkDesktopStep.WaitingForAuth -> {
-                    navigateToBrowser(linkDesktopStep.verificationUri)
+                    // Bipe: no browser, it has no MAS session for this account (ADR 0118).
+                    if (backstack.elements.value.last().key.navTarget != NavTarget.BipeWebApproval) {
+                        backstack.push(NavTarget.BipeWebApproval)
+                    }
                 }
             }
         }
@@ -217,10 +238,7 @@ class LinkNewDeviceFlowNode(
             Timber.tag(tag.value).d("Resuming while waiting for auth on mobile, sending confirmation")
             it.continuationMessageSender.confirm()
         }
-        (linkNewDesktopHandler.stepFlow.value as? LinkDesktopStep.WaitingForAuth)?.let {
-            Timber.tag(tag.value).d("Resuming while waiting for auth on desktop, sending confirmation")
-            it.continuationMessageSender.confirm()
-        }
+        // Bipe: the desktop direction confirms from the private web view, after the consent page (ADR 0118).
     }
 
     private fun navigateToError(errorType: ErrorType) {
@@ -248,31 +266,36 @@ class LinkNewDeviceFlowNode(
     override fun resolve(navTarget: NavTarget, buildContext: BuildContext): Node {
         return when (navTarget) {
             NavTarget.Root -> {
-                val callback = object : LinkNewDeviceRootNode.Callback {
+                // Bipe: Settings > Linked devices is the root. Only the desktop direction: the phone scans the browser's code.
+                val callback = object : BipeLinkedDevicesNode.Callback {
+                    override fun onLinkComputer() {
+                        linkNewDesktopHandler.reset()
+                        linkNewDesktopHandler.startTimer()
+                        backstack.push(NavTarget.DesktopScanQrCode)
+                    }
+
+                    override fun onSignOut(deviceId: String) {
+                        backstack.push(NavTarget.BipeSignOut(deviceId))
+                    }
+
                     override fun onDone() {
                         callback.onDone()
                     }
-
-                    override fun onUnlockDevice(type: LinkDeviceType) {
-                        val callback = object : DeviceUnlockEntryPoint.Callback {
-                            override fun onCancel() = Unit
-                            override fun onUnlock() = when (type) {
-                                LinkDeviceType.Mobile -> {
-                                    linkNewMobileHandler.reset()
-                                    linkNewMobileHandler.createAndStartNewHandler()
-                                }
-                                LinkDeviceType.Desktop -> {
-                                    linkNewDesktopHandler.reset()
-                                    // Ensure unlock state does not last longer than the timeout for scanning the QR code, so start the timer after unlock
-                                    linkNewDesktopHandler.startTimer()
-                                    backstack.push(NavTarget.DesktopNotice)
-                                }
-                            }
-                        }
-                        deviceUnlockEntryPoint.requestUnlock(callback)
-                    }
                 }
-                createNode<LinkNewDeviceRootNode>(buildContext, listOf(callback))
+                createNode<BipeLinkedDevicesNode>(buildContext, listOf(callback))
+            }
+            NavTarget.BipeWebApproval -> {
+                val step = linkNewDesktopHandler.stepFlow.value as? LinkDesktopStep.WaitingForAuth
+                if (step == null) {
+                    createNode<ErrorNode>(buildContext, listOf(errorCallback(), ErrorScreenType.UnknownError))
+                } else {
+                    val purpose = BipeWebApprovalController.Purpose.ApproveSignIn(step.verificationUri, step.continuationMessageSender)
+                    createNode<BipeWebApprovalNode>(buildContext, listOf(BipeWebApprovalNode.Inputs(purpose), bipeWebApprovalCallback()))
+                }
+            }
+            is NavTarget.BipeSignOut -> {
+                val purpose = BipeWebApprovalController.Purpose.SignOut(navTarget.deviceId)
+                createNode<BipeWebApprovalNode>(buildContext, listOf(BipeWebApprovalNode.Inputs(purpose), bipeWebApprovalCallback()))
             }
             is NavTarget.LockScreen -> {
                 deviceUnlockEntryPoint.createNode(this, buildContext)
@@ -340,21 +363,29 @@ class LinkNewDeviceFlowNode(
                 createNode<ShowQrCodeNode>(buildContext, listOf(inputs, callback))
             }
             is NavTarget.Error -> {
-                val callback = object : ErrorNode.Callback {
-                    override fun onRetry() {
-                        linkNewMobileHandler.reset()
-                        linkNewDesktopHandler.reset()
-                        backstack.newRoot(NavTarget.Root)
-                    }
-
-                    override fun onCancel() {
-                        linkNewMobileHandler.reset()
-                        linkNewDesktopHandler.reset()
-                        callback.onDone()
-                    }
-                }
-                createNode<ErrorNode>(buildContext, listOf(callback, navTarget.errorScreenType))
+                createNode<ErrorNode>(buildContext, listOf(errorCallback(), navTarget.errorScreenType))
             }
+        }
+    }
+
+    private fun errorCallback() = object : ErrorNode.Callback {
+        override fun onRetry() {
+            linkNewMobileHandler.reset()
+            linkNewDesktopHandler.reset()
+            backstack.newRoot(NavTarget.Root)
+        }
+
+        override fun onCancel() {
+            linkNewMobileHandler.reset()
+            linkNewDesktopHandler.reset()
+            callback.onDone()
+        }
+    }
+
+    /** The web view closed. An approval ends through the SDK steps; the list shows again meanwhile. */
+    private fun bipeWebApprovalCallback() = object : BipeWebApprovalNode.Callback {
+        override fun onFinished() {
+            backstack.newRoot(NavTarget.Root)
         }
     }
 

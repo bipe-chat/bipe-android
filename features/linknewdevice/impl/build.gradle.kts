@@ -33,6 +33,7 @@ dependencies {
     implementation(projects.libraries.core)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.designsystem)
