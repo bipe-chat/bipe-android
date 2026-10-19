@@ -64,11 +64,7 @@ fun BipeLinkedDevicesView(
                 PreferenceCategory(showTopDivider = true) {
                     ListItem(
                         content = { Text(device.displayName ?: stringResource(R.string.bipe_linked_devices_unknown_name)) },
-                        supportingContent = if (lastUsed != null) {
-                            { Text(lastUsed) }
-                        } else {
-                            null
-                        },
+                        supportingContent = lastUsed?.let { text -> @Composable { Text(text) } },
                         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Devices())),
                     )
                     ListItem(
@@ -84,7 +80,10 @@ fun BipeLinkedDevicesView(
 
     state.signOutCandidate?.let { device ->
         ConfirmationDialog(
-            title = stringResource(R.string.bipe_linked_devices_sign_out_title, device.displayName ?: stringResource(R.string.bipe_linked_devices_unknown_name)),
+            title = stringResource(
+                R.string.bipe_linked_devices_sign_out_title,
+                device.displayName ?: stringResource(R.string.bipe_linked_devices_unknown_name),
+            ),
             content = stringResource(R.string.bipe_linked_devices_sign_out_body),
             submitText = stringResource(R.string.bipe_linked_devices_sign_out),
             destructiveSubmit = true,

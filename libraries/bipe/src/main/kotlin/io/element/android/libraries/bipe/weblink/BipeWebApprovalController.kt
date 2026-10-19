@@ -8,6 +8,7 @@ package io.element.android.libraries.bipe.weblink
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.os.Build
 import android.net.Uri
 import android.view.View
 import android.webkit.CookieManager
@@ -20,6 +21,7 @@ import androidx.webkit.ProfileStore
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.linknewdevice.ContinuationMessageSender
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -120,7 +122,10 @@ class BipeWebApprovalController(
             WebViewCompat.setProfile(webView, PROFILE_NAME)
         }
         clearWebData()
-        webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // No password manager may save the hidden password.
+            webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        }
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -183,8 +188,13 @@ class BipeWebApprovalController(
             is Purpose.SignOut -> metadata?.accountManagementUri?.let { BipeWebLink.sessionEndUrl(it, purpose.deviceId) }
         }
         val webView = webView
-        if (password == null || host == null || url == null || webView == null || !BipeWebLink.isAllowed(url, host)) {
-            Timber.e("Bipe web link: cannot open the MAS page (no password, no metadata or another host)")
+        if (password == null || webView == null) {
+            Timber.e("Bipe web link: no hidden password on this device")
+            fail()
+            return
+        }
+        if (host == null || url == null || !BipeWebLink.isAllowed(url, host)) {
+            Timber.e("Bipe web link: cannot open the MAS page (no metadata or another host)")
             fail()
             return
         }
@@ -216,7 +226,7 @@ class BipeWebApprovalController(
 
     private fun inspectPage(view: WebView, url: Uri) {
         view.evaluateJavascript(INSPECT_SCRIPT) { result ->
-            val page = runCatching { json.parseToJsonElement(result).jsonObject }.getOrNull()
+            val page = runCatchingExceptions { json.parseToJsonElement(result).jsonObject }.getOrNull()
             if (page?.get("hasPasswordForm")?.jsonPrimitive?.booleanOrNull == true) {
                 submitLoginForm(view)
             } else {

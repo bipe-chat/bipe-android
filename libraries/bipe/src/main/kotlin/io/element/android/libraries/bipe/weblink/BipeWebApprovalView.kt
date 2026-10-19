@@ -51,7 +51,11 @@ fun BipeWebApprovalView(
     val activity = LocalActivity.current as? FragmentActivity
     val scope = rememberCoroutineScope()
     val biometricTitle = stringResource(
-        if (controller.purpose is BipeWebApprovalController.Purpose.ApproveSignIn) R.string.bipe_link_computer_biometric else R.string.bipe_linked_devices_sign_out_biometric
+        if (controller.purpose is BipeWebApprovalController.Purpose.ApproveSignIn) {
+            R.string.bipe_link_computer_biometric
+        } else {
+            R.string.bipe_linked_devices_sign_out_biometric
+        }
     )
 
     fun verifyOwner() {

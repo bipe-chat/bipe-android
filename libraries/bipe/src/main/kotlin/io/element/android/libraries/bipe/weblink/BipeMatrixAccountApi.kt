@@ -32,8 +32,11 @@ class BipeMatrixAccountApi(
     /** `true` when `/versions` of [homeserverUrl] advertises QR sign-in (MSC4108). */
     suspend fun supportsQrLogin(homeserverUrl: String): Boolean = runCatchingExceptions {
         val body = get(homeserverUrl, listOf("_matrix", "client", "versions"), accessToken = null)
-        json.parseToJsonElement(body).jsonObject["unstable_features"]?.jsonObject
-            ?.get(BipeWebLink.QR_LOGIN_FEATURE)?.jsonPrimitive?.booleanOrNull == true
+        json.parseToJsonElement(body).jsonObject["unstable_features"]
+            ?.jsonObject
+            ?.get(BipeWebLink.QR_LOGIN_FEATURE)
+            ?.jsonPrimitive
+            ?.booleanOrNull == true
     }.getOrDefault(false)
 
     /** The MAS issuer and account page (MSC2965). The stable path first, then the unstable one. */

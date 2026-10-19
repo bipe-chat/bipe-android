@@ -44,7 +44,6 @@ import io.element.android.libraries.architecture.BackstackView
 import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
-import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.weblink.BipeLinkedDevicesNode
 import io.element.android.libraries.bipe.weblink.BipeWebApprovalController
 import io.element.android.libraries.bipe.weblink.BipeWebApprovalNode
@@ -77,7 +76,6 @@ class LinkNewDeviceFlowNode(
     private val linkNewDesktopHandler: LinkNewDesktopHandler,
     private val sessionEnterpriseService: SessionEnterpriseService,
     private val deviceUnlockEntryPoint: DeviceUnlockEntryPoint,
-    private val bipeSession: BipeSession,
 ) : BaseFlowNode<LinkNewDeviceFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Root,
@@ -204,8 +202,7 @@ class LinkNewDeviceFlowNode(
             Timber.tag(tag.value).d("step: ${linkDesktopStep::class.java.simpleName}")
             when (linkDesktopStep) {
                 LinkDesktopStep.Done -> {
-                    // Bipe: back to Linked devices, which now lists the computer.
-                    bipeSession.webLink.notifyDevicesChanged()
+                    // Bipe: back to a new Linked devices screen, which loads the list again and shows the computer.
                     backstack.newRoot(NavTarget.Root)
                     activity?.let { Toast.makeText(it, BipeR.string.bipe_link_computer_done, Toast.LENGTH_SHORT).show() }
                 }
