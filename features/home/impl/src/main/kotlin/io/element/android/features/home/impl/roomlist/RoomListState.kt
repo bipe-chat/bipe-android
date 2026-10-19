@@ -43,7 +43,7 @@ data class RoomListState(
     /** Bipe (bipe-chat/bipe#200, bipe-chat/bipe#415): "Escolha seu @" while the account has no @. */
     val bipeShowsHandlePrompt: Boolean,
     /** Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner, above the account tasks. */
-    val bipeRemoteBanner: BipeRemoteBannerShown? = null,
+    val bipeRemoteBanner: BipeRemoteBannerShown?,
 ) {
     val displayFilters = contentState is RoomListContentState.Rooms
 

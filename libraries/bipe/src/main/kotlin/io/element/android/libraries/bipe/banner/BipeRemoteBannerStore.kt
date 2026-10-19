@@ -7,12 +7,6 @@
 package io.element.android.libraries.bipe.banner
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.bipe.api.BipeApiException
@@ -26,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -93,17 +86,5 @@ class BipeRemoteBannerStore(
     private companion object {
         const val FILE_NAME = "bipe_remote_banner"
         const val KEY_DISMISSED_ID = "dismissed_id"
-    }
-}
-
-/** Runs [onForeground] each time the screen comes to the foreground, the first time included. Call it from a view. */
-@Composable
-fun BipeOnForeground(onForeground: () -> Unit) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val currentOnForeground by rememberUpdatedState(onForeground)
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.lifecycle.currentStateFlow.collectLatest { state ->
-            if (state == Lifecycle.State.STARTED) currentOnForeground()
-        }
     }
 }
