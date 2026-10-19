@@ -142,7 +142,7 @@
     <string name="bipe_invites_other_device">Criado em outro aparelho. Compartilhe por lá.</string>
     <string name="bipe_invites_name_action">Para quem é?</string>
     <string name="bipe_invites_name_placeholder">Nome</string>
-    <string name="bipe_invites_name_footer">Só você vê esse nome, e só neste celular.</string>
+    <string name="bipe_invites_name_footer">Só você vê esse nome.</string>
     <string name="bipe_invites_share_message">Entra no Bipe comigo: %1$s</string>
     <string name="bipe_invites_none_left">Nenhum convite disponível agora.</string>
     <string name="bipe_invites_empty">Convide alguém para conversar com você no Bipe.</string>
