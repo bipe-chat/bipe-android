@@ -22,12 +22,14 @@ internal class MapTilerStaticMapUrlBuilder(
     private val apiKey: String,
     private val lightMapId: String,
     private val darkMapId: String,
+    private val keyRequired: Boolean = true,
 ) : StaticMapUrlBuilder {
     constructor() : this(
         baseUrl = BuildConfig.MAPTILER_BASE_URL.removeSuffix("/"),
         apiKey = BuildConfig.MAPTILER_API_KEY,
         lightMapId = BuildConfig.MAPTILER_LIGHT_MAP_ID,
         darkMapId = BuildConfig.MAPTILER_DARK_MAP_ID,
+        keyRequired = BuildConfig.MAPTILER_KEY_REQUIRED,
     )
 
     constructor(mapTilerConfig: MapTilerConfig) : this(
@@ -35,6 +37,7 @@ internal class MapTilerStaticMapUrlBuilder(
         apiKey = mapTilerConfig.apiKey.takeIf { it.isNotBlank() } ?: BuildConfig.MAPTILER_API_KEY,
         lightMapId = mapTilerConfig.lightStyleId ?: BuildConfig.MAPTILER_LIGHT_MAP_ID,
         darkMapId = mapTilerConfig.darkStyleId ?: BuildConfig.MAPTILER_DARK_MAP_ID,
+        keyRequired = BuildConfig.MAPTILER_KEY_REQUIRED,
     )
 
     override fun build(
@@ -66,10 +69,11 @@ internal class MapTilerStaticMapUrlBuilder(
         // image smaller than the available space in pixels.
         // The resulting image will have to be scaled to fit the available space in order
         // to keep the perceived content size constant at the expense of sharpness.
-        return "$baseUrl/$mapId/static/$lon,$lat,$finalZoom/${finalWidth}x${finalHeight}$scale.webp?key=$apiKey&attribution=topright"
+        val query = listOfNotNull(apiKey.takeIf { it.isNotEmpty() }?.let { "key=$it" }, "attribution=topright").joinToString("&")
+        return "$baseUrl/$mapId/static/$lon,$lat,$finalZoom/${finalWidth}x${finalHeight}$scale.webp?$query"
     }
 
-    override fun isServiceAvailable() = apiKey.isNotEmpty()
+    override fun isServiceAvailable() = !keyRequired || apiKey.isNotEmpty()
 }
 
 private fun coerceWidthAndHeight(width: Int, height: Int, is2x: Boolean): Pair<Int, Int> {

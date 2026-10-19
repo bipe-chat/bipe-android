@@ -7,6 +7,7 @@
  */
 
 import config.BuildTimeConfig
+import extension.buildConfigFieldBoolean
 import extension.buildConfigFieldStr
 import extension.readLocalProperty
 import extension.testCommonDependencies
@@ -24,9 +25,15 @@ android {
     }
 
     defaultConfig {
+        val mapTilerBaseUrl = BuildTimeConfig.SERVICES_MAPTILER_BASE_URL ?: "https://api.maptiler.com/maps"
         buildConfigFieldStr(
             name = "MAPTILER_BASE_URL",
-            value = BuildTimeConfig.SERVICES_MAPTILER_BASE_URL ?: "https://api.maptiler.com/maps"
+            value = mapTilerBaseUrl
+        )
+        // Bipe: only MapTiler needs a key. Our own tile server works without one (bipe ADR 0131).
+        buildConfigFieldBoolean(
+            name = "MAPTILER_KEY_REQUIRED",
+            value = mapTilerBaseUrl.startsWith("https://api.maptiler.com/")
         )
         buildConfigFieldStr(
             name = "MAPTILER_API_KEY",
@@ -45,6 +52,7 @@ android {
             } else {
                 System.getenv("ELEMENT_ANDROID_MAPTILER_LIGHT_MAP_ID")
                     ?: readLocalProperty("services.maptiler.lightMapId")
+                    ?: BuildTimeConfig.SERVICES_MAPTILER_LIGHT_MAPID
             }
             // fall back to maptiler's default light map.
                 ?: "basic-v2"
@@ -56,6 +64,7 @@ android {
             } else {
                 System.getenv("ELEMENT_ANDROID_MAPTILER_DARK_MAP_ID")
                     ?: readLocalProperty("services.maptiler.darkMapId")
+                    ?: BuildTimeConfig.SERVICES_MAPTILER_DARK_MAPID
             }
             // fall back to maptiler's default dark map.
                 ?: "basic-v2-dark"
