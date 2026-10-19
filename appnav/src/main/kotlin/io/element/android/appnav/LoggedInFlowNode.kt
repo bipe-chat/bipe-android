@@ -85,6 +85,7 @@ import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.support.BipeSupportChat
 import io.element.android.libraries.bipe.terms.BipeTermsReaccept
 import io.element.android.libraries.bipe.threads.BipeThreadsCacheRebuild
 import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
@@ -178,6 +179,7 @@ class LoggedInFlowNode(
     private val customMapTilerConfigProvider: CustomMapTilerConfigProvider,
     private val loggedInEventProcessorFactory: LoggedInEventProcessor.Factory,
     private val clearCacheUseCase: ClearCacheUseCase, // Bipe
+    private val bipeSupportChat: BipeSupportChat, // Bipe
 ) : BaseFlowNode<LoggedInFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Placeholder,
@@ -523,6 +525,11 @@ class LoggedInFlowNode(
                         backstack.push(NavTarget.UserProfile(userId))
                     }
 
+                    // Bipe: the support DM (ADR 0114)
+                    override fun navigateToBipeSupport() {
+                        lifecycleScope.launch { bipeOpenSupportChat() }
+                    }
+
                     override fun navigateToEvent(roomId: RoomId, eventId: EventId) {
                         lifecycleScope.launch {
                             attachRoom(
@@ -721,6 +728,17 @@ class LoggedInFlowNode(
             // The chat list stays: its card to message the inviter retries.
             Timber.e("Bipe: could not open a chat with the inviter $inviterUserId: $result")
         }
+    }
+
+    /** Bipe: the support DM (ADR 0114). The API makes the room and invites the user; [BipeSupportChat] joins it. */
+    private suspend fun bipeOpenSupportChat() {
+        bipeSupportChat.open().fold(
+            onSuccess = { roomId -> attachRoom(roomId.toRoomIdOrAlias(), clearBackstack = false) },
+            onFailure = {
+                Timber.e(it, "Bipe: could not open the support chat")
+                Toast.makeText(context, context.getString(BipeR.string.bipe_support_open_failed), Toast.LENGTH_LONG).show()
+            },
+        )
     }
 
     /** Bipe: the Matrix ID behind a `bipe.chat/@handle` link (bipe#299). Shows a notice when nobody holds the handle. */

@@ -16,6 +16,7 @@ import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.enterprise.test.FakeEnterpriseService
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
+import io.element.android.libraries.sessionstorage.test.aSessionData
 import kotlinx.coroutines.test.runTest
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Test
@@ -27,6 +28,8 @@ class DefaultBugReporterUrlProviderTest {
         val sut = createDefaultBugReporterUrlProvider(
             bugReportAppNameProvider = { "rageshakeAppName" },
             enterpriseService = enterpriseService,
+            // Bipe: no report URL before sign-in (bipe#367).
+            sessionStore = InMemorySessionStore(initialList = listOf(aSessionData())),
         )
         sut.provide().test {
             assertThat(awaitItem()).isEqualTo(

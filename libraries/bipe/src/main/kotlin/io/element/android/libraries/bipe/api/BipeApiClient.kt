@@ -172,6 +172,11 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/me/profile`. */
     suspend fun myProfile(accessToken: String): BipeMyProfile = call { service.myProfile(bearer(accessToken)) }
 
+    // Support DM (ADR 0114)
+
+    /** `POST /v1/me/support`. The caller's room with the support account. The server invites the caller; the app joins. */
+    suspend fun supportRoomId(accessToken: String): String = call { service.supportRoom(bearer(accessToken)) }.roomId
+
     /** `PUT /v1/me/profile`. Error `profile_invalid` carries a [BipeProfileProblem] id as the reason. */
     suspend fun setMyProfile(update: BipeProfileUpdate, accessToken: String): BipeMyProfile =
         call { service.setMyProfile(bearer(accessToken), update) }
@@ -314,8 +319,15 @@ internal data class WebLinkFinishRequest(val since: String)
 @Serializable
 internal data class WebLinkFinishResponse(val finished: Int)
 
+/** `POST /v1/me/support` answer. */
+@Serializable
+internal data class SupportRoomResponse(@SerialName("room_id") val roomId: String)
+
 /** Retrofit encodes each `@Path` value, so a handle cannot add path segments. */
 internal interface BipeApiService {
+    @POST("v1/me/support")
+    suspend fun supportRoom(@Header("Authorization") authorization: String): Response<SupportRoomResponse>
+
     @POST("v1/signup")
     suspend fun signup(@Body request: BipeSignupRequest): Response<BipeSignupResponse>
 
@@ -463,7 +475,10 @@ enum class BipeApiErrorCode(val id: String) {
     EMAIL_UNAVAILABLE("email_unavailable"),
 
     /** HTTP 403, reason `missing` or `outdated`: the sign-up or the account lacks the current legal version (ADR 0113). */
-    TERMS_REQUIRED("terms_required");
+    TERMS_REQUIRED("terms_required"),
+
+    /** HTTP 503: the support account is not set up on the server (ADR 0114). */
+    SUPPORT_UNAVAILABLE("support_unavailable");
 
     companion object {
         fun fromId(id: String): BipeApiErrorCode? = entries.firstOrNull { it.id == id }
@@ -519,6 +534,7 @@ sealed class BipeApiException(cause: Throwable? = null) : Exception(cause) {
             BipeApiErrorCode.EMAIL_UNAVAILABLE -> stringProvider.getString(R.string.bipe_error_email_unavailable)
             BipeApiErrorCode.TERMS_REQUIRED -> stringProvider.getString(R.string.bipe_signup_terms_required)
             // App Attest is iOS only. Android sign-up gets Play Integrity later (contract: Attestation).
+            BipeApiErrorCode.SUPPORT_UNAVAILABLE -> stringProvider.getString(R.string.bipe_support_open_failed)
             BipeApiErrorCode.ATTESTATION_INVALID, BipeApiErrorCode.PIN_NOT_SET,
             BipeApiErrorCode.BAD_REQUEST, BipeApiErrorCode.NOT_FOUND, BipeApiErrorCode.INTERNAL ->
                 stringProvider.getString(R.string.bipe_error_generic)
