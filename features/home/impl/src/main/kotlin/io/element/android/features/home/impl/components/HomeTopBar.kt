@@ -18,15 +18,12 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -35,14 +32,11 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -309,47 +303,22 @@ private fun NavigationIcon(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
-    // Reserve the status emoji slot for all the accounts, else the width of the navigation icon,
-    // and so the position of the title, would change while scrolling the pager.
-    val reserveStatusEmojiSlot = currentUserAndNeighbors.any { it.displayedStatus != null }
-    if (currentUserAndNeighbors.size == 1) {
-        AccountIcon(
-            matrixUser = currentUserAndNeighbors.single(),
-            isCurrentAccount = true,
-            showAvatarIndicator = showAvatarIndicator,
-            reserveStatusEmojiSlot = reserveStatusEmojiSlot,
-            onClick = onClick,
-            onLongClick = onLongClick,
-        )
-    } else {
-        // Render a vertical pager
-        val pagerState = rememberPagerState(initialPage = 1) { currentUserAndNeighbors.size }
-        // Listen to page changes and switch account if needed
-        val latestOnAccountSwitch by rememberUpdatedState(onAccountSwitch)
-        LaunchedEffect(pagerState) {
-            snapshotFlow { pagerState.settledPage }.collect { page ->
-                latestOnAccountSwitch(SessionId(currentUserAndNeighbors[page].userId.value))
-            }
-        }
-        VerticalPager(
-            state = pagerState,
-            modifier = Modifier.height(48.dp),
-        ) { page ->
-            AccountIcon(
-                matrixUser = currentUserAndNeighbors[page],
-                isCurrentAccount = page == 1,
-                showAvatarIndicator = page == 1 && showAvatarIndicator,
-                reserveStatusEmojiSlot = reserveStatusEmojiSlot,
-                // Bipe: a tap on the current avatar switches to the next account; a long press lists them (ADR 0086, #267).
-                onClick = if (page == 1) {
-                    { latestOnAccountSwitch(SessionId(currentUserAndNeighbors[2].userId.value)) }
-                } else {
-                    {}
-                },
-                onLongClick = if (page == 1) onLongClick else null,
-            )
-        }
-    }
+    // Bipe: one avatar, no vertical swipe between accounts (bipe#434). The current account is in the middle of the
+    // neighbours. A tap switches to the next account, or opens settings with one account; a long press lists the
+    // accounts (ADR 0086, #267).
+    val currentUser = currentUserAndNeighbors.getOrNull(1) ?: currentUserAndNeighbors.first()
+    val nextUser = currentUserAndNeighbors.getOrNull(2)
+    AccountIcon(
+        matrixUser = currentUser,
+        showAvatarIndicator = showAvatarIndicator,
+        reserveStatusEmojiSlot = currentUser.displayedStatus != null,
+        onClick = if (nextUser != null && nextUser.userId != currentUser.userId) {
+            { onAccountSwitch(SessionId(nextUser.userId.value)) }
+        } else {
+            onClick
+        },
+        onLongClick = onLongClick,
+    )
 }
 
 /**
@@ -410,18 +379,16 @@ private fun BipeAccountMenuAnchor(
 @Composable
 private fun AccountIcon(
     matrixUser: MatrixUser,
-    isCurrentAccount: Boolean,
     showAvatarIndicator: Boolean,
     reserveStatusEmojiSlot: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val testTag = if (isCurrentAccount) Modifier.testTag(TestTags.homeScreenSettings) else Modifier
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
-            .then(testTag)
+            .testTag(TestTags.homeScreenSettings)
             .combinedClickable(
                 interactionSource = interactionSource,
                 // The ripple is rendered on the avatar only, see below.
@@ -448,14 +415,10 @@ private fun AccountIcon(
             Avatar(
                 avatarData = avatarData,
                 avatarType = AvatarType.User,
-                contentDescription = if (isCurrentAccount) {
-                    if (showAvatarIndicator) {
-                        stringResource(CommonStrings.a11y_settings_with_required_action)
-                    } else {
-                        stringResource(CommonStrings.common_settings)
-                    }
+                contentDescription = if (showAvatarIndicator) {
+                    stringResource(CommonStrings.a11y_settings_with_required_action)
                 } else {
-                    null
+                    stringResource(CommonStrings.common_settings)
                 },
             )
             if (showAvatarIndicator) {

@@ -30,7 +30,6 @@ data class HomeState(
     val homeSpacesState: HomeSpacesState,
     val snackbarMessage: SnackbarMessage?,
     val canReportBug: Boolean,
-    val showMultiAccountAnnouncement: Boolean,
     val eventSink: (HomeEvent) -> Unit,
     // Bipe: tab bar badges (ADR 0053)
     val bipeBadges: BipeTabBadges,
