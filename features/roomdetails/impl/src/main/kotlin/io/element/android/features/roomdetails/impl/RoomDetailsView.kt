@@ -48,6 +48,7 @@ import io.element.android.features.userprofile.api.UserProfileVerificationState
 import io.element.android.features.userprofile.shared.blockuser.BlockUserDialogs
 import io.element.android.features.userprofile.shared.blockuser.BlockUserSection
 import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
+import io.element.android.libraries.bipe.company.BipeCompanySeal
 import io.element.android.libraries.designsystem.atomic.atoms.MatrixBadgeAtom
 import io.element.android.libraries.designsystem.atomic.molecules.MatrixBadgeRowMolecule
 import io.element.android.libraries.designsystem.components.ClickableLinkText
@@ -568,11 +569,16 @@ private fun DmHeaderSection(
                 .testTag(TestTags.roomDetailAvatar)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = roomName,
-            style = ElementTheme.typography.fontHeadingLgBold,
-            textAlign = TextAlign.Center,
-        )
+        // Bipe: the company seal after the name (bipe#252)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                modifier = Modifier.weight(1f, fill = false),
+                text = roomName,
+                style = ElementTheme.typography.fontHeadingLgBold,
+                textAlign = TextAlign.Center,
+            )
+            BipeCompanySeal(userId = otherMember.userId.value, size = 24.dp)
+        }
         val userStatus = otherMember.displayedStatus?.toText()
         if (userStatus != null) {
             Spacer(modifier = Modifier.height(12.dp))

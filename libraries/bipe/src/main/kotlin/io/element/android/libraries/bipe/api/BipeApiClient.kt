@@ -172,6 +172,23 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/profiles/{handle}`. No auth. HTTP 404 for "no such handle" and "profile off" alike. */
     suspend fun publicProfile(handle: String): BipePublicProfile = call { service.publicProfile(handle) }
 
+    // Badges (bipe-shared/docs/badge-attestation.md)
+
+    /**
+     * `GET /v1/badges/{userId}`. No auth. Reads HTTP 200, 404 and 410 itself: the 410 body has no `error` field.
+     * The caller must verify the envelope with [io.element.android.libraries.bipe.BadgeVerifier]. The status alone proves nothing.
+     */
+    suspend fun badge(userId: String): BipeBadgeLookup {
+        val response = send { service.badge(userId) }
+        val body = runCatchingExceptions { (if (response.isSuccessful) response.body() else response.errorBody())?.use { it.string() } }.getOrNull()
+        return when (response.code()) {
+            200 -> BipeBadgeLookup.Envelope(body ?: throw BipeApiException.UnexpectedResponse(statusCode = 200))
+            404 -> BipeBadgeLookup.None
+            410 -> BipeBadgeLookup.Gone(BipeBadgeGoneReason.fromBody(body))
+            else -> throw response.error(body)
+        }
+    }
+
     /** `GET /v1/me/profile`. */
     suspend fun myProfile(accessToken: String): BipeMyProfile = call { service.myProfile(bearer(accessToken)) }
 
@@ -274,7 +291,16 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     /** Sends the request and maps transport failures and non-2xx answers to [BipeApiException]. */
     private suspend fun <T> checked(block: suspend () -> Response<T>): Response<T> {
-        val response = try {
+        val response = send(block)
+        if (!response.isSuccessful) {
+            throw response.error(runCatchingExceptions { response.errorBody()?.string() }.getOrNull())
+        }
+        return response
+    }
+
+    /** Sends the request and maps transport failures to [BipeApiException]. Any HTTP status comes back. */
+    private suspend fun <T> send(block: suspend () -> Response<T>): Response<T> {
+        return try {
             block()
         } catch (error: CancellationException) {
             throw error
@@ -284,21 +310,18 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
             // Encoding and decoding failures: the answer is outside the contract.
             throw BipeApiException.UnexpectedResponse(statusCode = null, cause = error)
         }
+    }
 
-        if (!response.isSuccessful) {
-            val errorBody = runCatchingExceptions { response.errorBody()?.string() }.getOrNull()
-                ?.let { runCatchingExceptions { errorJson.decodeFromString(BipeErrorBody.serializer(), it) }.getOrNull() }
-            if (errorBody != null) {
-                throw BipeApiException.Server(
-                    code = BipeApiErrorCode.fromId(errorBody.error) ?: BipeApiErrorCode.INTERNAL,
-                    reason = errorBody.reason,
-                    statusCode = response.code(),
-                    triesLeft = errorBody.triesLeft,
-                )
-            }
-            throw BipeApiException.UnexpectedResponse(statusCode = response.code())
-        }
-        return response
+    /** The exception for a non-2xx answer with [errorText] as its body. */
+    private fun Response<*>.error(errorText: String?): BipeApiException {
+        val errorBody = errorText?.let { runCatchingExceptions { errorJson.decodeFromString(BipeErrorBody.serializer(), it) }.getOrNull() }
+            ?: return BipeApiException.UnexpectedResponse(statusCode = code())
+        return BipeApiException.Server(
+            code = BipeApiErrorCode.fromId(errorBody.error) ?: BipeApiErrorCode.INTERNAL,
+            reason = errorBody.reason,
+            statusCode = code(),
+            triesLeft = errorBody.triesLeft,
+        )
     }
 }
 
@@ -438,6 +461,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/export")
     suspend fun export(@Header("Authorization") authorization: String): Response<ResponseBody>
+
+    @GET("v1/badges/{userId}")
+    suspend fun badge(@Path("userId") userId: String): Response<ResponseBody>
 
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>

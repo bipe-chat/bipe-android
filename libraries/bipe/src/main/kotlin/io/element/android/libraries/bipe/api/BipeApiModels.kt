@@ -16,6 +16,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.time.OffsetDateTime
 
@@ -405,6 +406,36 @@ data class BipeWebLinkPlace(
     }
 }
 
+/** The answer of `GET /v1/badges/{userId}`. */
+sealed interface BipeBadgeLookup {
+    /** HTTP 200: the envelope JSON as the server sent it. Verify these exact bytes. */
+    data class Envelope(val json: String) : BipeBadgeLookup
+
+    /** HTTP 404: no badge. */
+    data object None : BipeBadgeLookup
+
+    /** HTTP 410: the account had a badge and its claim ended. */
+    data class Gone(val reason: BipeBadgeGoneReason) : BipeBadgeLookup
+}
+
+/** The contract's `BadgeGone.reason` enum. */
+enum class BipeBadgeGoneReason(val id: String) {
+    REVOKED("revoked"),
+    NOT_ACTIVE("not_active"),
+    NOT_FOUND("not_found"),
+    STAFF("staff");
+
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+
+        /** An unknown or missing reason is [REVOKED]: the contract uses it for any other end of the verification. */
+        fun fromBody(body: String?): BipeBadgeGoneReason {
+            val reason = body?.let { runCatchingExceptions { json.decodeFromString(BadgeGoneBody.serializer(), it) }.getOrNull() }?.reason
+            return entries.firstOrNull { it.id == reason } ?: REVOKED
+        }
+    }
+}
+
 /**
  * `GET /v1/banner`: the remote critical banner above the chat list (ADR 0117, bipe-chat/bipe#386). Port of
  * `remoteBannerState()` in bipe-shared; `test-vectors/remote-banner.json` holds the cases.
@@ -460,6 +491,9 @@ data class BipeRemoteBanner(
         private fun String?.leadingNumber(): Long = this?.takeWhile { it in '0'..'9' }?.toLongOrNull() ?: 0L
     }
 }
+
+@Serializable
+internal data class BadgeGoneBody(val reason: String? = null)
 
 @Serializable
 data class BipeRemoteBannerResponse(

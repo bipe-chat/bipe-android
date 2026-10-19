@@ -83,6 +83,7 @@ import io.element.android.libraries.architecture.waitForChildAttached
 import io.element.android.libraries.architecture.waitForNavTargetAttached
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryAlerts
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
+import io.element.android.libraries.bipe.company.LocalBipeCompanySeals
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.groups.BipeQuietGroups
 import io.element.android.libraries.bipe.support.BipeSupportChat
@@ -798,6 +799,7 @@ class LoggedInFlowNode(
                 LocalBipeHandleResolver provides bipeSession.handleResolver, // Bipe: @handles in shared UI
                 LocalBipePublicProfiles provides bipeSession.publicProfiles, // Bipe: public profile bios in shared UI
                 LocalBipeAccount provides bipeSession.account, // Bipe: PIN rows in settings (ADR 0057)
+                LocalBipeCompanySeals provides bipeSession.companySeals, // Bipe: company seals in shared UI (bipe#252)
             ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an
