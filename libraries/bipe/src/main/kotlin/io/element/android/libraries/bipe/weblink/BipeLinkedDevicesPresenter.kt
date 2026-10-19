@@ -43,9 +43,13 @@ class BipeLinkedDevicesPresenter(
         var devices by remember { mutableStateOf<ImmutableList<BipeMatrixDevice>>(persistentListOf()) }
         var isCheckingSupport by remember { mutableStateOf(false) }
         var notSupported by remember { mutableStateOf(false) }
+        var needsPin by remember { mutableStateOf(false) }
+        var showsCreatePin by remember { mutableStateOf(false) }
+        var createPinError by remember { mutableStateOf<String?>(null) }
         var signOutCandidate by remember { mutableStateOf<BipeMatrixDevice?>(null) }
 
         LaunchedEffect(changes) {
+            needsPin = webLink.hiddenPassword() == null
             webLink.otherDevices()
                 .onSuccess { devices = it.toImmutableList() }
                 .onFailure { loadFailed = true }
@@ -56,11 +60,27 @@ class BipeLinkedDevicesPresenter(
             when (event) {
                 BipeLinkedDevicesEvent.LinkComputer -> {
                     if (isCheckingSupport) return
+                    if (needsPin) {
+                        showsCreatePin = true
+                        return
+                    }
                     isCheckingSupport = true
                     scope.launch {
                         val supported = webLink.isSupported()
                         isCheckingSupport = false
                         if (supported) onLinkComputer() else notSupported = true
+                    }
+                }
+                is BipeLinkedDevicesEvent.CreatePin -> {
+                    // The same step as Sua conta > Crie sua senha: set the PIN, move to device-first, store the hidden password.
+                    showsCreatePin = false
+                    isCheckingSupport = true
+                    scope.launch {
+                        val account = bipeSession.account
+                        account.moveToDeviceFirst(event.pin)
+                            .onFailure { createPinError = account.messageOf(it) }
+                        needsPin = webLink.hiddenPassword() == null
+                        isCheckingSupport = false
                     }
                 }
                 is BipeLinkedDevicesEvent.AskSignOut -> signOutCandidate = event.device
@@ -71,6 +91,8 @@ class BipeLinkedDevicesPresenter(
                 BipeLinkedDevicesEvent.DismissDialog -> {
                     signOutCandidate = null
                     notSupported = false
+                    showsCreatePin = false
+                    createPinError = null
                     loadFailed = false
                 }
             }
@@ -83,6 +105,9 @@ class BipeLinkedDevicesPresenter(
             devices = devices,
             loadFailed = loadFailed,
             notSupported = notSupported,
+            needsPin = needsPin,
+            showsCreatePin = showsCreatePin,
+            createPinError = createPinError,
             signOutCandidate = signOutCandidate,
             eventSink = ::handleEvent,
         )

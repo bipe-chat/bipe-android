@@ -18,6 +18,12 @@ sealed interface RoomListEvent {
 
     /** Bipe (bipe-chat/bipe#415): the "Escolha seu @" card was used or dismissed. */
     data object BipeDismissHandlePrompt : RoomListEvent
+
+    /** Bipe (ADR 0117, bipe-chat/bipe#386): the remote banner notice was closed. */
+    data object BipeDismissRemoteBanner : RoomListEvent
+
+    /** Bipe (ADR 0117): read the remote banner again, on launch and on each return to the foreground. */
+    data object BipeRefreshRemoteBanner : RoomListEvent
     data object DismissNewNotificationSoundBanner : RoomListEvent
     data object ToggleSearchResults : RoomListEvent
     data class ShowContextMenu(val roomSummary: RoomListRoomSummary) : RoomListEvent

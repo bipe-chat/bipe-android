@@ -25,21 +25,18 @@ import kotlinx.collections.immutable.toImmutableList
 open class PreferencesRootStatePreviewParam : PreviewParameterProvider<PreferencesRootState> {
     override val values: Sequence<PreferencesRootState>
         get() = sequenceOf(
-            // Nominal state, that a regular user will see if multi account is enabled
+            // Nominal state, that a regular user will see
             aPreferencesRootState(
                 myUser = aMatrixUser(avatarUrl = "anAvatarUrl"),
                 version = "Version 1.1 (1)",
-                isMultiAccountEnabled = true,
                 otherSessions = aMatrixUserList().drop(1).take(1),
                 showAnalyticsSettings = true,
                 showLabsItem = true,
             ),
             aPreferencesRootState(
                 myUser = aMatrixUser(displayName = null),
-                isMultiAccountEnabled = true,
             ),
             aPreferencesRootState(
-                isMultiAccountEnabled = true,
                 isOtherAccountsSectionExpanded = true,
                 otherSessions = aMatrixUserList().drop(1).take(3),
             ),
@@ -61,7 +58,6 @@ fun aPreferencesRootState(
     myUser: MatrixUser = aMatrixUser(),
     preferencesAccountState: PreferencesAccountState = aPreferencesAccountState(),
     version: String = "Version 1.1 (1)",
-    isMultiAccountEnabled: Boolean = false,
     isOtherAccountsSectionExpanded: Boolean = false,
     theme: ThemeOption = ThemeOption.System,
     availableThemeOptions: List<ThemeOption> = ThemeOption.entries,
@@ -83,7 +79,6 @@ fun aPreferencesRootState(
     myUser = myUser,
     preferencesAccountState = preferencesAccountState,
     version = version,
-    isMultiAccountEnabled = isMultiAccountEnabled,
     theme = theme,
     availableThemeOptions = availableThemeOptions.toImmutableList(),
     isOtherAccountsSectionExpanded = isOtherAccountsSectionExpanded,

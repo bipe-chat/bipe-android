@@ -28,7 +28,6 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatch
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
-import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.user.toMatrixUser
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
@@ -68,9 +67,6 @@ class PreferencesRootPresenter(
             matrixClient.getUserProfile()
         }
         val preferencesAccountState = preferencesAccountPresenter.present()
-        val isMultiAccountEnabled by remember {
-            featureFlagService.isFeatureEnabledFlow(FeatureFlags.MultiAccount)
-        }.collectAsState(initial = false)
         val isOtherAccountsSectionExpanded by remember {
             appPreferencesStore.isOtherAccountsExpandedFlow()
         }.collectAsState(initial = true)
@@ -131,7 +127,6 @@ class PreferencesRootPresenter(
             theme = themeOptions.selected,
             availableThemeOptions = themeOptions.available,
             version = remember { versionFormatter.get() },
-            isMultiAccountEnabled = isMultiAccountEnabled,
             isOtherAccountsSectionExpanded = isOtherAccountsSectionExpanded,
             otherSessions = otherSessions,
             showAnalyticsSettings = hasAnalyticsProviders,

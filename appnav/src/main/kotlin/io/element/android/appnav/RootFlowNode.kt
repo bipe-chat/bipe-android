@@ -63,8 +63,6 @@ import io.element.android.libraries.bipe.pix.BipePixShareReader
 import io.element.android.libraries.core.coroutine.withPreviousValue
 import io.element.android.libraries.deeplink.api.DeeplinkData
 import io.element.android.libraries.di.annotations.AppCoroutineScope
-import io.element.android.libraries.featureflag.api.FeatureFlagService
-import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -112,7 +110,6 @@ class RootFlowNode(
     private val accountSelectEntryPoint: AccountSelectEntryPoint,
     private val intentResolver: IntentResolver,
     private val oAuthActionFlow: OAuthActionFlow,
-    private val featureFlagService: FeatureFlagService,
     private val announcementService: AnnouncementService,
     private val analyticsService: AnalyticsService,
     private val analyticsColdStartWatcher: AnalyticsColdStartWatcher,
@@ -536,19 +533,15 @@ class RootFlowNode(
             // Is there a session already?
             val sessions = sessionStore.getAllSessions()
             if (sessions.isNotEmpty()) {
-                if (featureFlagService.isFeatureEnabled(FeatureFlags.MultiAccount)) {
-                    val loginHintMatrixId = params.loginHint?.removePrefix("mxid:")
-                    val existingAccount = sessions.find { it.userId == loginHintMatrixId }
-                    if (existingAccount != null) {
-                        // We have an existing account matching the login hint, ensure this is the current session
-                        sessionStore.setLatestSession(existingAccount.userId)
-                    } else {
-                        val latestSessionId = sessions.maxBy { it.lastUsageIndex }.userId
-                        attachSession(SessionId(latestSessionId))
-                        backstack.push(NavTarget.NotLoggedInFlow(params))
-                    }
+                val loginHintMatrixId = params.loginHint?.removePrefix("mxid:")
+                val existingAccount = sessions.find { it.userId == loginHintMatrixId }
+                if (existingAccount != null) {
+                    // We have an existing account matching the login hint, ensure this is the current session
+                    sessionStore.setLatestSession(existingAccount.userId)
                 } else {
-                    Timber.w("Login link ignored, multi account is disabled")
+                    val latestSessionId = sessions.maxBy { it.lastUsageIndex }.userId
+                    attachSession(SessionId(latestSessionId))
+                    backstack.push(NavTarget.NotLoggedInFlow(params))
                 }
             } else {
                 pendingLoginParams = params

@@ -46,6 +46,7 @@ import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.model.RoomListRoomSummaryPreviewParam
 import io.element.android.features.home.impl.model.RoomSummaryDisplayType
 import io.element.android.features.home.impl.roomlist.RoomListEvent
+import io.element.android.libraries.bipe.company.BipeCompanySeal
 import io.element.android.libraries.core.extensions.orEmpty
 import io.element.android.libraries.core.extensions.toSafeLength
 import io.element.android.libraries.designsystem.atomic.atoms.UnreadIndicatorAtom
@@ -130,6 +131,7 @@ internal fun RoomSummaryRow(
                         timestamp = room.timestamp,
                         isHighlighted = room.isHighlighted,
                         dmUserStatus = room.dmUserStatus,
+                        bipeDmUserId = room.heroes.firstOrNull()?.id?.takeIf { room.isDm },
                     )
                     MessagePreviewAndIndicatorRow(room = room, showUnreadCount = showUnreadCount, showAllActivity = showAllActivity)
                 }
@@ -223,21 +225,26 @@ private fun NameAndTimestampRow(
     timestamp: String?,
     isHighlighted: Boolean,
     dmUserStatus: DisplayedStatus?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    bipeDmUserId: String? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = spacedBy(16.dp)
     ) {
         val displayName = name?.toSafeLength(ellipsize = true) ?: stringResource(id = CommonStrings.common_no_room_name)
-        DisplayNameWithStatus(
-            name = displayName,
-            status = dmUserStatus,
-            modifier = Modifier.weight(1f),
-            style = ElementTheme.typography.fontBodyLgMedium,
-            nameColor = ElementTheme.colors.roomListRoomName,
-            nameFontStyle = FontStyle.Italic.takeIf { name == null },
-        )
+        // Bipe: the company seal after a DM partner's name (bipe#252)
+        Row(modifier = Modifier.weight(1f), horizontalArrangement = spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            DisplayNameWithStatus(
+                name = displayName,
+                status = dmUserStatus,
+                modifier = Modifier.weight(1f, fill = false),
+                style = ElementTheme.typography.fontBodyLgMedium,
+                nameColor = ElementTheme.colors.roomListRoomName,
+                nameFontStyle = FontStyle.Italic.takeIf { name == null },
+            )
+            bipeDmUserId?.let { BipeCompanySeal(userId = it) }
+        }
         // Timestamp
         Text(
             text = timestamp ?: "",

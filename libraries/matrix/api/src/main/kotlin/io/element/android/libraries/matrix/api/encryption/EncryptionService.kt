@@ -117,6 +117,14 @@ interface EncryptionService {
      * @param fallbackToServer whether to fallback to fetching the identity from the server if not known locally. Defaults to true.
      */
     suspend fun getUserIdentity(userId: UserId, fallbackToServer: Boolean = true): Result<IdentityState?>
+
+    /**
+     * Bipe: the user's cross-signing master key (unpadded base64), or null when the user has no known identity.
+     * A company badge binds to this key (bipe-shared/docs/badge-attestation.md).
+     * @param userId the user id to get the master key for.
+     * @param fallbackToServer whether to fetch the identity from the server if not known locally. Defaults to true.
+     */
+    suspend fun getUserMasterKey(userId: UserId, fallbackToServer: Boolean = true): Result<String?>
 }
 
 /**

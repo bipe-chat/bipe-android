@@ -103,7 +103,7 @@ fun PreferencesRootView(
                 handle = state.bipeHandle,
                 onClick = onBipeProfileClick,
             )
-            if (state.isMultiAccountEnabled && state.otherSessions.isNotEmpty()) {
+            if (state.otherSessions.isNotEmpty()) {
                 MultiAccountSection(state = state)
             }
             onBipeSelfChatClick?.let { BipeSelfChatRow(onClick = it) }

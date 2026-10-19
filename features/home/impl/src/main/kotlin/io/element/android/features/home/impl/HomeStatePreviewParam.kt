@@ -50,8 +50,6 @@ open class HomeStatePreviewParam : PreviewParameterProvider<HomeState> {
             homeSpacesState = aHomeSpacesState(
                 spaceRooms = emptyList(),
             ),
-        ) + aHomeState(
-            showMultiAccountAnnouncement = true,
         )
 }
 
@@ -65,7 +63,6 @@ internal fun aHomeState(
     roomListState: RoomListState = aRoomListState(),
     homeSpacesState: HomeSpacesState = aHomeSpacesState(),
     canReportBug: Boolean = true,
-    showMultiAccountAnnouncement: Boolean = false,
     bipeBadges: BipeTabBadges = BipeTabBadges.NONE,
     bipeAccounts: List<MatrixUser> = currentUserAndNeighbors.distinctBy { it.userId },
     bipeMaxAccounts: Int = BipeRegistries.MAX_PERSONAL_ACCOUNTS,
@@ -76,7 +73,6 @@ internal fun aHomeState(
     hasNetworkConnection = hasNetworkConnection,
     snackbarMessage = snackbarMessage,
     canReportBug = canReportBug,
-    showMultiAccountAnnouncement = showMultiAccountAnnouncement,
     currentHomeNavigationBarItem = currentHomeNavigationBarItem,
     roomListState = roomListState,
     homeSpacesState = homeSpacesState,

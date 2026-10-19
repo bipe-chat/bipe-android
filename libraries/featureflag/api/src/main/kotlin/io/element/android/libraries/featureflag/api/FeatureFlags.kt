@@ -73,15 +73,6 @@ enum class FeatureFlags(
         defaultValue = { true },
         isFinished = true,
     ),
-    MultiAccount(
-        key = "feature.multi_account",
-        title = "Multi accounts",
-        description = "Allow the application to connect to multiple accounts at the same time." +
-            "\n\nWARNING: this feature is EXPERIMENTAL and UNSTABLE.",
-        // Bipe: on, with a cap of personal accounts per phone (ADR 0086, bipe#267).
-        defaultValue = { true },
-        isFinished = false,
-    ),
     QrCodeLogin(
         key = "feature.qr_code_login",
         title = "QR Code Login",

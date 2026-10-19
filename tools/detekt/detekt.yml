@@ -244,6 +244,7 @@ Compose:
       - LocalTimelineEventRendererConfig
       # Bipe
       - LocalBipeAccount
+      - LocalBipeCompanySeals
       - LocalBipeHandleResolver
       - LocalBipePublicProfiles
   CompositionLocalNaming:

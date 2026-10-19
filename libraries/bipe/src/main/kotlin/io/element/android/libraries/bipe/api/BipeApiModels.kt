@@ -8,6 +8,7 @@ package io.element.android.libraries.bipe.api
 
 import io.element.android.libraries.bipe.BadgeEnvelope
 import io.element.android.libraries.bipe.BipeHandleProblem
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,6 +16,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.time.OffsetDateTime
 
@@ -403,3 +405,97 @@ data class BipeWebLinkPlace(
         return parts.takeIf { it.isNotEmpty() }?.joinToString(", ")
     }
 }
+
+/** The answer of `GET /v1/badges/{userId}`. */
+sealed interface BipeBadgeLookup {
+    /** HTTP 200: the envelope JSON as the server sent it. Verify these exact bytes. */
+    data class Envelope(val json: String) : BipeBadgeLookup
+
+    /** HTTP 404: no badge. */
+    data object None : BipeBadgeLookup
+
+    /** HTTP 410: the account had a badge and its claim ended. */
+    data class Gone(val reason: BipeBadgeGoneReason) : BipeBadgeLookup
+}
+
+/** The contract's `BadgeGone.reason` enum. */
+enum class BipeBadgeGoneReason(val id: String) {
+    REVOKED("revoked"),
+    NOT_ACTIVE("not_active"),
+    NOT_FOUND("not_found"),
+    STAFF("staff");
+
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+
+        /** An unknown or missing reason is [REVOKED]: the contract uses it for any other end of the verification. */
+        fun fromBody(body: String?): BipeBadgeGoneReason {
+            val reason = body?.let { runCatchingExceptions { json.decodeFromString(BadgeGoneBody.serializer(), it) }.getOrNull() }?.reason
+            return entries.firstOrNull { it.id == reason } ?: REVOKED
+        }
+    }
+}
+
+/**
+ * `GET /v1/banner`: the remote critical banner above the chat list (ADR 0117, bipe-chat/bipe#386). Port of
+ * `remoteBannerState()` in bipe-shared; `test-vectors/remote-banner.json` holds the cases.
+ */
+@Serializable
+data class BipeRemoteBanner(
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String,
+    @SerialName("text") val text: String,
+    @SerialName("link") val link: String,
+    @SerialName("min_app_version") val minAppVersion: String? = null,
+    @SerialName("update_links") val updateLinks: UpdateLinks? = null,
+    @SerialName("expires_at") val expiresAt: String,
+) {
+    @Serializable
+    data class UpdateLinks(
+        @SerialName("ios") val ios: String,
+        @SerialName("android") val android: String,
+    )
+
+    sealed interface State {
+        data object Hidden : State
+
+        /** Opens [link]. The person can dismiss it by [id]. */
+        data object Notice : State
+
+        /** The app is below [minAppVersion]: opens the update link and cannot be dismissed. */
+        data class Update(val url: String) : State
+    }
+
+    fun state(appVersion: String, now: Instant = Instant.now()): State {
+        val expiry = runCatchingExceptions { OffsetDateTime.parse(expiresAt).toInstant() }.getOrNull() ?: return State.Hidden
+        if (!now.isBefore(expiry)) return State.Hidden
+        if (minAppVersion != null && updateLinks != null && compareVersions(appVersion, minAppVersion) < 0) {
+            return State.Update(updateLinks.android)
+        }
+        return State.Notice
+    }
+
+    companion object {
+        /** Compares dotted versions part by part as numbers. Each part counts its leading digits only ("2-dev" is 2). */
+        fun compareVersions(a: String, b: String): Int {
+            val pa = a.split(".")
+            val pb = b.split(".")
+            for (index in 0 until maxOf(pa.size, pb.size)) {
+                val x = pa.getOrNull(index).leadingNumber()
+                val y = pb.getOrNull(index).leadingNumber()
+                if (x != y) return if (x < y) -1 else 1
+            }
+            return 0
+        }
+
+        private fun String?.leadingNumber(): Long = this?.takeWhile { it in '0'..'9' }?.toLongOrNull() ?: 0L
+    }
+}
+
+@Serializable
+internal data class BadgeGoneBody(val reason: String? = null)
+
+@Serializable
+data class BipeRemoteBannerResponse(
+    @SerialName("banner") val banner: BipeRemoteBanner? = null,
+)

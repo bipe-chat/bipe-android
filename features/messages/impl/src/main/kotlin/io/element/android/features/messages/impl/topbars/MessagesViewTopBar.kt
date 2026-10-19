@@ -38,6 +38,7 @@ import io.element.android.features.messages.impl.SharedHistoryIcon
 import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.features.roomcall.api.aStandByCallState
 import io.element.android.features.roomcall.api.anOngoingCallState
+import io.element.android.libraries.bipe.company.BipeCompanySeal
 import io.element.android.libraries.designsystem.components.avatar.Avatar
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
@@ -72,6 +73,7 @@ internal fun MessagesViewTopBar(
     onRoomDetailsClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    bipeDmUserId: String? = null,
     menuActions: @Composable RowScope.() -> Unit,
 ) {
     TopAppBar(
@@ -101,6 +103,7 @@ internal fun MessagesViewTopBar(
                 )
 
                 val iconModifier = Modifier.size(16.dp)
+                bipeDmUserId?.let { BipeCompanySeal(userId = it) } // Bipe: company seal (bipe#252)
 
                 when (dmUserIdentityState) {
                     IdentityState.Verified -> {
