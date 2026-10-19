@@ -25,7 +25,6 @@ import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.bipe.account.BipeAccountCap
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
@@ -76,7 +75,6 @@ class HomePresenter(
                 (listOf(current) + currentUserAndNeighbors).distinctBy { it.userId }.toImmutableList()
             }
         }
-        val bipeMaxAccounts by BipeAccountCap.maxPersonalAccounts.collectAsState()
         val isOnline by syncService.isOnline.collectAsState()
         val canReportBug by remember { rageshakeFeatureAvailability.isAvailable() }.collectAsState(false)
         val roomListState = roomListPresenter.present()
@@ -140,7 +138,6 @@ class HomePresenter(
             eventSink = ::handleEvent,
             bipeBadges = bipeBadges.copy(youWarning = bipeYouWarning),
             bipeAccounts = bipeAccounts,
-            bipeMaxAccounts = bipeMaxAccounts,
         )
     }
 }

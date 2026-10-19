@@ -33,6 +33,7 @@ import java.time.Instant
 class BipeInvitesPresenter(
     private val bipeSession: BipeSession,
     private val linkStore: BipeInviteLinkStore,
+    private val inviteCreator: BipeInviteCreator,
     private val stringProvider: StringProvider,
 ) : Presenter<BipeInvitesState> {
     @Composable
@@ -89,10 +90,9 @@ class BipeInvitesPresenter(
             if (isLoading || available <= 0) return null
             action = AsyncAction.Loading
             return try {
-                val created = withTokenRetry { token -> bipeSession.apiClient.createInvite(token) }
+                val created = inviteCreator.create()
                 Timber.i("Bipe invite created $created")
                 shareUrls = shareUrls + (created.id to created.url)
-                linkStore.saveLink(bipeSession.userId, created.id, created.url)
                 load()
                 action = AsyncAction.Uninitialized
                 created.url

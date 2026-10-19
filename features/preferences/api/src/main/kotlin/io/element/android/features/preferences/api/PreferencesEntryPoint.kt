@@ -79,6 +79,9 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
 
     interface Callback : Plugin {
         fun navigateToAddAccount()
+
+        /** Bipe: "Nova conta" (bipe#445): the sign-up, with an invite code from the account on screen, or `null` for the invite step. */
+        fun bipeNavigateToSignup(inviteCode: String?)
         fun navigateToLinkNewDevice()
         fun navigateToBugReport()
         fun navigateToSecureBackup()

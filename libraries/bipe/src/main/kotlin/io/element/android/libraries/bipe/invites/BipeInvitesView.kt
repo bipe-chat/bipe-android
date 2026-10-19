@@ -124,17 +124,21 @@ private fun InviteButtons(state: BipeInvitesState) {
 private fun footer(state: BipeInvitesState): String {
     val explainer = stringResource(R.string.bipe_invites_explainer)
     if (state.isLoading) return explainer
-    if (state.available <= 0) {
-        val noneLeft = stringResource(R.string.bipe_invites_none_left)
-        val next = state.nextAvailableAt ?: return noneLeft
-        return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
-    }
+    if (state.available <= 0) return bipeInvitesNoneLeftText(state.nextAvailableAt)
     // A large count means nothing to the person, so it shows only when few invites are left.
     if (state.available > LOW_INVITE_COUNT) return explainer
     return "$explainer ${stringResource(R.string.bipe_invites_available, state.available.toString())}"
 }
 
 private const val LOW_INVITE_COUNT = 5
+
+/** The quota text when no invite is left, with when the next one comes back. Port of `BipeInviteQuota.noneLeft` on iOS. */
+@Composable
+internal fun bipeInvitesNoneLeftText(nextAvailableAt: Instant?): String {
+    val noneLeft = stringResource(R.string.bipe_invites_none_left)
+    val next = nextAvailableAt ?: return noneLeft
+    return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
+}
 
 @Composable
 private fun JoinedSection(state: BipeInvitesState, onUserClick: (String) -> Unit) {

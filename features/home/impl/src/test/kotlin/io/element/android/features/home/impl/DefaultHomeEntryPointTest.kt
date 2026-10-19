@@ -45,6 +45,7 @@ class DefaultHomeEntryPointTest : RobolectricTest() {
                 preferencesRootPresenter = lazy { lambdaError() },
                 bipeSelfChat = aBipeSelfChat(),
                 snackbarDispatcher = SnackbarDispatcher(),
+                bipeNewAccountPresenter = lazy { lambdaError() },
             )
         }
         val callback = object : HomeEntryPoint.Callback {
@@ -57,6 +58,7 @@ class DefaultHomeEntryPointTest : RobolectricTest() {
             override fun navigateToRoomSettings(roomId: RoomId) = lambdaError()
             override fun navigateToBugReport() = lambdaError()
             override fun navigateToAddAccount() = lambdaError()
+            override fun bipeNavigateToSignup(inviteCode: String?) = lambdaError()
         }
         val result = entryPoint.createNode(
             parentNode = parentNode,
