@@ -8,8 +8,8 @@ package io.element.android.libraries.bipe.weblink
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.os.Build
 import android.net.Uri
+import android.os.Build
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebResourceError
