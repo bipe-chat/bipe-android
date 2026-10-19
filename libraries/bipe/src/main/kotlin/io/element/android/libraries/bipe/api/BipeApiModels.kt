@@ -8,6 +8,7 @@ package io.element.android.libraries.bipe.api
 
 import io.element.android.libraries.bipe.BadgeEnvelope
 import io.element.android.libraries.bipe.BipeHandleProblem
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -435,7 +436,7 @@ data class BipeRemoteBanner(
     }
 
     fun state(appVersion: String, now: Instant = Instant.now()): State {
-        val expiry = runCatching { OffsetDateTime.parse(expiresAt).toInstant() }.getOrNull() ?: return State.Hidden
+        val expiry = runCatchingExceptions { OffsetDateTime.parse(expiresAt).toInstant() }.getOrNull() ?: return State.Hidden
         if (!now.isBefore(expiry)) return State.Hidden
         if (minAppVersion != null && updateLinks != null && compareVersions(appVersion, minAppVersion) < 0) {
             return State.Update(updateLinks.android)

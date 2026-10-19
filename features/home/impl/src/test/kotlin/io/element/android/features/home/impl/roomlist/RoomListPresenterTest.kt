@@ -35,8 +35,8 @@ import io.element.android.features.leaveroom.api.LeaveRoomEvent
 import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerStore
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.dateformatter.api.DateFormatter

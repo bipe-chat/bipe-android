@@ -48,8 +48,8 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
 import io.element.android.libraries.bipe.ui.BipeHandlePromptRow
-import io.element.android.libraries.bipe.ui.BipeRemoteBannerRow
 import io.element.android.libraries.bipe.ui.BipeInviterRow
+import io.element.android.libraries.bipe.ui.BipeRemoteBannerRow
 import io.element.android.libraries.bipe.ui.BipeRequestsRow
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
