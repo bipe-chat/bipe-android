@@ -6,7 +6,7 @@
     <item type="string" name="action_manage_devices">@string/bipe_account_devices</item>
     <item type="string" name="action_report_bug">@string/bipe_help_report_problem</item>
     <item type="string" name="action_start_chat">@string/bipe_action_start_chat</item>
-    <item type="string" name="common_link_new_device">@string/bipe_account_link_device</item>
+    <item type="string" name="common_link_new_device">@string/bipe_linked_devices_title</item>
     <item type="string" name="common_sticker">@string/bipe_sticker_label</item>
     <item type="string" name="common_unable_to_decrypt">@string/bipe_chat_message_unavailable</item>
     <item type="string" name="common_unable_to_decrypt_insecure_device">@string/bipe_chat_sender_device_unconfirmed</item>
