@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -67,7 +68,12 @@ fun PinEntryTextField(
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
         decorationBox = {
-            PinEntryRow(pinEntry = pinEntry, isSecured = isSecured, isFocused = isFocused)
+            // Bipe: a secured PIN shows dots, like the lock screen. The 8-digit boxes wrapped to two rows.
+            if (isSecured) {
+                PinDotsRow(pinEntry = pinEntry, modifier = Modifier.padding(vertical = 17.dp))
+            } else {
+                PinEntryRow(pinEntry = pinEntry, isSecured = isSecured, isFocused = isFocused)
+            }
         }
     )
 }

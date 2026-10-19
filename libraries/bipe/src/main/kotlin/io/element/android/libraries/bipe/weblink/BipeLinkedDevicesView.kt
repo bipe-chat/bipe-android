@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.account.BipePin
+import io.element.android.libraries.bipe.account.ui.BipeNewPinDialog
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
@@ -40,9 +42,19 @@ fun BipeLinkedDevicesView(
     ) {
         if (state.showsLinkComputer) {
             ListItem(
-                content = { Text(stringResource(R.string.bipe_linked_devices_link_computer)) },
-                supportingContent = { Text(stringResource(R.string.bipe_linked_devices_footer)) },
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Computer())),
+                content = {
+                    Text(stringResource(if (state.needsPin) R.string.bipe_link_computer_create_pin else R.string.bipe_linked_devices_link_computer))
+                },
+                supportingContent = {
+                    Text(
+                        if (state.needsPin) {
+                            stringResource(R.string.bipe_link_computer_needs_pin, BipePin.LENGTH.toString())
+                        } else {
+                            stringResource(R.string.bipe_linked_devices_footer)
+                        }
+                    )
+                },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(if (state.needsPin) CompoundIcons.Lock() else CompoundIcons.Computer())),
                 trailingContent = if (state.isCheckingSupport) ListItemContent.Custom { CircularProgressIndicator() } else null,
                 enabled = !state.isCheckingSupport,
                 onClick = { state.eventSink(BipeLinkedDevicesEvent.LinkComputer) },
@@ -91,7 +103,19 @@ fun BipeLinkedDevicesView(
             onDismiss = { state.eventSink(BipeLinkedDevicesEvent.DismissDialog) },
         )
     }
-    if (state.notSupported) {
+    if (state.showsCreatePin) {
+        BipeNewPinDialog(
+            title = stringResource(R.string.bipe_pin_create_title),
+            onSubmit = { pin -> state.eventSink(BipeLinkedDevicesEvent.CreatePin(pin)) },
+            onDismiss = { state.eventSink(BipeLinkedDevicesEvent.DismissDialog) },
+        )
+    }
+    if (state.createPinError != null) {
+        ErrorDialog(
+            content = state.createPinError,
+            onSubmit = { state.eventSink(BipeLinkedDevicesEvent.DismissDialog) },
+        )
+    } else if (state.notSupported) {
         ErrorDialog(
             title = stringResource(R.string.bipe_link_computer_error_title),
             content = stringResource(R.string.bipe_link_computer_not_supported),
