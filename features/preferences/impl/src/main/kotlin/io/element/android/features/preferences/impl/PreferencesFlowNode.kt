@@ -334,6 +334,14 @@ class PreferencesFlowNode(
                         callback.navigateToBipeSupport()
                     }
 
+                    override fun navigateToAddAccount() {
+                        callback.navigateToAddAccount()
+                    }
+
+                    override fun bipeNavigateToSignup(inviteCode: String?) {
+                        callback.bipeNavigateToSignup(inviteCode)
+                    }
+
                     override fun navigateToBugReport() {
                         callback.navigateToBugReport()
                     }
