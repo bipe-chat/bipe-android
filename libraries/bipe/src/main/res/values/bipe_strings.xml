@@ -194,6 +194,15 @@
     <string name="bipe_trust_step_govbr">gov.br</string>
     <string name="bipe_trust_step_govbr_body">Uma assinatura com sua conta gov.br verifica seu nome.</string>
     <string name="bipe_trust_coming_soon">Em breve</string>
+    <string name="bipe_trust_step_company_profile_body">Nome da empresa, nome de usuário e logo.</string>
+    <string name="bipe_trust_step_profile_add_company_name">Adicionar nome da empresa</string>
+    <string name="bipe_trust_step_profile_add_logo">Adicionar logo</string>
+    <string name="bipe_trust_step_cnpj">CNPJ</string>
+    <string name="bipe_trust_step_cnpj_body">A gente confere se o CNPJ está ativo na Receita Federal.</string>
+    <string name="bipe_trust_step_proof">Empresa verificada</string>
+    <string name="bipe_trust_step_proof_body">Assine com o e-CNPJ da empresa ou verifique sua conta pessoal como dono ou sócio.</string>
+    <string name="bipe_trust_step_domain">Site</string>
+    <string name="bipe_trust_step_domain_body">Um registro no DNS mostra que o site é da empresa.</string>
     <string name="bipe_invites_next">Próximo convite em %1$s</string>
     <string name="bipe_voice_transcript_title">Transcrição</string>
     <string name="bipe_voice_transcribing">Transcrevendo…</string>

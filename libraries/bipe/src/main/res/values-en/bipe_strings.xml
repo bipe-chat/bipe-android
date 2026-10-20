@@ -194,6 +194,15 @@
     <string name="bipe_trust_step_govbr">gov.br</string>
     <string name="bipe_trust_step_govbr_body">A signature with your gov.br account verifies your name.</string>
     <string name="bipe_trust_coming_soon">Coming soon</string>
+    <string name="bipe_trust_step_company_profile_body">Company name, username and logo.</string>
+    <string name="bipe_trust_step_profile_add_company_name">Add the company name</string>
+    <string name="bipe_trust_step_profile_add_logo">Add a logo</string>
+    <string name="bipe_trust_step_cnpj">CNPJ</string>
+    <string name="bipe_trust_step_cnpj_body">We check that the CNPJ is active with the Receita Federal.</string>
+    <string name="bipe_trust_step_proof">Company verified</string>
+    <string name="bipe_trust_step_proof_body">Sign with the company\'s e-CNPJ, or verify your personal account as an owner or partner.</string>
+    <string name="bipe_trust_step_domain">Website</string>
+    <string name="bipe_trust_step_domain_body">A DNS record shows that the website belongs to the company.</string>
     <string name="bipe_invites_next">Next invite on %1$s</string>
     <string name="bipe_voice_transcript_title">Transcript</string>
     <string name="bipe_voice_transcribing">Transcribing…</string>
