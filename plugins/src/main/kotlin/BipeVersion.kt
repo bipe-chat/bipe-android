@@ -9,5 +9,5 @@
 
 object BipeVersion {
     const val NAME = "26.10.2"
-    const val BUILD = 10
+    const val BUILD = 11
 }
