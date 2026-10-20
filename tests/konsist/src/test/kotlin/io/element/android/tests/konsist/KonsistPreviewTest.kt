@@ -90,6 +90,7 @@ class KonsistPreviewTest {
         "BackgroundVerticalGradientDisabledPreview",
         "BackgroundVerticalGradientPreview",
         "BipePublicProfileViewNeedsHandlePreview",
+        "BipeTrustProfileSectionCompanyPreview",
         "ColorAliasesPreview",
         "EmojiItemWithPopupPreview",
         "FocusedEventPreview",

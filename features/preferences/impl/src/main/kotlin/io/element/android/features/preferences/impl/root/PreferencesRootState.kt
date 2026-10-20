@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.account.PreferencesAccountState
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
+import io.element.android.libraries.bipe.api.BipeBusinessClaim
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.designsystem.components.preferences.DropdownOption
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
@@ -37,6 +38,10 @@ data class PreferencesRootState(
     val bipeHandle: String?,
     // Bipe: whether the public profile is on (ADR 0041), or null while it is not loaded.
     val bipePublicProfileEnabled: Boolean?,
+    // Bipe: `account_type` from `GET /v1/me/account` is `company` (ADR 0087). False until it loads.
+    val bipeIsCompany: Boolean,
+    // Bipe: `GET /v1/me/business` for a company account (ADR 0042). null without a claim or until it loads.
+    val bipeBusiness: BipeBusinessClaim?,
     // Bipe: values shown as subtitles of the group rows under "Configurações" (ADR 0112). null while not loaded.
     val bipeWhoCanMessage: BipeWhoCanMessage?,
     val bipeWaysBackCount: Int?,

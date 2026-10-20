@@ -112,6 +112,8 @@ fun PreferencesRootView(
                     displayName = state.myUser.displayName,
                     hasAvatar = state.myUser.avatarUrl != null,
                     handle = state.bipeHandle,
+                    isCompany = state.bipeIsCompany,
+                    business = state.bipeBusiness,
                 ),
                 onEditProfileClick = { onEditProfileClick(state.myUser) },
                 onHandleClick = onBipeHandleClick,

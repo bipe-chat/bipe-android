@@ -152,6 +152,20 @@ data class BipeMyHandle(
     @Serializable(with = InstantSerializer::class) @SerialName("changeable_at") val changeableAt: Instant? = null,
 )
 
+/** Contract: `BusinessClaim` (ADR 0042). Only the parts the trust card reads. */
+@Serializable
+data class BipeBusinessClaim(
+    /** `registry_pending`, `awaiting_proof`, `verified`, `rejected` or `revoked`. */
+    @SerialName("status") val status: String,
+    @SerialName("domains") val domains: List<BipeBusinessDomain> = emptyList(),
+)
+
+@Serializable
+data class BipeBusinessDomain(
+    @SerialName("domain") val domain: String,
+    @Serializable(with = InstantSerializer::class) @SerialName("verified_at") val verifiedAt: Instant? = null,
+)
+
 /** `GET /v1/profiles/{handle}`: a published profile (ADR 0041). Never carries the Matrix ID. */
 @Serializable
 data class BipePublicProfile(
