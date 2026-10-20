@@ -746,6 +746,7 @@ class LoggedInFlowNode(
             onSuccess = { roomId -> attachRoom(roomId.toRoomIdOrAlias(), clearBackstack = false) },
             onFailure = {
                 Timber.e(it, "Bipe: could not open the support chat")
+                // Toast, not SnackbarDispatcher (bipe#450): this node has no screen of its own, and the tap can come from any screen.
                 Toast.makeText(context, context.getString(BipeR.string.bipe_support_open_failed), Toast.LENGTH_LONG).show()
             },
         )
@@ -756,6 +757,7 @@ class LoggedInFlowNode(
         val userId = runCatchingExceptions { bipeSession.handleResolver.userId(forHandle = handle) }.getOrNull()
         if (userId == null) {
             Timber.i("No user for a Bipe handle link")
+            // Toast, not SnackbarDispatcher (bipe#450): a link opens from outside the app on any screen, and the text takes the handle.
             Toast.makeText(context, context.getString(BipeR.string.bipe_link_handle_not_found, handle), Toast.LENGTH_LONG).show()
         }
         return userId?.let(::UserId)

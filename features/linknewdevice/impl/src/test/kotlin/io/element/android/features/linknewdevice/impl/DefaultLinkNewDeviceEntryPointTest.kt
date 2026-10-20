@@ -14,6 +14,7 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.features.enterprise.test.FakeSessionEnterpriseService
 import io.element.android.features.linknewdevice.api.LinkNewDeviceEntryPoint
 import io.element.android.features.lockscreen.test.FakeDeviceUnlockEntryPoint
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.tests.testutils.lambda.lambdaError
 import io.element.android.tests.testutils.node.TestParentNode
@@ -41,6 +42,7 @@ class DefaultLinkNewDeviceEntryPointTest {
                 linkNewDesktopHandler = LinkNewDesktopHandler(client),
                 sessionEnterpriseService = FakeSessionEnterpriseService(),
                 deviceUnlockEntryPoint = FakeDeviceUnlockEntryPoint(),
+                snackbarDispatcher = SnackbarDispatcher(),
             )
         }
         val callback: LinkNewDeviceEntryPoint.Callback = object : LinkNewDeviceEntryPoint.Callback {

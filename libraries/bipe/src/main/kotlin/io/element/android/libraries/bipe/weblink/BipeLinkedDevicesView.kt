@@ -8,8 +8,10 @@ package io.element.android.libraries.bipe.weblink
 
 import android.text.format.DateUtils
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,6 +30,10 @@ import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.ListItemStyle
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
+import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
+import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 
 @Composable
 fun BipeLinkedDevicesView(
@@ -35,10 +41,15 @@ fun BipeLinkedDevicesView(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Bipe (bipe#450): "Computador conectado" after Link a computer shows here.
+    val snackbarDispatcher = LocalSnackbarDispatcher.current
+    val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
+    val snackbarHostState = rememberSnackbarHostState(snackbarMessage = snackbarMessage)
     PreferencePage(
         modifier = modifier,
         onBackClick = onBackClick,
         title = stringResource(R.string.bipe_linked_devices_title),
+        snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.navigationBarsPadding()) },
     ) {
         if (state.showsLinkComputer) {
             ListItem(
