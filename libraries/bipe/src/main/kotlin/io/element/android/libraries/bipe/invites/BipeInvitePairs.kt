@@ -37,6 +37,7 @@ class BipeInvitePairs(
     private val bipeSession: BipeSession,
     @ApplicationContext private val context: Context,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
+    private val noteSender: BipeInviteNoteSender,
 ) {
     private val _userIds = MutableStateFlow(stored())
 
@@ -72,11 +73,13 @@ class BipeInvitePairs(
         sessionCoroutineScope.launch { refresh() }
     }
 
-    /** Joins a direct-chat invite from an invite pair, once per room. */
+    /** Joins a direct-chat invite from an invite pair, once per room. Then a waiting invite note can go (ADR 0136). */
     fun autoAccept(roomId: RoomId) {
         if (!attemptedRoomIds.add(roomId)) return
         sessionCoroutineScope.launch {
-            matrixClient.joinRoom(roomId).onFailure { Timber.e(it, "Bipe: auto-accept of invite-pair chat $roomId failed") }
+            matrixClient.joinRoom(roomId)
+                .onSuccess { noteSender.run(joinedRoomId = roomId) }
+                .onFailure { Timber.e(it, "Bipe: auto-accept of invite-pair chat $roomId failed") }
         }
     }
 

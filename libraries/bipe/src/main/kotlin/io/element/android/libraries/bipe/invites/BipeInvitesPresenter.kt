@@ -49,6 +49,7 @@ class BipeInvitesPresenter(
         var shareSheetUrl by remember { mutableStateOf<String?>(null) }
         var qrCodeUrl by remember { mutableStateOf<String?>(null) }
         var createdCount by remember { mutableIntStateOf(0) }
+        var noteDestination by remember { mutableStateOf<BipeInviteDestination?>(null) }
 
         val resolver = bipeSession.handleResolver
         val handles by resolver.handles.collectAsState()
@@ -87,11 +88,11 @@ class BipeInvitesPresenter(
         }
 
         /** Creates an invite and returns its link, so the caller can open the share sheet or the QR code at once. */
-        suspend fun create(): String? {
+        suspend fun create(note: String): String? {
             if (isLoading || available <= 0) return null
             action = AsyncAction.Loading
             return try {
-                val created = inviteCreator.create()
+                val created = inviteCreator.create(note)
                 Timber.i("Bipe invite created $created")
                 shareUrls = shareUrls + (created.id to created.url)
                 createdCount++
@@ -107,12 +108,20 @@ class BipeInvitesPresenter(
 
         fun handleEvent(event: BipeInvitesEvent) {
             when (event) {
-                BipeInvitesEvent.InviteByLink -> coroutineScope.launch {
-                    create()?.let { shareSheetUrl = it }
+                BipeInvitesEvent.InviteByLink -> if (!isLoading && available > 0) noteDestination = BipeInviteDestination.SHARE_SHEET
+                BipeInvitesEvent.InviteInPerson -> if (!isLoading && available > 0) noteDestination = BipeInviteDestination.QR_CODE
+                is BipeInvitesEvent.CreateInvite -> {
+                    val destination = noteDestination ?: return
+                    noteDestination = null
+                    coroutineScope.launch {
+                        val url = create(event.note) ?: return@launch
+                        when (destination) {
+                            BipeInviteDestination.SHARE_SHEET -> shareSheetUrl = url
+                            BipeInviteDestination.QR_CODE -> qrCodeUrl = url
+                        }
+                    }
                 }
-                BipeInvitesEvent.InviteInPerson -> coroutineScope.launch {
-                    create()?.let { qrCodeUrl = it }
-                }
+                BipeInvitesEvent.DismissNote -> noteDestination = null
                 is BipeInvitesEvent.Share -> shareSheetUrl = shareUrls[event.inviteId]
                 is BipeInvitesEvent.ShowQrCode -> qrCodeUrl = shareUrls[event.inviteId]
                 BipeInvitesEvent.ShareSheetOpened -> shareSheetUrl = null
@@ -145,6 +154,7 @@ class BipeInvitesPresenter(
             shareSheetUrl = shareSheetUrl,
             qrCodeUrl = qrCodeUrl,
             createdCount = createdCount,
+            noteDestination = noteDestination,
             eventSink = ::handleEvent,
         )
     }

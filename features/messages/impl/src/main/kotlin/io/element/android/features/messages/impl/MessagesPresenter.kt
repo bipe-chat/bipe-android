@@ -90,9 +90,15 @@ import io.element.android.libraries.matrix.api.room.RoomInfo
 import io.element.android.libraries.matrix.api.room.RoomMembersState
 import io.element.android.libraries.matrix.api.room.history.RoomHistoryVisibility
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
+import io.element.android.libraries.matrix.api.timeline.MatrixTimelineItem
 import io.element.android.libraries.matrix.api.timeline.Timeline
 import io.element.android.libraries.matrix.api.timeline.item.SendTarget
+import io.element.android.libraries.matrix.api.timeline.item.event.EventContent
 import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
+import io.element.android.libraries.matrix.api.timeline.item.event.MessageContent
+import io.element.android.libraries.matrix.api.timeline.item.event.PollContent
+import io.element.android.libraries.matrix.api.timeline.item.event.StickerContent
+import io.element.android.libraries.matrix.api.timeline.item.event.UnableToDecryptContent
 import io.element.android.libraries.matrix.api.timeline.item.event.toEventOrTransactionId
 import io.element.android.libraries.matrix.ui.messages.reply.map
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
@@ -248,6 +254,17 @@ class MessagesPresenter(
         val bipeInviterHandle = bipeInviter?.takeIf { inviter ->
             roomInfo.isDirect && (dmRoomMember?.userId == inviter.userId || roomInfo.heroes.any { it.userId == inviter.userId })
         }?.handle
+        // Bipe ADR 0136: the inviter's phone sends their note when it learns of the join. Until a message from them is here, say they know.
+        val bipeInviterId = bipeInviter?.userId?.takeIf { bipeInviterHandle != null }
+        val bipeInviterWrote by produceState(false, bipeInviterId) {
+            val inviterId = bipeInviterId ?: return@produceState
+            room.liveTimeline.timelineItems.collect { items ->
+                value = items.any { item ->
+                    item is MatrixTimelineItem.Event && item.event.sender == inviterId && item.event.content.isBipeMessage()
+                }
+            }
+        }
+        val bipeInviterKnowsName = bipeInviter?.takeIf { bipeInviterId != null && !bipeInviterWrote }?.let { it.displayName ?: "@${it.handle}" }
         val roomMemberIdentityStateChanges = identityChangeState.roomMemberIdentityStateChanges
 
         // The top bar should show a "history" icon if:
@@ -391,6 +408,7 @@ class MessagesPresenter(
             showLiveLocationShareBanner = isCurrentlySharingLiveLocationInRoom && timelineState.timelineMode !is Timeline.Mode.Thread,
             redactEventAction = redactEventAction.value,
             bipeInviterHandle = bipeInviterHandle,
+            bipeInviterKnowsName = bipeInviterKnowsName,
             bipeDmUserId = dmRoomMember?.userId?.value,
             eventSink = ::handleEvent,
         )
@@ -726,3 +744,7 @@ class MessagesPresenter(
         }
     }
 }
+
+/** Bipe ADR 0136: content that counts as a message from the inviter. A message not decrypted yet counts too. */
+private fun EventContent.isBipeMessage() =
+    this is MessageContent || this is StickerContent || this is PollContent || this is UnableToDecryptContent

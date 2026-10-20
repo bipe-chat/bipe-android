@@ -225,6 +225,11 @@
     <string name="bipe_group_missed_pinned">Fixada: %1$s</string>
     <string name="bipe_group_missed_more">Mais mensagens: %1$s</string>
     <string name="bipe_invites_joined">%1$s entrou com seu convite</string>
+    <string name="bipe_invite_note_title">Primeira mensagem</string>
+    <string name="bipe_invite_note_footer">A mensagem vai para a conversa de vocês quando a pessoa entrar. Até lá, fica só neste celular.</string>
+    <string name="bipe_invite_note_placeholder">Escreva uma mensagem</string>
+    <string name="bipe_invite_note_default">Oi! Te chamei pro Bipe. Me responde aqui.</string>
+    <string name="bipe_inviter_knows_you_joined">%1$s já sabe que você chegou.</string>
     <string name="bipe_stickers_import_action">Importar do WhatsApp</string>
     <string name="bipe_stickers_import_help">No WhatsApp, mande os stickers para um grupo só seu. Depois use Exportar conversa, escolha Anexar mídia e salve o arquivo. Aqui, escolha esse arquivo.</string>
     <string name="bipe_stickers_import_help_folder_android">Você também pode escolher os arquivos na pasta WhatsApp Stickers.</string>

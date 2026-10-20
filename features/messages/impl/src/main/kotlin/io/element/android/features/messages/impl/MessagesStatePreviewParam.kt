@@ -136,6 +136,7 @@ fun aMessagesState(
     eventSink: (MessagesEvent) -> Unit = {},
     redactEventAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     bipeInviterHandle: String? = null,
+    bipeInviterKnowsName: String? = null,
     bipeDmUserId: String? = null,
 ) = MessagesState(
     roomId = RoomId("!id:domain"),
@@ -169,6 +170,7 @@ fun aMessagesState(
     dmUserStatus = dmUserStatus,
     redactEventAction = redactEventAction,
     bipeInviterHandle = bipeInviterHandle,
+    bipeInviterKnowsName = bipeInviterKnowsName,
     bipeDmUserId = bipeDmUserId,
     eventSink = eventSink,
 )
