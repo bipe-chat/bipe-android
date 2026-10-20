@@ -25,6 +25,7 @@ import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.account.BipeAccountCap
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
@@ -67,7 +68,7 @@ class HomePresenter(
                 currentUserWithNeighborsBuilder::build,
             )
         }.collectAsState(initial = persistentListOf(matrixUser))
-        // Bipe: the avatar menu lists the accounts, the current one first (ADR 0086, #267). The neighbours hold every account
+        // Bipe: the Você tab menu lists the accounts, the current one first (ADR 0086, #267). The neighbours hold every account
         // up to three, which covers the cap; no second flow, so the presenter emits no extra state.
         val bipeAccounts by remember {
             derivedStateOf {
@@ -75,6 +76,8 @@ class HomePresenter(
                 (listOf(current) + currentUserAndNeighbors).distinctBy { it.userId }.toImmutableList()
             }
         }
+        // Bipe: "Nova conta" in the Você tab menu only under the cap (ADR 0086, ADR 0135).
+        val bipeMaxAccounts by BipeAccountCap.maxPersonalAccounts.collectAsState()
         val isOnline by syncService.isOnline.collectAsState()
         val canReportBug by remember { rageshakeFeatureAvailability.isAvailable() }.collectAsState(false)
         val roomListState = roomListPresenter.present()
@@ -138,6 +141,7 @@ class HomePresenter(
             eventSink = ::handleEvent,
             bipeBadges = bipeBadges.copy(youWarning = bipeYouWarning),
             bipeAccounts = bipeAccounts,
+            bipeCanAddAccount = BipeAccountCap.canAdd(bipeAccounts.size, bipeMaxAccounts),
         )
     }
 }

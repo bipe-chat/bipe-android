@@ -8,7 +8,7 @@
 
 package io.element.android.features.home.impl.components
 
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -43,10 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.element.android.appconfig.RoomListConfig
@@ -73,13 +68,10 @@ import io.element.android.libraries.designsystem.preview.USER_NAME_ALICE
 import io.element.android.libraries.designsystem.text.AdaptativeTitle
 import io.element.android.libraries.designsystem.theme.components.DropdownMenu
 import io.element.android.libraries.designsystem.theme.components.DropdownMenuItem
-import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
-import io.element.android.libraries.designsystem.theme.components.RadioButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
-import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.api.user.UserStatus
@@ -93,7 +85,6 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun HomeTopBar(
@@ -104,15 +95,12 @@ fun HomeTopBar(
     onToggleSearch: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     onOpenSettings: () -> Unit,
-    onAccountSwitch: (SessionId) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     canReportBug: Boolean,
     displayFilters: Boolean,
     filtersState: RoomListFiltersState,
     spaceFiltersState: SpaceFiltersState,
     modifier: Modifier = Modifier,
-    bipeAccounts: ImmutableList<MatrixUser> = persistentListOf(),
-    onBipeAddAccount: () -> Unit = {},
 ) {
     val contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
     Column(modifier) {
@@ -155,19 +143,11 @@ fun HomeTopBar(
                 }
             },
             navigationIcon = {
-                BipeAccountMenuAnchor(
-                    accounts = bipeAccounts,
-                    onAccountSwitch = onAccountSwitch,
-                    onAddAccount = onBipeAddAccount,
-                ) { openMenu ->
-                    NavigationIcon(
-                        currentUserAndNeighbors = currentUserAndNeighbors,
-                        showAvatarIndicator = showAvatarIndicator,
-                        onAccountSwitch = onAccountSwitch,
-                        onClick = onOpenSettings,
-                        onLongClick = openMenu,
-                    )
-                }
+                NavigationIcon(
+                    currentUserAndNeighbors = currentUserAndNeighbors,
+                    showAvatarIndicator = showAvatarIndicator,
+                    onClick = onOpenSettings,
+                )
             },
             actions = {
                 if (selectedNavigationItem.isBipeRoomList) { // Bipe: search on Conversas and Grupos
@@ -301,75 +281,17 @@ private fun SpaceFilterButton(
 private fun NavigationIcon(
     currentUserAndNeighbors: ImmutableList<MatrixUser>,
     showAvatarIndicator: Boolean,
-    onAccountSwitch: (SessionId) -> Unit,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
 ) {
     // Bipe: one avatar, no vertical swipe between accounts (bipe#434). The current account is in the middle of the
-    // neighbours. A tap switches to the next account, or opens settings with one account; a long press lists the
-    // accounts (ADR 0086, #267).
+    // neighbours. A tap opens Você; the switcher is on the Você tab (ADR 0135).
     val currentUser = currentUserAndNeighbors.getOrNull(1) ?: currentUserAndNeighbors.first()
-    val nextUser = currentUserAndNeighbors.getOrNull(2)
     AccountIcon(
         matrixUser = currentUser,
         showAvatarIndicator = showAvatarIndicator,
         reserveStatusEmojiSlot = currentUser.displayedStatus != null,
-        onClick = if (nextUser != null && nextUser.userId != currentUser.userId) {
-            { onAccountSwitch(SessionId(nextUser.userId.value)) }
-        } else {
-            onClick
-        },
-        onLongClick = onLongClick,
+        onClick = onClick,
     )
-}
-
-/**
- * Bipe: the account menu on a long press of the avatar (ADR 0086, #267, bipe#446). Every account as a single choice, the
- * current one first and selected, then "Nova conta", which opens the "Nova conta" window. The window shows the cap.
- */
-@Composable
-private fun BipeAccountMenuAnchor(
-    accounts: ImmutableList<MatrixUser>,
-    onAccountSwitch: (SessionId) -> Unit,
-    onAddAccount: () -> Unit,
-    content: @Composable (openMenu: () -> Unit) -> Unit,
-) {
-    var showMenu by remember { mutableStateOf(false) }
-    Box {
-        content { showMenu = true }
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false },
-            modifier = Modifier.selectableGroup(),
-        ) {
-            accounts.forEachIndexed { index, account ->
-                val isCurrent = index == 0
-                DropdownMenuItem(
-                    text = { Text(account.displayName ?: account.userId.value) },
-                    leadingIcon = { Avatar(avatarData = account.getAvatarData(size = AvatarSize.AccountItem), avatarType = AvatarType.User) },
-                    // The row handles the click; the radio button only shows the choice.
-                    trailingIcon = { RadioButton(selected = isCurrent, onClick = null) },
-                    onClick = {
-                        showMenu = false
-                        if (!isCurrent) onAccountSwitch(SessionId(account.userId.value))
-                    },
-                    modifier = Modifier.semantics {
-                        role = Role.RadioButton
-                        selected = isCurrent
-                    },
-                )
-            }
-            HorizontalDivider()
-            DropdownMenuItem(
-                text = { Text(stringResource(BipeR.string.bipe_account_add)) },
-                leadingIcon = { Icon(imageVector = CompoundIcons.Plus(), contentDescription = null) },
-                onClick = {
-                    showMenu = false
-                    onAddAccount()
-                },
-            )
-        }
-    }
 }
 
 @Composable
@@ -379,17 +301,15 @@ private fun AccountIcon(
     reserveStatusEmojiSlot: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onLongClick: (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
             .testTag(TestTags.homeScreenSettings)
-            .combinedClickable(
+            .clickable(
                 interactionSource = interactionSource,
                 // The ripple is rendered on the avatar only, see below.
                 indication = null,
-                onLongClick = onLongClick,
                 onClick = onClick,
             ),
         verticalAlignment = Alignment.CenterVertically,
@@ -473,7 +393,6 @@ internal fun HomeTopBarPreview() = ElementPreview {
         areSearchResultsDisplayed = false,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
         onOpenSettings = {},
-        onAccountSwitch = {},
         onToggleSearch = {},
         canReportBug = true,
         displayFilters = true,
@@ -493,7 +412,6 @@ internal fun HomeTopBarSpaceFiltersSelectedPreview() = ElementPreview {
         areSearchResultsDisplayed = false,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
         onOpenSettings = {},
-        onAccountSwitch = {},
         onToggleSearch = {},
         canReportBug = true,
         displayFilters = true,
@@ -513,7 +431,6 @@ internal fun HomeTopBarSpacesPreview() = ElementPreview {
         areSearchResultsDisplayed = false,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
         onOpenSettings = {},
-        onAccountSwitch = {},
         onToggleSearch = {},
         canReportBug = true,
         displayFilters = false,
@@ -533,7 +450,6 @@ internal fun HomeTopBarWithIndicatorPreview() = ElementPreview {
         areSearchResultsDisplayed = false,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
         onOpenSettings = {},
-        onAccountSwitch = {},
         onToggleSearch = {},
         canReportBug = true,
         displayFilters = true,
@@ -559,7 +475,6 @@ internal fun HomeTopBarWithStatusPreview() = ElementPreview {
         areSearchResultsDisplayed = false,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
         onOpenSettings = {},
-        onAccountSwitch = {},
         onToggleSearch = {},
         canReportBug = true,
         displayFilters = true,
@@ -579,7 +494,6 @@ internal fun HomeTopBarMultiAccountPreview() = ElementPreview {
         areSearchResultsDisplayed = false,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
         onOpenSettings = {},
-        onAccountSwitch = {},
         onToggleSearch = {},
         canReportBug = true,
         displayFilters = true,
