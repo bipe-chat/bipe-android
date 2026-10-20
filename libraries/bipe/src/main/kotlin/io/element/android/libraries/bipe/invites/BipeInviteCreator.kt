@@ -28,10 +28,14 @@ class BipeInviteCreator(
         data class NoneLeft(val nextAvailableAt: Instant?) : Result
     }
 
-    /** Creates an invite and stores its link. The caller checks the quota first. Throws [io.element.android.libraries.bipe.api.BipeApiException]. */
-    suspend fun create(): BipeCreatedInvite {
+    /**
+     * Creates an invite and stores its link, and its note when there is one (ADR 0136). The caller checks the quota first.
+     * Throws [io.element.android.libraries.bipe.api.BipeApiException].
+     */
+    suspend fun create(note: String? = null): BipeCreatedInvite {
         val created = BipeApiClient.withTokenRetry(bipeSession.accessToken) { token -> bipeSession.apiClient.createInvite(token) }
         linkStore.saveLink(bipeSession.userId, created.id, created.url)
+        if (note != null) linkStore.saveNote(bipeSession.userId, created.id, note)
         return created
     }
 

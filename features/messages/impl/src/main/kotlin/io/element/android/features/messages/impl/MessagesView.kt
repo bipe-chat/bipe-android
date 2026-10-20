@@ -711,6 +711,7 @@ private fun MessagesViewComposerBottomSheetContents(
                 if (state.bipeInviterHandle != null) {
                     BipeInviterHint(
                         inviterHandle = state.bipeInviterHandle,
+                        inviterKnowsName = state.bipeInviterKnowsName,
                         onSayHiClick = { state.eventSink(MessagesEvent.SayHiToBipeInviter) },
                     )
                 }

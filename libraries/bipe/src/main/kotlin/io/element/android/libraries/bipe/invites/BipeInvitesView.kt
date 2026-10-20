@@ -30,6 +30,7 @@ import io.element.android.libraries.bipe.generated.BipeHaptic
 import io.element.android.libraries.bipe.haptics.BipeHapticOnChange
 import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
+import io.element.android.libraries.designsystem.components.dialogs.TextFieldDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
@@ -77,6 +78,12 @@ fun BipeInvitesView(
             onDismiss = { selectedPendingInvite = null },
         )
     }
+    if (state.noteDestination != null) {
+        BipeInviteNoteDialog(
+            onSubmit = { state.eventSink(BipeInvitesEvent.CreateInvite(it)) },
+            onDismiss = { state.eventSink(BipeInvitesEvent.DismissNote) },
+        )
+    }
     state.shareSheetUrl?.let { url ->
         val context = LocalContext.current
         val message = stringResource(R.string.bipe_invites_share_message, url)
@@ -97,6 +104,24 @@ fun BipeInvitesView(
         onSuccess = {},
         errorMessage = { it.message.orEmpty() },
         onErrorDismiss = { state.eventSink(BipeInvitesEvent.ClearError) },
+    )
+}
+
+/** Bipe ADR 0136: the note for a new invite, pre-filled and editable, asked before the invite is made. Empty means no note. */
+@Composable
+internal fun BipeInviteNoteDialog(
+    onSubmit: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    TextFieldDialog(
+        title = stringResource(R.string.bipe_invite_note_title),
+        value = stringResource(R.string.bipe_invite_note_default),
+        placeholder = stringResource(R.string.bipe_invite_note_placeholder),
+        supportingText = stringResource(R.string.bipe_invite_note_footer),
+        maxLines = 5,
+        submitText = stringResource(CommonStrings.action_continue),
+        onSubmit = onSubmit,
+        onDismissRequest = onDismiss,
     )
 }
 
@@ -267,4 +292,10 @@ internal fun BipeInvitesViewPreview() = ElementPreview {
         onBackClick = {},
         onUserClick = {},
     )
+}
+
+@PreviewsDayNight
+@Composable
+internal fun BipeInviteNoteDialogPreview() = ElementPreview {
+    BipeInviteNoteDialog(onSubmit = {}, onDismiss = {})
 }

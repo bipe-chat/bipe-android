@@ -86,6 +86,7 @@ import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.company.LocalBipeCompanySeals
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.invites.BipeInviteJoinNotifier
 import io.element.android.libraries.bipe.support.BipeSupportChat
 import io.element.android.libraries.bipe.terms.BipeTermsReaccept
 import io.element.android.libraries.bipe.threads.BipeThreadsCacheRebuild
@@ -181,6 +182,7 @@ class LoggedInFlowNode(
     private val loggedInEventProcessorFactory: LoggedInEventProcessor.Factory,
     private val clearCacheUseCase: ClearCacheUseCase, // Bipe
     private val bipeSupportChat: BipeSupportChat, // Bipe
+    private val bipeInviteJoinNotifier: BipeInviteJoinNotifier, // Bipe
 ) : BaseFlowNode<LoggedInFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Placeholder,
@@ -236,6 +238,7 @@ class LoggedInFlowNode(
                 // Bipe: not the session scope, clearing the cache destroys the client and cancels it.
                 if (BipeThreadsCacheRebuild.takePending(context, matrixClient.sessionId.value)) lifecycleScope.launch { clearCacheUseCase() }
                 lifecycleScope.launch { bipeOpenInviterChat() } // Bipe: ADR 0034
+                sessionCoroutineScope.launch { bipeInviteJoinNotifier.run() } // Bipe: joins and invite notes (bipe#458, ADR 0136)
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }
