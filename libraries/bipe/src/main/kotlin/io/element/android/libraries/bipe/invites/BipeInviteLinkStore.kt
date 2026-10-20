@@ -37,7 +37,7 @@ class BipeInviteLinkStore(
     private val secretKeyRepository: SecretKeyRepository,
     private val encryptionDecryptionService: EncryptionDecryptionService,
 ) {
-    private class Kind(val fileName: String, val keyAlias: String)
+    private data class Kind(val fileName: String, val keyAlias: String)
 
     private val mutex = Mutex()
 

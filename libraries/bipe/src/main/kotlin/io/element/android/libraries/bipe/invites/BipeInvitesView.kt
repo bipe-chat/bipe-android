@@ -287,6 +287,7 @@ internal fun BipeInvitesViewPreview() = ElementPreview {
             shareSheetUrl = null,
             qrCodeUrl = null,
             createdCount = 0,
+            noteDestination = null,
             eventSink = {},
         ),
         onBackClick = {},

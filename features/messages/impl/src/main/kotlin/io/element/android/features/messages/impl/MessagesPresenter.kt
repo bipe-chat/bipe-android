@@ -748,4 +748,3 @@ class MessagesPresenter(
 /** Bipe ADR 0136: content that counts as a message from the inviter. A message not decrypted yet counts too. */
 private fun EventContent.isBipeMessage() =
     this is MessageContent || this is StickerContent || this is PollContent || this is UnableToDecryptContent
-

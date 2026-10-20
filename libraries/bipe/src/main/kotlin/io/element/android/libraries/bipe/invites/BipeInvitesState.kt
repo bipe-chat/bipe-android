@@ -34,7 +34,7 @@ data class BipeInvitesState(
     /** Invites made on this screen. The view plays the invite_created haptic when it goes up (ADR 0134). */
     val createdCount: Int,
     /** Set while the note dialog for a new invite shows (ADR 0136). */
-    val noteDestination: BipeInviteDestination? = null,
+    val noteDestination: BipeInviteDestination?,
     val eventSink: (BipeInvitesEvent) -> Unit,
 ) {
     val canCreate: Boolean get() = !isLoading && available > 0

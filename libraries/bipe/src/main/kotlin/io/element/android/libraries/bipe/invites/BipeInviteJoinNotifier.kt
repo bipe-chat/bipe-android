@@ -58,9 +58,8 @@ class BipeInviteJoinNotifier(
         preferences.edit().putStringSet(key, seen.orEmpty() + joinedIds).apply()
         if (seen == null) return
 
-        for (invite in joined) {
-            if (invite.id in seen) continue
-            val userId = invite.joinedUserId ?: continue
+        val newUserIds = joined.filter { it.id !in seen }.mapNotNull { it.joinedUserId }
+        for (userId in newUserIds) {
             bipeSession.handleResolver.resolve(userId)
             val name = bipeSession.handleResolver.displayText(userId)
             // A toast, not a snackbar: this runs at session start from LoggedInFlowNode, with no screen in reach (bipe-chat/bipe#450).
@@ -106,16 +105,17 @@ class BipeInviteNoteSender(
     suspend fun send(invites: List<BipeInvite>, joinedRoomId: RoomId? = null) {
         val notes = linkStore.notes(bipeSession.userId)
         if (notes.isEmpty()) return
-        for (invite in invites) {
-            if (invite.status != BipeInviteStatus.USED || invite.id !in notes) continue
-            val userId = invite.joinedUserId?.let { runCatchingExceptions { UserId(it) }.getOrNull() } ?: continue
-            if (userId == matrixClient.sessionId) continue
+        val recipients = invites
+            .filter { it.status == BipeInviteStatus.USED && it.id in notes }
+            .mapNotNull { invite -> invite.joinedUserId?.let { runCatchingExceptions { UserId(it) }.getOrNull() }?.let { invite.id to it } }
+            .filter { (_, userId) -> userId != matrixClient.sessionId }
+        for ((inviteId, userId) in recipients) {
             val room = directRoom(userId, joinedRoomId)
             if (room == null) {
-                Timber.i("Bipe invite note for ${invite.id} waits for the chat with $userId")
-                continue
+                Timber.i("Bipe invite note for $inviteId waits for the chat with $userId")
+            } else {
+                room.use { send(inviteId, it) }
             }
-            room.use { send(invite.id, it) }
         }
     }
 

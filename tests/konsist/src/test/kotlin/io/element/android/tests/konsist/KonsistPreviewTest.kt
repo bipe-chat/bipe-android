@@ -89,6 +89,7 @@ class KonsistPreviewTest {
         "AvatarPickerViewRtlPreview",
         "BackgroundVerticalGradientDisabledPreview",
         "BackgroundVerticalGradientPreview",
+        "BipeInviterHintKnowsPreview",
         "BipePublicProfileViewNeedsHandlePreview",
         "BipeTrustProfileSectionCompanyPreview",
         "ColorAliasesPreview",
