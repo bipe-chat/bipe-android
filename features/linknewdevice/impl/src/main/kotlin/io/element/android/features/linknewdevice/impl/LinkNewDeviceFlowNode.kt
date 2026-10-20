@@ -9,7 +9,6 @@ package io.element.android.features.linknewdevice.impl
 
 import android.app.Activity
 import android.os.Parcelable
-import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -48,6 +47,8 @@ import io.element.android.libraries.bipe.weblink.BipeLinkedDevicesNode
 import io.element.android.libraries.bipe.weblink.BipeWebApprovalController
 import io.element.android.libraries.bipe.weblink.BipeWebApprovalNode
 import io.element.android.libraries.core.log.logger.LoggerTag
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.linknewdevice.ErrorType
@@ -76,6 +77,7 @@ class LinkNewDeviceFlowNode(
     private val linkNewDesktopHandler: LinkNewDesktopHandler,
     private val sessionEnterpriseService: SessionEnterpriseService,
     private val deviceUnlockEntryPoint: DeviceUnlockEntryPoint,
+    private val snackbarDispatcher: SnackbarDispatcher,
 ) : BaseFlowNode<LinkNewDeviceFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Root,
@@ -204,7 +206,7 @@ class LinkNewDeviceFlowNode(
                 LinkDesktopStep.Done -> {
                     // Bipe: back to a new Linked devices screen, which loads the list again and shows the computer.
                     backstack.newRoot(NavTarget.Root)
-                    activity?.let { Toast.makeText(it, BipeR.string.bipe_link_computer_done, Toast.LENGTH_SHORT).show() }
+                    snackbarDispatcher.post(SnackbarMessage(BipeR.string.bipe_link_computer_done))
                 }
                 is LinkDesktopStep.Error -> {
                     navigateToError(linkDesktopStep.errorType)

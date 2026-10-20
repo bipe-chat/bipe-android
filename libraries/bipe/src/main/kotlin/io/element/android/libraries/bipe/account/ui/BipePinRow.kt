@@ -6,7 +6,6 @@
 
 package io.element.android.libraries.bipe.account.ui
 
-import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -34,6 +33,8 @@ import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import kotlinx.coroutines.launch
 
 private sealed interface PinDialog {
@@ -54,6 +55,7 @@ fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
     val status by account.status.collectAsState()
     LaunchedEffect(Unit) { account.refresh() }
     val context = LocalContext.current
+    val snackbarDispatcher = LocalSnackbarDispatcher.current
     val activity = LocalActivity.current as? FragmentActivity
     val scope = rememberCoroutineScope()
     var dialog by remember { mutableStateOf<PinDialog?>(null) }
@@ -119,7 +121,7 @@ fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
                         result
                             .onSuccess {
                                 haptics(BipeHaptic.Success) // pin_set
-                                Toast.makeText(context, R.string.bipe_pin_changed, Toast.LENGTH_SHORT).show()
+                                snackbarDispatcher.post(SnackbarMessage(R.string.bipe_pin_changed))
                             }
                             .onFailure { dialog = PinDialog.Error(account.messageOf(it)) }
                     }

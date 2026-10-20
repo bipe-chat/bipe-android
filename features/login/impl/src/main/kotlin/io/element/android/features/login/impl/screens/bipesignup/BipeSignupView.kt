@@ -103,6 +103,7 @@ fun BipeSignupView(
         AsyncActionView(
             async = state.createAction,
             onSuccess = {
+                // Toast, not SnackbarDispatcher (bipe#450): the sign-up screen closes and the session starts, so no screen keeps a snackbar host.
                 Toast.makeText(context, createdText, Toast.LENGTH_LONG).show()
             },
             errorMessage = { it.message.orEmpty() },

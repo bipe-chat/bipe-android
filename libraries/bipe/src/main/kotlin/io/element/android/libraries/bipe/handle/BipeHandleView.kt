@@ -6,7 +6,6 @@
 
 package io.element.android.libraries.bipe.handle
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -43,6 +41,8 @@ import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TextFieldValidity
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
+import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.ui.strings.CommonStrings
 import java.time.Instant
 import java.time.ZoneId
@@ -125,11 +125,12 @@ fun BipeHandleView(
             errorMessage = { it.message.orEmpty() },
             onErrorDismiss = { state.eventSink(BipeHandleEvent.ClearError) },
         )
-        val context = LocalContext.current
+        val snackbarDispatcher = LocalSnackbarDispatcher.current
         AsyncActionView(
             async = state.removeAction,
             onSuccess = {
-                Toast.makeText(context, R.string.bipe_handle_remove_done, Toast.LENGTH_SHORT).show()
+                // The screen closes, so the snackbar shows on the screen under it (Sua conta or the chat list).
+                snackbarDispatcher.post(SnackbarMessage(R.string.bipe_handle_remove_done))
                 onSaveSuccess()
             },
             confirmationDialog = {
