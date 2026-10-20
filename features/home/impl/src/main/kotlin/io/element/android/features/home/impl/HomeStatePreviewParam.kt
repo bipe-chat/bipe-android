@@ -64,6 +64,7 @@ internal fun aHomeState(
     canReportBug: Boolean = true,
     bipeBadges: BipeTabBadges = BipeTabBadges.NONE,
     bipeAccounts: List<MatrixUser> = currentUserAndNeighbors.distinctBy { it.userId },
+    bipeCanAddAccount: Boolean = true,
     eventSink: (HomeEvent) -> Unit = {}
 ) = HomeState(
     currentUserAndNeighbors = currentUserAndNeighbors.toImmutableList(),
@@ -76,5 +77,6 @@ internal fun aHomeState(
     homeSpacesState = homeSpacesState,
     bipeBadges = bipeBadges,
     bipeAccounts = bipeAccounts.toImmutableList(),
+    bipeCanAddAccount = bipeCanAddAccount,
     eventSink = eventSink,
 )

@@ -8,6 +8,9 @@
 package io.element.android.libraries.designsystem.theme.components
 
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingToolbarColors
@@ -24,14 +28,20 @@ import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarHorizontalFabPosition
 import androidx.compose.material3.FloatingToolbarScrollBehavior
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
@@ -117,6 +127,8 @@ fun HorizontalFloatingToolbarItem(
     forceRenderingTooltip: Boolean = false,
     // Bipe: a red dot instead of a count (ADR 0112, the Você tab)
     showWarning: Boolean = false,
+    // Bipe: a long press on the item (ADR 0135, the Você tab). It replaces the tooltip on a long press.
+    onLongClick: (() -> Unit)? = null,
 ) {
     TooltipBox(
         positionProvider =
@@ -153,16 +165,39 @@ fun HorizontalFloatingToolbarItem(
                 }
             }
         ) {
-            IconButton(
-                modifier = Modifier.widthIn(min = 56.dp),
-                colors = colors,
-                onClick = onClick,
-            ) {
+            val iconContent = @Composable {
                 Icon(
                     modifier = Modifier.size(24.dp),
                     imageVector = icon,
                     contentDescription = tooltipLabel,
                 )
+            }
+            if (onLongClick == null) {
+                IconButton(
+                    modifier = Modifier.widthIn(min = 56.dp),
+                    colors = colors,
+                    onClick = onClick,
+                    content = iconContent,
+                )
+            } else {
+                // Bipe: the same look as the IconButton above, with a long press. The caller plays the haptic (ADR 0134).
+                Box(
+                    modifier = Modifier
+                        .widthIn(min = 56.dp)
+                        .minimumInteractiveComponentSize()
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(colors.containerColor)
+                        .combinedClickable(
+                            role = Role.Button,
+                            hapticFeedbackEnabled = false,
+                            onLongClick = onLongClick,
+                            onClick = onClick,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CompositionLocalProvider(LocalContentColor provides colors.contentColor, content = iconContent)
+                }
             }
         }
     }
