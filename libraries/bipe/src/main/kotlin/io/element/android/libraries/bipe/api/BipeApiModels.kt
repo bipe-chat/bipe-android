@@ -116,6 +116,12 @@ data class BipeMyInvites(
     @SerialName("invites") val invites: List<BipeInvite>,
 )
 
+/** `GET /v1/me/invite-connections`. */
+@Serializable
+data class BipeInviteConnections(
+    @SerialName("user_ids") val userIds: List<String>,
+)
+
 @Serializable
 data class BipeCreatedInvite(
     @SerialName("id") val id: String,

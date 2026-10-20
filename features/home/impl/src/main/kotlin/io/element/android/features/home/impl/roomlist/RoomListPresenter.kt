@@ -50,6 +50,7 @@ import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerStore
+import io.element.android.libraries.bipe.invites.BipeInvitePairs
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
@@ -68,6 +69,7 @@ import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.watchers.AnalyticsColdStartWatcher
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
@@ -101,6 +103,7 @@ class RoomListPresenter(
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
     private val bipeInviterGreeting: BipeInviterGreeting,
+    private val bipeInvitePairs: BipeInvitePairs,
     private val bipeHandlePrompt: BipeHandlePrompt,
     private val bipeRemoteBannerStore: BipeRemoteBannerStore,
 ) : Presenter<RoomListState> {
@@ -135,6 +138,7 @@ class RoomListPresenter(
         var bipeShowsGroups by rememberSaveable { mutableStateOf(false) }
         val bipeSelfChatRoomId by bipeSelfChat.roomId.collectAsState()
         val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
+        val bipeInvitePairIds by bipeInvitePairs.userIds.collectAsState()
         val bipeShowsHandlePrompt by bipeHandlePrompt.shows.collectAsState()
         val bipeRemoteBanner by bipeRemoteBannerStore.shown.collectAsState()
 
@@ -217,6 +221,7 @@ class RoomListPresenter(
             bipeSelfChatRoomId = bipeSelfChatRoomId,
             bipeShowsGroups = bipeShowsGroups,
             bipeHasAnyFilterSelected = filtersState.hasAnyFilterSelected || spaceFiltersState is SpaceFiltersState.Selected,
+            bipeInvitePairIds = bipeInvitePairIds.toImmutableSet(),
         )
 
         // Bipe: the tab sets the category, so the People and Rooms chips are gone. Pedidos shows on Conversas only.
@@ -302,9 +307,23 @@ class RoomListPresenter(
         bipeSelfChatRoomId: RoomId?,
         bipeShowsGroups: Boolean,
         bipeHasAnyFilterSelected: Boolean,
+        bipeInvitePairIds: ImmutableSet<String>,
     ): RoomListContentState {
         val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
             roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
+        }
+        // Bipe ADR 0034: a DM invite from an invite pair skips Pedidos and is accepted without a tap (iOS parity, bipe#413).
+        // An invite from anyone else reloads the pairs once, because a new invitee's first chat can arrive before the pairs know them.
+        LaunchedEffect(roomSummaries, bipeInvitePairIds) {
+            roomSummaries.dataOrNull().orEmpty()
+                .filter { it.displayType == RoomSummaryDisplayType.INVITE && it.isDm }
+                .forEach { summary ->
+                    if (summary.isFromInvitePair(bipeInvitePairIds)) {
+                        bipeInvitePairs.autoAccept(summary.roomId)
+                    } else {
+                        bipeInvitePairs.recheck(summary.roomId)
+                    }
+                }
         }
         val loadingState by roomListDataSource.loadingState.collectAsState()
         val showEmpty by remember {
@@ -329,13 +348,16 @@ class RoomListPresenter(
                 coldStartWatcher.onRoomListVisible()
 
                 // Bipe: DM invites are message requests (usernames.md "First contact"). They only show under the
-                // Pedidos filter. The SDK has no cheap "shares a joined room" check, so every DM invite counts.
+                // Pedidos filter. The SDK has no cheap "shares a joined room" check, so every DM invite counts,
+                // except one from an invite pair (ADR 0034), which is listed and accepted.
                 // Bipe: the self-chat shows in the Você tab only (ADR 0053).
                 val allSummaries = roomSummaries.dataOrNull().orEmpty().filter { it.roomId != bipeSelfChatRoomId }
                 val (requests, listed) = if (showsRequests) {
                     emptyList<RoomListRoomSummary>() to allSummaries
                 } else {
-                    allSummaries.partition { it.displayType == RoomSummaryDisplayType.INVITE && it.isDm }
+                    allSummaries.partition {
+                        it.displayType == RoomSummaryDisplayType.INVITE && it.isDm && !it.isFromInvitePair(bipeInvitePairIds)
+                    }
                 }
 
                 // Bipe: numberOfRooms counts every room, not the rooms of the tab. A Grupos tab with no groups
@@ -430,3 +452,6 @@ class RoomListPresenter(
         }
     }
 }
+
+/** Bipe ADR 0034: the invite was sent by one of the account's invite pairs. */
+private fun RoomListRoomSummary.isFromInvitePair(invitePairIds: Set<String>) = inviteSender?.userId?.value in invitePairIds
