@@ -109,7 +109,7 @@ class DefaultUserListPresenter(
             selectionMode = args.selectionMode,
             recentDirectRooms = recentDirectRooms.toImmutableList(),
             bipeHandleNotFound = bipeHandleNotFound,
-            bipeInviter = bipeInviter?.let { MatrixUser(userId = it.userId, displayName = "@${it.handle}") },
+            bipeInviter = bipeInviter?.let { MatrixUser(userId = it.userId, displayName = "@${it.handle}", avatarUrl = it.avatarUrl) },
             eventSink = ::handleEvent,
         )
     }

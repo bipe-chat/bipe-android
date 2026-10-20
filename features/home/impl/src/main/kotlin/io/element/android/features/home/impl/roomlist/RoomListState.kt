@@ -17,6 +17,7 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteState
 import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.push.api.battery.BatteryOptimizationState
@@ -35,8 +36,8 @@ data class RoomListState(
     val acceptDeclineInviteState: AcceptDeclineInviteState,
     val hideInvitesAvatars: Boolean,
     val canReportRoom: Boolean,
-    /** Bipe ADR 0034: the inviter's handle (without "@") until the user sends them a first message. */
-    val bipeInviterHandle: String?,
+    /** Bipe ADR 0034: the inviter (handle without "@", name and avatar) until the user sends them a first message. */
+    val bipeInviter: BipeInviterGreeting.Inviter?,
     /** Bipe ADR 0034: the chat with the inviter, found or created. `null` when it cannot open. */
     val bipeOpenInviterChat: suspend () -> RoomId?,
     val eventSink: (RoomListEvent) -> Unit,

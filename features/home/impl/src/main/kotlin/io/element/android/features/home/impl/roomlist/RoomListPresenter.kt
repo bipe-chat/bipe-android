@@ -238,7 +238,7 @@ class RoomListPresenter(
             acceptDeclineInviteState = acceptDeclineInviteState,
             hideInvitesAvatars = hideInvitesAvatar,
             canReportRoom = canReportRoom,
-            bipeInviterHandle = bipeInviter?.handle,
+            bipeInviter = bipeInviter,
             bipeOpenInviterChat = bipeInviterGreeting::openChat,
             eventSink = ::handleEvent,
             bipeShowsHandlePrompt = bipeShowsHandlePrompt,
