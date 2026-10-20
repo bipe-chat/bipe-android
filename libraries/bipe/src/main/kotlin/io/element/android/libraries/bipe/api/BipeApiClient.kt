@@ -160,6 +160,13 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/me/handle`. */
     suspend fun myHandle(accessToken: String): BipeMyHandle = call { service.myHandle(bearer(accessToken)) }
 
+    /** `GET /v1/me/business` (ADR 0042). `null` when the account has no CNPJ claim (404). */
+    suspend fun myBusiness(accessToken: String): BipeBusinessClaim? = try {
+        call { service.myBusiness(bearer(accessToken)) }
+    } catch (error: BipeApiException.Server) {
+        if (error.code == BipeApiErrorCode.NOT_FOUND) null else throw error
+    }
+
     /** `PUT /v1/me/handle`. */
     suspend fun setMyHandle(handle: String, accessToken: String): BipeMyHandle =
         call { service.setMyHandle(bearer(accessToken), SetHandleRequest(handle)) }
@@ -437,6 +444,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/handle")
     suspend fun myHandle(@Header("Authorization") authorization: String): Response<BipeMyHandle>
+
+    @GET("v1/me/business")
+    suspend fun myBusiness(@Header("Authorization") authorization: String): Response<BipeBusinessClaim>
 
     @PUT("v1/me/handle")
     suspend fun setMyHandle(@Header("Authorization") authorization: String, @Body request: SetHandleRequest): Response<BipeMyHandle>

@@ -14,6 +14,7 @@ import io.element.android.features.preferences.impl.account.aPreferencesAccountS
 import io.element.android.features.preferences.impl.userstatus.UserStatusPickerState
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
 import io.element.android.features.preferences.impl.userstatus.aUserStatusState
+import io.element.android.libraries.bipe.api.BipeBusinessClaim
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -69,6 +70,8 @@ fun aPreferencesRootState(
     snackbarMessage: SnackbarMessage? = null,
     bipeHandle: String? = null,
     bipePublicProfileEnabled: Boolean? = null,
+    bipeIsCompany: Boolean = false,
+    bipeBusiness: BipeBusinessClaim? = null,
     bipeWhoCanMessage: BipeWhoCanMessage? = BipeWhoCanMessage.EVERYONE,
     bipeWaysBackCount: Int? = 2,
     bipeNotificationsOn: Boolean? = true,
@@ -90,6 +93,8 @@ fun aPreferencesRootState(
     snackbarMessage = snackbarMessage,
     bipeHandle = bipeHandle,
     bipePublicProfileEnabled = bipePublicProfileEnabled,
+    bipeIsCompany = bipeIsCompany,
+    bipeBusiness = bipeBusiness,
     bipeWhoCanMessage = bipeWhoCanMessage,
     bipeWaysBackCount = bipeWaysBackCount,
     bipeNotificationsOn = bipeNotificationsOn,

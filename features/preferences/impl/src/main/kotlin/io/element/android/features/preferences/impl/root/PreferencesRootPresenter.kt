@@ -118,6 +118,8 @@ class PreferencesRootPresenter(
         val bipeWhoCanMessage by bipeSession.privacy.messaging.collectAsState()
         LaunchedEffect(Unit) { bipeSession.privacy.refreshMessaging() }
         val bipeWaysBack = BipeSettingsValues.waysBack(bipeSession, matrixClient)
+        val bipeIsCompany = BipeSettingsValues.isCompany(bipeSession)
+        val bipeBusiness = BipeSettingsValues.business(bipeSession, bipeIsCompany)
         val bipeNotificationsOn = BipeSettingsValues.notificationsOn(userPushStoreFactory, systemNotificationsEnabledProvider, matrixClient)
 
         return PreferencesRootState(
@@ -135,6 +137,8 @@ class PreferencesRootPresenter(
             snackbarMessage = snackbarMessage,
             bipeHandle = bipeHandle,
             bipePublicProfileEnabled = bipeMyProfile?.enabled,
+            bipeIsCompany = bipeIsCompany,
+            bipeBusiness = bipeBusiness,
             bipeWhoCanMessage = bipeWhoCanMessage,
             bipeWaysBackCount = bipeWaysBack?.size,
             bipeNotificationsOn = bipeNotificationsOn,
