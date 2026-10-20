@@ -47,6 +47,7 @@ import io.element.android.features.home.impl.roomlist.SecurityBannerState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.ui.BipeHandlePromptRow
 import io.element.android.libraries.bipe.ui.BipeInviterRow
 import io.element.android.libraries.bipe.ui.BipeRemoteBannerRow
@@ -77,7 +78,7 @@ fun RoomListContentView(
     onBipeCreateGroupClick: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    bipeInviterHandle: String? = null,
+    bipeInviter: BipeInviterGreeting.Inviter? = null,
     onBipeInviterClick: () -> Unit = {},
     bipeHandlePrompt: BipeHandlePromptActions? = null,
     bipeRemoteBanner: BipeRemoteBannerActions? = null,
@@ -98,7 +99,7 @@ fun RoomListContentView(
                 onSetUpRecoveryClick = onSetUpRecoveryClick,
                 onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
                 onCreateRoomClick = if (contentState.bipeGroups) onBipeCreateGroupClick else onCreateRoomClick,
-                bipeInviterHandle = bipeInviterHandle,
+                bipeInviter = bipeInviter,
                 onBipeInviterClick = onBipeInviterClick,
                 bipeHandlePrompt = bipeHandlePrompt,
                 bipeRemoteBanner = bipeRemoteBanner,
@@ -117,7 +118,7 @@ fun RoomListContentView(
                 onRoomClick = onRoomClick,
                 lazyListState = lazyListState,
                 contentPadding = contentPadding,
-                bipeInviterHandle = bipeInviterHandle,
+                bipeInviter = bipeInviter,
                 onBipeInviterClick = onBipeInviterClick,
                 bipeHandlePrompt = bipeHandlePrompt,
                 bipeRemoteBanner = bipeRemoteBanner,
@@ -157,7 +158,7 @@ private fun EmptyView(
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
     onCreateRoomClick: () -> Unit,
-    bipeInviterHandle: String?,
+    bipeInviter: BipeInviterGreeting.Inviter?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
     bipeRemoteBanner: BipeRemoteBannerActions?,
@@ -203,8 +204,8 @@ private fun EmptyView(
                 }
                 // Bipe (ADR 0117): one account task at a time. The inviter row waits for the recovery key,
                 // "Escolha seu @" (bipe-chat/bipe#415) waits for the inviter row.
-                SecurityBannerState.None -> if (bipeInviterHandle != null) {
-                    BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                SecurityBannerState.None -> if (bipeInviter != null) {
+                    BipeInviterRow(inviter = bipeInviter, onClick = onBipeInviterClick)
                 } else if (bipeHandlePrompt != null) {
                     BipeHandlePromptRow(onClick = bipeHandlePrompt.onClick, onDismiss = bipeHandlePrompt.onDismiss)
                 }
@@ -225,7 +226,7 @@ private fun RoomsView(
     onRoomClick: (RoomListRoomSummary) -> Unit,
     contentPadding: PaddingValues,
     lazyListState: LazyListState,
-    bipeInviterHandle: String?,
+    bipeInviter: BipeInviterGreeting.Inviter?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
     bipeRemoteBanner: BipeRemoteBannerActions?,
@@ -249,7 +250,7 @@ private fun RoomsView(
                 null
             },
             // Bipe ADR 0034: hidden while any filter is on.
-            bipeInviterHandle = bipeInviterHandle.takeUnless { hasAnyFilterSelected },
+            bipeInviter = bipeInviter.takeUnless { hasAnyFilterSelected },
             onBipeInviterClick = onBipeInviterClick,
             bipeHandlePrompt = bipeHandlePrompt.takeUnless { hasAnyFilterSelected },
             bipeRemoteBanner = bipeRemoteBanner.takeUnless { hasAnyFilterSelected },
@@ -269,7 +270,7 @@ private fun RoomsView(
 private fun RoomsViewList(
     state: RoomListContentState.Rooms,
     onRequestsClick: (() -> Unit)?,
-    bipeInviterHandle: String?,
+    bipeInviter: BipeInviterGreeting.Inviter?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
     bipeRemoteBanner: BipeRemoteBannerActions?,
@@ -316,9 +317,9 @@ private fun RoomsViewList(
                     )
                 }
             }
-            bipeInviterHandle != null -> {
+            bipeInviter != null -> {
                 item {
-                    BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                    BipeInviterRow(inviter = bipeInviter, onClick = onBipeInviterClick)
                     HorizontalDivider()
                 }
             }

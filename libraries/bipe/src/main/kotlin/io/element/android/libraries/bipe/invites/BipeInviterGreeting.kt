@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -40,8 +41,13 @@ class BipeInviterGreeting(
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
     private val stringProvider: StringProvider,
 ) {
-    /** The inviter, by Matrix ID, with the handle (without "@") for the prompt. */
-    data class Inviter(val userId: UserId, val handle: String)
+    /** The inviter, by Matrix ID, with the handle (without "@") for the prompt, and the profile for the avatar (bipe#449). */
+    data class Inviter(
+        val userId: UserId,
+        val handle: String,
+        val displayName: String? = null,
+        val avatarUrl: String? = null,
+    )
 
     private val _inviter = MutableStateFlow<Inviter?>(null)
 
@@ -81,8 +87,14 @@ class BipeInviterGreeting(
         val cached = bipeSession.handleResolver.handle(userId.value)
         _inviter.value = Inviter(userId, cached ?: userId.value.removePrefix("@"))
         if (cached == null) {
-            val handle = bipeSession.handleResolver.resolve(userId.value) ?: return
-            if (_inviter.value?.userId == userId) _inviter.value = Inviter(userId, handle)
+            bipeSession.handleResolver.resolve(userId.value)?.let { handle ->
+                _inviter.update { current -> if (current?.userId == userId) current.copy(handle = handle) else current }
+            }
+        }
+        matrixClient.getProfile(userId).onSuccess { profile ->
+            _inviter.update { current ->
+                if (current?.userId == userId) current.copy(displayName = profile.displayName, avatarUrl = profile.avatarUrl) else current
+            }
         }
     }
 }

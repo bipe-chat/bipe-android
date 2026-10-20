@@ -336,7 +336,7 @@ private fun HomeScaffold(
                             onBipeCreateGroupClick = onBipeCreateGroupClick,
                             contentPadding = lazyColumnContentPadding + contentPadding,
                             // Bipe ADR 0034: the card to message the inviter shows in Conversas only.
-                            bipeInviterHandle = roomListState.bipeInviterHandle
+                            bipeInviter = roomListState.bipeInviter
                                 .takeIf { state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats },
                             onBipeInviterClick = {
                                 bipeCoroutineScope.launch { roomListState.bipeOpenInviterChat()?.let(onRoomClick) }
