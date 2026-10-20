@@ -36,6 +36,9 @@ sealed interface RoomListEvent {
     /** Bipe: the Grupos tab shows groups, the Conversas tab shows direct chats (ADR 0053). */
     data class BipeShowGroups(val showGroups: Boolean) : RoomListEvent
 
+    /** Bipe (bipe#435): the list shows the archived chats of the tab, or leaves them. */
+    data class BipeShowArchived(val showArchived: Boolean) : RoomListEvent
+
     sealed interface ContextMenuEvent : RoomListEvent
     data object HideContextMenu : ContextMenuEvent
     data class LeaveRoom(val roomId: RoomId, val needsConfirmation: Boolean) : ContextMenuEvent
@@ -43,4 +46,7 @@ sealed interface RoomListEvent {
     data class MarkAsUnread(val roomId: RoomId) : ContextMenuEvent
     data class SetRoomIsFavorite(val roomId: RoomId, val isFavorite: Boolean) : ContextMenuEvent
     data class SetRoomIsMuted(val roomId: RoomId, val isMuted: Boolean) : ContextMenuEvent
+
+    /** Bipe (bipe#435): from the swipe or the menu. */
+    data class BipeSetRoomIsArchived(val roomId: RoomId, val isArchived: Boolean) : ContextMenuEvent
 }

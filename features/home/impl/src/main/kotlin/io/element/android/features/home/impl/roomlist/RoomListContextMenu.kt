@@ -33,6 +33,7 @@ import io.element.android.libraries.designsystem.theme.components.ModalBottomShe
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +71,10 @@ fun RoomListContextMenu(
                 eventSink(RoomListEvent.HideContextMenu)
                 eventSink(RoomListEvent.SetRoomIsMuted(contextMenu.roomId, isMuted))
             },
+            onArchiveChange = { isArchived ->
+                eventSink(RoomListEvent.HideContextMenu)
+                eventSink(RoomListEvent.BipeSetRoomIsArchived(contextMenu.roomId, isArchived))
+            },
             onFavoriteChange = { isFavorite ->
                 eventSink(RoomListEvent.SetRoomIsFavorite(contextMenu.roomId, isFavorite))
             },
@@ -89,6 +94,7 @@ private fun RoomListModalBottomSheetContent(
     onLeaveRoomClick: () -> Unit,
     onFavoriteChange: (isFavorite: Boolean) -> Unit,
     onMuteChange: (isMuted: Boolean) -> Unit,
+    onArchiveChange: (isArchived: Boolean) -> Unit,
     onRoomMarkReadClick: () -> Unit,
     onRoomMarkUnreadClick: () -> Unit,
     onReportRoomClick: () -> Unit,
@@ -175,6 +181,21 @@ private fun RoomListModalBottomSheetContent(
             ),
             onClick = {
                 onMuteChange(!contextMenu.isMuted)
+            },
+        )
+        // Bipe (bipe#435): Arquivar or Desarquivar, the same as the swipe.
+        ListItem(
+            content = {
+                Text(
+                    text = stringResource(id = if (contextMenu.isArchived) BipeR.string.bipe_unarchive_action else BipeR.string.bipe_archive_action),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            },
+            leadingContent = ListItemContent.Icon(
+                iconSource = IconSource.Vector(CompoundIcons.ExportArchive())
+            ),
+            onClick = {
+                onArchiveChange(!contextMenu.isArchived)
             },
         )
         ListItem(
