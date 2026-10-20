@@ -48,6 +48,7 @@ class BipeInvitesPresenter(
         var action by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
         var shareSheetUrl by remember { mutableStateOf<String?>(null) }
         var qrCodeUrl by remember { mutableStateOf<String?>(null) }
+        var createdCount by remember { mutableIntStateOf(0) }
 
         val resolver = bipeSession.handleResolver
         val handles by resolver.handles.collectAsState()
@@ -93,6 +94,7 @@ class BipeInvitesPresenter(
                 val created = inviteCreator.create()
                 Timber.i("Bipe invite created $created")
                 shareUrls = shareUrls + (created.id to created.url)
+                createdCount++
                 load()
                 action = AsyncAction.Uninitialized
                 created.url
@@ -142,6 +144,7 @@ class BipeInvitesPresenter(
             action = action,
             shareSheetUrl = shareSheetUrl,
             qrCodeUrl = qrCodeUrl,
+            createdCount = createdCount,
             eventSink = ::handleEvent,
         )
     }

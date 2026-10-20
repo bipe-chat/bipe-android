@@ -26,6 +26,8 @@ import io.element.android.libraries.androidutils.system.startSharePlainTextInten
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeInvite
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticOnChange
 import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.list.ListItemContent
@@ -66,6 +68,7 @@ fun BipeInvitesView(
         JoinedSection(state, onUserClick)
         PendingSection(state, onInviteClick = { selectedPendingInvite = it })
     }
+    BipeHapticOnChange(BipeHaptic.Success, state.createdCount) { previous, current -> current > previous } // invite_created
     selectedPendingInvite?.let { invite ->
         PendingInviteActionsSheet(
             invite = invite,
@@ -258,6 +261,7 @@ internal fun BipeInvitesViewPreview() = ElementPreview {
             action = AsyncAction.Uninitialized,
             shareSheetUrl = null,
             qrCodeUrl = null,
+            createdCount = 0,
             eventSink = {},
         ),
         onBackClick = {},

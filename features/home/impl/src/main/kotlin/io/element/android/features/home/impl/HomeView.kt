@@ -58,6 +58,8 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersView
 import io.element.android.features.home.impl.spaces.HomeSpacesView
 import io.element.android.libraries.androidutils.throttler.FirstThrottler
 import io.element.android.libraries.bipe.banner.BipeOnForeground
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -188,6 +190,7 @@ private fun HomeScaffold(
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
     val roomListState: RoomListState = state.roomListState
     val bipeCoroutineScope = rememberCoroutineScope()
+    val bipeHaptics = rememberBipeHaptics()
     val uriHandler = LocalUriHandler.current
     // Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner, read on launch and on foreground.
     BipeOnForeground { roomListState.eventSink(RoomListEvent.BipeRefreshRemoteBanner) }
@@ -266,6 +269,7 @@ private fun HomeScaffold(
                             lazyListStateTarget.animateScrollToItem(0)
                         }
                     } else {
+                        bipeHaptics(BipeHaptic.Tick) // Bipe: tab_switch (ADR 0134)
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },

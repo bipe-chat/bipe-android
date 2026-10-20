@@ -45,3 +45,7 @@ enum class TimelineItemAction(
     RetrySending(CommonStrings.action_retry, CompoundDrawables.ic_compound_send_solid),
     AbortSending(CommonStrings.action_cancel, CompoundDrawables.ic_compound_send_solid),
 }
+
+/** Bipe: the actions that copy to the clipboard play the copy haptic (ADR 0134). */
+internal fun TimelineItemAction.bipeIsCopy(): Boolean =
+    this == TimelineItemAction.CopyText || this == TimelineItemAction.CopyCaption || this == TimelineItemAction.CopyLink

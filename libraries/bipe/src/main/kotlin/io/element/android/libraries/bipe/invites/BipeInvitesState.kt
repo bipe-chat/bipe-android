@@ -31,6 +31,8 @@ data class BipeInvitesState(
     val shareSheetUrl: String?,
     /** Set to show this invite link as a QR code. */
     val qrCodeUrl: String?,
+    /** Invites made on this screen. The view plays the invite_created haptic when it goes up (ADR 0134). */
+    val createdCount: Int,
     val eventSink: (BipeInvitesEvent) -> Unit,
 ) {
     val canCreate: Boolean get() = !isLoading && available > 0

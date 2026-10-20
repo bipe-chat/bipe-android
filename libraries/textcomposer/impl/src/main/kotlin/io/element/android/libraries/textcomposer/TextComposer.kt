@@ -41,9 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -58,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.androidutils.ui.showKeyboard
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.designsystem.components.media.WaveFormSamples
 import io.element.android.libraries.designsystem.preview.DAY_MODE_NAME
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -232,10 +232,12 @@ fun TextComposer(
         @Composable { TextFormatting(state = it.richTextEditorState) }
     }
 
-    val hapticFeedback = LocalHapticFeedback.current
+    // Bipe: haptics language (ADR 0134). Send buttons play Tap, recording start plays Hold.
+    val haptics = rememberBipeHaptics()
 
-    fun performHapticFeedback() {
-        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    fun onSendClick() {
+        haptics(BipeHaptic.Tap)
+        onSendMessage()
     }
 
     @Composable
@@ -249,7 +251,7 @@ fun TextComposer(
                 endButtonContentDescriptionResId = CommonStrings.action_send_edited_message,
                 endButtonClick = {
                     if (canSendTextMessage) {
-                        onSendMessage()
+                        onSendClick()
                     }
                 },
                 endButtonContent = @Composable {
@@ -264,7 +266,7 @@ fun TextComposer(
                     VoiceMessageState.Idle -> EndButtonParams(
                         endButtonContentDescriptionResId = CommonStrings.a11y_voice_message_record,
                         endButtonClick = {
-                            performHapticFeedback()
+                            haptics(BipeHaptic.Hold)
                             onVoiceRecorderEvent.invoke(VoiceMessageRecorderEvent.Start)
                         },
                         endButtonContent = @Composable {
@@ -276,7 +278,6 @@ fun TextComposer(
                     is VoiceMessageState.Recording -> EndButtonParams(
                         endButtonContentDescriptionResId = CommonStrings.a11y_voice_message_stop_recording,
                         endButtonClick = {
-                            performHapticFeedback()
                             onVoiceRecorderEvent.invoke(VoiceMessageRecorderEvent.Stop)
                         },
                         endButtonContent = @Composable {
@@ -299,6 +300,7 @@ fun TextComposer(
                         EndButtonParams(
                             endButtonContentDescriptionResId = CommonStrings.action_send_voice_message,
                             endButtonClick = {
+                                haptics(BipeHaptic.Tap)
                                 onSendVoiceMessage()
                             },
                             endButtonContent = @Composable {
@@ -313,7 +315,7 @@ fun TextComposer(
             else -> EndButtonParams(
                 endButtonContentDescriptionResId = CommonStrings.action_send_message,
                 endButtonClick = {
-                    onSendMessage()
+                    onSendClick()
                 },
                 endButtonContent = @Composable {
                     SendButtonIcon(
@@ -332,7 +334,7 @@ fun TextComposer(
                 endButtonContentDescriptionResId = CommonStrings.action_send_edited_message,
                 endButtonClick = {
                     if (canSendTextMessage) {
-                        onSendMessage()
+                        onSendClick()
                     }
                 },
                 endButtonContent = @Composable {
@@ -347,7 +349,7 @@ fun TextComposer(
                 endButtonContentDescriptionResId = CommonStrings.action_send_message,
                 endButtonClick = {
                     if (canSendTextMessage) {
-                        onSendMessage()
+                        onSendClick()
                     }
                 },
                 endButtonContent = @Composable {

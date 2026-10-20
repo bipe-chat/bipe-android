@@ -30,6 +30,8 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.lockscreen.impl.R
 import io.element.android.features.lockscreen.impl.components.PinEntryTextField
 import io.element.android.features.lockscreen.impl.setup.pin.validation.SetupPinFailure
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticWhen
 import io.element.android.libraries.designsystem.atomic.molecules.IconTitleSubtitleMolecule
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.components.button.BackButton
@@ -100,6 +102,8 @@ private fun SetupPinContent(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
+    // Bipe (ADR 0134): pin_set when the confirmation matches.
+    BipeHapticWhen(BipeHaptic.Success, state.isConfirmationStep && state.confirmPinEntry.isComplete() && state.confirmPinEntry == state.choosePinEntry)
     PinEntryTextField(
         pinEntry = state.activePinEntry,
         isSecured = true,
