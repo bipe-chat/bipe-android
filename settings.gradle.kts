@@ -46,6 +46,7 @@ dependencyResolutionManagement {
                 includeGroupByRegex("android\\..*")
                 includeGroupByRegex("androidx\\..*")
                 includeGroupByRegex("com\\.android\\.tools.*")
+                includeGroup("com.android.installreferrer") // Bipe: Play Install Referrer (bipe-chat/bipe#197)
                 includeGroupByRegex("com\\.google\\.firebase.*")
                 includeGroupByRegex("com\\.google\\.android.*")
             }
