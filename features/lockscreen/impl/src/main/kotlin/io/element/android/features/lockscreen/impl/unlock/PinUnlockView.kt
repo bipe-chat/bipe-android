@@ -45,7 +45,7 @@ import io.element.android.features.lockscreen.impl.unlock.keypad.PinKeypad
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.bipe.generated.BipeHaptic
-import io.element.android.libraries.bipe.haptics.BipeHapticOnDecrease
+import io.element.android.libraries.bipe.haptics.BipeHapticOnChange
 import io.element.android.libraries.bipe.haptics.BipeHapticWhen
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.components.ProgressDialog
@@ -77,7 +77,7 @@ fun PinUnlockView(
     }
     // Bipe (ADR 0134): app_unlock after a PIN unlock (a biometric prompt plays its own haptic), pin_wrong.
     BipeHapticWhen(BipeHaptic.Success, state.isUnlocked && state.pinEntry.dataOrNull()?.isComplete() == true)
-    BipeHapticOnDecrease(BipeHaptic.Error, state.remainingAttempts.dataOrNull())
+    BipeHapticOnChange(BipeHaptic.Error, state.remainingAttempts.dataOrNull()) { previous, current -> current < previous }
     Surface(modifier) {
         PinUnlockPage(state = state, isInAppUnlock = isInAppUnlock, onCancel = onCancel)
         if (state.showSignOutPrompt) {
