@@ -222,8 +222,8 @@ class LoginFlowNode(
                         backstack.push(NavTarget.BipeRecovery())
                     }
 
-                    override fun navigateToBipeSignup(startsWithInviteCode: Boolean) {
-                        backstack.push(NavTarget.BipeSignup(inviteCode = inputs<Params>().bipeInviteCode, startsWithInviteCode = startsWithInviteCode))
+                    override fun navigateToBipeSignup(startsWithInviteCode: Boolean, inviteCode: String?) {
+                        backstack.push(NavTarget.BipeSignup(inviteCode = inviteCode, startsWithInviteCode = startsWithInviteCode))
                     }
 
                     override fun navigateToBugReport() {

@@ -312,6 +312,8 @@ dependencies {
 
     // Bipe: Block Store for the recovery token (ADR 0057). F-Droid keeps the token on the device only.
     "gplayImplementation"(projects.libraries.bipeblockstore)
+    // Bipe: the Play Install Referrer for the deferred invite (bipe-chat/bipe#197). F-Droid offers the clipboard only.
+    "gplayImplementation"(projects.libraries.bipeinstallreferrer)
 
     implementation(libs.appyx.core)
     implementation(libs.androidx.splash)

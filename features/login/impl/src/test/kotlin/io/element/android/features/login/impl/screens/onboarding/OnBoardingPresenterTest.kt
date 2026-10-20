@@ -425,6 +425,12 @@ private class FakeBipeStartScreenInfo(
     override suspend fun isInviteRequired(): Boolean? = inviteRequired
 
     override suspend fun inviterHandle(code: String): String? = inviterHandle
+
+    override suspend fun installReferrerInviteCode(): String? = null
+
+    override fun clipboardHasText(): Boolean = false
+
+    override fun clipboardInviteCode(): String? = null
 }
 
 fun createLoginModePresenter(

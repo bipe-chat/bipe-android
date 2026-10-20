@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -45,6 +48,7 @@ import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.IconSource
+import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
@@ -73,6 +77,11 @@ fun OnBoardingView(
     onBipeRecovery: () -> Unit = {},
     onBipeSignup: (startsWithInviteCode: Boolean) -> Unit = {},
 ) {
+    // Bipe (bipe-chat/bipe#197): Android 10+ shows the clipboard only to the app with window focus, which comes after resume.
+    val isWindowFocused = LocalWindowInfo.current.isWindowFocused
+    LaunchedEffect(isWindowFocused) {
+        if (isWindowFocused) state.eventSink(OnBoardingEvent.BipeCheckClipboard)
+    }
     val loginView = @Composable {
         LoginModeView(
             loginMode = state.loginModeState.loginMode,
@@ -226,6 +235,23 @@ private fun OnBoardingLogo(
     }
 }
 
+/** Bipe (bipe-chat/bipe#197): the invite page copied the invite link before the install. The clipboard is read only on the tap. */
+@Composable
+private fun BipePasteInvite(state: OnBoardingState) {
+    Text(
+        text = stringResource(if (state.bipePastedNoInvite) BipeR.string.bipe_onboarding_paste_invite_none else BipeR.string.bipe_onboarding_paste_invite_hint),
+        style = ElementTheme.typography.fontBodyMdRegular,
+        color = if (state.bipePastedNoInvite) ElementTheme.colors.textCriticalPrimary else ElementTheme.colors.textSecondary,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    OutlinedButton(
+        text = stringResource(BipeR.string.bipe_onboarding_paste_invite),
+        onClick = { state.eventSink(OnBoardingEvent.BipePasteInvite) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
 @Composable
 private fun OnBoardingButtons(
     state: OnBoardingState,
@@ -245,6 +271,9 @@ private fun OnBoardingButtons(
     ButtonColumnMolecule {
         // Bipe (bipe-chat/bipe#415): one filled button and its text buttons, from bipe-shared `registries/onboarding.json`.
         state.bipeStart?.let { start ->
+            if (start != BipeOnboardingStart.INVITED && state.bipeOffersPasteInvite) {
+                BipePasteInvite(state)
+            }
             fun open(target: BipeOnboardingTarget) = when (target) {
                 BipeOnboardingTarget.RECOVERY -> onBipeRecovery()
                 BipeOnboardingTarget.INVITE_CODE -> onBipeSignup(true)
