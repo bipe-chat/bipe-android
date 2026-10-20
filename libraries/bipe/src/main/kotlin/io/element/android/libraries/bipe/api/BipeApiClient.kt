@@ -136,6 +136,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/me/invites`. */
     suspend fun myInvites(accessToken: String): BipeMyInvites = call { service.myInvites(bearer(accessToken)) }
 
+    /** `GET /v1/me/invite-connections`. The caller's invite pairs (ADR 0034): Matrix user IDs. */
+    suspend fun inviteConnections(accessToken: String): List<String> = call { service.inviteConnections(bearer(accessToken)) }.userIds
+
     /** `POST /v1/me/invites`. The code is returned once. */
     suspend fun createInvite(accessToken: String): BipeCreatedInvite = call { service.createInvite(bearer(accessToken)) }
 
@@ -423,6 +426,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/invites")
     suspend fun myInvites(@Header("Authorization") authorization: String): Response<BipeMyInvites>
+
+    @GET("v1/me/invite-connections")
+    suspend fun inviteConnections(@Header("Authorization") authorization: String): Response<BipeInviteConnections>
 
     @POST("v1/me/invites")
     suspend fun createInvite(@Header("Authorization") authorization: String): Response<BipeCreatedInvite>

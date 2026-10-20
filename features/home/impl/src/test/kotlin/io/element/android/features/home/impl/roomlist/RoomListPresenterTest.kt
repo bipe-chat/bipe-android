@@ -36,6 +36,7 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerStore
+import io.element.android.libraries.bipe.invites.BipeInvitePairs
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
@@ -733,6 +734,7 @@ class RoomListPresenterTest {
         markRoomAsRead: MarkRoomAsRead? = null,
         bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
         bipeInviterGreeting: BipeInviterGreeting = mockk { every { inviter } returns MutableStateFlow(null) },
+        bipeInvitePairs: BipeInvitePairs = mockk(relaxed = true) { every { userIds } returns MutableStateFlow(emptySet()) },
         bipeHandlePrompt: BipeHandlePrompt = mockk { every { shows } returns MutableStateFlow(false) },
         bipeRemoteBannerStore: BipeRemoteBannerStore = mockk(relaxed = true) { every { shown } returns MutableStateFlow(null) },
     ) = RoomListPresenter(
@@ -769,6 +771,7 @@ class RoomListPresenterTest {
         featureFlagService = featureFlagService,
         bipeSelfChat = bipeSelfChat,
         bipeInviterGreeting = bipeInviterGreeting,
+        bipeInvitePairs = bipeInvitePairs,
         bipeHandlePrompt = bipeHandlePrompt,
         bipeRemoteBannerStore = bipeRemoteBannerStore,
     )
