@@ -63,6 +63,7 @@ class BipeInviteJoinNotifier(
             val userId = invite.joinedUserId ?: continue
             bipeSession.handleResolver.resolve(userId)
             val name = bipeSession.handleResolver.displayText(userId)
+            // A toast, not a snackbar: this runs at session start from LoggedInFlowNode, with no screen in reach (bipe-chat/bipe#450).
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, context.getString(R.string.bipe_invites_joined, name), Toast.LENGTH_LONG).show()
             }
