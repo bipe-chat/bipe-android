@@ -57,6 +57,7 @@ data class RoomListState(
             val isFavorite: Boolean,
             val hasNewContent: Boolean,
             val isMuted: Boolean = false,
+            val isArchived: Boolean = false,
         ) : ContextMenu
     }
 
@@ -92,5 +93,8 @@ sealed interface RoomListContentState {
         val showAllActivity: Boolean,
         // Bipe: DM invites kept out of the list, shown behind the Pedidos row.
         val bipeRequestCount: Int = 0,
+        // Bipe (bipe#435): archived chats of the tab, behind the Arquivadas row.
+        val bipeArchivedCount: Int = 0,
+        val bipeShowsArchived: Boolean = false,
     ) : RoomListContentState
 }
