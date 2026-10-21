@@ -94,6 +94,7 @@ import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.ui.strings.CommonPlurals
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.coroutines.delay
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun SpaceView(
@@ -646,7 +647,8 @@ private fun RemoveRoomsActionView(
         async = removeRoomsAction,
         confirmationDialog = {
             ConfirmationDialog(
-                title = pluralStringResource(R.plurals.screen_space_remove_rooms_confirmation_title, selectedCount, selectedCount, spaceDisplayName),
+                // Bipe: "grupo", not "sala" (bipe#508)
+                title = stringResource(BipeR.string.bipe_group_screen_space_remove_rooms_confirmation_title, selectedCount.toString(), spaceDisplayName),
                 content = stringResource(R.string.screen_space_remove_rooms_confirmation_content),
                 submitText = stringResource(CommonStrings.action_remove),
                 onSubmitClick = onConfirm,

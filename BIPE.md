@@ -183,6 +183,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - A DM that the user left before this change stays as it is.
 - iOS does the same (`BipeInviteToGroupSheet`).
 - A DM shows no 'sala' in any string (bipe#507); a new DM-reachable string gets a `bipe_dm_*` variant.
+- A group has no 'sala' in any string (bipe#508); new strings use 'grupo' or 'comunidade'.
 
 ## Differences from iOS (ADR 0031)
 
@@ -214,7 +215,6 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Message actions | Element's bottom sheet | Native context menu on long press: reaction row, actions, the message as preview | Platform idiom |
 | Terms screen and a recovery alert due together | Recovery alert first, then the terms screen | Terms screen first, the alert right after Continue | On iOS a root alert cannot show over the full-screen terms cover; on Android the terms screen is an overlay that waits for the alert |
 | Settings: Idioma | No row | Row that opens the iPhone Ajustes | iOS sets the app language in system settings; Android follows the system language |
-| Company avatar shape | Circle | Rounded square for a company account, verified or not (ADR 0132) | Built on iOS first (#397) **Gap** |
 | Warning haptic | One long-press pulse | Notification warning pattern | Android has no warning haptic constant (ADR 0134) |
 
 <!-- /parity:differences -->
