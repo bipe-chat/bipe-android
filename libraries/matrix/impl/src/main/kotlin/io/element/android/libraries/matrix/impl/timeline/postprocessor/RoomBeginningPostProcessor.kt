@@ -80,10 +80,11 @@ class RoomBeginningPostProcessor(private val mode: Timeline.Mode) {
     }
 
     // Bipe: a DM has no room setup lines: invites, joins and "encryption enabled" (BIPE.md "DMs are DMs").
+    // A DM has no topic either, so no topic lines (bipe#527).
     private fun bipeDmSetupIndices(items: List<MatrixTimelineItem>): List<Int> = items.indices.filter { index ->
         when (val content = (items[index] as? MatrixTimelineItem.Event)?.event?.content) {
             is RoomMembershipContent -> content.change in bipeDmHiddenChanges
-            is StateContent -> content.content is OtherState.RoomEncryption
+            is StateContent -> content.content is OtherState.RoomEncryption || content.content is OtherState.RoomTopic
             else -> false
         }
     }

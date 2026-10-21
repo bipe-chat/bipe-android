@@ -22,6 +22,7 @@
     <item type="string" name="common_room">@string/bipe_group_common_room</item>
     <item type="string" name="common_room_name">@string/bipe_group_common_room_name</item>
     <item type="string" name="common_sticker">@string/bipe_sticker_label</item>
+    <item type="string" name="common_topic">@string/bipe_group_common_topic</item>
     <item type="string" name="common_topic_placeholder">@string/bipe_group_common_topic_placeholder</item>
     <item type="string" name="common_unable_to_decrypt">@string/bipe_chat_message_unavailable</item>
     <item type="string" name="common_unable_to_decrypt_insecure_device">@string/bipe_chat_sender_device_unconfirmed</item>
@@ -64,6 +65,7 @@
     <item type="string" name="screen_create_room_new_room_title">@string/bipe_group_screen_create_room_new_room_title</item>
     <item type="string" name="screen_create_room_public_option_description">@string/bipe_group_screen_create_room_public_option_description</item>
     <item type="string" name="screen_create_room_room_visibility_section_title">@string/bipe_group_screen_create_room_room_visibility_section_title</item>
+    <item type="string" name="screen_create_room_topic_label">@string/bipe_group_screen_create_room_topic_label</item>
     <item type="string" name="screen_deactivate_account_list_item_2">@string/bipe_group_screen_deactivate_account_list_item_2</item>
     <item type="string" name="screen_decline_and_block_block_user_option_description">@string/bipe_group_screen_decline_and_block_block_user_option_description</item>
     <item type="string" name="screen_decline_and_block_report_user_option_description">@string/bipe_group_screen_decline_and_block_report_user_option_description</item>
@@ -102,6 +104,7 @@
     <item type="string" name="screen_room_change_permissions_room_topic">@string/bipe_group_screen_room_change_permissions_room_topic</item>
     <item type="string" name="screen_room_change_role_confirm_change_owners_description">@string/bipe_group_screen_room_change_role_confirm_change_owners_description</item>
     <item type="string" name="screen_room_change_role_confirm_demote_self_description">@string/bipe_group_screen_room_change_role_confirm_demote_self_description</item>
+    <item type="string" name="screen_room_details_add_topic_title">@string/bipe_group_screen_room_details_add_topic_title</item>
     <item type="string" name="screen_room_details_badge_public">@string/bipe_group_screen_room_details_badge_public</item>
     <item type="string" name="screen_room_details_edition_error_title">@string/bipe_group_screen_room_details_edition_error_title</item>
     <item type="string" name="screen_room_details_error_muting">@string/bipe_group_screen_room_details_error_muting</item>
@@ -165,6 +168,8 @@
     <item type="string" name="state_event_room_third_party_invite_by_you">@string/bipe_group_state_event_room_third_party_invite_by_you</item>
     <item type="string" name="state_event_room_third_party_revoked_invite">@string/bipe_group_state_event_room_third_party_revoked_invite</item>
     <item type="string" name="state_event_room_third_party_revoked_invite_by_you">@string/bipe_group_state_event_room_third_party_revoked_invite_by_you</item>
+    <item type="string" name="state_event_room_topic_changed">@string/bipe_group_state_event_room_topic_changed</item>
+    <item type="string" name="state_event_room_topic_changed_by_you">@string/bipe_group_state_event_room_topic_changed_by_you</item>
     <item type="string" name="state_event_room_topic_removed">@string/bipe_group_state_event_room_topic_removed</item>
     <item type="string" name="state_event_room_topic_removed_by_you">@string/bipe_group_state_event_room_topic_removed_by_you</item>
 </resources>

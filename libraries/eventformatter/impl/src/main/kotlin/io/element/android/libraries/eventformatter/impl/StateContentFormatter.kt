@@ -92,10 +92,9 @@ class StateContentFormatter(
             is OtherState.RoomTopic -> {
                 val hasRoomTopic = content.topic?.isNotBlank() == true
                 when {
+                    // Bipe: a DM has no topic, so no line about one (bipe#527)
+                    isDm -> null
                     senderIsYou && hasRoomTopic -> sp.getString(R.string.state_event_room_topic_changed_by_you, content.topic)
-                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
-                    isDm && senderIsYou && !hasRoomTopic -> sp.getString(BipeR.string.bipe_dm_topic_removed_by_you)
-                    isDm && !hasRoomTopic -> sp.getString(BipeR.string.bipe_dm_topic_removed, senderDisambiguatedDisplayName)
                     senderIsYou && !hasRoomTopic -> sp.getString(R.string.state_event_room_topic_removed_by_you)
                     !senderIsYou && hasRoomTopic -> sp.getString(R.string.state_event_room_topic_changed, senderDisambiguatedDisplayName, content.topic)
                     else -> sp.getString(R.string.state_event_room_topic_removed, senderDisambiguatedDisplayName)

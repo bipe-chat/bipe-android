@@ -152,4 +152,21 @@ class RoomBeginningPostProcessorTest {
         // Bipe: a DM also drops the other person's join (BIPE.md "DMs are DMs").
         assertThat(processedItems).isEmpty()
     }
+
+    @Test
+    fun `processor removes topic changes from a DM timeline`() {
+        val timelineItems = listOf(
+            roomTopicEvent,
+            messageEvent,
+        )
+        val processor = RoomBeginningPostProcessor(Timeline.Mode.Live)
+        val processedItems = processor.process(
+            timelineItems,
+            isDm = true,
+            roomCreator = A_USER_ID,
+            hasMoreToLoadBackwards = true
+        )
+        // Bipe: a DM has no topic (bipe#527).
+        assertThat(processedItems).containsExactly(messageEvent)
+    }
 }

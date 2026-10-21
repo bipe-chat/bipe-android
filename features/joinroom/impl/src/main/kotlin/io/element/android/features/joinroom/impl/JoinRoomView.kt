@@ -588,10 +588,13 @@ private fun DefaultLoadedContent(
             }
         },
         description = {
-            RoomPreviewDescriptionAtom(
-                contentState.topic ?: "",
-                maxLines = if (contentState.joinAuthorisationStatus is JoinAuthorisationStatus.CanJoin) Int.MAX_VALUE else 2
-            )
+            // Bipe: a DM has no topic (bipe#527)
+            if ((contentState.details as? LoadedDetails.Room)?.isDm != true) {
+                RoomPreviewDescriptionAtom(
+                    contentState.topic ?: "",
+                    maxLines = if (contentState.joinAuthorisationStatus is JoinAuthorisationStatus.CanJoin) Int.MAX_VALUE else 2
+                )
+            }
         },
         memberCount = {
             if (contentState.showMemberCount) {
