@@ -45,7 +45,12 @@ class StateContentFormatter(
                 }
             }
             is OtherState.RoomCreate -> {
-                if (senderIsYou) {
+                // Bipe: a DM says "conversa" (bipe#508)
+                if (isDm && senderIsYou) {
+                    sp.getString(BipeR.string.bipe_dm_created_by_you)
+                } else if (isDm) {
+                    sp.getString(BipeR.string.bipe_dm_created, senderDisambiguatedDisplayName)
+                } else if (senderIsYou) {
                     sp.getString(R.string.state_event_room_created_by_you)
                 } else {
                     sp.getString(R.string.state_event_room_created, senderDisambiguatedDisplayName)

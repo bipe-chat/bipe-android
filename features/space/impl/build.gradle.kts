@@ -34,6 +34,7 @@ dependencies {
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.uiStrings)
     implementation(projects.libraries.androidutils)
+    implementation(projects.libraries.bipe) // Bipe
     implementation(projects.services.analytics.api)
     implementation(libs.coil.compose)
     implementation(projects.features.createroom.api)
