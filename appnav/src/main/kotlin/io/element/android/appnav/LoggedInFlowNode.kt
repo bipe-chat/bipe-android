@@ -734,7 +734,8 @@ class LoggedInFlowNode(
         val result = matrixClient.startDM(
             userId = inviterUserId,
             createIfDmDoesNotExist = true,
-            isEncryped = !sessionEnterpriseService.isEncryptionDisabledByHomeserver(),
+            // Bipe: every DM is encrypted, whatever the homeserver advertises (docs/security.md rule 13)
+            isEncryped = true,
         )
         if (result is StartDMResult.Success) {
             attachRoom(result.roomId.toRoomIdOrAlias())
