@@ -12,8 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
-import io.element.android.libraries.designsystem.components.avatar.AvatarType
-import io.element.android.libraries.designsystem.components.avatar.avatarShape
+import io.element.android.libraries.designsystem.components.avatar.bipeUserAvatarShape
 
 @Composable
 internal fun UserAvatar(
@@ -26,7 +25,7 @@ internal fun UserAvatar(
     InitialOrImageAvatar(
         avatarData = avatarData,
         hideAvatarImage = hideImage,
-        avatarShape = AvatarType.User.avatarShape(),
+        avatarShape = bipeUserAvatarShape(avatarData.id, forcedAvatarSize ?: avatarData.size.dp),
         modifier = modifier,
         contentDescription = contentDescription,
         forcedAvatarSize = forcedAvatarSize,

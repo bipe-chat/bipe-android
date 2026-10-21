@@ -199,6 +199,13 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
         }
     }
 
+    /** `GET /v1/accounts/{userId}/type` (ADR 0132). No auth. `null` when the account was not made through Bipe sign-up (404). */
+    suspend fun accountType(userId: String): String? = try {
+        call { service.accountType(userId) }.accountType
+    } catch (error: BipeApiException.Server) {
+        if (error.code == BipeApiErrorCode.NOT_FOUND) null else throw error
+    }
+
     /** `GET /v1/me/profile`. */
     suspend fun myProfile(accessToken: String): BipeMyProfile = call { service.myProfile(bearer(accessToken)) }
 
@@ -480,6 +487,9 @@ internal interface BipeApiService {
 
     @GET("v1/badges/{userId}")
     suspend fun badge(@Path("userId") userId: String): Response<ResponseBody>
+
+    @GET("v1/accounts/{userId}/type")
+    suspend fun accountType(@Path("userId") userId: String): Response<BipeAccountTypeResponse>
 
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>
