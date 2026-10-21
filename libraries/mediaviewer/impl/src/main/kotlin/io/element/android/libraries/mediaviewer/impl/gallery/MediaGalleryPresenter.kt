@@ -167,6 +167,7 @@ class MediaGalleryPresenter(
                         eventId = event.eventId,
                         mediaInfo = event.mediaInfo,
                         thumbnailSource = event.thumbnailSource,
+                        isDm = roomInfo.isDm, // Bipe: bipe#507
                     )
                 }
                 MediaGalleryEvent.CloseBottomSheet -> {

@@ -38,6 +38,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun ReportRoomView(
@@ -53,13 +54,17 @@ fun ReportRoomView(
         onSuccess = { onBackClick() },
         errorTitle = { failure ->
             when (failure) {
-                is ReportRoom.Exception.LeftRoomFailed -> stringResource(R.string.screen_report_room_leave_failed_alert_title)
+                is ReportRoom.Exception.LeftRoomFailed -> stringResource(
+                    if (state.isDm) BipeR.string.bipe_dm_report_leave_failed_title else R.string.screen_report_room_leave_failed_alert_title // Bipe
+                )
                 else -> stringResource(CommonStrings.dialog_title_error)
             }
         },
         errorMessage = { failure ->
             when (failure) {
-                is ReportRoom.Exception.LeftRoomFailed -> stringResource(R.string.screen_report_room_leave_failed_alert_message)
+                is ReportRoom.Exception.LeftRoomFailed -> stringResource(
+                    if (state.isDm) BipeR.string.bipe_dm_report_leave_failed_body else R.string.screen_report_room_leave_failed_alert_message // Bipe
+                )
                 else -> stringResource(CommonStrings.error_unknown)
             }
         },
@@ -72,7 +77,7 @@ fun ReportRoomView(
     Scaffold(
         topBar = {
             TopAppBar(
-                titleStr = stringResource(R.string.screen_report_room_title),
+                titleStr = stringResource(if (state.isDm) BipeR.string.bipe_dm_report else R.string.screen_report_room_title), // Bipe
                 navigationIcon = {
                     BackButton(onClick = onBackClick)
                 }
@@ -99,7 +104,7 @@ fun ReportRoomView(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .heightIn(min = 90.dp),
-                supportingText = stringResource(R.string.screen_report_room_reason_footer),
+                supportingText = stringResource(if (state.isDm) BipeR.string.bipe_dm_report_footer else R.string.screen_report_room_reason_footer), // Bipe
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -107,7 +112,7 @@ fun ReportRoomView(
             ListItem(
                 modifier = Modifier.padding(end = 8.dp),
                 content = {
-                    Text(text = stringResource(CommonStrings.action_leave_room))
+                    Text(text = stringResource(if (state.isDm) BipeR.string.bipe_dm_report_leave else CommonStrings.action_leave_room)) // Bipe
                 },
                 onClick = {
                     state.eventSink(ReportRoomEvent.ToggleLeaveRoom)

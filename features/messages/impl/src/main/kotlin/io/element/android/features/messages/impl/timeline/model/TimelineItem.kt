@@ -108,6 +108,8 @@ sealed interface TimelineItem {
         val forwarder: UserId?,
         /** If [forwarder] is set, the profile of the forwarding user, if it was cached at the time the `EventTimelineItem` was created. */
         val forwarderProfile: ProfileDetails?,
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        val isDm: Boolean = false,
     ) : TimelineItem {
         val showSenderInformation = groupPosition.isNew() && !isMine
 
@@ -139,7 +141,7 @@ sealed interface TimelineItem {
 
         // No need to be lazy here?
         val messageShield: MessageShieldData? = messageShieldProvider(strict = false)?.let {
-            MessageShieldData(it, forwarder, forwarderProfile)
+            MessageShieldData(it, forwarder, forwarderProfile, isDm = isDm)
         }
 
         val debugInfo: TimelineItemDebugInfo

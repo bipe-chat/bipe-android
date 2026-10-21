@@ -30,6 +30,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.allBooleans
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.tombstone.PredecessorRoom
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun TimelineItemRoomBeginningView(
@@ -45,7 +46,9 @@ fun TimelineItemRoomBeginningView(
         if (predecessorRoom != null) {
             ComposerAlertMolecule(
                 avatar = null,
-                content = stringResource(R.string.screen_room_timeline_upgraded_room_message).toAnnotatedString(),
+                content = stringResource(
+                    if (isDm) BipeR.string.bipe_dm_upgraded_message else R.string.screen_room_timeline_upgraded_room_message // Bipe: bipe#507
+                ).toAnnotatedString(),
                 onSubmitClick = { onPredecessorRoomClick(predecessorRoom.roomId) },
                 submitText = stringResource(R.string.screen_room_timeline_upgraded_room_action)
             )

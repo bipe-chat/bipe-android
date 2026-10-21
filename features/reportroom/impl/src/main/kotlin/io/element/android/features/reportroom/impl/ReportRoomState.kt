@@ -12,6 +12,8 @@ import io.element.android.libraries.architecture.AsyncAction
 
 data class ReportRoomState(
     val reason: String,
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    val isDm: Boolean,
     val leaveRoom: Boolean,
     val reportAction: AsyncAction<Unit>,
     val eventSink: (ReportRoomEvent) -> Unit

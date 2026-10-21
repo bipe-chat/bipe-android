@@ -11,6 +11,8 @@ package io.element.android.features.invite.impl.declineandblock
 import io.element.android.libraries.architecture.AsyncAction
 
 data class DeclineAndBlockState(
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    val isDm: Boolean,
     val reportRoom: Boolean,
     val reportReason: String,
     val blockUser: Boolean,

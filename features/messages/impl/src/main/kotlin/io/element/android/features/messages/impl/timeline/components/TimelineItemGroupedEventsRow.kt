@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.element.android.features.messages.impl.R
 import io.element.android.features.messages.impl.timeline.TimelineEvent
 import io.element.android.features.messages.impl.timeline.TimelineRoomInfo
@@ -37,6 +38,7 @@ import io.element.android.libraries.matrix.api.timeline.Timeline
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
 import io.element.android.wysiwyg.link.Link
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun TimelineItemGroupedEventsRow(
@@ -156,6 +158,9 @@ private fun TimelineItemGroupedEventsRowContent(
         // and showing the original authors would be misleading.
         val headerText = if (timelineItem.isRedactedMessagesGroup()) {
             pluralStringResource(R.plurals.screen_room_timeline_redacted_messages, count, count)
+        } else if (timelineRoomInfo.isDm) {
+            // Bipe: a DM says "conversa", not "sala" (bipe#507)
+            stringResource(BipeR.string.bipe_dm_state_changes, count.toString())
         } else {
             pluralStringResource(R.plurals.screen_room_timeline_state_changes, count, count)
         }

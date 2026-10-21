@@ -39,6 +39,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun DeclineAndBlockView(
@@ -84,7 +85,16 @@ fun DeclineAndBlockView(
                     Text(text = stringResource(R.string.screen_decline_and_block_block_user_option_title))
                 },
                 supportingContent = {
-                    Text(text = stringResource(R.string.screen_decline_and_block_block_user_option_description))
+                    Text(
+                        text = stringResource(
+                            // Bipe: a DM says "conversa" (bipe#507)
+                            if (state.isDm) {
+                                BipeR.string.bipe_dm_decline_block_description
+                            } else {
+                                R.string.screen_decline_and_block_block_user_option_description
+                            }
+                        )
+                    )
                 },
                 onClick = {
                     state.eventSink(DeclineAndBlockEvent.ToggleBlockUser)
@@ -96,10 +106,19 @@ fun DeclineAndBlockView(
             ListItem(
                 modifier = Modifier.padding(end = 8.dp),
                 content = {
-                    Text(text = stringResource(CommonStrings.action_report_room))
+                    Text(text = stringResource(if (state.isDm) BipeR.string.bipe_dm_report else CommonStrings.action_report_room)) // Bipe
                 },
                 supportingContent = {
-                    Text(text = stringResource(R.string.screen_decline_and_block_report_user_option_description))
+                    Text(
+                        text = stringResource(
+                            // Bipe: a DM says "conversa" (bipe#507)
+                            if (state.isDm) {
+                                BipeR.string.bipe_dm_decline_report_description
+                            } else {
+                                R.string.screen_decline_and_block_report_user_option_description
+                            }
+                        )
+                    )
                 },
                 onClick = {
                     state.eventSink(DeclineAndBlockEvent.ToggleReportRoom)

@@ -107,7 +107,10 @@ private fun RoomListModalBottomSheetContent(
         ListItem(
             content = {
                 Text(
-                    text = contextMenu.roomName ?: stringResource(id = CommonStrings.common_no_room_name),
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    text = contextMenu.roomName ?: stringResource(
+                        id = if (contextMenu.isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name
+                    ),
                     style = ElementTheme.typography.fontBodyLgMedium,
                     fontStyle = FontStyle.Italic.takeIf { contextMenu.roomName == null }
                 )
@@ -215,7 +218,8 @@ private fun RoomListModalBottomSheetContent(
         if (canReportRoom) {
             ListItem(
                 content = {
-                    Text(text = stringResource(CommonStrings.action_report_room))
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    Text(text = stringResource(if (contextMenu.isDm) BipeR.string.bipe_dm_report else CommonStrings.action_report_room))
                 },
                 modifier = Modifier.clickable { onReportRoomClick() },
                 leadingContent = ListItemContent.Icon(

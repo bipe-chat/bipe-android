@@ -102,13 +102,13 @@ class DefaultRoomLatestEventFormatter(
                 message.prefixIfNeeded(senderDisambiguatedDisplayName, isDmRoom, isOutgoing)
             }
             is RoomMembershipContent -> {
-                roomMembershipContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing)
+                roomMembershipContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing, isDm = isDmRoom) // Bipe: bipe#507
             }
             is ProfileChangeContent -> {
                 profileChangeContentFormatter.format(content, senderId, senderDisambiguatedDisplayName, isOutgoing)
             }
             is StateContent -> {
-                stateContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing, RenderingMode.RoomList)
+                stateContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing, RenderingMode.RoomList, isDm = isDmRoom) // Bipe: bipe#507
             }
             is PollContent -> {
                 content.question.prefixWith(sp.getString(CommonStrings.common_poll_summary_prefix))

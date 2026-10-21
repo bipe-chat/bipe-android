@@ -26,6 +26,9 @@ interface AcceptInvite {
 
     sealed class Failures : Exception() {
         data object InvalidInvite : Failures()
+
+        // Bipe: an invalid DM invite says "conversa", not "sala" (bipe#507)
+        data object InvalidDmInvite : Failures()
     }
 }
 

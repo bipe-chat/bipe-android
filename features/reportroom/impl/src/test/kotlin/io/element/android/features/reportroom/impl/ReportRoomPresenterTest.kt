@@ -11,8 +11,10 @@ package io.element.android.features.reportroom.impl
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.reportroom.impl.fakes.FakeReportRoom
 import io.element.android.libraries.architecture.AsyncAction
+import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.test.A_ROOM_ID
+import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.tests.testutils.lambda.any
 import io.element.android.tests.testutils.lambda.assert
 import io.element.android.tests.testutils.lambda.lambdaRecorder
@@ -146,7 +148,8 @@ class ReportRoomPresenterTest {
 
 internal fun createReportRoomPresenter(
     roomId: RoomId = A_ROOM_ID,
-    reportRoom: ReportRoom = FakeReportRoom()
+    reportRoom: ReportRoom = FakeReportRoom(),
+    client: MatrixClient = FakeMatrixClient(),
 ): ReportRoomPresenter {
-    return ReportRoomPresenter(roomId, reportRoom)
+    return ReportRoomPresenter(roomId, reportRoom, client)
 }

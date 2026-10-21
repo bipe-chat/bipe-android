@@ -136,6 +136,7 @@ class RoomNotificationSettingsPresenter(
             setNotificationSettingAction = setNotificationSettingAction.value,
             restoreDefaultAction = restoreDefaultAction.value,
             displayMentionsOnlyDisclaimer = shouldDisplayMentionsOnlyDisclaimer,
+            isDm = room.isDm(), // Bipe: bipe#507
             eventSink = ::handleEvent,
         )
     }
