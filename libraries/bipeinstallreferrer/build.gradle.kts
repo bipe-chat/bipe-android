@@ -21,6 +21,7 @@ setupDependencyInjection()
 dependencies {
     implementation(libs.coroutines.core)
     implementation(projects.libraries.bipe)
+    implementation(projects.libraries.core)
     implementation(projects.libraries.di)
     implementation(libs.google.installreferrer)
 }

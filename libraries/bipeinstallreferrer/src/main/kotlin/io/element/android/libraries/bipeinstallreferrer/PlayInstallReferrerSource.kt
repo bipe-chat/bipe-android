@@ -13,6 +13,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoSet
 import dev.zacsweers.metro.binding
 import io.element.android.libraries.bipe.onboarding.BipeInstallReferrerSource
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.annotations.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
@@ -36,7 +37,7 @@ class PlayInstallReferrerSource(
             client.startConnection(object : InstallReferrerStateListener {
                 override fun onInstallReferrerSetupFinished(responseCode: Int) {
                     val referrer = if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
-                        runCatching { client.installReferrer.installReferrer }.getOrNull()
+                        runCatchingExceptions { client.installReferrer.installReferrer }.getOrNull()
                     } else {
                         null
                     }
