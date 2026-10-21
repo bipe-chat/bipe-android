@@ -167,8 +167,16 @@ class BipeDeviceAccount(
         }
     }
 
-    /** The inviter of [userId] while the user has not sent them a first message (ADR 0034). */
-    internal suspend fun inviterGreeting(userId: String): String? = vault.read().inviterGreetings[userId]
+    /**
+     * The inviter of [userId] while the user has not sent them a first message (ADR 0034).
+     * A greeting stored before bipe#445 can name another account on this phone: it is removed.
+     */
+    internal suspend fun inviterGreeting(userId: String): String? {
+        val inviterUserId = vault.read().inviterGreetings[userId] ?: return null
+        if (inviterToRemember(inviterUserId, signedInUserIds()) != null) return inviterUserId
+        endInviterGreeting(userId)
+        return null
+    }
 
     internal suspend fun endInviterGreeting(userId: String) {
         vault.update { it.copy(inviterGreetings = it.inviterGreetings - userId) }
