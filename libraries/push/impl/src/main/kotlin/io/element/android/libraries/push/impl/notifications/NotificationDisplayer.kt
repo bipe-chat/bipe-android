@@ -30,7 +30,8 @@ interface NotificationDisplayer {
 @ContributesBinding(AppScope::class)
 class DefaultNotificationDisplayer(
     @ApplicationContext private val context: Context,
-    private val notificationManager: NotificationManagerCompat
+    private val notificationManager: NotificationManagerCompat,
+    private val bipeNotifiedSessions: DefaultBipeNotifiedSessions,
 ) : NotificationDisplayer {
     override fun showNotification(tag: String?, id: Int, notification: Notification): Boolean {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -39,11 +40,13 @@ class DefaultNotificationDisplayer(
         }
         notificationManager.notify(tag, id, notification)
         Timber.d("Notifying with tag: $tag, id: $id")
+        bipeNotifiedSessions.onNotificationsChanged() // Bipe: the other-account dot on the Você tab
         return true
     }
 
     override fun cancelNotification(tag: String?, id: Int) {
         notificationManager.cancel(tag, id)
+        bipeNotifiedSessions.onNotificationsChanged() // Bipe: the other-account dot on the Você tab
     }
 
     override fun displayDiagnosticNotification(notification: Notification): Boolean {

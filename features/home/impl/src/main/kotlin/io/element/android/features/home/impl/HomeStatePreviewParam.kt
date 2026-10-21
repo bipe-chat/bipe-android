@@ -22,6 +22,7 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 
 open class HomeStatePreviewParam : PreviewParameterProvider<HomeState> {
     override val values: Sequence<HomeState>
@@ -65,6 +66,7 @@ internal fun aHomeState(
     bipeBadges: BipeTabBadges = BipeTabBadges.NONE,
     bipeAccounts: List<MatrixUser> = currentUserAndNeighbors.distinctBy { it.userId },
     bipeCanAddAccount: Boolean = true,
+    bipeNotifiedAccounts: Set<UserId> = emptySet(),
     eventSink: (HomeEvent) -> Unit = {}
 ) = HomeState(
     currentUserAndNeighbors = currentUserAndNeighbors.toImmutableList(),
@@ -78,5 +80,6 @@ internal fun aHomeState(
     bipeBadges = bipeBadges,
     bipeAccounts = bipeAccounts.toImmutableList(),
     bipeCanAddAccount = bipeCanAddAccount,
+    bipeNotifiedAccounts = bipeNotifiedAccounts.toImmutableSet(),
     eventSink = eventSink,
 )
