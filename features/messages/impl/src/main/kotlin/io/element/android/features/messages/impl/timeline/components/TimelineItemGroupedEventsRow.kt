@@ -162,7 +162,8 @@ private fun TimelineItemGroupedEventsRowContent(
             // Bipe: a DM says "conversa", not "sala" (bipe#507)
             stringResource(BipeR.string.bipe_dm_state_changes, count.toString())
         } else {
-            pluralStringResource(R.plurals.screen_room_timeline_state_changes, count, count)
+            // Bipe: a group says "grupo", not "sala" (bipe#508)
+            stringResource(BipeR.string.bipe_group_screen_room_timeline_state_changes, count.toString())
         }
         GroupHeaderView(
             text = headerText,

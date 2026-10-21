@@ -184,6 +184,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - A DM that the user left before this change stays as it is.
 - iOS does the same (`BipeInviteToGroupSheet`).
 - A DM shows no 'sala' in any string (bipe#507); a new DM-reachable string gets a `bipe_dm_*` variant.
+- A group has no 'sala' in any string (bipe#508); new strings use 'grupo' or 'comunidade'.
 
 ## Differences from iOS (ADR 0031)
 

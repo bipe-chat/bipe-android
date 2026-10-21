@@ -9,11 +9,11 @@
 package io.element.android.features.knockrequests.impl.banner
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.element.android.features.knockrequests.impl.R
 import io.element.android.features.knockrequests.impl.data.KnockRequestPresentable
 import kotlinx.collections.immutable.ImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 data class KnockRequestsBannerState(
     val isVisible: Boolean,
@@ -33,11 +33,11 @@ data class KnockRequestsBannerState(
             else -> {
                 val firstRequest = knockRequests.first()
                 val otherRequestsCount = knockRequests.size - 1
-                pluralStringResource(
-                    id = R.plurals.screen_room_multiple_knock_requests_title,
-                    count = otherRequestsCount,
+                // Bipe: "grupo", not "sala" (bipe#508)
+                stringResource(
+                    BipeR.string.bipe_group_screen_room_multiple_knock_requests_title,
                     firstRequest.getBestName(),
-                    otherRequestsCount
+                    otherRequestsCount.toString(),
                 )
             }
         }

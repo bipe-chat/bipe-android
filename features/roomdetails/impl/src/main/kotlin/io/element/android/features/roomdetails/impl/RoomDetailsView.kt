@@ -855,7 +855,8 @@ private fun OtherActionsSection(
         if (canReportRoom) {
             ListItem(
                 content = {
-                    Text(stringResource(CommonStrings.action_report_room))
+                    // Bipe: a DM says "conversa", not "grupo" (bipe#508)
+                    Text(stringResource(if (isDm) BipeR.string.bipe_dm_report else CommonStrings.action_report_room))
                 },
                 leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ChatProblem())),
                 style = ListItemStyle.Destructive,
