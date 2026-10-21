@@ -771,6 +771,12 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         val someoneSetBlankRoomTopicEvent = createLatestEvent(sentByYou = false, senderDisplayName = otherName, content = blankContent)
         val someoneSetBlankRoomTopic = formatter.format(someoneSetBlankRoomTopicEvent, false)
         assertThat(someoneSetBlankRoomTopic).isEqualTo("$otherName removed the room topic")
+
+        // Bipe: a DM has no topic, so no last message about one (bipe#527).
+        listOf(changedContent, removedContent, blankContent).forEach { content ->
+            assertThat(formatter.format(createLatestEvent(sentByYou = true, senderDisplayName = null, content = content), true)).isNull()
+            assertThat(formatter.format(createLatestEvent(sentByYou = false, senderDisplayName = otherName, content = content), true)).isNull()
+        }
     }
 
     @Test

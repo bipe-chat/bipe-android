@@ -686,8 +686,6 @@
     <string name="bipe_dm_name_changed_by_you">You changed the chat name to %1$s</string>
     <string name="bipe_dm_name_removed">%1$s removed the chat name</string>
     <string name="bipe_dm_name_removed_by_you">You removed the chat name</string>
-    <string name="bipe_dm_topic_removed">%1$s removed the chat description</string>
-    <string name="bipe_dm_topic_removed_by_you">You removed the chat description</string>
     <string name="bipe_dm_third_party_invite">%1$s invited %2$s to the chat</string>
     <string name="bipe_dm_third_party_invite_by_you">You invited %1$s to the chat</string>
     <string name="bipe_dm_third_party_revoked_invite">%1$s cancelled the invite for %2$s</string>
@@ -919,6 +917,7 @@
     <string name="bipe_group_common_room">Group</string>
     <string name="bipe_group_common_room_name">Group name</string>
     <string name="bipe_group_common_rooms">Groups: %1$s</string>
+    <string name="bipe_group_common_topic">Description</string>
     <string name="bipe_group_common_topic_placeholder">What is this group about?</string>
     <string name="bipe_group_crypto_history_visible">This group has been configured so that new members can read history. %1$s</string>
     <string name="bipe_group_error_room_address_already_exists">This group address already exists. Please try editing the group address field or change the group name</string>
@@ -940,6 +939,7 @@
     <string name="bipe_group_screen_create_room_new_room_title">New group</string>
     <string name="bipe_group_screen_create_room_public_option_description">Anyone can find this group.\nYou can change this anytime in group settings.</string>
     <string name="bipe_group_screen_create_room_room_visibility_section_title">Group visibility</string>
+    <string name="bipe_group_screen_create_room_topic_label">Description (optional)</string>
     <string name="bipe_group_screen_deactivate_account_list_item_2">Remove you from all groups and chats.</string>
     <string name="bipe_group_screen_join_room_cancel_knock_alert_description">Are you sure that you want to cancel your request to join this group?</string>
     <string name="bipe_group_screen_join_room_knock_sent_description">You will receive an invite to join the group if your request is accepted.</string>
@@ -962,6 +962,7 @@
     <string name="bipe_group_screen_room_change_permissions_room_topic">Change group description</string>
     <string name="bipe_group_screen_room_change_role_confirm_change_owners_description">You will not be able to undo this action. You are transferring the ownership to the selected users. Once you leave this will be permanent.</string>
     <string name="bipe_group_screen_room_change_role_confirm_demote_self_description">You will not be able to undo this change as you are demoting yourself, if you are the last privileged user in the group it will be impossible to regain privileges.</string>
+    <string name="bipe_group_screen_room_details_add_topic_title">Add description</string>
     <string name="bipe_group_screen_room_details_badge_public">Public group</string>
     <string name="bipe_group_screen_room_details_edition_error_title">Unable to update group</string>
     <string name="bipe_group_screen_room_details_error_muting">Failed muting this group, please try again.</string>
@@ -1052,6 +1053,8 @@
     <string name="bipe_group_state_event_room_third_party_invite_by_you">You sent an invitation to %1$s to join the group</string>
     <string name="bipe_group_state_event_room_third_party_revoked_invite">%1$s revoked the invitation for %2$s to join the group</string>
     <string name="bipe_group_state_event_room_third_party_revoked_invite_by_you">You revoked the invitation for %1$s to join the group</string>
+    <string name="bipe_group_state_event_room_topic_changed">%1$s changed the group description to: %2$s</string>
+    <string name="bipe_group_state_event_room_topic_changed_by_you">You changed the group description to: %1$s</string>
     <string name="bipe_group_state_event_room_topic_removed">%1$s removed the group description</string>
     <string name="bipe_group_state_event_room_topic_removed_by_you">You removed the group description</string>
 </resources>
