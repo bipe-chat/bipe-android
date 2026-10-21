@@ -116,13 +116,23 @@ class OnBoardingPresenter(
 
         // Bipe (bipe-chat/bipe#415): the start screen variant follows the server's sign-up mode (ADR 0072) and shows who invited.
         // A failed read keeps the invite-first variant.
-        val bipeInvitePending = params.bipeInviteCode != null
+        // bipe-chat/bipe#197: without a link, the invite comes from the Play Install Referrer or the clipboard.
+        var bipeInviteCode by rememberSaveable { mutableStateOf(params.bipeInviteCode) }
         var bipeInviteRequired by remember { mutableStateOf(true) }
         var bipeInviterHandle by remember { mutableStateOf<String?>(null) }
+        var bipeOffersPasteInvite by remember { mutableStateOf(false) }
+        var bipePastedNoInvite by remember { mutableStateOf(false) }
         if (OnBoardingConfig.USES_BIPE_SIGNUP) {
             LaunchedEffect(Unit) {
-                params.bipeInviteCode?.let { bipeInviterHandle = bipeStartScreenInfo.inviterHandle(it) }
                 bipeStartScreenInfo.isInviteRequired()?.let { bipeInviteRequired = it }
+            }
+            LaunchedEffect(Unit) {
+                if (bipeInviteCode == null && sessionStore.numberOfSessions() == 0) {
+                    bipeStartScreenInfo.installReferrerInviteCode()?.let { if (bipeInviteCode == null) bipeInviteCode = it }
+                }
+            }
+            LaunchedEffect(bipeInviteCode) {
+                bipeInviterHandle = bipeInviteCode?.let { bipeStartScreenInfo.inviterHandle(it) }
             }
         }
 
@@ -141,6 +151,17 @@ class OnBoardingPresenter(
                     )
                 }
                 OnBoardingEvent.ClearError -> loginModeState.eventSink(LoginModeEvent.ClearError)
+                OnBoardingEvent.BipeCheckClipboard -> {
+                    bipeOffersPasteInvite = OnBoardingConfig.USES_BIPE_SIGNUP && bipeInviteCode == null && bipeStartScreenInfo.clipboardHasText()
+                }
+                OnBoardingEvent.BipePasteInvite -> {
+                    val code = bipeStartScreenInfo.clipboardInviteCode()
+                    bipePastedNoInvite = code == null
+                    if (code != null) {
+                        bipeInviteCode = code
+                        bipeOffersPasteInvite = false
+                    }
+                }
                 OnBoardingEvent.OnVersionClick -> {
                     if (canReportBug) {
                         if (multipleTapToUnlock.unlock(localCoroutineScope)) {
@@ -166,11 +187,14 @@ class OnBoardingPresenter(
             version = buildMeta.versionName,
             onBoardingLogoResId = onBoardingLogoResId,
             bipeStart = if (OnBoardingConfig.USES_BIPE_SIGNUP) {
-                BipeOnboardingStart.variant(invitePending = bipeInvitePending, inviteRequired = bipeInviteRequired)
+                BipeOnboardingStart.variant(invitePending = bipeInviteCode != null, inviteRequired = bipeInviteRequired)
             } else {
                 null
             },
             bipeInviterHandle = bipeInviterHandle,
+            bipeInviteCode = bipeInviteCode,
+            bipeOffersPasteInvite = bipeOffersPasteInvite,
+            bipePastedNoInvite = bipePastedNoInvite,
             eventSink = ::handleEvent,
         )
     }

@@ -60,6 +60,9 @@ fun anOnBoardingState(
     loginModeState: LoginModeState = aLoginModeState(),
     bipeStart: BipeOnboardingStart? = null,
     bipeInviterHandle: String? = null,
+    bipeInviteCode: String? = null,
+    bipeOffersPasteInvite: Boolean = false,
+    bipePastedNoInvite: Boolean = false,
     eventSink: (OnBoardingEvent) -> Unit = {},
 ) = OnBoardingState(
     isAddingAccount = isAddingAccount,
@@ -75,6 +78,9 @@ fun anOnBoardingState(
     loginModeState = loginModeState,
     onBoardingLogoResId = customLogoResId,
     bipeStart = bipeStart,
+    bipeInviteCode = bipeInviteCode,
+    bipeOffersPasteInvite = bipeOffersPasteInvite,
+    bipePastedNoInvite = bipePastedNoInvite,
     bipeInviterHandle = bipeInviterHandle,
     eventSink = eventSink,
 )

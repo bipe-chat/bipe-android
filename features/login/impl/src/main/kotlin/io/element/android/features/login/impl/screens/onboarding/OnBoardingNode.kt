@@ -39,7 +39,7 @@ class OnBoardingNode(
         fun navigateToSignInFlow(mustChooseAccountProvider: Boolean)
         fun navigateToQrCode()
         fun navigateToBipeRecovery() // Bipe
-        fun navigateToBipeSignup(startsWithInviteCode: Boolean) // Bipe (bipe-chat/bipe#415)
+        fun navigateToBipeSignup(startsWithInviteCode: Boolean, inviteCode: String?) // Bipe (bipe-chat/bipe#415, #197)
         fun navigateToBugReport()
         fun navigateToLoginPassword()
         fun navigateToOAuth(oAuthDetails: OAuthDetails)
@@ -74,7 +74,7 @@ class OnBoardingNode(
             onCreateAccount = callback::navigateToSignUpFlow,
             onSignInWithQrCode = callback::navigateToQrCode,
             onBipeRecovery = callback::navigateToBipeRecovery,
-            onBipeSignup = callback::navigateToBipeSignup,
+            onBipeSignup = { callback.navigateToBipeSignup(it, state.bipeInviteCode) },
             onReportProblem = callback::navigateToBugReport,
             onOAuthDetails = callback::navigateToOAuth,
             onNeedLoginPassword = callback::navigateToLoginPassword,

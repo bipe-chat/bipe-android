@@ -17,4 +17,10 @@ sealed interface OnBoardingEvent {
 
     data object OnVersionClick : OnBoardingEvent
     data object ClearError : OnBoardingEvent
+
+    /** Bipe (bipe-chat/bipe#197): the window has focus, so the clipboard description is readable. */
+    data object BipeCheckClipboard : OnBoardingEvent
+
+    /** Bipe: the user tapped "Colar convite". */
+    data object BipePasteInvite : OnBoardingEvent
 }
