@@ -23,7 +23,9 @@ internal class RoomNotificationSettingsStatePreviewParam : PreviewParameterProvi
             aRoomNotificationSettingsState(setNotificationSettingAction = AsyncAction.Failure(RuntimeException("error"))),
             aRoomNotificationSettingsState(restoreDefaultAction = AsyncAction.Loading),
             aRoomNotificationSettingsState(restoreDefaultAction = AsyncAction.Failure(RuntimeException("error"))),
-            aRoomNotificationSettingsState(displayMentionsOnlyDisclaimer = true)
+            aRoomNotificationSettingsState(displayMentionsOnlyDisclaimer = true),
+            // Bipe: a DM (bipe#507)
+            aRoomNotificationSettingsState(isDefault = false, displayMentionsOnlyDisclaimer = true, isDm = true),
         )
 
     private fun aRoomNotificationSettingsState(
@@ -31,6 +33,7 @@ internal class RoomNotificationSettingsStatePreviewParam : PreviewParameterProvi
         setNotificationSettingAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
         restoreDefaultAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
         displayMentionsOnlyDisclaimer: Boolean = false,
+        isDm: Boolean = false,
     ): RoomNotificationSettingsState {
         return RoomNotificationSettingsState(
             showUserDefinedSettingStyle = false,
@@ -45,6 +48,7 @@ internal class RoomNotificationSettingsStatePreviewParam : PreviewParameterProvi
             setNotificationSettingAction = setNotificationSettingAction,
             restoreDefaultAction = restoreDefaultAction,
             displayMentionsOnlyDisclaimer = displayMentionsOnlyDisclaimer,
+            isDm = isDm,
             eventSink = { },
         )
     }

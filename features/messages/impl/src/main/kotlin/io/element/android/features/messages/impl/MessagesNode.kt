@@ -84,6 +84,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import io.element.android.libraries.bipe.R as BipeR
 
 @ContributesNode(RoomScope::class)
 @AssistedInject
@@ -263,7 +264,8 @@ class MessagesNode(
     }
 
     private fun displaySameRoomToast() {
-        context.toast(CommonStrings.screen_room_permalink_same_room_android)
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        context.toast(if (room.isDm()) BipeR.string.bipe_dm_permalink_same else CommonStrings.screen_room_permalink_same_room_android)
     }
 
     override fun close() = navigateUp()

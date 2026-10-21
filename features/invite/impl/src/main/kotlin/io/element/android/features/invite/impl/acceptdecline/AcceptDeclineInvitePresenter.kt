@@ -43,7 +43,7 @@ class AcceptDeclineInvitePresenter(
         fun handleEvent(event: AcceptDeclineInviteEvent) {
             when (event) {
                 is AcceptDeclineInviteEvent.AcceptInvite -> {
-                    localCoroutineScope.acceptInvite(event.invite.roomId, acceptedAction)
+                    localCoroutineScope.acceptInvite(event.invite.roomId, event.invite.isDm, acceptedAction)
                 }
 
                 is AcceptDeclineInviteEvent.DeclineInvite -> {
@@ -77,9 +77,13 @@ class AcceptDeclineInvitePresenter(
 
     private fun CoroutineScope.acceptInvite(
         roomId: RoomId,
+        isDm: Boolean,
         acceptedAction: MutableState<AsyncAction<RoomId>>,
     ) = launch {
-        acceptedAction.runUpdatingState {
+        acceptedAction.runUpdatingState(
+            // Bipe: an invalid DM invite says "conversa", not "sala" (bipe#507)
+            errorTransform = { if (isDm && it is AcceptInvite.Failures.InvalidInvite) AcceptInvite.Failures.InvalidDmInvite else it },
+        ) {
             acceptInvite(roomId)
         }
     }

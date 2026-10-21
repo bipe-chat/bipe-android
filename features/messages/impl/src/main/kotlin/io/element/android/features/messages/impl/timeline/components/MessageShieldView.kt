@@ -35,6 +35,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.ProfileDetail
 import io.element.android.libraries.matrix.api.timeline.item.event.getDisplayName
 import io.element.android.libraries.matrix.api.timeline.item.event.isCritical
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 internal fun MessageShieldView(
@@ -71,6 +72,8 @@ data class MessageShieldData(
     val forwarder: UserId? = null,
     /** If [forwarder] is set, the profile of the forwarding user, if it was cached at the time the `EventTimelineItem` was created. */
     val forwarderProfile: ProfileDetails? = null,
+    /** Bipe: whether the message is in a DM, which says "conversa", not "sala" (bipe#507). */
+    val isDm: Boolean = false,
 )
 
 val MessageShieldData.isCritical: Boolean
@@ -98,12 +101,12 @@ internal fun MessageShieldData.toText(): String {
         var displayName = forwarderProfile?.getDisplayName()
         return if (displayName == null) {
             stringResource(
-                CommonStrings.crypto_event_key_forwarded_unknown_profile_dialog_content,
+                if (isDm) BipeR.string.bipe_dm_key_forwarded_unknown else CommonStrings.crypto_event_key_forwarded_unknown_profile_dialog_content, // Bipe
                 forwarder.toString(),
             )
         } else {
             stringResource(
-                CommonStrings.crypto_event_key_forwarded_known_profile_dialog_content,
+                if (isDm) BipeR.string.bipe_dm_key_forwarded_known else CommonStrings.crypto_event_key_forwarded_known_profile_dialog_content, // Bipe
                 displayName,
                 forwarder.toString(),
             )
@@ -181,6 +184,14 @@ internal fun MessageShieldViewPreview() {
             )
             MessageShieldView(
                 shield = MessageShieldData(MessageShield.MismatchedSender(false))
+            )
+            // Bipe: a DM (bipe#507)
+            MessageShieldView(
+                shield = MessageShieldData(
+                    MessageShield.AuthenticityNotGuaranteed(false),
+                    forwarder = UserId("@alice:example.com"),
+                    isDm = true,
+                )
             )
         }
     }

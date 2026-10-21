@@ -133,6 +133,7 @@ class TimelineItemEventFactory(
             sendHandleProvider = currentTimelineItem.event.sendHandleProvider,
             forwarder = currentTimelineItem.event.forwarder,
             forwarderProfile = currentTimelineItem.event.forwarderProfile,
+            isDm = config.isDm, // Bipe: bipe#507
         )
     }
 

@@ -69,6 +69,7 @@ import io.element.android.libraries.matrix.ui.components.InviteSenderView
 import io.element.android.libraries.matrix.ui.model.InviteSender
 import io.element.android.libraries.ui.strings.CommonStrings
 import timber.log.Timber
+import io.element.android.libraries.bipe.R as BipeR
 
 internal val minHeight = 84.dp
 
@@ -97,7 +98,7 @@ internal fun RoomSummaryRow(
                         Timber.d("Long click on invite room")
                     },
                 ) {
-                    InviteNameAndIndicatorRow(name = room.name, isInviteSeen = isInviteSeen)
+                    InviteNameAndIndicatorRow(name = room.name, isInviteSeen = isInviteSeen, isDm = room.isDm) // Bipe: bipe#507
                     InviteSubtitle(isDm = room.isDm, inviteSender = room.inviteSender)
                     if (!room.isDm && room.inviteSender != null) {
                         Spacer(modifier = Modifier.height(4.dp))
@@ -132,6 +133,7 @@ internal fun RoomSummaryRow(
                         isHighlighted = room.isHighlighted,
                         dmUserStatus = room.dmUserStatus,
                         bipeDmUserId = room.heroes.firstOrNull()?.id?.takeIf { room.isDm },
+                        isDm = room.isDm, // Bipe: bipe#507
                     )
                     MessagePreviewAndIndicatorRow(room = room, showUnreadCount = showUnreadCount, showAllActivity = showAllActivity)
                 }
@@ -227,12 +229,14 @@ private fun NameAndTimestampRow(
     dmUserStatus: DisplayedStatus?,
     modifier: Modifier = Modifier,
     bipeDmUserId: String? = null,
+    isDm: Boolean = false, // Bipe: a DM without a name says "conversa", not "sala" (bipe#507)
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = spacedBy(16.dp)
     ) {
-        val displayName = name?.toSafeLength(ellipsize = true) ?: stringResource(id = CommonStrings.common_no_room_name)
+        val displayName = name?.toSafeLength(ellipsize = true)
+            ?: stringResource(id = if (isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name) // Bipe
         // Bipe: the company seal after a DM partner's name (bipe#252)
         Row(modifier = Modifier.weight(1f), horizontalArrangement = spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             DisplayNameWithStatus(
@@ -294,7 +298,8 @@ private fun MessagePreviewAndIndicatorRow(
         if (room.isTombstoned) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(R.string.screen_roomlist_tombstoned_room_description),
+                // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                text = stringResource(if (room.isDm) BipeR.string.bipe_dm_tombstoned_row else R.string.screen_roomlist_tombstoned_room_description),
                 color = ElementTheme.colors.roomListRoomMessage,
                 style = ElementTheme.typography.fontBodyMdRegular,
                 minLines = 2,
@@ -409,6 +414,7 @@ private fun InviteNameAndIndicatorRow(
     name: String?,
     isInviteSeen: Boolean,
     modifier: Modifier = Modifier,
+    isDm: Boolean = false, // Bipe: a DM without a name says "conversa", not "sala" (bipe#507)
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -420,7 +426,8 @@ private fun InviteNameAndIndicatorRow(
                 .weight(1f)
                 .clipToBounds(),
             style = ElementTheme.typography.fontBodyLgMedium,
-            text = name?.toSafeLength(ellipsize = true) ?: stringResource(id = CommonStrings.common_no_room_name),
+            text = name?.toSafeLength(ellipsize = true)
+                ?: stringResource(id = if (isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name), // Bipe
             fontStyle = FontStyle.Italic.takeIf { name == null },
             color = ElementTheme.colors.roomListRoomName,
             maxLines = 1,

@@ -20,8 +20,14 @@ import io.element.android.libraries.matrix.api.timeline.item.event.EventContent
 class TimelineItemContentRoomMembershipFactory(
     private val timelineEventFormatter: TimelineEventFormatter,
 ) {
-    fun create(eventContent: EventContent, isOutgoing: Boolean, sender: UserId, senderDisambiguatedDisplayName: String): TimelineItemEventContent {
-        val text = timelineEventFormatter.format(eventContent, isOutgoing, sender, senderDisambiguatedDisplayName)
+    fun create(
+        eventContent: EventContent,
+        isOutgoing: Boolean,
+        sender: UserId,
+        senderDisambiguatedDisplayName: String,
+        isDm: Boolean = false, // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    ): TimelineItemEventContent {
+        val text = timelineEventFormatter.format(eventContent, isOutgoing, sender, senderDisambiguatedDisplayName, isDm)
         return TimelineItemRoomMembershipContent(text.orEmpty().toString())
     }
 }

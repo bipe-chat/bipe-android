@@ -58,6 +58,7 @@ fun UserDefinedRoomNotificationSettingsView(
                     selected = state.displayNotificationMode,
                     enabled = !state.displayIsDefault.orTrue(),
                     displayMentionsOnlyDisclaimer = state.displayMentionsOnlyDisclaimer,
+                    isDm = state.isDm, // Bipe: bipe#507
                     onSelectOption = {
                         state.eventSink(RoomNotificationSettingsEvent.ChangeRoomNotificationMode(it.mode))
                     },

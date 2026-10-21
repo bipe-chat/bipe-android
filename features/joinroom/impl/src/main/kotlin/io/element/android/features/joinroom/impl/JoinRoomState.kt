@@ -68,7 +68,11 @@ data class JoinRoomState(
 sealed interface ContentState {
     data object Dismissing : ContentState
     data object Loading : ContentState
-    data class Failure(val error: Throwable) : ContentState
+    data class Failure(
+        val error: Throwable,
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        val isDm: Boolean,
+    ) : ContentState
     data object UnknownRoom : ContentState
     data class Loaded(
         val roomId: RoomId,

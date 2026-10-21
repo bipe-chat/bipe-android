@@ -183,6 +183,7 @@ class MediaViewerPresenter(
                         eventId = event.eventId,
                         mediaInfo = event.data.mediaInfo,
                         thumbnailSource = event.data.thumbnailSource ?: event.data.mediaSource,
+                        isDm = room.isDm(), // Bipe: bipe#507
                     )
                 }
                 MediaViewerEvent.CloseBottomSheet -> {

@@ -164,7 +164,19 @@ open class RoomListRoomSummaryPreviewParam : PreviewParameterProvider<RoomListRo
                     hasRoomCall = true,
                     activeCallIntent = CallIntent.AUDIO
                 ),
-            )
+            ),
+            // Bipe: a DM (bipe#507)
+            listOf(
+                aRoomListRoomSummary(
+                    name = null,
+                    isDm = true,
+                ),
+                aRoomListRoomSummary(
+                    name = "A tombstoned DM",
+                    isDm = true,
+                    isTombstoned = true,
+                ),
+            ),
         ).flatten()
 }
 

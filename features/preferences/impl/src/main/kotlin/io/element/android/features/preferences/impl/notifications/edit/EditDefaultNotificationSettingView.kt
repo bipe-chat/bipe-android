@@ -29,6 +29,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * A view that allows a user to edit the default notification setting for rooms. This can be set separately
@@ -91,7 +92,10 @@ fun EditDefaultNotificationSettingView(
                         content = {
                             val roomName = summary.name
                             Text(
-                                text = roomName ?: stringResource(id = CommonStrings.common_no_room_name),
+                                // Bipe: the DM list says "conversa", not "sala" (bipe#507)
+                                text = roomName ?: stringResource(
+                                    id = if (state.isOneToOne) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name
+                                ),
                                 fontStyle = FontStyle.Italic.takeIf { roomName == null }
                             )
                         },

@@ -28,6 +28,7 @@ setupDependencyInjection()
 dependencies {
     implementation(projects.libraries.core)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe) // Bipe: DM strings (bipe#507)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.matrixui)
     implementation(projects.libraries.uiStrings)

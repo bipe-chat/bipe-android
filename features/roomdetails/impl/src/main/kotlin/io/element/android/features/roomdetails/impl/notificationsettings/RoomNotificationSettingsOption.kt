@@ -19,6 +19,7 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun RoomNotificationSettingsOption(
@@ -28,12 +29,15 @@ fun RoomNotificationSettingsOption(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isSelected: Boolean = false,
+    isDm: Boolean = false, // Bipe: a DM says "conversa", not "sala" (bipe#507)
 ) {
     val mode = roomNotificationSettingsItem.mode
     val title = roomNotificationSettingsItem.title
     val subtitle = when {
         mode == RoomNotificationMode.MENTIONS_AND_KEYWORDS_ONLY && displayMentionsOnlyDisclaimer -> {
-            stringResource(id = R.string.screen_notification_settings_mentions_only_disclaimer)
+            stringResource(
+                id = if (isDm) BipeR.string.bipe_dm_notifications_mentions_disclaimer else R.string.screen_notification_settings_mentions_only_disclaimer
+            )
         }
         else -> null
     }
