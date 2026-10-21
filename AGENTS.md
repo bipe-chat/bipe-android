@@ -139,6 +139,7 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 - CI must stay green. `scripts/verify` is the fast check: format, lint and compile, app and test sources. Unit tests run only in CI. Run it before every push; the pre-push hook runs it when this clone has `git config core.hooksPath .bipe-hooks` (set it once per clone; worktrees share it).
 - A push with red local checks is not allowed. Never use `git push --no-verify`.
+- One heavy build at a time on the Mac, across the Bipe repos and Starlings (2026-10-19): four Bipe xcodebuilds, two Bipe verifies and four Starlings gates once ran together and every build stalled for hours. Never call `./gradlew` directly on the Mac. `scripts/verify` runs a local Gradle build under `build-lock` (`~/.local/bin`, installed by the Starlings land queue), which waits while another build holds the lock and names it. A build on `bipe.androidBuildHost` runs on that host and takes no lock here. For a one-off local build, wrap it: `build-lock "bipe-android <what>" ./gradlew ...`. `build-lock --status` shows the holder.
 - If CI still fails on your pull request, fix it before you start other work. Never leave a red pull request at the end of a run.
 
 ## Decisions
