@@ -240,9 +240,10 @@ private fun OnBoardingLogo(
 /** Bipe (bipe-chat/bipe#197): the invite page copied the invite link before the install. The clipboard is read only on the tap. */
 @Composable
 private fun BipePasteInvite(state: OnBoardingState) {
+    val hint = if (state.bipePastedNoInvite) BipeR.string.bipe_onboarding_paste_invite_none else BipeR.string.bipe_onboarding_paste_invite_hint
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = stringResource(if (state.bipePastedNoInvite) BipeR.string.bipe_onboarding_paste_invite_none else BipeR.string.bipe_onboarding_paste_invite_hint),
+            text = stringResource(hint),
             style = ElementTheme.typography.fontBodyMdRegular,
             color = if (state.bipePastedNoInvite) ElementTheme.colors.textCriticalPrimary else ElementTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
