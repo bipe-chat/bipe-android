@@ -7,6 +7,7 @@
 package io.element.android.features.home.impl
 
 import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeServerAccountData
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.test.FakeMatrixClient
@@ -24,4 +25,5 @@ internal fun aBipeSelfChat(client: MatrixClient = FakeMatrixClient()) = BipeSelf
 internal fun aBipeClearedChats(client: MatrixClient = FakeMatrixClient()) = BipeClearedChats(
     matrixClient = client,
     sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+    serverAccountData = BipeServerAccountData { Result.success(null) },
 )

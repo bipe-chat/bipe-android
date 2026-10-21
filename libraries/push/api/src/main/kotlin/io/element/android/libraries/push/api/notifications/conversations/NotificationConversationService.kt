@@ -43,6 +43,15 @@ interface NotificationConversationService {
     suspend fun onLeftRoom(sessionId: SessionId, roomId: RoomId)
 
     /**
+     * Bipe (bipe-chat/bipe#479): called when the user cleared a DM ("Apagar conversa") and stays in it.
+     * It should remove the room from the direct share targets. A later message adds the shortcut again.
+     *
+     * @param sessionId the session the room belongs to.
+     * @param roomId the room that was cleared.
+     */
+    suspend fun onClearedRoom(sessionId: SessionId, roomId: RoomId) = Unit
+
+    /**
      * Called when the list of available rooms changes.
      * It should update the conversation shortcuts accordingly, removing shortcuts for no longer joined rooms.
      *

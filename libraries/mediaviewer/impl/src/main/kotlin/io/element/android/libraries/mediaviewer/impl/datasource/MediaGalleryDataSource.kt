@@ -11,6 +11,8 @@ package io.element.android.libraries.mediaviewer.impl.datasource
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeClearedTimeline
 import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.room.BaseRoom
@@ -21,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -47,8 +50,13 @@ class TimelineMediaGalleryDataSource(
     private val mediaTimeline: MediaTimeline,
     private val timelineMediaItemsFactory: TimelineMediaItemsFactory,
     private val mediaItemsPostProcessor: MediaItemsPostProcessor,
+    private val bipeClearedChats: BipeClearedChats,
 ) : MediaGalleryDataSource {
     private var timeline: Timeline? = null
+
+    // Bipe (bipe-chat/bipe#479): the loaded items of a cleared DM reach its marker, so back pagination stops.
+    @Volatile
+    private var bipeReachesClearMarker = false
 
     private val groupedMediaItemsFlow = MutableSharedFlow<AsyncData<GroupedMediaItems>>(replay = 1, extraBufferCapacity = 10)
 
@@ -89,7 +97,11 @@ class TimelineMediaGalleryDataSource(
                 },
             )
         }.flatMapLatest { timeline ->
-            timeline.timelineItems.onEach {
+            // Bipe (bipe-chat/bipe#479): a cleared DM shows no media from before its marker.
+            combine(timeline.timelineItems, bipeClearedChats.marker(room.roomId)) { items, marker ->
+                bipeReachesClearMarker = BipeClearedTimeline.reachesMarker(items, marker)
+                BipeClearedTimeline.filter(items, marker)
+            }.onEach {
                 timelineMediaItemsFactory.replaceWith(
                     timelineItems = it,
                 )
@@ -115,6 +127,7 @@ class TimelineMediaGalleryDataSource(
     }
 
     override suspend fun loadMore(direction: Timeline.PaginationDirection) {
+        if (direction == Timeline.PaginationDirection.BACKWARDS && bipeReachesClearMarker) return
         timeline?.paginate(direction) ?: Timber.w("Timeline is not ready yet, cannot load more media items for room ${room.roomId}")
     }
 

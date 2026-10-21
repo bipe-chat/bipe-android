@@ -26,6 +26,7 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.BaseRoom
 import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.api.room.powerlevels.usersWithRole
+import io.element.android.libraries.push.api.notifications.NotificationCleaner
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -38,6 +39,7 @@ class LeaveRoomPresenter(
     private val dispatchers: CoroutineDispatchers,
     private val notificationConversationService: NotificationConversationService,
     private val bipeClearedChats: BipeClearedChats,
+    private val notificationCleaner: NotificationCleaner,
 ) : Presenter<LeaveRoomState> {
     @Composable
     override fun present(): LeaveRoomState {
@@ -115,6 +117,9 @@ class LeaveRoomPresenter(
             bipeClearedChats.clear(roomId)
                 .onFailure { Timber.e(it, "Bipe: could not clear the DM $roomId") }
                 .getOrThrow()
+            // The tray and the share sheet drop the DM too (bipe-chat/bipe#479). iOS: removeDeliveredMessageNotifications.
+            notificationCleaner.clearMessagesForRoom(client.sessionId, roomId)
+            notificationConversationService.onClearedRoom(client.sessionId, roomId)
         }
     }
 

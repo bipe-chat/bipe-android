@@ -224,7 +224,8 @@ class PinnedMessagesListPresenter(
                 is AsyncData.Failure -> flowOf(AsyncData.Failure(asyncTimeline.error))
                 is AsyncData.Loading -> flowOf(AsyncData.Loading())
                 is AsyncData.Success -> {
-                    val timelineItemsFlow = asyncTimeline.data.timelineItems
+                    // Bipe (bipe-chat/bipe#479): a cleared DM leaves out the pinned events at or before its marker.
+                    val timelineItemsFlow = timelineProvider.bipeKeptItems(asyncTimeline.data)
                     combine(timelineItemsFlow, room.membersStateFlow) { items, membersState ->
                         timelineItemsFactory.replaceWith(
                             timelineItems = items.keepDisplayablePinnedEvents(),

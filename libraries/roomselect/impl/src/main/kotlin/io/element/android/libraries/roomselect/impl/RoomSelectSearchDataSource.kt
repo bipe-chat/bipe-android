@@ -11,6 +11,8 @@ package io.element.android.libraries.roomselect.impl
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
+import io.element.android.libraries.bipe.clearedchats.bipeIsHiddenDm
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.matrix.api.room.CurrentUserMembership
 import io.element.android.libraries.matrix.api.roomlist.RoomList
@@ -25,7 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 
 private const val PAGE_SIZE = 30
 
@@ -37,11 +39,12 @@ private const val PAGE_SIZE = 30
 class RoomSelectSearchDataSource(
     @Assisted coroutineScope: CoroutineScope,
     @Assisted roomListService: RoomListService,
+    @Assisted clearedChats: Flow<ClearedChats>,
     coroutineDispatchers: CoroutineDispatchers,
 ) {
     @AssistedFactory
     interface Factory {
-        fun create(coroutineScope: CoroutineScope, roomListService: RoomListService): RoomSelectSearchDataSource
+        fun create(coroutineScope: CoroutineScope, roomListService: RoomListService, clearedChats: Flow<ClearedChats>): RoomSelectSearchDataSource
     }
 
     private val roomList = roomListService.createRoomList(
@@ -50,14 +53,14 @@ class RoomSelectSearchDataSource(
         coroutineScope = coroutineScope
     )
 
-    val roomInfoList: Flow<ImmutableList<SelectRoomInfo>> = roomList.summaries
-        .map { roomSummaries ->
-            roomSummaries
-                .filter { it.info.currentUserMembership == CurrentUserMembership.JOINED }
-                .distinctBy { it.roomId } // This should be removed once we're sure no duplicate Rooms can be received
-                .map { roomSummary -> roomSummary.toSelectRoomInfo() }
-                .toImmutableList()
-        }
+    // Bipe (bipe-chat/bipe#479): a cleared DM stays out until a newer event arrives, as in the room list.
+    val roomInfoList: Flow<ImmutableList<SelectRoomInfo>> = combine(roomList.summaries, clearedChats) { roomSummaries, cleared ->
+        roomSummaries
+            .filter { it.info.currentUserMembership == CurrentUserMembership.JOINED && !it.bipeIsHiddenDm(cleared) }
+            .distinctBy { it.roomId } // This should be removed once we're sure no duplicate Rooms can be received
+            .map { roomSummary -> roomSummary.toSelectRoomInfo() }
+            .toImmutableList()
+    }
         .flowOn(coroutineDispatchers.computation)
 
     suspend fun updateVisibleRange(visibleRange: IntRange) {

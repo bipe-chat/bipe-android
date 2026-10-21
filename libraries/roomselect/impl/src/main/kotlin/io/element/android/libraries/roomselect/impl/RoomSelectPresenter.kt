@@ -25,6 +25,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.clearedchats.bipeClearedChatsFlow
 import io.element.android.libraries.designsystem.theme.components.SearchBarResultState
 import io.element.android.libraries.matrix.api.MatrixClientProvider
 import io.element.android.libraries.matrix.api.core.SessionId
@@ -102,19 +103,19 @@ class RoomSelectPresenter(
             // The sessions are restored at startup, so the client should already be in memory.
             // A null value means that the client is being restored, or that the session is invalid: its client cannot be restored,
             // and an in-memory client would have been destroyed, so do not try to get it.
-            val initialRoomListService = if (isSelectedSessionInvalid) null else matrixClientProvider.getOrNull(selectedSessionId)?.roomListService
-            val roomListServiceResult by produceState(initialRoomListService?.let { Result.success(it) }) {
+            val initialClient = if (isSelectedSessionInvalid) null else matrixClientProvider.getOrNull(selectedSessionId)
+            val clientResult by produceState(initialClient?.let { Result.success(it) }) {
                 if (value == null && !isSelectedSessionInvalid) {
                     value = matrixClientProvider.getOrRestore(selectedSessionId)
                         .onFailure { Timber.e(it, "Failed to get the client for $selectedSessionId") }
-                        .map { it.roomListService }
                 }
             }
-            val roomListService = roomListServiceResult?.getOrNull()
-            val dataSource = remember(roomListService) {
-                roomListService?.let { dataSourceFactory.create(dataSourceCoroutineScope, it) }
+            val client = clientResult?.getOrNull()
+            val dataSource = remember(client) {
+                // Bipe (bipe-chat/bipe#479): the markers of the selected account leave its cleared DMs out.
+                client?.let { dataSourceFactory.create(dataSourceCoroutineScope, it.roomListService, it.bipeClearedChatsFlow()) }
             }
-            dataSource to (roomListServiceResult?.isFailure == true)
+            dataSource to (clientResult?.isFailure == true)
         }
         // Do not use the data source of an invalid session, its client has been destroyed
         val dataSource = selectedSessionDataSource.takeIf { !isSelectedSessionInvalid }

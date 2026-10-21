@@ -14,6 +14,7 @@ import io.element.android.features.messages.impl.aCustomReactionState
 import io.element.android.features.messages.impl.aReactionSummaryState
 import io.element.android.features.messages.impl.actionlist.anActionListState
 import io.element.android.features.messages.impl.actionlist.model.TimelineItemAction
+import io.element.android.features.messages.impl.fixtures.aBipeClearedChats
 import io.element.android.features.messages.impl.fixtures.aTimelineItemsFactoryCreator
 import io.element.android.features.messages.impl.link.aLinkState
 import io.element.android.features.messages.impl.pinned.DefaultPinnedEventsTimelineProvider
@@ -393,6 +394,7 @@ class PinnedMessagesListPresenterTest {
             room = room,
             syncService = syncService,
             dispatchers = testCoroutineDispatchers(),
+            bipeClearedChats = aBipeClearedChats(),
         )
         timelineProvider.launchIn(backgroundScope)
         return PinnedMessagesListPresenter(

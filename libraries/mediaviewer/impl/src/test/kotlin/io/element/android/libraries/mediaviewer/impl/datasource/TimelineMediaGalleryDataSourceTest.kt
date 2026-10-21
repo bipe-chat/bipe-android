@@ -12,6 +12,8 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.element.android.libraries.androidutils.filesize.FakeFileSizeFormatter
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeServerAccountData
 import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.dateformatter.test.FakeDateFormatter
 import io.element.android.libraries.matrix.api.media.ImageInfo
@@ -29,6 +31,7 @@ import io.element.android.libraries.matrix.test.AN_EVENT_ID
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.matrix.test.A_UNIQUE_ID
 import io.element.android.libraries.matrix.test.A_USER_ID
+import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.room.FakeJoinedRoom
 import io.element.android.libraries.matrix.test.timeline.FakeTimeline
 import io.element.android.libraries.matrix.test.timeline.aMessageContent
@@ -46,6 +49,9 @@ import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -303,8 +309,16 @@ internal fun TestScope.createTimelineMediaGalleryDataSource(
         mediaTimeline = mediaTimeline ?: LiveMediaTimeline(room),
         timelineMediaItemsFactory = createTimelineMediaItemsFactory(),
         mediaItemsPostProcessor = MediaItemsPostProcessor(),
+        bipeClearedChats = aBipeClearedChats(),
     )
 }
+
+/** No cleared DMs (bipe-chat/bipe#479). Account data reads fail in [FakeMatrixClient] by default, so the errors are dropped. */
+internal fun aBipeClearedChats() = BipeClearedChats(
+    matrixClient = FakeMatrixClient(),
+    sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+    serverAccountData = BipeServerAccountData { Result.success(null) },
+)
 
 fun TestScope.createTimelineMediaItemsFactory() = TimelineMediaItemsFactory(
     dispatchers = testCoroutineDispatchers(),

@@ -12,17 +12,22 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
 import io.element.android.features.messages.api.pinned.PinnedEventsTimelineProvider
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeClearedTimeline
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.coroutine.mapState
 import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.matrix.api.room.CreateTimelineParams
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
+import io.element.android.libraries.matrix.api.timeline.MatrixTimelineItem
 import io.element.android.libraries.matrix.api.timeline.Timeline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -35,6 +40,7 @@ class DefaultPinnedEventsTimelineProvider(
     private val room: JoinedRoom,
     private val syncService: SyncService,
     private val dispatchers: CoroutineDispatchers,
+    private val bipeClearedChats: BipeClearedChats,
 ) : PinnedEventsTimelineProvider {
     private val _timelineStateFlow: MutableStateFlow<AsyncData<Timeline>> =
         MutableStateFlow(AsyncData.Uninitialized)
@@ -47,6 +53,12 @@ class DefaultPinnedEventsTimelineProvider(
     }
 
     val timelineStateFlow = _timelineStateFlow
+
+    /** Bipe (bipe-chat/bipe#479): the items of [timeline] without the pinned events at or before the marker of a cleared DM. */
+    fun bipeKeptItems(timeline: Timeline): Flow<List<MatrixTimelineItem>> =
+        combine(timeline.timelineItems, bipeClearedChats.marker(room.roomId)) { items, marker ->
+            BipeClearedTimeline.keptEvents(items, marker)
+        }
 
     fun launchIn(scope: CoroutineScope) {
         _timelineStateFlow.subscriptionCount
