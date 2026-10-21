@@ -51,7 +51,7 @@ class BipeContactsPresenter(
         var invitesAvailable by remember { mutableStateOf<Int?>(null) }
         var nextInviteAt by remember { mutableStateOf<Instant?>(null) }
         var joinedUserIds by remember { mutableStateOf<List<String>>(emptyList()) }
-        var pendingInviteCount by remember { mutableStateOf(0) }
+        var pendingInviteCount by remember { mutableIntStateOf(0) }
         var action by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
         var shareSheetUrl by remember { mutableStateOf<String?>(null) }
         var qrCodeUrl by remember { mutableStateOf<String?>(null) }
@@ -158,8 +158,8 @@ class BipeContactsPresenter(
                         action = AsyncAction.Failure(if (error is BipeApiException) Exception(error.localizedMessage(stringProvider)) else error)
                     }
                 }
-                BipeContactsEvent.InviteByLink -> if ((invitesAvailable ?: 0) > 0) noteDestination = BipeInviteDestination.SHARE_SHEET
-                BipeContactsEvent.InviteInPerson -> if ((invitesAvailable ?: 0) > 0) noteDestination = BipeInviteDestination.QR_CODE
+                BipeContactsEvent.InviteByLink -> if (invitesAvailable ?: 0 > 0) noteDestination = BipeInviteDestination.SHARE_SHEET
+                BipeContactsEvent.InviteInPerson -> if (invitesAvailable ?: 0 > 0) noteDestination = BipeInviteDestination.QR_CODE
                 is BipeContactsEvent.CreateInvite -> {
                     val destination = noteDestination ?: return
                     noteDestination = null

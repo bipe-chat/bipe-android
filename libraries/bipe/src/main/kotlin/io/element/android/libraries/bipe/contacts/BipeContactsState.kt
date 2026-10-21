@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.contacts
 
+import androidx.compose.runtime.Immutable
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.invites.BipeInviteDestination
 import java.time.Instant
@@ -13,6 +14,7 @@ import java.time.Instant
 enum class BipeContactsAccess {
     /** Not asked yet, or refused once: the app can ask again. */
     NotDetermined,
+
     /** Refused for good: only the system settings can change it. */
     Denied,
     Granted,
@@ -20,6 +22,7 @@ enum class BipeContactsAccess {
 
 data class BipeContactsMatch(
     val userId: String,
+
     /** The name in the user's own address book. */
     val contactName: String,
 )
@@ -27,40 +30,50 @@ data class BipeContactsMatch(
 /** A person on Bipe: an address-book match, someone who joined with the user's invite, or both. */
 data class BipeContactsRow(
     val userId: String,
+
     /** `null` when the person is not in the address book. */
     val contactName: String?,
     val joinedWithInvite: Boolean,
 )
 
 /** Port of BipeContactsScreenViewState on iOS. */
+@Immutable
 data class BipeContactsState(
     val access: BipeContactsAccess,
     val isLoading: Boolean,
     val hasSearched: Boolean,
     val matches: List<BipeContactsMatch>,
+
     /** `null` until the status loads. */
     val phoneLinked: Boolean?,
     val discoverableByPhone: Boolean,
+
     /** `null` until the invites load. */
     val invitesAvailable: Int?,
     val nextInviteAt: Instant?,
     val joinedUserIds: List<String>,
     val pendingInviteCount: Int,
+
     /** Matrix ID to "@handle" (or the Matrix ID). */
     val displayTexts: Map<String, String>,
+
     /** Invite creation, lookup and discovery requests. Failure carries the localised message. */
     val action: AsyncAction<Unit>,
+
     /** Set to open the system share sheet for this invite link once. */
     val shareSheetUrl: String?,
+
     /** Set to show this invite link as a QR code. */
     val qrCodeUrl: String?,
+
     /** Goes up by one for each invite made, so the view plays the success haptic. */
     val createdCount: Int,
+
     /** Set while the note dialog for a new invite shows (ADR 0136). */
     val noteDestination: BipeInviteDestination?,
     val eventSink: (BipeContactsEvent) -> Unit,
 ) {
-    val canCreateInvite: Boolean get() = (invitesAvailable ?: 0) > 0
+    val canCreateInvite: Boolean get() = invitesAvailable ?: 0 > 0
 
     /** People who joined with the user's invite come first, so the invites the user sent stay in view. */
     val rows: List<BipeContactsRow>
@@ -79,13 +92,17 @@ data class BipeContactsState(
 sealed interface BipeContactsEvent {
     /** The screen is visible again: check the permission and reload the invites (the invites screen can change them). */
     data object Resumed : BipeContactsEvent
+
     /** The answer to the permission request. [canAskAgain] is `false` when Android will not show the request again. */
     data class AccessResult(val granted: Boolean, val canAskAgain: Boolean) : BipeContactsEvent
     data class SetDiscoverable(val value: Boolean) : BipeContactsEvent
+
     /** Asks for the note, then creates an invite and opens the share sheet. */
     data object InviteByLink : BipeContactsEvent
+
     /** Asks for the note, then creates an invite and shows its QR code. */
     data object InviteInPerson : BipeContactsEvent
+
     /** Creates the invite with this note (empty means no note). */
     data class CreateInvite(val note: String) : BipeContactsEvent
     data object DismissNote : BipeContactsEvent

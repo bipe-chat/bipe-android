@@ -75,7 +75,7 @@ fun BipeInvitesView(
     BipeInviteSheets(
         shareSheetUrl = state.shareSheetUrl,
         qrCodeUrl = state.qrCodeUrl,
-        onShareSheetOpened = { state.eventSink(BipeInvitesEvent.ShareSheetOpened) },
+        onShareSheetOpen = { state.eventSink(BipeInvitesEvent.ShareSheetOpened) },
         onDismissQrCode = { state.eventSink(BipeInvitesEvent.DismissQrCode) },
     )
     AsyncActionView(

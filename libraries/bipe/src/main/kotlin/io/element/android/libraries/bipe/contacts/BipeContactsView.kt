@@ -109,7 +109,7 @@ fun BipeContactsView(
     BipeInviteSheets(
         shareSheetUrl = state.shareSheetUrl,
         qrCodeUrl = state.qrCodeUrl,
-        onShareSheetOpened = { state.eventSink(BipeContactsEvent.ShareSheetOpened) },
+        onShareSheetOpen = { state.eventSink(BipeContactsEvent.ShareSheetOpened) },
         onDismissQrCode = { state.eventSink(BipeContactsEvent.DismissQrCode) },
     )
     AsyncActionView(
@@ -123,7 +123,7 @@ fun BipeContactsView(
 @Composable
 private fun PersonRow(row: BipeContactsRow, displayText: String, onClick: () -> Unit) {
     // The handle shows under the contact's name; without a name, the handle is the title.
-    val handle = if (row.contactName == null) null else displayText.takeIf { it != row.userId }
+    val handle = row.contactName?.let { displayText.takeIf { it != row.userId } }
     val description = if (row.joinedWithInvite) {
         listOfNotNull(handle, stringResource(R.string.bipe_contacts_joined_with_invite)).joinToString(" · ")
     } else {

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -80,14 +82,15 @@ internal fun bipeInvitesNoneLeftText(nextAvailableAt: Instant?): String = LocalC
 internal fun BipeInviteSheets(
     shareSheetUrl: String?,
     qrCodeUrl: String?,
-    onShareSheetOpened: () -> Unit,
+    onShareSheetOpen: () -> Unit,
     onDismissQrCode: () -> Unit,
 ) {
+    val currentOnShareSheetOpen by rememberUpdatedState(onShareSheetOpen)
     shareSheetUrl?.let { url ->
         val context = LocalContext.current
         LaunchedEffect(url) {
             context.shareBipeInvite(url)
-            onShareSheetOpened()
+            currentOnShareSheetOpen()
         }
     }
     qrCodeUrl?.let { url ->
