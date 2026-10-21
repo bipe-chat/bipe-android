@@ -491,7 +491,6 @@ private fun HomeBottomBar(
                             openMenu()
                         },
                         counter = counter,
-                        showWarning = bipeBadges.youWarning,
                         showLowerDot = bipeAccountSwitcher.notifiedAccounts.isNotEmpty(),
                     )
                 }

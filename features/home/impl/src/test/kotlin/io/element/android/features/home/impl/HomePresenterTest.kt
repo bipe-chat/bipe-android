@@ -18,7 +18,6 @@ import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
-import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.indicator.api.IndicatorService
 import io.element.android.libraries.indicator.test.FakeIndicatorService
@@ -162,7 +161,6 @@ internal fun createHomePresenter(
     sessionStore: SessionStore = InMemorySessionStore(),
     bipeSelfChat: BipeSelfChat = aBipeSelfChat(client),
     seenInvitesStore: SeenInvitesStore = InMemorySeenInvitesStore(),
-    bipeYouTabWarning: BipeYouTabWarning = BipeYouTabWarning { flowOf(false) },
     bipeClearedChats: BipeClearedChats = aBipeClearedChats(),
     bipeNotifiedSessions: BipeNotifiedSessions = BipeNotifiedSessions { flowOf(emptySet()) },
 ) = HomePresenter(
@@ -176,7 +174,6 @@ internal fun createHomePresenter(
     sessionStore = sessionStore,
     bipeSelfChat = bipeSelfChat,
     seenInvitesStore = seenInvitesStore,
-    bipeYouTabWarning = bipeYouTabWarning,
     bipeClearedChats = bipeClearedChats,
     bipeNotifiedSessions = bipeNotifiedSessions,
 )

@@ -29,7 +29,6 @@ import io.element.android.libraries.bipe.account.BipeAccountCap
 import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
-import io.element.android.libraries.bipe.tabs.BipeYouTabWarning
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.indicator.api.IndicatorService
@@ -56,7 +55,6 @@ class HomePresenter(
     private val sessionStore: SessionStore,
     private val bipeSelfChat: BipeSelfChat,
     private val seenInvitesStore: SeenInvitesStore,
-    private val bipeYouTabWarning: BipeYouTabWarning,
     private val bipeClearedChats: BipeClearedChats,
     private val bipeNotifiedSessions: BipeNotifiedSessions,
 ) : Presenter<HomeState> {
@@ -119,7 +117,6 @@ class HomePresenter(
                 BipeTabBadges.from(summaries, selfChatRoomId, seenInviteRoomIds, clearedChats)
             }.distinctUntilChanged()
         }.collectAsState(BipeTabBadges.NONE)
-        val bipeYouWarning by remember { bipeYouTabWarning.warning() }.collectAsState(false)
         // Bipe: the other accounts' sessions may be closed, so their notifications in the shade are the sign of new messages.
         val bipeNotifiedSessionIds by remember { bipeNotifiedSessions.sessionIds() }.collectAsState(emptySet())
         val bipeNotifiedAccounts by remember {
@@ -153,7 +150,7 @@ class HomePresenter(
             snackbarMessage = snackbarMessage,
             canReportBug = canReportBug,
             eventSink = ::handleEvent,
-            bipeBadges = bipeBadges.copy(youWarning = bipeYouWarning),
+            bipeBadges = bipeBadges,
             bipeAccounts = bipeAccounts,
             bipeCanAddAccount = BipeAccountCap.canAdd(bipeAccounts.size, bipeMaxAccounts),
             bipeNotifiedAccounts = bipeNotifiedAccounts,

@@ -21,8 +21,6 @@ import io.element.android.libraries.matrix.api.roomlist.RoomSummary
 data class BipeTabBadges(
     val chats: Long,
     val groups: Long,
-    /** The Você tab: one way back to the account or none (ADR 0112). */
-    val youWarning: Boolean = false,
 ) {
     companion object {
         val NONE = BipeTabBadges(chats = 0, groups = 0)
