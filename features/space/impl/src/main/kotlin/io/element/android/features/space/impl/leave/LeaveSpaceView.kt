@@ -58,6 +58,7 @@ import io.element.android.libraries.matrix.api.room.join.JoinRule
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.ui.strings.CommonPlurals
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * https://www.figma.com/design/kcnHxunG1LDWXsJhaNuiHz/ER-145--Spaces-on-Element-X?node-id=3947-68767&t=GTf1cLkAf6UCQDan-0
@@ -225,7 +226,8 @@ private fun LeaveSpaceButtons(
     ) {
         if (showLeaveButton) {
             val text = if (selectedRoomsCount > 0) {
-                pluralStringResource(R.plurals.screen_leave_space_submit, selectedRoomsCount, selectedRoomsCount)
+                // Bipe: "grupo", not "sala" (bipe#508)
+                stringResource(BipeR.string.bipe_group_screen_leave_space_submit, selectedRoomsCount.toString())
             } else {
                 stringResource(CommonStrings.action_leave_space)
             }

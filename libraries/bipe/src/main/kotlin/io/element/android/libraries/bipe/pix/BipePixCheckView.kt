@@ -30,6 +30,8 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.PixCheck
 import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticWhen
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -55,6 +57,8 @@ fun BipePixCheckView(
     onSendToChat: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // pix_check_risk (ADR 0134): the check shows a caution notice.
+    BipeHapticWhen(BipeHaptic.Warning, check.warning != null || check.code != null && check.code.status != PixCheck.Status.VALID)
     Scaffold(
         modifier = modifier,
         topBar = {

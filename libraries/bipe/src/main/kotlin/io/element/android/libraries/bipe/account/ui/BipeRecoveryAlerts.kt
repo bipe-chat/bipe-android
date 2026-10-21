@@ -74,6 +74,7 @@ fun BipeRecoveryAlerts(account: BipeAccountSession) {
         destructiveSubmit = true,
         onSubmitClick = {
             scope.launch {
+                // Toast, not SnackbarDispatcher (bipe#450): the alert shows over any screen, and most screens have no snackbar host.
                 account.cancelRecovery(alert)
                     .onSuccess { Toast.makeText(context, R.string.bipe_recovery_alert_cancelled, Toast.LENGTH_LONG).show() }
                     .onFailure { Toast.makeText(context, R.string.bipe_error_generic, Toast.LENGTH_LONG).show() }

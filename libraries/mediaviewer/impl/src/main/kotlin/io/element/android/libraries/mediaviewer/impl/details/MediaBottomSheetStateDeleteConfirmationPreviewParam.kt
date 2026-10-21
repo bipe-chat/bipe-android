@@ -22,6 +22,8 @@ open class MediaBottomSheetStateDeleteConfirmationPreviewParam : PreviewParamete
             aMediaBottomSheetStateDeleteConfirmation(
                 thumbnailSource = MediaSource("url_thumbnail")
             ),
+            // Bipe: a DM (bipe#507)
+            aMediaBottomSheetStateDeleteConfirmation(isDm = true),
         )
 }
 
@@ -30,8 +32,10 @@ fun aMediaBottomSheetStateDeleteConfirmation(
         senderName = USER_NAME_ALICE,
     ),
     thumbnailSource: MediaSource? = null,
+    isDm: Boolean = false,
 ) = MediaBottomSheetState.DeleteConfirmation(
     eventId = EventId("\$eventId"),
     mediaInfo = mediaInfo,
     thumbnailSource = thumbnailSource,
+    isDm = isDm,
 )

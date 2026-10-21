@@ -30,6 +30,7 @@ import io.element.android.features.startchat.impl.userlist.UserListEvent
 import io.element.android.features.startchat.impl.userlist.UserListState
 import io.element.android.features.startchat.impl.userlist.UserListStatePreviewParam
 import io.element.android.libraries.bipe.ui.BipeInviterRow
+import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -75,8 +76,10 @@ fun UserListView(
                 )
                 val inviter = state.bipeInviter
                 if (inviter != null && !state.isMultiSelectionEnabled) {
+                    val inviterHandle = inviter.displayName.orEmpty().removePrefix("@")
                     BipeInviterRow(
-                        inviterHandle = inviter.displayName.orEmpty().removePrefix("@"),
+                        inviterHandle = inviterHandle,
+                        avatarData = AvatarData(inviter.userId.value, inviterHandle, inviter.avatarUrl, AvatarSize.UserListItem),
                         onClick = {
                             state.eventSink(UserListEvent.AddToSelection(inviter))
                             onSelectUser(inviter)

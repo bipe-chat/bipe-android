@@ -25,6 +25,8 @@ import io.element.android.features.home.impl.search.history.SearchHistoryStore
 import io.element.android.libraries.androidutils.filesize.FileSizeFormatter
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.dateformatter.api.DateFormatterMode
@@ -77,6 +79,7 @@ class GlobalSearchPresenter(
     private val coroutineDispatchers: CoroutineDispatchers,
     private val matrixClient: MatrixClient,
     private val searchHistoryStore: SearchHistoryStore,
+    private val bipeClearedChats: BipeClearedChats,
 ) : Presenter<GlobalSearchState> {
     @Composable
     override fun present(): GlobalSearchState {
@@ -95,12 +98,14 @@ class GlobalSearchPresenter(
         StartSearchBackfillWhenVisible(isEnabled = isEnabled, isSearchActive = isSearchActive)
 
         val searchHistory by produceState<AsyncData<ImmutableList<SearchHistoryListItem>>>(initialValue = AsyncData.Uninitialized) {
-            searchHistoryStore.history.collectLatest { history ->
+            // Bipe (bipe-chat/bipe#479): a cleared DM leaves the history too, until a newer event arrives.
+            combine(searchHistoryStore.history, bipeClearedChats.state, ::Pair).collectLatest { (history, clearedChats) ->
                 val mappedHistoryItems = history.mapNotNull { result ->
                     when (result) {
                         is SearchHistoryResult.Query -> SearchHistoryListItem.Query(term = result.term)
                         is SearchHistoryResult.Room -> {
                             val roomInfo = matrixClient.getRoomInfo(result.roomId).getOrNull() ?: return@mapNotNull null
+                            if (roomInfo.isDm && bipeClearedChats.isHidden(result.roomId, clearedChats)) return@mapNotNull null
                             SearchHistoryListItem.Room(roomId = result.roomId, roomInfo = roomInfo)
                         }
                     }
@@ -156,8 +161,11 @@ class GlobalSearchPresenter(
                     combine(
                         currentMessageSearch.results,
                         currentMessageSearch.paginationState,
-                    ) { results, paginationState ->
-                        Pair(results, paginationState)
+                        bipeClearedChats.state,
+                    ) { results, paginationState, clearedChats ->
+                        // Bipe (bipe#464): search leaves out the messages of a cleared DM up to its marker.
+                        val keptResults = results.filter { ClearedChats.keepsEvent(clearedChats.marker(it.roomId.value), it.timestamp) }
+                        Pair(keptResults, paginationState)
                     }.collectLatest { (results, paginationState) ->
                         Timber.d("Message search found ${results.size} items, pagination state: $paginationState")
 

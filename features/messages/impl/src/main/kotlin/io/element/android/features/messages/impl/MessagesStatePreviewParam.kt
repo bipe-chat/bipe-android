@@ -25,6 +25,7 @@ import io.element.android.features.messages.impl.pinned.banner.PinnedMessagesBan
 import io.element.android.features.messages.impl.pinned.banner.aLoadedPinnedMessagesBannerState
 import io.element.android.features.messages.impl.timeline.TimelineState
 import io.element.android.features.messages.impl.timeline.aTimelineItemList
+import io.element.android.features.messages.impl.timeline.aTimelineRoomInfo
 import io.element.android.features.messages.impl.timeline.aTimelineState
 import io.element.android.features.messages.impl.timeline.components.customreaction.CustomReactionEvent
 import io.element.android.features.messages.impl.timeline.components.customreaction.CustomReactionState
@@ -95,6 +96,15 @@ open class MessagesStatePreviewParam : PreviewParameterProvider<MessagesState> {
                 identityChangeState = anIdentityChangeState(listOf(aRoomMemberIdentityStateChange()))
             ),
             aMessagesState(redactEventAction = MessagesState.ConfirmingRedaction(EventId("\$anEventId"))),
+            // Bipe: a DM (bipe#507)
+            aMessagesState(
+                userEventPermissions = aUserEventPermissions(canSendMessage = false),
+                timelineState = aTimelineState(timelineRoomInfo = aTimelineRoomInfo(isDm = true)),
+            ),
+            aMessagesState(
+                successorRoom = SuccessorRoom(RoomId("!id:domain"), null),
+                timelineState = aTimelineState(timelineRoomInfo = aTimelineRoomInfo(isDm = true)),
+            ),
         )
 }
 
@@ -136,6 +146,7 @@ fun aMessagesState(
     eventSink: (MessagesEvent) -> Unit = {},
     redactEventAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     bipeInviterHandle: String? = null,
+    bipeInviterKnowsName: String? = null,
     bipeDmUserId: String? = null,
 ) = MessagesState(
     roomId = RoomId("!id:domain"),
@@ -169,6 +180,7 @@ fun aMessagesState(
     dmUserStatus = dmUserStatus,
     redactEventAction = redactEventAction,
     bipeInviterHandle = bipeInviterHandle,
+    bipeInviterKnowsName = bipeInviterKnowsName,
     bipeDmUserId = bipeDmUserId,
     eventSink = eventSink,
 )

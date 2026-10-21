@@ -13,6 +13,7 @@ import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.testing.junit4.util.MainDispatcherRule
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.licenses.test.FakeOpenSourceLicensesEntryPoint
+import io.element.android.features.lockscreen.test.FakeLockScreenEntryPoint
 import io.element.android.features.logout.test.FakeLogoutEntryPoint
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.libraries.matrix.api.core.EventId
@@ -44,10 +45,12 @@ class DefaultPreferencesEntryPointTest {
                 fileViewerEntryPoint = FakeFileViewerEntryPoint(),
                 logoutEntryPoint = FakeLogoutEntryPoint(),
                 openSourceLicensesEntryPoint = FakeOpenSourceLicensesEntryPoint(),
+                lockScreenEntryPoint = FakeLockScreenEntryPoint(),
             )
         }
         val callback = object : PreferencesEntryPoint.Callback {
             override fun navigateToAddAccount() = lambdaError()
+            override fun bipeNavigateToSignup(inviteCode: String?) = lambdaError()
             override fun navigateToLinkNewDevice() = lambdaError()
             override fun navigateToBugReport() = lambdaError()
             override fun navigateToSecureBackup() = lambdaError()

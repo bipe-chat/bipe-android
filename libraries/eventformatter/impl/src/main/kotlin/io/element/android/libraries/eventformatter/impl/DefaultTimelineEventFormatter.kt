@@ -49,15 +49,26 @@ class DefaultTimelineEventFormatter(
     }
 
     override fun format(content: EventContent, isOutgoing: Boolean, sender: UserId, senderDisambiguatedDisplayName: String): CharSequence? {
+        return format(content, isOutgoing, sender, senderDisambiguatedDisplayName, isDm = false)
+    }
+
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    override fun format(
+        content: EventContent,
+        isOutgoing: Boolean,
+        sender: UserId,
+        senderDisambiguatedDisplayName: String,
+        isDm: Boolean,
+    ): CharSequence? {
         return when (content) {
             is RoomMembershipContent -> {
-                roomMembershipContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing)
+                roomMembershipContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing, isDm = isDm)
             }
             is ProfileChangeContent -> {
                 profileChangeContentFormatter.format(content, sender, senderDisambiguatedDisplayName, isOutgoing)
             }
             is StateContent -> {
-                stateContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing, RenderingMode.Timeline)
+                stateContentFormatter.format(content, senderDisambiguatedDisplayName, isOutgoing, RenderingMode.Timeline, isDm = isDm)
             }
             is CallNotifyContent -> {
                 sp.getString(CommonStrings.common_call_started)

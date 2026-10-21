@@ -6,7 +6,6 @@
 
 package io.element.android.libraries.bipe.account.ui
 
-import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -26,12 +25,16 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.BipePin
+import io.element.android.libraries.bipe.generated.BipeHaptic
 import io.element.android.libraries.bipe.generated.BipeRegistries
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import kotlinx.coroutines.launch
 
 private sealed interface PinDialog {
@@ -52,10 +55,12 @@ fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
     val status by account.status.collectAsState()
     LaunchedEffect(Unit) { account.refresh() }
     val context = LocalContext.current
+    val snackbarDispatcher = LocalSnackbarDispatcher.current
     val activity = LocalActivity.current as? FragmentActivity
     val scope = rememberCoroutineScope()
     var dialog by remember { mutableStateOf<PinDialog?>(null) }
     var busy by remember { mutableStateOf(false) }
+    val haptics = rememberBipeHaptics()
     val current = status ?: return
 
     val changeTitle = stringResource(R.string.bipe_pin_change_title)
@@ -114,7 +119,10 @@ fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
                         val result = if (shown == PinDialog.MoveToDeviceFirst) account.moveToDeviceFirst(pin) else account.changePin(pin)
                         busy = false
                         result
-                            .onSuccess { Toast.makeText(context, R.string.bipe_pin_changed, Toast.LENGTH_SHORT).show() }
+                            .onSuccess {
+                                haptics(BipeHaptic.Success) // pin_set
+                                snackbarDispatcher.post(SnackbarMessage(R.string.bipe_pin_changed))
+                            }
                             .onFailure { dialog = PinDialog.Error(account.messageOf(it)) }
                     }
                 },
@@ -126,7 +134,12 @@ fun BipePinRow(account: BipeAccountSession, modifier: Modifier = Modifier) {
                 error = shown.error,
                 onSubmit = { pin ->
                     scope.launch {
-                        dialog = if (account.verifyAppLockPin(pin)) PinDialog.NewPin else PinDialog.CurrentPin(mismatchError)
+                        dialog = if (account.verifyAppLockPin(pin)) {
+                            PinDialog.NewPin
+                        } else {
+                            haptics(BipeHaptic.Error) // pin_wrong
+                            PinDialog.CurrentPin(mismatchError)
+                        }
                     }
                 },
                 onDismiss = { dialog = null },

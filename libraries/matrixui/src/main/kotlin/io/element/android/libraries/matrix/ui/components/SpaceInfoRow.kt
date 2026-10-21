@@ -33,6 +33,7 @@ import io.element.android.libraries.matrix.ui.model.icon
 import io.element.android.libraries.matrix.ui.model.label
 import io.element.android.libraries.ui.strings.CommonPlurals
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun SpaceInfoRow(
@@ -84,7 +85,8 @@ fun SpaceInfoRow(
 @Composable
 @ReadOnlyComposable
 fun numberOfRooms(numberOfRooms: Int): String {
-    return pluralStringResource(CommonPlurals.common_rooms, numberOfRooms, numberOfRooms)
+    // Bipe: "grupo", not "sala" (bipe#508). Bipe strings take the count as text.
+    return stringResource(BipeR.string.bipe_group_common_rooms, numberOfRooms.toString())
 }
 
 @Composable

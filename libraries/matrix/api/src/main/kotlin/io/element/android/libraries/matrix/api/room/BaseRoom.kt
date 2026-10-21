@@ -159,6 +159,13 @@ interface BaseRoom : Closeable {
     suspend fun setIsFavorite(isFavorite: Boolean): Result<Unit>
 
     /**
+     * Bipe: archives the room or brings it back, with the `m.lowpriority` tag, so other clients agree (bipe#435).
+     *
+     * @param isLowPriority true to archive the room, false to remove the tag.
+     */
+    suspend fun setIsLowPriority(isLowPriority: Boolean): Result<Unit>
+
+    /**
      * Mark the room as read by trying to attach an unthreaded read receipt to the latest room event.
      *
      * Note this will instantiate a new timeline, which is an expensive operation.

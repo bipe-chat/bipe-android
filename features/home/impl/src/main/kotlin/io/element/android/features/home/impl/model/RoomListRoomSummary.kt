@@ -44,6 +44,10 @@ data class RoomListRoomSummary(
     val heroes: ImmutableList<AvatarData>,
     val isSpace: Boolean,
     val dmUserStatus: DisplayedStatus?,
+    /** Bipe (bipe#435): archived, the `m.lowpriority` tag. */
+    val isLowPriority: Boolean = false,
+    /** Bipe (bipe#464): origin_server_ts of the latest event, to hide a cleared DM. Null when the room has no latest event. */
+    val bipeLatestEventTimestamp: Long? = null,
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

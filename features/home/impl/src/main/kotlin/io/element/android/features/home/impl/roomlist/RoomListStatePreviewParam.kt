@@ -27,6 +27,7 @@ import io.element.android.features.invite.api.acceptdecline.anAcceptDeclineInvit
 import io.element.android.features.leaveroom.api.LeaveRoomEvent
 import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -67,7 +68,7 @@ internal fun aRoomListState(
     acceptDeclineInviteState: AcceptDeclineInviteState = anAcceptDeclineInviteState(),
     hideInvitesAvatars: Boolean = false,
     canReportRoom: Boolean = true,
-    bipeInviterHandle: String? = null,
+    bipeInviter: BipeInviterGreeting.Inviter? = null,
     bipeOpenInviterChat: suspend () -> RoomId? = { null },
     bipeShowsHandlePrompt: Boolean = false,
     bipeRemoteBanner: BipeRemoteBannerShown? = null,
@@ -84,7 +85,7 @@ internal fun aRoomListState(
     acceptDeclineInviteState = acceptDeclineInviteState,
     hideInvitesAvatars = hideInvitesAvatars,
     canReportRoom = canReportRoom,
-    bipeInviterHandle = bipeInviterHandle,
+    bipeInviter = bipeInviter,
     bipeOpenInviterChat = bipeOpenInviterChat,
     eventSink = eventSink,
     bipeShowsHandlePrompt = bipeShowsHandlePrompt,

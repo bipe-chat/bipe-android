@@ -59,6 +59,7 @@ class RoomListRoomSummaryFactory(
             },
             isDirect = roomInfo.isDirect,
             isFavorite = roomInfo.isFavorite,
+            isLowPriority = roomInfo.isLowPriority,
             inviteSender = roomInfo.inviter?.toInviteSender(),
             isDm = roomInfo.isDm,
             canonicalAlias = roomInfo.canonicalAlias,
@@ -79,6 +80,7 @@ class RoomListRoomSummaryFactory(
             isTombstoned = roomInfo.successorRoom != null,
             isSpace = roomInfo.isSpace,
             dmUserStatus = roomInfo.dmUserStatus(),
+            bipeLatestEventTimestamp = roomSummary.latestEventTimestamp,
         )
     }
 

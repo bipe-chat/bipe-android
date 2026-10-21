@@ -97,7 +97,7 @@ class BipeDeviceAccount(
 
     /**
      * Finishes a sign-up whose answer never reached this device (ADR 0094). `null` when there is nothing to finish.
-     * The account PIN of the first try becomes the app lock PIN.
+     * The account PIN of the first try updates the app lock PIN only while the lock is on ([adoptAccountPin]).
      */
     suspend fun resumePendingSignup(): Result<SessionId>? {
         val pending = vault.read().pendingSignup ?: return null
@@ -152,9 +152,13 @@ class BipeDeviceAccount(
     private val BipeApiException.Server.isSignupInProgress: Boolean
         get() = code == BipeApiErrorCode.RATE_LIMITED && reason == "signup_in_progress"
 
-    /** Kept before the sign-in, so the first session finds it (ADR 0034). */
+    /**
+     * Kept before the sign-in, so the first session finds it (ADR 0034). An invite from an account signed in on this phone
+     * ("Nova conta", bipe#445) is the user's own: no inviter, so no card or chat with their other account.
+     */
     private suspend fun rememberInviter(response: BipeSignupResponse) {
-        val inviterUserId = response.inviterUserId ?: return
+        val signedInUserIds = sessionStore.getAllSessions().map { it.userId }.toSet()
+        val inviterUserId = inviterToRemember(response.inviterUserId, signedInUserIds) ?: return
         vault.update {
             it.copy(
                 pendingInviters = it.pendingInviters + (response.userId to inviterUserId),
@@ -163,8 +167,16 @@ class BipeDeviceAccount(
         }
     }
 
-    /** The inviter of [userId] while the user has not sent them a first message (ADR 0034). */
-    internal suspend fun inviterGreeting(userId: String): String? = vault.read().inviterGreetings[userId]
+    /**
+     * The inviter of [userId] while the user has not sent them a first message (ADR 0034).
+     * A greeting stored before bipe#445 can name another account on this phone: it is removed.
+     */
+    internal suspend fun inviterGreeting(userId: String): String? {
+        val inviterUserId = vault.read().inviterGreetings[userId] ?: return null
+        if (inviterToRemember(inviterUserId, signedInUserIds()) != null) return inviterUserId
+        endInviterGreeting(userId)
+        return null
+    }
 
     internal suspend fun endInviterGreeting(userId: String) {
         vault.update { it.copy(inviterGreetings = it.inviterGreetings - userId) }
@@ -185,7 +197,7 @@ class BipeDeviceAccount(
 
     /**
      * Signs in with `m.login.password` (the Matrix user ID and the hidden password). [pin], when the user just typed it,
-     * becomes the app lock PIN.
+     * goes to [adoptAccountPin]. A sign-in never turns the app lock on.
      */
     suspend fun signIn(userId: String, password: String, pin: String?): Result<SessionId> = runCatchingExceptions {
         authenticationService.setHomeserver(BipeConfig.HOMESERVER_BASE_URL).getOrThrow()
@@ -204,7 +216,7 @@ class BipeDeviceAccount(
         val (userId, account) = data.accounts.entries.lastOrNull { it.value.password != null && it.key !in signedIn } ?: return null
         val password = account.password ?: return null
         Timber.i("Bipe: silent sign-in for $userId")
-        // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for the app lock.
+        // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for [adoptAccountPin].
         return signIn(userId, password, pin = data.pendingSignup?.pin).onSuccess {
             if (data.pendingSignup != null) vault.update { it.copy(pendingSignup = null) }
         }
@@ -309,22 +321,30 @@ class BipeDeviceAccount(
     internal val lock: BipeAppLock get() = appLock
 
     /**
-     * The device PIN locks the app and belongs to the phone (ADR 0086). It follows the account PIN only while the phone
-     * holds one account, so a one-account user keeps one PIN for both. With more accounts, a set device PIN stays.
+     * The device PIN locks the app and belongs to the phone (ADR 0086). The lock is off by default; the user turns it on in
+     * Sua conta. While it is on, the device PIN follows the account PIN only while the phone holds one account, so a
+     * one-account user keeps one PIN for both. With more accounts, a set device PIN stays.
      */
     internal suspend fun devicePinFollowsAccountPin(): Boolean = sessionStore.numberOfSessions() <= 1
 
     /** Accounts with a session on this phone. Adding an account never signs one of them in again (ADR 0086). */
     private suspend fun signedInUserIds(): Set<String> = sessionStore.getAllSessions().mapTo(mutableSetOf()) { it.userId }
 
-    /** [pin] is an account PIN the user just typed or set. It becomes the device PIN when [devicePinFollowsAccountPin] or none is set. */
+    /**
+     * [pin] is an account PIN the user just typed or set. It replaces the device PIN only while the lock is on and
+     * [devicePinFollowsAccountPin]. It never turns the lock on, and the biometric unlock choice stays as it is.
+     */
     internal suspend fun adoptAccountPin(pin: String) {
         runCatchingExceptions {
-            if (devicePinFollowsAccountPin() || !appLock.isPinSet()) appLock.setPin(pin)
-        }.onFailure { Timber.e(it, "Bipe: app lock PIN not set") }
+            if (appLock.isPinSet() && devicePinFollowsAccountPin()) appLock.setPin(pin)
+        }.onFailure { Timber.e(it, "Bipe: app lock PIN not updated") }
     }
 
     private companion object {
         const val MAX_DISMISSED = 50
     }
 }
+
+/** The inviter to keep after a sign-up: none when the invite came from an account signed in on this phone (bipe#445). */
+internal fun inviterToRemember(inviterUserId: String?, signedInUserIds: Set<String>): String? =
+    inviterUserId?.takeUnless { it in signedInUserIds }

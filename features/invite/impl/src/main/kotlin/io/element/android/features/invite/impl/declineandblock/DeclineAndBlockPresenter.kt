@@ -60,6 +60,7 @@ class DeclineAndBlockPresenter(
         }
 
         return DeclineAndBlockState(
+            isDm = inviteData.isDm, // Bipe
             reportRoom = reportRoom,
             reportReason = reportReason,
             blockUser = blockUser,

@@ -6,17 +6,30 @@
 
 package io.element.android.libraries.bipe
 
+import io.element.android.libraries.bipe.api.BipeBusinessClaim
+
 /**
  * The "Perfil de confiança" ladder from bipe/docs/trust-levels.md. Only the account owner sees it.
- * Step 2 is computed here from the Matrix profile and the handle; steps 3 to 5 wait for the API.
+ * A person proves who they are (email, Pix, gov.br). A company proves its CNPJ instead (ADR 0042, cnpj-verification.md).
+ * Step 2 is computed here from the Matrix profile and the handle.
  * Port of BipeTrustProfile on iOS: same step and item ids.
  */
 data class BipeTrustProfile(
+    val isCompany: Boolean,
     val steps: List<Step>,
     /** Empty when step 2 is done. */
     val missingProfileItems: List<ProfileItem>,
 ) {
-    enum class StepId(val id: String) { ACCOUNT("account"), PROFILE("profile"), EMAIL("email"), PIX("pix"), GOVBR("govbr") }
+    enum class StepId(val id: String) {
+        ACCOUNT("account"),
+        PROFILE("profile"),
+        EMAIL("email"),
+        PIX("pix"),
+        GOVBR("govbr"),
+        CNPJ("cnpj"),
+        PROOF("proof"),
+        DOMAIN("domain"),
+    }
 
     enum class Status(val id: String) { DONE("done"), TODO("todo"), COMING_SOON("coming_soon") }
 
@@ -33,22 +46,40 @@ data class BipeTrustProfile(
     val liveStepsDone: Boolean get() = steps.none { it.status == Status.TODO }
 
     companion object {
-        fun create(displayName: String?, hasAvatar: Boolean, handle: String?): BipeTrustProfile {
+        /** [business] is `GET /v1/me/business`: `null` when the account has no claim or the claim did not load. */
+        fun create(
+            displayName: String?,
+            hasAvatar: Boolean,
+            handle: String?,
+            isCompany: Boolean = false,
+            business: BipeBusinessClaim? = null,
+        ): BipeTrustProfile {
             val missing = buildList {
                 if (displayName.isNullOrBlank()) add(ProfileItem.DISPLAY_NAME)
                 if (handle.isNullOrEmpty()) add(ProfileItem.HANDLE)
                 if (!hasAvatar) add(ProfileItem.AVATAR)
             }
-            return BipeTrustProfile(
-                steps = listOf(
-                    Step(StepId.ACCOUNT, Status.DONE),
-                    Step(StepId.PROFILE, if (missing.isEmpty()) Status.DONE else Status.TODO),
+            val start = listOf(
+                Step(StepId.ACCOUNT, Status.DONE),
+                Step(StepId.PROFILE, if (missing.isEmpty()) Status.DONE else Status.TODO),
+            )
+            val rest = if (isCompany) {
+                // The claim screen is not in the app yet (bipe#249): a step that is not done has nothing to tap.
+                val cnpjActive = business?.status == "awaiting_proof" || business?.status == "verified"
+                val domainVerified = business?.domains.orEmpty().any { it.verifiedAt != null }
+                listOf(
+                    Step(StepId.CNPJ, if (cnpjActive) Status.DONE else Status.COMING_SOON),
+                    Step(StepId.PROOF, if (business?.status == "verified") Status.DONE else Status.COMING_SOON),
+                    Step(StepId.DOMAIN, if (domainVerified) Status.DONE else Status.COMING_SOON),
+                )
+            } else {
+                listOf(
                     Step(StepId.EMAIL, Status.COMING_SOON),
                     Step(StepId.PIX, Status.COMING_SOON),
                     Step(StepId.GOVBR, Status.COMING_SOON),
-                ),
-                missingProfileItems = missing,
-            )
+                )
+            }
+            return BipeTrustProfile(isCompany = isCompany, steps = start + rest, missingProfileItems = missing)
         }
     }
 }

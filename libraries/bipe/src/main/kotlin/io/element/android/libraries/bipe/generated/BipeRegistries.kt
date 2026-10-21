@@ -582,12 +582,14 @@ object BipeRegistries {
         "mz",
         "bipe",
         "suporte",
+        "bipechat",
     )
 
     /** Full Matrix user IDs of official Bipe accounts. Match exactly; names and handles are not proof. */
     val officialAccountIds: Set<String> = setOf(
         "@suporte:bipe.net.br",
         "@bipe:bipe.net.br",
+        "@r2vrihsgkqd5:bipe.net.br",
     )
 
     /** Public profile rules (ADR 0041). Lengths count code points. The server is the authority. */
@@ -715,4 +717,7 @@ object BipeRegistries {
     val badgeKeys: Map<String, String> = mapOf(
         "prod-2026-10" to "9j3_slBroZbxa3B6Tdgcm_U-O_LIdrNFXzDgY8oLwxE",
     )
+
+    /** Cleared DMs (bipe-chat/bipe#464; registries/cleared-chats.json): the global account data event with the markers. */
+    const val CLEARED_CHATS_EVENT_TYPE = "chat.bipe.cleared_chats"
 }

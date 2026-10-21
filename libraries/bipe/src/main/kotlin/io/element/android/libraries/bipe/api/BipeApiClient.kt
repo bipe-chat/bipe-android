@@ -136,6 +136,9 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/me/invites`. */
     suspend fun myInvites(accessToken: String): BipeMyInvites = call { service.myInvites(bearer(accessToken)) }
 
+    /** `GET /v1/me/invite-connections`. The caller's invite pairs (ADR 0034): Matrix user IDs. */
+    suspend fun inviteConnections(accessToken: String): List<String> = call { service.inviteConnections(bearer(accessToken)) }.userIds
+
     /** `POST /v1/me/invites`. The code is returned once. */
     suspend fun createInvite(accessToken: String): BipeCreatedInvite = call { service.createInvite(bearer(accessToken)) }
 
@@ -159,6 +162,13 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     /** `GET /v1/me/handle`. */
     suspend fun myHandle(accessToken: String): BipeMyHandle = call { service.myHandle(bearer(accessToken)) }
+
+    /** `GET /v1/me/business` (ADR 0042). `null` when the account has no CNPJ claim (404). */
+    suspend fun myBusiness(accessToken: String): BipeBusinessClaim? = try {
+        call { service.myBusiness(bearer(accessToken)) }
+    } catch (error: BipeApiException.Server) {
+        if (error.code == BipeApiErrorCode.NOT_FOUND) null else throw error
+    }
 
     /** `PUT /v1/me/handle`. */
     suspend fun setMyHandle(handle: String, accessToken: String): BipeMyHandle =
@@ -187,6 +197,13 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
             410 -> BipeBadgeLookup.Gone(BipeBadgeGoneReason.fromBody(body))
             else -> throw response.error(body)
         }
+    }
+
+    /** `GET /v1/accounts/{userId}/type` (ADR 0132). No auth. `null` when the account was not made through Bipe sign-up (404). */
+    suspend fun accountType(userId: String): String? = try {
+        call { service.accountType(userId) }.accountType
+    } catch (error: BipeApiException.Server) {
+        if (error.code == BipeApiErrorCode.NOT_FOUND) null else throw error
     }
 
     /** `GET /v1/me/profile`. */
@@ -417,6 +434,9 @@ internal interface BipeApiService {
     @GET("v1/me/invites")
     suspend fun myInvites(@Header("Authorization") authorization: String): Response<BipeMyInvites>
 
+    @GET("v1/me/invite-connections")
+    suspend fun inviteConnections(@Header("Authorization") authorization: String): Response<BipeInviteConnections>
+
     @POST("v1/me/invites")
     suspend fun createInvite(@Header("Authorization") authorization: String): Response<BipeCreatedInvite>
 
@@ -437,6 +457,9 @@ internal interface BipeApiService {
 
     @GET("v1/me/handle")
     suspend fun myHandle(@Header("Authorization") authorization: String): Response<BipeMyHandle>
+
+    @GET("v1/me/business")
+    suspend fun myBusiness(@Header("Authorization") authorization: String): Response<BipeBusinessClaim>
 
     @PUT("v1/me/handle")
     suspend fun setMyHandle(@Header("Authorization") authorization: String, @Body request: SetHandleRequest): Response<BipeMyHandle>
@@ -464,6 +487,9 @@ internal interface BipeApiService {
 
     @GET("v1/badges/{userId}")
     suspend fun badge(@Path("userId") userId: String): Response<ResponseBody>
+
+    @GET("v1/accounts/{userId}/type")
+    suspend fun accountType(@Path("userId") userId: String): Response<BipeAccountTypeResponse>
 
     @GET("v1/profiles/{handle}")
     suspend fun publicProfile(@Path("handle") handle: String): Response<BipePublicProfile>

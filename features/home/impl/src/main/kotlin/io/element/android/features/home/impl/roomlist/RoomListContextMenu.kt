@@ -33,6 +33,7 @@ import io.element.android.libraries.designsystem.theme.components.ModalBottomShe
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +71,10 @@ fun RoomListContextMenu(
                 eventSink(RoomListEvent.HideContextMenu)
                 eventSink(RoomListEvent.SetRoomIsMuted(contextMenu.roomId, isMuted))
             },
+            onArchiveChange = { isArchived ->
+                eventSink(RoomListEvent.HideContextMenu)
+                eventSink(RoomListEvent.BipeSetRoomIsArchived(contextMenu.roomId, isArchived))
+            },
             onFavoriteChange = { isFavorite ->
                 eventSink(RoomListEvent.SetRoomIsFavorite(contextMenu.roomId, isFavorite))
             },
@@ -89,6 +94,7 @@ private fun RoomListModalBottomSheetContent(
     onLeaveRoomClick: () -> Unit,
     onFavoriteChange: (isFavorite: Boolean) -> Unit,
     onMuteChange: (isMuted: Boolean) -> Unit,
+    onArchiveChange: (isArchived: Boolean) -> Unit,
     onRoomMarkReadClick: () -> Unit,
     onRoomMarkUnreadClick: () -> Unit,
     onReportRoomClick: () -> Unit,
@@ -101,7 +107,10 @@ private fun RoomListModalBottomSheetContent(
         ListItem(
             content = {
                 Text(
-                    text = contextMenu.roomName ?: stringResource(id = CommonStrings.common_no_room_name),
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    text = contextMenu.roomName ?: stringResource(
+                        id = if (contextMenu.isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name
+                    ),
                     style = ElementTheme.typography.fontBodyLgMedium,
                     fontStyle = FontStyle.Italic.takeIf { contextMenu.roomName == null }
                 )
@@ -177,6 +186,21 @@ private fun RoomListModalBottomSheetContent(
                 onMuteChange(!contextMenu.isMuted)
             },
         )
+        // Bipe (bipe#435): Arquivar or Desarquivar, the same as the swipe.
+        ListItem(
+            content = {
+                Text(
+                    text = stringResource(id = if (contextMenu.isArchived) BipeR.string.bipe_unarchive_action else BipeR.string.bipe_archive_action),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            },
+            leadingContent = ListItemContent.Icon(
+                iconSource = IconSource.Vector(CompoundIcons.ExportArchive())
+            ),
+            onClick = {
+                onArchiveChange(!contextMenu.isArchived)
+            },
+        )
         ListItem(
             content = {
                 Text(
@@ -194,7 +218,8 @@ private fun RoomListModalBottomSheetContent(
         if (canReportRoom) {
             ListItem(
                 content = {
-                    Text(text = stringResource(CommonStrings.action_report_room))
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    Text(text = stringResource(if (contextMenu.isDm) BipeR.string.bipe_dm_report else CommonStrings.action_report_room))
                 },
                 modifier = Modifier.clickable { onReportRoomClick() },
                 leadingContent = ListItemContent.Icon(
@@ -207,13 +232,13 @@ private fun RoomListModalBottomSheetContent(
         }
         ListItem(
             content = {
-                // Bipe: a DM is a conversation
-                Text(text = stringResource(if (contextMenu.isDm) CommonStrings.action_leave_conversation else CommonStrings.action_leave_room))
+                // Bipe (bipe#464): a DM has "Apagar conversa" in place of leave. The user stays in the room.
+                Text(text = stringResource(if (contextMenu.isDm) BipeR.string.bipe_dm_delete_action else CommonStrings.action_leave_room))
             },
             modifier = Modifier.clickable { onLeaveRoomClick() },
             leadingContent = ListItemContent.Icon(
                 iconSource = IconSource.Vector(
-                    CompoundIcons.Leave(),
+                    if (contextMenu.isDm) CompoundIcons.Delete() else CompoundIcons.Leave(),
                 )
             ),
             style = ListItemStyle.Destructive,

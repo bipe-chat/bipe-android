@@ -31,6 +31,10 @@ data class BipeInvitesState(
     val shareSheetUrl: String?,
     /** Set to show this invite link as a QR code. */
     val qrCodeUrl: String?,
+    /** Invites made on this screen. The view plays the invite_created haptic when it goes up (ADR 0134). */
+    val createdCount: Int,
+    /** Set while the note dialog for a new invite shows (ADR 0136). */
+    val noteDestination: BipeInviteDestination?,
     val eventSink: (BipeInvitesEvent) -> Unit,
 ) {
     val canCreate: Boolean get() = !isLoading && available > 0
@@ -43,12 +47,19 @@ data class BipeInvitesState(
     override fun toString(): String = "BipeInvitesState(available=$available, invites=${invites.size})"
 }
 
+/** Where a new invite opens after its note dialog (ADR 0136). */
+enum class BipeInviteDestination { SHARE_SHEET, QR_CODE }
+
 sealed interface BipeInvitesEvent {
-    /** Creates an invite and opens the share sheet. */
+    /** Asks for the note, then creates an invite and opens the share sheet. */
     data object InviteByLink : BipeInvitesEvent
 
-    /** Creates an invite and shows its QR code. */
+    /** Asks for the note, then creates an invite and shows its QR code. */
     data object InviteInPerson : BipeInvitesEvent
+
+    /** Creates the invite with this note (empty means no note). */
+    data class CreateInvite(val note: String) : BipeInvitesEvent
+    data object DismissNote : BipeInvitesEvent
     data class Share(val inviteId: String) : BipeInvitesEvent
     data class ShowQrCode(val inviteId: String) : BipeInvitesEvent
     data class Revoke(val inviteId: String) : BipeInvitesEvent

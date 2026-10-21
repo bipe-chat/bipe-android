@@ -40,4 +40,15 @@ interface TimelineEventFormatter {
      * @return the sentence to display, or `null` when this kind of event is not rendered as text.
      */
     fun format(content: EventContent, isOutgoing: Boolean, sender: UserId, senderDisambiguatedDisplayName: String): CharSequence?
+
+    /**
+     * Bipe: same as above, with the DM wording ("conversa", not "sala") when [isDm] is true (bipe#507).
+     */
+    fun format(
+        content: EventContent,
+        isOutgoing: Boolean,
+        sender: UserId,
+        senderDisambiguatedDisplayName: String,
+        isDm: Boolean,
+    ): CharSequence? = format(content, isOutgoing, sender, senderDisambiguatedDisplayName)
 }

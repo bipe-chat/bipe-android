@@ -15,6 +15,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.StateContent
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.toolbox.api.strings.StringProvider
 import timber.log.Timber
+import io.element.android.libraries.bipe.R as BipeR
 
 @Inject
 class StateContentFormatter(
@@ -25,11 +26,18 @@ class StateContentFormatter(
         senderDisambiguatedDisplayName: String,
         senderIsYou: Boolean,
         renderingMode: RenderingMode,
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        isDm: Boolean = false,
     ): CharSequence? {
         return when (val content = stateContent.content) {
             is OtherState.RoomAvatar -> {
                 val hasAvatarUrl = content.url != null
                 when {
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    isDm && senderIsYou && hasAvatarUrl -> sp.getString(BipeR.string.bipe_dm_avatar_changed_by_you)
+                    isDm && senderIsYou -> sp.getString(BipeR.string.bipe_dm_avatar_removed_by_you)
+                    isDm && hasAvatarUrl -> sp.getString(BipeR.string.bipe_dm_avatar_changed, senderDisambiguatedDisplayName)
+                    isDm -> sp.getString(BipeR.string.bipe_dm_avatar_removed, senderDisambiguatedDisplayName)
                     senderIsYou && hasAvatarUrl -> sp.getString(R.string.state_event_room_avatar_changed_by_you)
                     senderIsYou && !hasAvatarUrl -> sp.getString(R.string.state_event_room_avatar_removed_by_you)
                     !senderIsYou && hasAvatarUrl -> sp.getString(R.string.state_event_room_avatar_changed, senderDisambiguatedDisplayName)
@@ -37,7 +45,12 @@ class StateContentFormatter(
                 }
             }
             is OtherState.RoomCreate -> {
-                if (senderIsYou) {
+                // Bipe: a DM says "conversa" (bipe#508)
+                if (isDm && senderIsYou) {
+                    sp.getString(BipeR.string.bipe_dm_created_by_you)
+                } else if (isDm) {
+                    sp.getString(BipeR.string.bipe_dm_created, senderDisambiguatedDisplayName)
+                } else if (senderIsYou) {
                     sp.getString(R.string.state_event_room_created_by_you)
                 } else {
                     sp.getString(R.string.state_event_room_created, senderDisambiguatedDisplayName)
@@ -47,6 +60,11 @@ class StateContentFormatter(
             is OtherState.RoomName -> {
                 val hasRoomName = content.name != null
                 when {
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    isDm && senderIsYou && hasRoomName -> sp.getString(BipeR.string.bipe_dm_name_changed_by_you, content.name)
+                    isDm && senderIsYou -> sp.getString(BipeR.string.bipe_dm_name_removed_by_you)
+                    isDm && hasRoomName -> sp.getString(BipeR.string.bipe_dm_name_changed, senderDisambiguatedDisplayName, content.name)
+                    isDm -> sp.getString(BipeR.string.bipe_dm_name_removed, senderDisambiguatedDisplayName)
                     senderIsYou && hasRoomName -> sp.getString(R.string.state_event_room_name_changed_by_you, content.name)
                     senderIsYou && !hasRoomName -> sp.getString(R.string.state_event_room_name_removed_by_you)
                     !senderIsYou && hasRoomName -> sp.getString(R.string.state_event_room_name_changed, senderDisambiguatedDisplayName, content.name)
@@ -58,7 +76,14 @@ class StateContentFormatter(
                     Timber.e("RoomThirdPartyInvite undisplayable due to missing name")
                     return null
                 }
-                if (senderIsYou) {
+                if (isDm) {
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    if (senderIsYou) {
+                        sp.getString(BipeR.string.bipe_dm_third_party_invite_by_you, content.displayName)
+                    } else {
+                        sp.getString(BipeR.string.bipe_dm_third_party_invite, senderDisambiguatedDisplayName, content.displayName)
+                    }
+                } else if (senderIsYou) {
                     sp.getString(R.string.state_event_room_third_party_invite_by_you, content.displayName)
                 } else {
                     sp.getString(R.string.state_event_room_third_party_invite, senderDisambiguatedDisplayName, content.displayName)
@@ -68,6 +93,9 @@ class StateContentFormatter(
                 val hasRoomTopic = content.topic?.isNotBlank() == true
                 when {
                     senderIsYou && hasRoomTopic -> sp.getString(R.string.state_event_room_topic_changed_by_you, content.topic)
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    isDm && senderIsYou && !hasRoomTopic -> sp.getString(BipeR.string.bipe_dm_topic_removed_by_you)
+                    isDm && !hasRoomTopic -> sp.getString(BipeR.string.bipe_dm_topic_removed, senderDisambiguatedDisplayName)
                     senderIsYou && !hasRoomTopic -> sp.getString(R.string.state_event_room_topic_removed_by_you)
                     !senderIsYou && hasRoomTopic -> sp.getString(R.string.state_event_room_topic_changed, senderDisambiguatedDisplayName, content.topic)
                     else -> sp.getString(R.string.state_event_room_topic_removed, senderDisambiguatedDisplayName)

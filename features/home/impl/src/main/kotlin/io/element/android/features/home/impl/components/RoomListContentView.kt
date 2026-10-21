@@ -8,6 +8,7 @@
 
 package io.element.android.features.home.impl.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,8 @@ import io.element.android.features.home.impl.roomlist.SecurityBannerState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.anUnselectedSpaceFiltersState
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
+import io.element.android.libraries.bipe.ui.BipeArchivedRow
 import io.element.android.libraries.bipe.ui.BipeHandlePromptRow
 import io.element.android.libraries.bipe.ui.BipeInviterRow
 import io.element.android.libraries.bipe.ui.BipeRemoteBannerRow
@@ -77,7 +80,7 @@ fun RoomListContentView(
     onBipeCreateGroupClick: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    bipeInviterHandle: String? = null,
+    bipeInviter: BipeInviterGreeting.Inviter? = null,
     onBipeInviterClick: () -> Unit = {},
     bipeHandlePrompt: BipeHandlePromptActions? = null,
     bipeRemoteBanner: BipeRemoteBannerActions? = null,
@@ -98,7 +101,7 @@ fun RoomListContentView(
                 onSetUpRecoveryClick = onSetUpRecoveryClick,
                 onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
                 onCreateRoomClick = if (contentState.bipeGroups) onBipeCreateGroupClick else onCreateRoomClick,
-                bipeInviterHandle = bipeInviterHandle,
+                bipeInviter = bipeInviter,
                 onBipeInviterClick = onBipeInviterClick,
                 bipeHandlePrompt = bipeHandlePrompt,
                 bipeRemoteBanner = bipeRemoteBanner,
@@ -117,7 +120,7 @@ fun RoomListContentView(
                 onRoomClick = onRoomClick,
                 lazyListState = lazyListState,
                 contentPadding = contentPadding,
-                bipeInviterHandle = bipeInviterHandle,
+                bipeInviter = bipeInviter,
                 onBipeInviterClick = onBipeInviterClick,
                 bipeHandlePrompt = bipeHandlePrompt,
                 bipeRemoteBanner = bipeRemoteBanner,
@@ -157,7 +160,7 @@ private fun EmptyView(
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
     onCreateRoomClick: () -> Unit,
-    bipeInviterHandle: String?,
+    bipeInviter: BipeInviterGreeting.Inviter?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
     bipeRemoteBanner: BipeRemoteBannerActions?,
@@ -203,8 +206,8 @@ private fun EmptyView(
                 }
                 // Bipe (ADR 0117): one account task at a time. The inviter row waits for the recovery key,
                 // "Escolha seu @" (bipe-chat/bipe#415) waits for the inviter row.
-                SecurityBannerState.None -> if (bipeInviterHandle != null) {
-                    BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                SecurityBannerState.None -> if (bipeInviter != null) {
+                    BipeInviterRow(inviter = bipeInviter, onClick = onBipeInviterClick)
                 } else if (bipeHandlePrompt != null) {
                     BipeHandlePromptRow(onClick = bipeHandlePrompt.onClick, onDismiss = bipeHandlePrompt.onDismiss)
                 }
@@ -225,7 +228,7 @@ private fun RoomsView(
     onRoomClick: (RoomListRoomSummary) -> Unit,
     contentPadding: PaddingValues,
     lazyListState: LazyListState,
-    bipeInviterHandle: String?,
+    bipeInviter: BipeInviterGreeting.Inviter?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
     bipeRemoteBanner: BipeRemoteBannerActions?,
@@ -233,6 +236,7 @@ private fun RoomsView(
 ) {
     val isSpaceFilterSelected = spaceFiltersState is SpaceFiltersState.Selected
     val hasAnyFilterSelected = filtersState.hasAnyFilterSelected || isSpaceFilterSelected
+    BackHandler(enabled = state.bipeShowsArchived) { eventSink(RoomListEvent.BipeShowArchived(false)) }
     if (state.summaries.isEmpty() && hasAnyFilterSelected) {
         EmptyViewForFilterStates(
             selectedFilters = filtersState.selectedFilters(),
@@ -249,10 +253,11 @@ private fun RoomsView(
                 null
             },
             // Bipe ADR 0034: hidden while any filter is on.
-            bipeInviterHandle = bipeInviterHandle.takeUnless { hasAnyFilterSelected },
+            bipeInviter = bipeInviter.takeUnless { hasAnyFilterSelected },
             onBipeInviterClick = onBipeInviterClick,
             bipeHandlePrompt = bipeHandlePrompt.takeUnless { hasAnyFilterSelected },
             bipeRemoteBanner = bipeRemoteBanner.takeUnless { hasAnyFilterSelected },
+            showsArchivedRow = !hasAnyFilterSelected,
             hideInvitesAvatars = hideInvitesAvatars,
             eventSink = eventSink,
             onSetUpRecoveryClick = onSetUpRecoveryClick,
@@ -269,10 +274,11 @@ private fun RoomsView(
 private fun RoomsViewList(
     state: RoomListContentState.Rooms,
     onRequestsClick: (() -> Unit)?,
-    bipeInviterHandle: String?,
+    bipeInviter: BipeInviterGreeting.Inviter?,
     onBipeInviterClick: () -> Unit,
     bipeHandlePrompt: BipeHandlePromptActions?,
     bipeRemoteBanner: BipeRemoteBannerActions?,
+    showsArchivedRow: Boolean,
     hideInvitesAvatars: Boolean,
     eventSink: (RoomListEvent) -> Unit,
     onSetUpRecoveryClick: () -> Unit,
@@ -316,9 +322,9 @@ private fun RoomsViewList(
                     )
                 }
             }
-            bipeInviterHandle != null -> {
+            bipeInviter != null -> {
                 item {
-                    BipeInviterRow(inviterHandle = bipeInviterHandle, onClick = onBipeInviterClick)
+                    BipeInviterRow(inviter = bipeInviter, onClick = onBipeInviterClick)
                     HorizontalDivider()
                 }
             }
@@ -340,6 +346,19 @@ private fun RoomsViewList(
             }
         }
 
+        // Bipe (bipe#435): the Arquivadas row. Hidden while any filter is on; while it is open, it leads back to the tab.
+        if (state.bipeShowsArchived) {
+            item {
+                BipeArchivedRow(count = state.bipeArchivedCount, isOpen = true, onClick = { eventSink(RoomListEvent.BipeShowArchived(false)) })
+                HorizontalDivider()
+            }
+        } else if (showsArchivedRow && state.bipeArchivedCount > 0) {
+            item {
+                BipeArchivedRow(count = state.bipeArchivedCount, isOpen = false, onClick = { eventSink(RoomListEvent.BipeShowArchived(true)) })
+                HorizontalDivider()
+            }
+        }
+
         if (onRequestsClick != null) {
             item {
                 BipeRequestsRow(count = state.bipeRequestCount, onClick = onRequestsClick)
@@ -353,16 +372,27 @@ private fun RoomsViewList(
             items = state.summaries,
             contentType = { _, room -> room.contentType() },
         ) { index, room ->
-            RoomSummaryRow(
-                room = room,
-                hideInviteAvatars = hideInvitesAvatars,
-                isInviteSeen = room.displayType == RoomSummaryDisplayType.INVITE &&
-                    state.seenRoomInvites.contains(room.roomId),
-                showUnreadCount = state.showUnreadCount,
-                showAllActivity = state.showAllActivity,
-                onClick = onRoomClick,
-                eventSink = eventSink,
-            )
+            val row = @Composable {
+                RoomSummaryRow(
+                    room = room,
+                    hideInviteAvatars = hideInvitesAvatars,
+                    isInviteSeen = room.displayType == RoomSummaryDisplayType.INVITE &&
+                        state.seenRoomInvites.contains(room.roomId),
+                    showUnreadCount = state.showUnreadCount,
+                    showAllActivity = state.showAllActivity,
+                    onClick = onRoomClick,
+                    eventSink = eventSink,
+                )
+            }
+            // Bipe (bipe#435): swipe a joined chat to archive it, or to bring it back.
+            if (room.displayType == RoomSummaryDisplayType.ROOM) {
+                BipeArchiveSwipe(
+                    isArchived = room.isLowPriority,
+                    onSwipe = { eventSink(RoomListEvent.BipeSetRoomIsArchived(room.roomId, !room.isLowPriority)) },
+                ) { row() }
+            } else {
+                row()
+            }
             if (index != state.summaries.lastIndex) {
                 HorizontalDivider()
             }

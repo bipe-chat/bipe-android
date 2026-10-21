@@ -11,6 +11,7 @@ package io.element.android.libraries.roomselect.impl
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import app.cash.turbine.Event
 import com.google.common.truth.Truth.assertThat
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
 import io.element.android.libraries.designsystem.theme.components.SearchBarResultState
 import io.element.android.libraries.matrix.api.MatrixClientProvider
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
@@ -42,7 +43,9 @@ import io.element.android.tests.testutils.test
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -413,10 +416,12 @@ internal fun TestScope.createRoomSelectPresenter(
     mode = mode,
     maxNumberOfRooms = maxNumberOfRooms,
     dataSourceFactory = object : RoomSelectSearchDataSource.Factory {
-        override fun create(coroutineScope: CoroutineScope, roomListService: RoomListService): RoomSelectSearchDataSource {
+        override fun create(coroutineScope: CoroutineScope, roomListService: RoomListService, clearedChats: Flow<ClearedChats>): RoomSelectSearchDataSource {
             return RoomSelectSearchDataSource(
                 coroutineScope = coroutineScope,
                 roomListService = roomListService,
+                // FakeMatrixClient fails account data reads, so the tests have no cleared DMs.
+                clearedChats = flowOf(ClearedChats.EMPTY),
                 coroutineDispatchers = testCoroutineDispatchers(),
             )
         }

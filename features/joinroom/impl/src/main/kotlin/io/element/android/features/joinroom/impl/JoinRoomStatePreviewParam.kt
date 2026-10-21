@@ -151,12 +151,27 @@ open class JoinRoomStatePreviewParam : PreviewParameterProvider<JoinRoomState> {
                     joinAuthorisationStatus = JoinAuthorisationStatus.Restricted,
                 )
             ),
+            // Bipe: a DM (bipe#507)
+            aJoinRoomState(
+                contentState = aFailureContentState(isDm = true)
+            ),
+            aJoinRoomState(
+                contentState = aLoadedContentState(
+                    name = null,
+                    details = aLoadedDetailsRoom(
+                        isDm = true,
+                    ),
+                )
+            ),
         )
 }
 
-fun aFailureContentState(): ContentState {
+fun aFailureContentState(
+    isDm: Boolean = false,
+): ContentState {
     return ContentState.Failure(
         error = Exception("Error"),
+        isDm = isDm,
     )
 }
 

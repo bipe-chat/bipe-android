@@ -38,6 +38,9 @@ class InternalLeaveRoomStatePreviewParam : PreviewParameterProvider<InternalLeav
             aLeaveRoomState(
                 leaveAction = AsyncAction.Failure(RuntimeException("Something went wrong")),
             ),
+            aLeaveRoomState(
+                bipeClearAction = AsyncAction.Failure(RuntimeException("Something went wrong")),
+            ),
         )
 }
 
@@ -45,8 +48,10 @@ private val A_ROOM_ID = RoomId("!aRoomId:aDomain")
 
 fun aLeaveRoomState(
     leaveAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
+    bipeClearAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     eventSink: (LeaveRoomEvent) -> Unit = {},
 ) = InternalLeaveRoomState(
     leaveAction = leaveAction,
+    bipeClearAction = bipeClearAction,
     eventSink = eventSink,
 )

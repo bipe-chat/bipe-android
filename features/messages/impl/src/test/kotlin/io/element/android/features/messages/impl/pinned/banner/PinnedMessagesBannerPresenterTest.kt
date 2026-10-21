@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.pinned.banner
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.messages.impl.fixtures.aBipeClearedChats
 import io.element.android.features.messages.impl.pinned.DefaultPinnedEventsTimelineProvider
 import io.element.android.libraries.eventformatter.test.FakePinnedMessagesBannerFormatter
 import io.element.android.libraries.matrix.api.room.JoinedRoom
@@ -242,4 +243,5 @@ internal fun TestScope.createPinnedEventsTimelineProvider(
     room = room,
     syncService = syncService,
     dispatchers = testCoroutineDispatchers(),
+    bipeClearedChats = aBipeClearedChats(),
 )

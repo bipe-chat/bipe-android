@@ -50,6 +50,9 @@ import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerStore
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
+import io.element.android.libraries.bipe.invites.BipeInvitePairs
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
@@ -68,6 +71,7 @@ import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.watchers.AnalyticsColdStartWatcher
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
@@ -79,6 +83,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import io.element.android.features.home.impl.filters.RoomListFilter as HomeRoomListFilter
 
 @Inject
@@ -101,8 +106,10 @@ class RoomListPresenter(
     private val featureFlagService: FeatureFlagService,
     private val bipeSelfChat: BipeSelfChat,
     private val bipeInviterGreeting: BipeInviterGreeting,
+    private val bipeInvitePairs: BipeInvitePairs,
     private val bipeHandlePrompt: BipeHandlePrompt,
     private val bipeRemoteBannerStore: BipeRemoteBannerStore,
+    private val bipeClearedChats: BipeClearedChats,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
     private val isBipeAccount = client.sessionId.value.endsWith(":${BipeConfig.SERVER_NAME}") // Bipe: bipe#201
@@ -133,10 +140,14 @@ class RoomListPresenter(
 
         // Bipe: the fixed category of the list. Conversas (direct chats) is the first tab (ADR 0053).
         var bipeShowsGroups by rememberSaveable { mutableStateOf(false) }
+        // Bipe (bipe#435): the list shows the archived chats of the tab.
+        var bipeShowsArchived by rememberSaveable { mutableStateOf(false) }
         val bipeSelfChatRoomId by bipeSelfChat.roomId.collectAsState()
         val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
+        val bipeInvitePairIds by bipeInvitePairs.userIds.collectAsState()
         val bipeShowsHandlePrompt by bipeHandlePrompt.shows.collectAsState()
         val bipeRemoteBanner by bipeRemoteBannerStore.shown.collectAsState()
+        val bipeClearedChatsState by bipeClearedChats.state.collectAsState()
 
         val contextMenu = remember { mutableStateOf<RoomListState.ContextMenu>(RoomListState.ContextMenu.Hidden) }
         val declineInviteMenu = remember { mutableStateOf<RoomListState.DeclineInviteMenu>(RoomListState.DeclineInviteMenu.Hidden) }
@@ -167,6 +178,8 @@ class RoomListPresenter(
                 }
                 is RoomListEvent.SetRoomIsFavorite -> coroutineScope.setRoomIsFavorite(event.roomId, event.isFavorite)
                 is RoomListEvent.SetRoomIsMuted -> coroutineScope.setRoomIsMuted(event.roomId, event.isMuted)
+                is RoomListEvent.BipeSetRoomIsArchived -> coroutineScope.setRoomIsArchived(event.roomId, event.isArchived)
+                is RoomListEvent.BipeShowArchived -> bipeShowsArchived = event.showArchived
                 is RoomListEvent.MarkAsRead -> coroutineScope.markAsRead(event.roomId)
                 is RoomListEvent.MarkAsUnread -> coroutineScope.markAsUnread(event.roomId)
                 is RoomListEvent.AcceptInvite -> {
@@ -190,6 +203,7 @@ class RoomListPresenter(
                         filtersState.eventSink(RoomListFiltersEvent.ToggleFilter(HomeRoomListFilter.Invites))
                     }
                     bipeShowsGroups = event.showGroups
+                    bipeShowsArchived = false
                 }
             }
         }
@@ -216,7 +230,10 @@ class RoomListPresenter(
             showsRequests = io.element.android.features.home.impl.filters.RoomListFilter.Invites in filtersState.selectedFilters(),
             bipeSelfChatRoomId = bipeSelfChatRoomId,
             bipeShowsGroups = bipeShowsGroups,
+            bipeShowsArchived = bipeShowsArchived,
             bipeHasAnyFilterSelected = filtersState.hasAnyFilterSelected || spaceFiltersState is SpaceFiltersState.Selected,
+            bipeInvitePairIds = bipeInvitePairIds.toImmutableSet(),
+            bipeClearedChats = bipeClearedChatsState,
         )
 
         // Bipe: the tab sets the category, so the People and Rooms chips are gone. Pedidos shows on Conversas only.
@@ -238,7 +255,7 @@ class RoomListPresenter(
             acceptDeclineInviteState = acceptDeclineInviteState,
             hideInvitesAvatars = hideInvitesAvatar,
             canReportRoom = canReportRoom,
-            bipeInviterHandle = bipeInviter?.handle,
+            bipeInviter = bipeInviter,
             bipeOpenInviterChat = bipeInviterGreeting::openChat,
             eventSink = ::handleEvent,
             bipeShowsHandlePrompt = bipeShowsHandlePrompt,
@@ -301,10 +318,26 @@ class RoomListPresenter(
         showsRequests: Boolean,
         bipeSelfChatRoomId: RoomId?,
         bipeShowsGroups: Boolean,
+        bipeShowsArchived: Boolean,
         bipeHasAnyFilterSelected: Boolean,
+        bipeInvitePairIds: ImmutableSet<String>,
+        bipeClearedChats: ClearedChats,
     ): RoomListContentState {
         val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
             roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
+        }
+        // Bipe ADR 0034: a DM invite from an invite pair skips Pedidos and is accepted without a tap (iOS parity, bipe#413).
+        // An invite from anyone else reloads the pairs once, because a new invitee's first chat can arrive before the pairs know them.
+        LaunchedEffect(roomSummaries, bipeInvitePairIds) {
+            roomSummaries.dataOrNull().orEmpty()
+                .filter { it.displayType == RoomSummaryDisplayType.INVITE && it.isDm }
+                .forEach { summary ->
+                    if (summary.isFromInvitePair(bipeInvitePairIds)) {
+                        bipeInvitePairs.autoAccept(summary.roomId)
+                    } else {
+                        bipeInvitePairs.recheck(summary.roomId)
+                    }
+                }
         }
         val loadingState by roomListDataSource.loadingState.collectAsState()
         val showEmpty by remember {
@@ -329,21 +362,32 @@ class RoomListPresenter(
                 coldStartWatcher.onRoomListVisible()
 
                 // Bipe: DM invites are message requests (usernames.md "First contact"). They only show under the
-                // Pedidos filter. The SDK has no cheap "shares a joined room" check, so every DM invite counts.
+                // Pedidos filter. The SDK has no cheap "shares a joined room" check, so every DM invite counts,
+                // except one from an invite pair (ADR 0034), which is listed and accepted.
                 // Bipe: the self-chat shows in the Você tab only (ADR 0053).
-                val allSummaries = roomSummaries.dataOrNull().orEmpty().filter { it.roomId != bipeSelfChatRoomId }
+                // Bipe (bipe#464): a cleared DM leaves every list, the archive too, until a newer event arrives.
+                val allSummaries = roomSummaries.dataOrNull().orEmpty().filter {
+                    it.roomId != bipeSelfChatRoomId && !it.bipeIsClearedDm(bipeClearedChats)
+                }
+                // Bipe (bipe#435): archived chats (m.lowpriority) leave the tab and sit behind the Arquivadas row.
+                val (archived, active) = allSummaries.partition { it.isLowPriority && it.displayType != RoomSummaryDisplayType.INVITE }
+                val tabSummaries = if (bipeShowsArchived) archived else active
                 val (requests, listed) = if (showsRequests) {
-                    emptyList<RoomListRoomSummary>() to allSummaries
+                    emptyList<RoomListRoomSummary>() to tabSummaries
                 } else {
-                    allSummaries.partition { it.displayType == RoomSummaryDisplayType.INVITE && it.isDm }
+                    tabSummaries.partition {
+                        it.displayType == RoomSummaryDisplayType.INVITE && it.isDm && !it.isFromInvitePair(bipeInvitePairIds)
+                    }
                 }
 
-                // Bipe: numberOfRooms counts every room, not the rooms of the tab. A Grupos tab with no groups
-                // shows its own empty state. With a filter on, the filter empty state shows instead.
-                if (bipeShowsGroups && listed.isEmpty() && !bipeHasAnyFilterSelected) {
+                // Bipe: numberOfRooms counts every room, not the rooms of the tab, and cleared DMs too (bipe#479).
+                // A tab with no rows (no rooms, no Pedidos, no Arquivadas) shows its own empty state.
+                // With a filter on, the filter empty state shows instead.
+                val bipeTabIsEmpty = listed.isEmpty() && archived.isEmpty() && requests.isEmpty()
+                if (bipeTabIsEmpty && !bipeHasAnyFilterSelected) {
                     return RoomListContentState.Empty(
                         securityBannerState = securityBannerState,
-                        bipeGroups = true,
+                        bipeGroups = bipeShowsGroups,
                     )
                 }
 
@@ -357,6 +401,8 @@ class RoomListPresenter(
                     showAllActivity = showAllActivity,
                     seenRoomInvites = seenRoomInvites.toImmutableSet(),
                     bipeRequestCount = requests.size,
+                    bipeArchivedCount = archived.size,
+                    bipeShowsArchived = bipeShowsArchived,
                 )
             }
         }
@@ -369,6 +415,7 @@ class RoomListPresenter(
             roomName = event.roomSummary.name,
             isDm = event.roomSummary.isDm,
             isFavorite = event.roomSummary.isFavorite,
+            isArchived = event.roomSummary.isLowPriority,
             hasNewContent = event.roomSummary.hasNewContent,
             isMuted = event.roomSummary.userDefinedNotificationMode == RoomNotificationMode.MUTE,
         )
@@ -402,6 +449,14 @@ class RoomListPresenter(
         }
     }
 
+    // Bipe (bipe#435): archive is the m.lowpriority tag, so other clients agree.
+    private fun CoroutineScope.setRoomIsArchived(roomId: RoomId, isArchived: Boolean) = launch {
+        client.getRoom(roomId)?.use { room ->
+            room.setIsLowPriority(isArchived)
+                .onFailure { Timber.e(it, "Bipe: could not set room $roomId archived: $isArchived") }
+        }
+    }
+
     // Bipe: one-tap mute from the room list. No duration, the room stays muted until unmuted.
     private fun CoroutineScope.setRoomIsMuted(roomId: RoomId, isMuted: Boolean) = launch {
         val notificationSettingsService = client.notificationSettingsService
@@ -430,3 +485,10 @@ class RoomListPresenter(
         }
     }
 }
+
+/** Bipe (bipe#464): a joined DM that the user cleared and that has no event after the marker. */
+internal fun RoomListRoomSummary.bipeIsClearedDm(clearedChats: ClearedChats) =
+    isDm && displayType == RoomSummaryDisplayType.ROOM && clearedChats.isHidden(roomId.value, bipeLatestEventTimestamp)
+
+/** Bipe ADR 0034: the invite was sent by one of the account's invite pairs. */
+private fun RoomListRoomSummary.isFromInvitePair(invitePairIds: Set<String>) = inviteSender?.userId?.value in invitePairIds

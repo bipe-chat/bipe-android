@@ -11,7 +11,6 @@ package io.element.android.features.home.impl
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
-import io.element.android.libraries.bipe.account.BipeAccountCap
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -33,12 +32,11 @@ data class HomeState(
     val eventSink: (HomeEvent) -> Unit,
     // Bipe: tab bar badges (ADR 0053)
     val bipeBadges: BipeTabBadges,
-    /** Bipe: every account on the phone, current first, for the avatar menu (ADR 0086, #267). */
+    /** Bipe: every account on the phone, current first, for the Você tab menu (ADR 0086, ADR 0135). */
     val bipeAccounts: ImmutableList<MatrixUser>,
-    /** Bipe: the cap of personal accounts per phone (ADR 0086). */
-    val bipeMaxAccounts: Int,
+    /** Bipe: the Você tab menu shows "Nova conta" while the cap allows one more account (ADR 0086). */
+    val bipeCanAddAccount: Boolean,
 ) {
-    val bipeCanAddAccount: Boolean get() = BipeAccountCap.canAdd(bipeAccounts.size, bipeMaxAccounts)
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem.isBipeRoomList && roomListState.displayFilters // Bipe: Conversas and Grupos
 }

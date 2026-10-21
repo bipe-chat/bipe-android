@@ -40,7 +40,6 @@ dependencies {
     implementation(projects.services.analytics.api)
     implementation(libs.coil.compose)
     implementation(projects.features.createroom.api)
-    implementation(projects.features.enterprise.api)
     api(projects.features.startchat.api)
 
     testCommonDependencies(libs, true)
@@ -49,5 +48,4 @@ dependencies {
     testImplementation(projects.libraries.usersearch.test)
     testImplementation(projects.features.createroom.test)
     testImplementation(projects.features.startchat.test)
-    testImplementation(projects.features.enterprise.test)
 }

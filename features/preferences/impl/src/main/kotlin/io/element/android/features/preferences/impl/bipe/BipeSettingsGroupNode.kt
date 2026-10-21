@@ -8,6 +8,10 @@ package io.element.android.features.preferences.impl.bipe
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.core.node.Node
@@ -21,6 +25,8 @@ import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.inputs
 import io.element.android.libraries.bipe.account.BipeBiometricUnlock
+import io.element.android.libraries.bipe.account.newaccount.BipeNewAccountPresenter
+import io.element.android.libraries.bipe.account.newaccount.BipeNewAccountView
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.generated.BipeSettingsRow
 import io.element.android.libraries.bipe.generated.BipeSettingsRowKind
@@ -36,6 +42,7 @@ class BipeSettingsGroupNode(
     @Assisted plugins: List<Plugin>,
     presenterFactory: BipeSettingsGroupPresenter.Factory,
     private val biometricUnlock: BipeBiometricUnlock,
+    private val newAccountPresenter: BipeNewAccountPresenter,
 ) : Node(buildContext, plugins = plugins) {
     data class Inputs(val group: BipeSettingsGroup) : NodeInputs
 
@@ -46,6 +53,7 @@ class BipeSettingsGroupNode(
         fun navigateToMediaSettings()
         fun navigateToLocationSettings()
         fun navigateToSecureBackup()
+        fun navigateToAppLockSetup()
         fun navigateToLinkNewDevice()
         fun navigateToSignOut()
         fun navigateToMessaging()
@@ -53,6 +61,8 @@ class BipeSettingsGroupNode(
         fun navigateToOssLicenses()
         fun navigateToSupport()
         fun navigateToBugReport()
+        fun navigateToAddAccount()
+        fun bipeNavigateToSignup(inviteCode: String?)
     }
 
     private val callback: Callback = callback()
@@ -63,6 +73,16 @@ class BipeSettingsGroupNode(
         val activity = requireNotNull(LocalActivity.current)
         val isDark = !ElementTheme.isLightTheme
         val state = presenter.present()
+        // "Nova conta" (bipe#445, bipe#446): the same window as the avatar menu.
+        var showNewAccount by remember { mutableStateOf(false) }
+        if (showNewAccount) {
+            BipeNewAccountView(
+                state = newAccountPresenter.present(),
+                onDismiss = { showNewAccount = false },
+                onPersonalClick = callback::bipeNavigateToSignup,
+                onExistingClick = callback::navigateToAddAccount,
+            )
+        }
         BipeSettingsGroupView(
             state = state,
             onBackClick = ::navigateUp,
@@ -74,7 +94,12 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.PRIVACY_MESSAGING -> callback.navigateToMessaging()
                     BipeSettingsRow.PRIVACY_BLOCKED -> callback.navigateToBlockedUsers()
                     BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> callback.navigateToSecureBackup()
+                    // "Bloquear o app" turned on, after the owner check in BipeAppLockRow.
+                    BipeSettingsRow.ACCOUNT_APP_LOCK -> callback.navigateToAppLockSetup()
                     BipeSettingsRow.ACCOUNT_LINKED_DEVICES -> callback.navigateToLinkNewDevice()
+                    BipeSettingsRow.ACCOUNT_ADD -> {
+                        showNewAccount = true
+                    }
                     BipeSettingsRow.ACCOUNT_SIGN_OUT -> callback.navigateToSignOut()
                     BipeSettingsRow.CHATS_MEDIA_QUALITY -> callback.navigateToMediaSettings()
                     BipeSettingsRow.CHATS_LIVE_LOCATION -> callback.navigateToLocationSettings()

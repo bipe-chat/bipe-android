@@ -17,6 +17,7 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteState
 import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerShown
+import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.push.api.battery.BatteryOptimizationState
@@ -35,8 +36,8 @@ data class RoomListState(
     val acceptDeclineInviteState: AcceptDeclineInviteState,
     val hideInvitesAvatars: Boolean,
     val canReportRoom: Boolean,
-    /** Bipe ADR 0034: the inviter's handle (without "@") until the user sends them a first message. */
-    val bipeInviterHandle: String?,
+    /** Bipe ADR 0034: the inviter (handle without "@", name and avatar) until the user sends them a first message. */
+    val bipeInviter: BipeInviterGreeting.Inviter?,
     /** Bipe ADR 0034: the chat with the inviter, found or created. `null` when it cannot open. */
     val bipeOpenInviterChat: suspend () -> RoomId?,
     val eventSink: (RoomListEvent) -> Unit,
@@ -56,6 +57,7 @@ data class RoomListState(
             val isFavorite: Boolean,
             val hasNewContent: Boolean,
             val isMuted: Boolean = false,
+            val isArchived: Boolean = false,
         ) : ContextMenu
     }
 
@@ -91,5 +93,8 @@ sealed interface RoomListContentState {
         val showAllActivity: Boolean,
         // Bipe: DM invites kept out of the list, shown behind the Pedidos row.
         val bipeRequestCount: Int = 0,
+        // Bipe (bipe#435): archived chats of the tab, behind the Arquivadas row.
+        val bipeArchivedCount: Int = 0,
+        val bipeShowsArchived: Boolean = false,
     ) : RoomListContentState
 }

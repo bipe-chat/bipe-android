@@ -9,6 +9,7 @@
 package io.element.android.libraries.mediaviewer.impl.datasource
 
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
@@ -27,6 +28,7 @@ class DefaultFocusedTimelineMediaGalleryDataSourceFactory(
     private val room: JoinedRoom,
     private val timelineMediaItemsFactory: TimelineMediaItemsFactory,
     private val mediaItemsPostProcessor: MediaItemsPostProcessor,
+    private val bipeClearedChats: BipeClearedChats,
 ) : FocusedTimelineMediaGalleryDataSourceFactory {
     override fun createFor(
         eventId: EventId,
@@ -43,6 +45,7 @@ class DefaultFocusedTimelineMediaGalleryDataSourceFactory(
             ),
             timelineMediaItemsFactory = timelineMediaItemsFactory,
             mediaItemsPostProcessor = mediaItemsPostProcessor,
+            bipeClearedChats = bipeClearedChats,
         )
     }
 }

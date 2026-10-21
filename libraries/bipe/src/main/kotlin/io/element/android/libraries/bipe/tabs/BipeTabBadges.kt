@@ -6,6 +6,7 @@
 
 package io.element.android.libraries.bipe.tabs
 
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.CurrentUserMembership
 import io.element.android.libraries.matrix.api.roomlist.RoomSummary
@@ -14,7 +15,8 @@ import io.element.android.libraries.matrix.api.roomlist.RoomSummary
  * Tab bar badges (ADR 0053). Conversas counts the notifications of direct chats. Grupos counts the notifications of
  * groups. The quiet-group push rules (ADR 0026) already limit a group's count to mentions, replies and new polls.
  * A group invite the user has not opened counts 1 on Grupos. DM invites stay behind the Pedidos filter.
- * The split uses the SDK DM flag, as the room list category filter does. Spaces and the self-chat do not count.
+ * The split uses the SDK DM flag, as the room list category filter does. Spaces, the self-chat and a cleared DM
+ * that the room list hides (bipe#464) do not count.
  */
 data class BipeTabBadges(
     val chats: Long,
@@ -25,7 +27,12 @@ data class BipeTabBadges(
     companion object {
         val NONE = BipeTabBadges(chats = 0, groups = 0)
 
-        fun from(summaries: List<RoomSummary>, selfChatRoomId: RoomId?, seenInviteRoomIds: Set<RoomId>): BipeTabBadges {
+        fun from(
+            summaries: List<RoomSummary>,
+            selfChatRoomId: RoomId?,
+            seenInviteRoomIds: Set<RoomId>,
+            clearedChats: ClearedChats = ClearedChats.EMPTY,
+        ): BipeTabBadges {
             var chats = 0L
             var groups = 0L
             for (summary in summaries) {
@@ -36,6 +43,7 @@ data class BipeTabBadges(
                         if (!info.isDm && summary.roomId !in seenInviteRoomIds) groups += 1
                     }
                     info.currentUserMembership != CurrentUserMembership.JOINED -> Unit
+                    info.isDm && clearedChats.isHidden(summary.roomId.value, summary.latestEventTimestamp) -> Unit
                     info.isDm -> chats += info.numUnreadNotifications
                     else -> groups += info.numUnreadNotifications
                 }

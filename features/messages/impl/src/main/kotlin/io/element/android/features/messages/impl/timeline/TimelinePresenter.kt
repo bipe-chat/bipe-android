@@ -48,6 +48,8 @@ import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.libraries.androidutils.clipboard.ClipboardHelper
 import io.element.android.libraries.androidutils.toast.ToastHelper
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeClearedTimeline
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
@@ -122,6 +124,7 @@ class TimelinePresenter(
     private val clipboardHelper: ClipboardHelper,
     private val toastHelper: ToastHelper,
     private val bipeSession: BipeSession, // Bipe: handle change lines (ADR 0066)
+    private val bipeClearedChats: BipeClearedChats, // Bipe: cleared DMs (bipe#464)
 ) : Presenter<TimelineState> {
     private val tag = "TimelinePresenter"
 
@@ -144,6 +147,14 @@ class TimelinePresenter(
 
     // Bipe: Matrix ID to the latest join time in the loaded timeline, for the handle change lines (ADR 0066).
     private val bipeJoinTimes = MutableStateFlow<Map<String, Long>>(emptyMap())
+
+    // Bipe (bipe#464): a cleared DM shows only the events after its marker. Back-pagination stops at the marker.
+    private val bipeClearMarker = bipeClearedChats.state
+        .map { chats -> if (room.roomInfoFlow.value.isDm) chats.marker(room.roomId.value) else null }
+        .distinctUntilChanged()
+
+    @Volatile
+    private var bipeReachesClearMarker = false
 
     private val focusRequestState: MutableState<FocusRequestState> = mutableStateOf(FocusRequestState.None)
 
@@ -214,6 +225,10 @@ class TimelinePresenter(
                         if (focusRequestState.value.isPending()) {
                             return
                         }
+                    }
+                    // Bipe (bipe#464): no events before the marker of a cleared DM.
+                    if (event.direction == Timeline.PaginationDirection.BACKWARDS && bipeReachesClearMarker) {
+                        return
                     }
                     localScope.launch {
                         timelineController.paginate(direction = event.direction)
@@ -414,7 +429,11 @@ class TimelinePresenter(
                 timelineController.timelineItems(),
                 room.membersStateFlow,
                 sessionPreferencesStore.isRenderReadReceiptsEnabled(),
-            ) { items, membersState, renderReadReceipts ->
+                bipeClearMarker,
+            ) { allItems, membersState, renderReadReceipts, clearMarker ->
+                // Bipe (bipe#464): drop the events up to the marker of a cleared DM.
+                val items = BipeClearedTimeline.filter(allItems, clearMarker)
+                bipeReachesClearMarker = BipeClearedTimeline.reachesMarker(allItems, clearMarker)
                 val parent = analyticsService.getLongRunningTransaction(DisplayFirstTimelineItems)
                 val transaction = parent?.startChild("timelineItemsFactory.replaceWith", "Processing timeline items")
                 transaction?.putExtraData(AnalyticsUserData.TIMELINE_ITEM_COUNT, items.count().toString())

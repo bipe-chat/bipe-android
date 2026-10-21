@@ -8,6 +8,7 @@
 
 package io.element.android.features.lockscreen.impl.unlock
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +46,10 @@ import io.element.android.features.lockscreen.impl.components.PinEntryTextField
 import io.element.android.features.lockscreen.impl.unlock.keypad.PinKeypad
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticOnChange
+import io.element.android.libraries.bipe.haptics.BipeHapticWhen
+import io.element.android.libraries.bipe.ui.bipeWelcomeBackground
 import io.element.android.libraries.designsystem.components.BigIcon
 import io.element.android.libraries.designsystem.components.ProgressDialog
 import io.element.android.libraries.designsystem.components.button.BackButton
@@ -51,13 +57,13 @@ import io.element.android.libraries.designsystem.components.dialogs.Confirmation
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
-import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.Surface
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.utils.OnLifecycleEvent
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.libraries.bipe.R as BipeR
+import io.element.android.libraries.designsystem.R as DesignSystemR
 
 @Composable
 fun PinUnlockView(
@@ -72,6 +78,9 @@ fun PinUnlockView(
             else -> Unit
         }
     }
+    // Bipe (ADR 0134): app_unlock after a PIN unlock (a biometric prompt plays its own haptic), pin_wrong.
+    BipeHapticWhen(BipeHaptic.Success, state.isUnlocked && state.pinEntry.dataOrNull()?.isComplete() == true)
+    BipeHapticOnChange(BipeHaptic.Error, state.remainingAttempts.dataOrNull()) { previous, current -> current < previous }
     Surface(modifier) {
         PinUnlockPage(state = state, isInAppUnlock = isInAppUnlock, onCancel = onCancel)
         if (state.showSignOutPrompt) {
@@ -106,7 +115,8 @@ private fun PinUnlockPage(
     isInAppUnlock: Boolean,
     onCancel: () -> Unit,
 ) {
-    BoxWithConstraints {
+    // Bipe (bipe#435): the app lock shows the Bipe background, the logo and "Bipe bloqueado", as iOS does while Face ID runs.
+    BoxWithConstraints(modifier = if (isInAppUnlock) Modifier else Modifier.bipeWelcomeBackground()) {
         val commonModifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
@@ -271,17 +281,15 @@ private fun PinUnlockHeader(
         if (isInAppUnlock) {
             BigIcon(style = BigIcon.Style.Default(CompoundIcons.LockSolid()))
         } else {
-            Icon(
-                modifier = Modifier
-                    .size(32.dp),
-                tint = ElementTheme.colors.iconPrimary,
-                imageVector = CompoundIcons.LockSolid(),
+            Image(
+                painter = painterResource(id = DesignSystemR.drawable.bipe_logo),
                 contentDescription = null,
+                modifier = Modifier.size(64.dp),
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = stringResource(id = CommonStrings.common_enter_your_pin),
+            text = stringResource(id = if (isInAppUnlock) CommonStrings.common_enter_your_pin else BipeR.string.bipe_app_lock_title),
             modifier = Modifier
                 .fillMaxWidth(),
             textAlign = TextAlign.Center,

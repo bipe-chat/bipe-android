@@ -28,16 +28,23 @@ open class DeclineAndBlockStatePreviewParam : PreviewParameterProvider<DeclineAn
             aDeclineAndBlockState(
                 declineAction = AsyncAction.Failure(Exception("Failed to decline")),
             ),
+            // Bipe: a DM (bipe#507)
+            aDeclineAndBlockState(
+                isDm = true,
+                reportRoom = true,
+            ),
         )
 }
 
 fun aDeclineAndBlockState(
+    isDm: Boolean = false,
     reportRoom: Boolean = false,
     reportReason: String = "",
     blockUser: Boolean = false,
     declineAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     eventSink: (DeclineAndBlockEvent) -> Unit = {},
 ) = DeclineAndBlockState(
+    isDm = isDm,
     reportRoom = reportRoom,
     reportReason = reportReason,
     blockUser = blockUser,

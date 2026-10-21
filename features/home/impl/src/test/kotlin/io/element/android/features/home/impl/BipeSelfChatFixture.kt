@@ -6,6 +6,8 @@
 
 package io.element.android.features.home.impl
 
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeServerAccountData
 import io.element.android.libraries.bipe.selfchat.BipeSelfChat
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.test.FakeMatrixClient
@@ -17,4 +19,11 @@ import kotlinx.coroutines.SupervisorJob
 internal fun aBipeSelfChat(client: MatrixClient = FakeMatrixClient()) = BipeSelfChat(
     matrixClient = client,
     sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+)
+
+/** No cleared DMs (bipe#464). Account data reads fail in [FakeMatrixClient] by default, so errors are dropped. */
+internal fun aBipeClearedChats(client: MatrixClient = FakeMatrixClient()) = BipeClearedChats(
+    matrixClient = client,
+    sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+    serverAccountData = BipeServerAccountData { Result.success(null) },
 )

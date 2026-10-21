@@ -116,6 +116,12 @@ data class BipeMyInvites(
     @SerialName("invites") val invites: List<BipeInvite>,
 )
 
+/** `GET /v1/me/invite-connections`. */
+@Serializable
+data class BipeInviteConnections(
+    @SerialName("user_ids") val userIds: List<String>,
+)
+
 @Serializable
 data class BipeCreatedInvite(
     @SerialName("id") val id: String,
@@ -150,6 +156,20 @@ data class BipeMyHandle(
     @SerialName("handle") val handle: String? = null,
     /** `null` when a change is allowed now. */
     @Serializable(with = InstantSerializer::class) @SerialName("changeable_at") val changeableAt: Instant? = null,
+)
+
+/** Contract: `BusinessClaim` (ADR 0042). Only the parts the trust card reads. */
+@Serializable
+data class BipeBusinessClaim(
+    /** `registry_pending`, `awaiting_proof`, `verified`, `rejected` or `revoked`. */
+    @SerialName("status") val status: String,
+    @SerialName("domains") val domains: List<BipeBusinessDomain> = emptyList(),
+)
+
+@Serializable
+data class BipeBusinessDomain(
+    @SerialName("domain") val domain: String,
+    @Serializable(with = InstantSerializer::class) @SerialName("verified_at") val verifiedAt: Instant? = null,
 )
 
 /** `GET /v1/profiles/{handle}`: a published profile (ADR 0041). Never carries the Matrix ID. */
@@ -244,6 +264,12 @@ data class BipeAccountStatus(
 ) {
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }
+
+/** `GET /v1/accounts/{userId}/type` (ADR 0132). `personal` or `company`; the type comes from sign-up, never from the profile. */
+@Serializable
+data class BipeAccountTypeResponse(
+    @SerialName("account_type") val accountType: String,
+)
 
 /** `RecoveryStarted`: the claim secret is sent once. Keep it on the new device. */
 @Serializable

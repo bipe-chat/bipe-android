@@ -8,6 +8,7 @@
 
 package io.element.android.features.home.impl
 
+import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -26,12 +27,16 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -39,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.features.home.impl.components.BipeAccountMenuAnchor
 import io.element.android.features.home.impl.components.BipeHandlePromptActions
 import io.element.android.features.home.impl.components.BipeRemoteBannerActions
 import io.element.android.features.home.impl.components.HomeTopBar
@@ -58,6 +64,8 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersView
 import io.element.android.features.home.impl.spaces.HomeSpacesView
 import io.element.android.libraries.androidutils.throttler.FirstThrottler
 import io.element.android.libraries.bipe.banner.BipeOnForeground
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -73,7 +81,10 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.ui.strings.CommonStrings
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -188,6 +199,7 @@ private fun HomeScaffold(
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
     val roomListState: RoomListState = state.roomListState
     val bipeCoroutineScope = rememberCoroutineScope()
+    val bipeHaptics = rememberBipeHaptics()
     val uriHandler = LocalUriHandler.current
     // Bipe (ADR 0117, bipe-chat/bipe#386): the remote critical banner, read on launch and on foreground.
     BipeOnForeground { roomListState.eventSink(RoomListEvent.BipeRefreshRemoteBanner) }
@@ -228,13 +240,6 @@ private fun HomeScaffold(
                 },
                 onMenuActionClick = onMenuActionClick,
                 onOpenSettings = onOpenSettings,
-                onAccountSwitch = {
-                    state.eventSink(HomeEvent.SwitchToAccount(it))
-                },
-                bipeAccounts = state.bipeAccounts,
-                bipeCanAddAccount = state.bipeCanAddAccount,
-                bipeMaxAccounts = state.bipeMaxAccounts,
-                onBipeAddAccount = onAddAccountClick,
                 scrollBehavior = scrollBehavior,
                 displayFilters = state.displayRoomListFilters,
                 filtersState = roomListState.filtersState,
@@ -250,6 +255,15 @@ private fun HomeScaffold(
                 modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
                 currentHomeNavigationBarItem = state.currentHomeNavigationBarItem,
                 bipeBadges = state.bipeBadges,
+                bipeAccountSwitcher = BipeAccountSwitcher(
+                    accounts = state.bipeAccounts,
+                    nextAccount = state.bipeNextAccount(),
+                    // Bipe: "Nova conta" only while the phone has one account; with more, it is in Sua conta.
+                    canAddAccount = state.bipeCanAddAccount && state.bipeAccounts.size == 1,
+                    onSwitch = { state.eventSink(HomeEvent.SwitchToAccount(it)) },
+                    onAddAccount = onAddAccountClick,
+                    onMenuOpen = { bipeHaptics(BipeHaptic.Hold) }, // Bipe: account_menu (ADR 0134)
+                ),
                 onItemClick = { item ->
                     // scroll to top if selecting the same item
                     if (item == state.currentHomeNavigationBarItem) {
@@ -268,6 +282,7 @@ private fun HomeScaffold(
                             lazyListStateTarget.animateScrollToItem(0)
                         }
                     } else {
+                        bipeHaptics(BipeHaptic.Tick) // Bipe: tab_switch (ADR 0134)
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },
@@ -334,7 +349,7 @@ private fun HomeScaffold(
                             onBipeCreateGroupClick = onBipeCreateGroupClick,
                             contentPadding = lazyColumnContentPadding + contentPadding,
                             // Bipe ADR 0034: the card to message the inviter shows in Conversas only.
-                            bipeInviterHandle = roomListState.bipeInviterHandle
+                            bipeInviter = roomListState.bipeInviter
                                 .takeIf { state.currentHomeNavigationBarItem == HomeNavigationBarItem.Chats },
                             onBipeInviterClick = {
                                 bipeCoroutineScope.launch { roomListState.bipeOpenInviterChat()?.let(onRoomClick) }
@@ -417,10 +432,15 @@ private fun HomeFloatingActionButton(
 private fun HomeBottomBar(
     currentHomeNavigationBarItem: HomeNavigationBarItem,
     bipeBadges: BipeTabBadges,
+    bipeAccountSwitcher: BipeAccountSwitcher,
     onItemClick: (HomeNavigationBarItem) -> Unit,
     modifier: Modifier = Modifier,
     floatingActionButton: (@Composable () -> Unit)?,
 ) {
+    // Bipe (ADR 0135): a tap on Você opens Você at once. A second tap inside the double-tap timeout switches to the next
+    // account. With one account, a double tap is a tap.
+    val doubleTapTimeoutMillis = LocalViewConfiguration.current.doubleTapTimeoutMillis
+    var lastYouTapMillis by remember { mutableLongStateOf(0L) }
     HorizontalFloatingToolbar(
         floatingActionButton = floatingActionButton,
         modifier = modifier
@@ -438,16 +458,66 @@ private fun HomeBottomBar(
                 HomeNavigationBarItem.Spaces,
                 HomeNavigationBarItem.You -> 0L
             }
-            HorizontalFloatingToolbarItem(
-                icon = item.icon(isSelected),
-                tooltipLabel = stringResource(item.labelRes),
-                isSelected = isSelected,
-                onClick = { onItemClick(item) },
-                counter = badge.takeIf { it > 0 }?.coerceAtMost(Int.MAX_VALUE.toLong())?.toInt(),
-                showWarning = item == HomeNavigationBarItem.You && bipeBadges.youWarning,
-            )
+            val counter = badge.takeIf { it > 0 }?.coerceAtMost(Int.MAX_VALUE.toLong())?.toInt()
+            if (item == HomeNavigationBarItem.You) {
+                // Bipe: the account switcher is on the Você tab (ADR 0135).
+                BipeAccountMenuAnchor(
+                    accounts = bipeAccountSwitcher.accounts,
+                    canAddAccount = bipeAccountSwitcher.canAddAccount,
+                    onAccountSwitch = bipeAccountSwitcher.onSwitch,
+                    onAddAccount = bipeAccountSwitcher.onAddAccount,
+                ) { openMenu ->
+                    HorizontalFloatingToolbarItem(
+                        icon = item.icon(isSelected),
+                        tooltipLabel = stringResource(item.labelRes),
+                        isSelected = isSelected,
+                        onClick = {
+                            val now = SystemClock.uptimeMillis()
+                            val nextAccount = bipeAccountSwitcher.nextAccount
+                            if (nextAccount != null && now - lastYouTapMillis <= doubleTapTimeoutMillis) {
+                                lastYouTapMillis = 0L
+                                bipeAccountSwitcher.onSwitch(nextAccount)
+                            } else {
+                                lastYouTapMillis = now
+                                onItemClick(item)
+                            }
+                        },
+                        onLongClick = {
+                            bipeAccountSwitcher.onMenuOpen()
+                            openMenu()
+                        },
+                        counter = counter,
+                        showWarning = bipeBadges.youWarning,
+                    )
+                }
+            } else {
+                HorizontalFloatingToolbarItem(
+                    icon = item.icon(isSelected),
+                    tooltipLabel = stringResource(item.labelRes),
+                    isSelected = isSelected,
+                    onClick = { onItemClick(item) },
+                    counter = counter,
+                )
+            }
         }
     }
+}
+
+/** Bipe: what the Você tab needs to switch accounts (ADR 0135). */
+private data class BipeAccountSwitcher(
+    val accounts: ImmutableList<MatrixUser>,
+    val nextAccount: SessionId?,
+    val canAddAccount: Boolean,
+    val onSwitch: (SessionId) -> Unit,
+    val onAddAccount: () -> Unit,
+    val onMenuOpen: () -> Unit,
+)
+
+/** Bipe: the account after the current one. The current account is in the middle of the neighbours (bipe#434). */
+private fun HomeState.bipeNextAccount(): SessionId? {
+    val currentUser = currentUserAndNeighbors.getOrNull(1) ?: currentUserAndNeighbors.first()
+    val nextUser = currentUserAndNeighbors.getOrNull(2)
+    return nextUser?.takeIf { it.userId != currentUser.userId }?.let { SessionId(it.userId.value) }
 }
 
 internal fun RoomListRoomSummary.contentType() = displayType.ordinal

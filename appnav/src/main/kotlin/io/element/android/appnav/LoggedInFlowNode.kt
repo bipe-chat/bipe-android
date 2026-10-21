@@ -86,6 +86,7 @@ import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
 import io.element.android.libraries.bipe.company.LocalBipeCompanySeals
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.bipe.groups.BipeQuietGroups
+import io.element.android.libraries.bipe.invites.BipeInviteJoinNotifier
 import io.element.android.libraries.bipe.support.BipeSupportChat
 import io.element.android.libraries.bipe.terms.BipeTermsReaccept
 import io.element.android.libraries.bipe.threads.BipeThreadsCacheRebuild
@@ -93,6 +94,7 @@ import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
 import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.designsystem.components.avatar.LocalBipeCompanyAccounts
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.di.SessionScope
@@ -181,6 +183,7 @@ class LoggedInFlowNode(
     private val loggedInEventProcessorFactory: LoggedInEventProcessor.Factory,
     private val clearCacheUseCase: ClearCacheUseCase, // Bipe
     private val bipeSupportChat: BipeSupportChat, // Bipe
+    private val bipeInviteJoinNotifier: BipeInviteJoinNotifier, // Bipe
 ) : BaseFlowNode<LoggedInFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Placeholder,
@@ -196,6 +199,7 @@ class LoggedInFlowNode(
     interface Callback : Plugin {
         fun navigateToBugReport()
         fun navigateToAddAccount()
+        fun bipeNavigateToSignup(inviteCode: String?) // Bipe: "Nova conta" (bipe#445)
         fun switchAccountAndOpenRoom(sessionId: SessionId, roomId: RoomId?)
     }
 
@@ -235,6 +239,7 @@ class LoggedInFlowNode(
                 // Bipe: not the session scope, clearing the cache destroys the client and cancels it.
                 if (BipeThreadsCacheRebuild.takePending(context, matrixClient.sessionId.value)) lifecycleScope.launch { clearCacheUseCase() }
                 lifecycleScope.launch { bipeOpenInviterChat() } // Bipe: ADR 0034
+                sessionCoroutineScope.launch { bipeInviteJoinNotifier.run() } // Bipe: joins and invite notes (bipe#458, ADR 0136)
                 sessionCoroutineScope.launch {
                     // Wait for the network to be connected before pre-fetching the max file upload size
                     networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }
@@ -408,6 +413,10 @@ class LoggedInFlowNode(
                     override fun navigateToAddAccount() {
                         callback.navigateToAddAccount()
                     }
+
+                    override fun bipeNavigateToSignup(inviteCode: String?) {
+                        callback.bipeNavigateToSignup(inviteCode)
+                    }
                 }
                 homeEntryPoint.createNode(
                     parentNode = this,
@@ -498,6 +507,10 @@ class LoggedInFlowNode(
                 val callback = object : PreferencesEntryPoint.Callback {
                     override fun navigateToAddAccount() {
                         callback.navigateToAddAccount()
+                    }
+
+                    override fun bipeNavigateToSignup(inviteCode: String?) {
+                        callback.bipeNavigateToSignup(inviteCode)
                     }
 
                     override fun navigateToLinkNewDevice() {
@@ -721,7 +734,8 @@ class LoggedInFlowNode(
         val result = matrixClient.startDM(
             userId = inviterUserId,
             createIfDmDoesNotExist = true,
-            isEncryped = !sessionEnterpriseService.isEncryptionDisabledByHomeserver(),
+            // Bipe: every DM is encrypted, whatever the homeserver advertises (docs/security.md rule 13)
+            isEncryped = true,
         )
         if (result is StartDMResult.Success) {
             attachRoom(result.roomId.toRoomIdOrAlias())
@@ -737,6 +751,7 @@ class LoggedInFlowNode(
             onSuccess = { roomId -> attachRoom(roomId.toRoomIdOrAlias(), clearBackstack = false) },
             onFailure = {
                 Timber.e(it, "Bipe: could not open the support chat")
+                // Toast, not SnackbarDispatcher (bipe#450): this node has no screen of its own, and the tap can come from any screen.
                 Toast.makeText(context, context.getString(BipeR.string.bipe_support_open_failed), Toast.LENGTH_LONG).show()
             },
         )
@@ -747,6 +762,7 @@ class LoggedInFlowNode(
         val userId = runCatchingExceptions { bipeSession.handleResolver.userId(forHandle = handle) }.getOrNull()
         if (userId == null) {
             Timber.i("No user for a Bipe handle link")
+            // Toast, not SnackbarDispatcher (bipe#450): a link opens from outside the app on any screen, and the text takes the handle.
             Toast.makeText(context, context.getString(BipeR.string.bipe_link_handle_not_found, handle), Toast.LENGTH_LONG).show()
         }
         return userId?.let(::UserId)
@@ -800,6 +816,7 @@ class LoggedInFlowNode(
                 LocalBipePublicProfiles provides bipeSession.publicProfiles, // Bipe: public profile bios in shared UI
                 LocalBipeAccount provides bipeSession.account, // Bipe: PIN rows in settings (ADR 0057)
                 LocalBipeCompanySeals provides bipeSession.companySeals, // Bipe: company seals in shared UI (bipe#252)
+                LocalBipeCompanyAccounts provides bipeSession.accountTypes, // Bipe: company avatar shape (ADR 0132, bipe#397)
             ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an

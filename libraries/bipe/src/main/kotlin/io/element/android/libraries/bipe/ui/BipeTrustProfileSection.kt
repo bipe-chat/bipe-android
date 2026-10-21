@@ -26,6 +26,7 @@ import io.element.android.libraries.bipe.BipeTrustProfile.ProfileItem
 import io.element.android.libraries.bipe.BipeTrustProfile.Status
 import io.element.android.libraries.bipe.BipeTrustProfile.StepId
 import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.api.BipeBusinessClaim
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
@@ -46,11 +47,11 @@ fun BipeTrustProfileSection(
     Column(modifier) {
         Header(profile)
         for (step in profile.steps) {
-            StepRow(step)
+            StepRow(step, profile.isCompany)
             if (step.id == StepId.PROFILE) {
                 for (item in profile.missingProfileItems) {
                     ListItem(
-                        content = { Text(stringResource(item.actionRes)) },
+                        content = { Text(stringResource(item.actionRes(profile.isCompany))) },
                         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Plus())),
                         onClick = when (item) {
                             ProfileItem.DISPLAY_NAME, ProfileItem.AVATAR -> onEditProfileClick
@@ -95,7 +96,7 @@ private fun Header(profile: BipeTrustProfile) {
 }
 
 @Composable
-private fun StepRow(step: BipeTrustProfile.Step) {
+private fun StepRow(step: BipeTrustProfile.Step, isCompany: Boolean) {
     val (icon, tint) = when (step.status) {
         Status.DONE -> CompoundIcons.CheckCircleSolid() to ElementTheme.colors.iconSuccessPrimary
         Status.TODO -> CompoundIcons.Circle() to ElementTheme.colors.iconSecondary
@@ -103,7 +104,7 @@ private fun StepRow(step: BipeTrustProfile.Step) {
     }
     ListItem(
         content = { Text(stringResource(step.id.titleRes)) },
-        supportingContent = { Text(stringResource(step.id.bodyRes)) },
+        supportingContent = { Text(stringResource(step.id.bodyRes(isCompany))) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(icon), tintColor = tint),
         trailingContent = if (step.status == Status.COMING_SOON) {
             ListItemContent.Custom {
@@ -129,29 +130,49 @@ private val StepId.titleRes: Int
         StepId.EMAIL -> R.string.bipe_trust_step_email
         StepId.PIX -> R.string.bipe_trust_step_pix
         StepId.GOVBR -> R.string.bipe_trust_step_govbr
+        StepId.CNPJ -> R.string.bipe_trust_step_cnpj
+        StepId.PROOF -> R.string.bipe_trust_step_proof
+        StepId.DOMAIN -> R.string.bipe_trust_step_domain
     }
 
-private val StepId.bodyRes: Int
-    get() = when (this) {
-        StepId.ACCOUNT -> R.string.bipe_trust_step_account_body
-        StepId.PROFILE -> R.string.bipe_trust_step_profile_body
-        StepId.EMAIL -> R.string.bipe_trust_step_email_body
-        StepId.PIX -> R.string.bipe_trust_step_pix_body
-        StepId.GOVBR -> R.string.bipe_trust_step_govbr_body
-    }
+private fun StepId.bodyRes(isCompany: Boolean): Int = when (this) {
+    StepId.ACCOUNT -> R.string.bipe_trust_step_account_body
+    StepId.PROFILE -> if (isCompany) R.string.bipe_trust_step_company_profile_body else R.string.bipe_trust_step_profile_body
+    StepId.EMAIL -> R.string.bipe_trust_step_email_body
+    StepId.PIX -> R.string.bipe_trust_step_pix_body
+    StepId.GOVBR -> R.string.bipe_trust_step_govbr_body
+    StepId.CNPJ -> R.string.bipe_trust_step_cnpj_body
+    StepId.PROOF -> R.string.bipe_trust_step_proof_body
+    StepId.DOMAIN -> R.string.bipe_trust_step_domain_body
+}
 
-private val ProfileItem.actionRes: Int
-    get() = when (this) {
-        ProfileItem.DISPLAY_NAME -> R.string.bipe_trust_step_profile_add_name
-        ProfileItem.HANDLE -> R.string.bipe_trust_step_profile_add_handle
-        ProfileItem.AVATAR -> R.string.bipe_trust_step_profile_add_photo
-    }
+private fun ProfileItem.actionRes(isCompany: Boolean): Int = when (this) {
+    ProfileItem.DISPLAY_NAME -> if (isCompany) R.string.bipe_trust_step_profile_add_company_name else R.string.bipe_trust_step_profile_add_name
+    ProfileItem.HANDLE -> R.string.bipe_trust_step_profile_add_handle
+    ProfileItem.AVATAR -> if (isCompany) R.string.bipe_trust_step_profile_add_logo else R.string.bipe_trust_step_profile_add_photo
+}
 
 @PreviewsDayNight
 @Composable
 internal fun BipeTrustProfileSectionPreview() = ElementPreview {
     BipeTrustProfileSection(
         profile = BipeTrustProfile.create(displayName = "Ana", hasAvatar = false, handle = null),
+        onEditProfileClick = {},
+        onHandleClick = {},
+    )
+}
+
+@PreviewsDayNight
+@Composable
+internal fun BipeTrustProfileSectionCompanyPreview() = ElementPreview {
+    BipeTrustProfileSection(
+        profile = BipeTrustProfile.create(
+            displayName = "Padaria Sol",
+            hasAvatar = false,
+            handle = "padariasol",
+            isCompany = true,
+            business = BipeBusinessClaim(status = "awaiting_proof"),
+        ),
         onEditProfileClick = {},
         onHandleClick = {},
     )

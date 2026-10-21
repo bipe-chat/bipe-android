@@ -82,6 +82,7 @@ import io.element.android.libraries.matrix.ui.components.SpaceMembersView
 import io.element.android.libraries.matrix.ui.model.InviteSender
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.persistentListOf
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun JoinRoomView(
@@ -151,7 +152,8 @@ fun JoinRoomView(
     }
     if (state.contentState is ContentState.Failure) {
         RetryDialog(
-            title = stringResource(R.string.screen_join_room_loading_alert_title),
+            // Bipe: a DM says "conversa", not "sala" (bipe#507)
+            title = stringResource(if (state.contentState.isDm) BipeR.string.bipe_dm_preview_failed else R.string.screen_join_room_loading_alert_title),
             content = stringResource(CommonStrings.error_network_or_server_issue),
             onRetry = { state.eventSink(JoinRoomEvent.RetryFetchingContent) },
             onDismiss = {
@@ -566,7 +568,12 @@ private fun DefaultLoadedContent(
                 RoomPreviewTitleAtom(title = contentState.name)
             } else {
                 RoomPreviewTitleAtom(
-                    title = stringResource(id = CommonStrings.common_no_room_name),
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    title = if ((contentState.details as? LoadedDetails.Room)?.isDm == true) {
+                        stringResource(id = BipeR.string.bipe_dm_no_name)
+                    } else {
+                        stringResource(id = CommonStrings.common_no_room_name)
+                    },
                     fontStyle = FontStyle.Italic
                 )
             }

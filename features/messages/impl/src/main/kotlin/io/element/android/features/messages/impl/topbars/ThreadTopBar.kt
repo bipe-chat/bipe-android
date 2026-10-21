@@ -41,6 +41,7 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 internal fun ThreadTopBar(
@@ -50,6 +51,7 @@ internal fun ThreadTopBar(
     isTombstoned: Boolean,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isDm: Boolean = false, // Bipe: a DM without a name says "conversa", not "sala" (bipe#507)
 ) {
     TopAppBar(
         modifier = modifier,
@@ -57,7 +59,7 @@ internal fun ThreadTopBar(
             BackButton(onClick = onBackClick)
         },
         title = {
-            val name = roomName ?: stringResource(CommonStrings.common_no_room_name)
+            val name = roomName ?: stringResource(if (isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name) // Bipe
             val description = stringResource(
                 CommonStrings.a11y_thread_in_room,
                 name,

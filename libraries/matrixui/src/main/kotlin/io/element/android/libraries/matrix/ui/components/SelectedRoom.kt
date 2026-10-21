@@ -23,6 +23,7 @@ import io.element.android.libraries.matrix.ui.model.SelectRoomInfo
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun SelectedRoom(
@@ -41,7 +42,8 @@ fun SelectedRoom(
         maxLines = 1,
         a11yContentDescription = roomInfo.name
             ?: roomInfo.canonicalAlias?.value
-            ?: stringResource(id = CommonStrings.common_room_name),
+            // Bipe: a DM says "conversa", not "grupo" (bipe#508)
+            ?: stringResource(id = if (roomInfo.isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_room_name),
         canRemove = true,
         onRemoveClick = { onRemoveRoom(roomInfo) },
         modifier = modifier,

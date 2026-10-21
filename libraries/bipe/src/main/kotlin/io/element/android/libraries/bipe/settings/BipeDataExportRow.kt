@@ -26,6 +26,8 @@ import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.ui.BipeBiometricCheck
 import io.element.android.libraries.bipe.account.ui.BipeEnterPinDialog
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
 import io.element.android.libraries.core.extensions.mapCatchingExceptions
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
@@ -55,6 +57,7 @@ fun BipeDataExportRow(account: BipeAccountSession, title: String, modifier: Modi
     val scope = rememberCoroutineScope()
     var busy by remember { mutableStateOf(false) }
     var dialog by remember { mutableStateOf<ExportDialog?>(null) }
+    val haptics = rememberBipeHaptics()
     val reason = stringResource(R.string.bipe_privacy_export_biometric)
     val pinMismatch = stringResource(R.string.bipe_pin_mismatch)
 
@@ -106,6 +109,7 @@ fun BipeDataExportRow(account: BipeAccountSession, title: String, modifier: Modi
                         dialog = null
                         export()
                     } else {
+                        haptics(BipeHaptic.Error) // pin_wrong
                         dialog = ExportDialog.Pin(pinMismatch)
                     }
                 }

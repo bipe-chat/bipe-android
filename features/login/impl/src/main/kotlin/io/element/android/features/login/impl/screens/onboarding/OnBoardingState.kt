@@ -32,6 +32,12 @@ data class OnBoardingState(
     val bipeStart: BipeOnboardingStart?,
     /** Bipe: the inviter's handle from the invite preview, without @. */
     val bipeInviterHandle: String?,
+    /** Bipe: the pending invite, from a link, the Play Install Referrer or the clipboard (bipe-chat/bipe#197). Sign-up skips the code step. */
+    val bipeInviteCode: String?,
+    /** Bipe: the clipboard holds text, so the start screen offers "Colar convite" (bipe-chat/bipe#197). */
+    val bipeOffersPasteInvite: Boolean,
+    /** Bipe: the pasted text holds no invite code. */
+    val bipePastedNoInvite: Boolean,
     val eventSink: (OnBoardingEvent) -> Unit,
 ) {
     val submitEnabled: Boolean

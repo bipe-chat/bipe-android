@@ -23,16 +23,21 @@ open class ReportRoomStatePreviewParam : PreviewParameterProvider<ReportRoomStat
             aReportRoomState(leaveRoom = true),
             aReportRoomState(reason = A_REPORT_ROOM_REASON, reportAction = AsyncAction.Loading),
             aReportRoomState(reason = A_REPORT_ROOM_REASON, reportAction = AsyncAction.Failure(Exception("Failed to report"))),
+            // Bipe: a DM (bipe#507)
+            aReportRoomState(isDm = true),
+            aReportRoomState(isDm = true, reason = A_REPORT_ROOM_REASON, reportAction = AsyncAction.Failure(ReportRoom.Exception.LeftRoomFailed)),
         )
 }
 
 fun aReportRoomState(
     reason: String = "",
+    isDm: Boolean = false,
     leaveRoom: Boolean = false,
     reportAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     eventSink: (ReportRoomEvent) -> Unit = {}
 ) = ReportRoomState(
     reason = reason,
+    isDm = isDm,
     leaveRoom = leaveRoom,
     reportAction = reportAction,
     eventSink = eventSink,

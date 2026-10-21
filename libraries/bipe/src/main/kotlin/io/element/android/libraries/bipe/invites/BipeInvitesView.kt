@@ -26,8 +26,11 @@ import io.element.android.libraries.androidutils.system.startSharePlainTextInten
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeInvite
+import io.element.android.libraries.bipe.generated.BipeHaptic
+import io.element.android.libraries.bipe.haptics.BipeHapticOnChange
 import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
+import io.element.android.libraries.designsystem.components.dialogs.TextFieldDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
@@ -66,12 +69,19 @@ fun BipeInvitesView(
         JoinedSection(state, onUserClick)
         PendingSection(state, onInviteClick = { selectedPendingInvite = it })
     }
+    BipeHapticOnChange(BipeHaptic.Success, state.createdCount) { previous, current -> current > previous } // invite_created
     selectedPendingInvite?.let { invite ->
         PendingInviteActionsSheet(
             invite = invite,
             hasLink = state.shareUrls.containsKey(invite.id),
             eventSink = state.eventSink,
             onDismiss = { selectedPendingInvite = null },
+        )
+    }
+    if (state.noteDestination != null) {
+        BipeInviteNoteDialog(
+            onSubmit = { state.eventSink(BipeInvitesEvent.CreateInvite(it)) },
+            onDismiss = { state.eventSink(BipeInvitesEvent.DismissNote) },
         )
     }
     state.shareSheetUrl?.let { url ->
@@ -94,6 +104,24 @@ fun BipeInvitesView(
         onSuccess = {},
         errorMessage = { it.message.orEmpty() },
         onErrorDismiss = { state.eventSink(BipeInvitesEvent.ClearError) },
+    )
+}
+
+/** Bipe ADR 0136: the note for a new invite, pre-filled and editable, asked before the invite is made. Empty means no note. */
+@Composable
+internal fun BipeInviteNoteDialog(
+    onSubmit: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    TextFieldDialog(
+        title = stringResource(R.string.bipe_invite_note_title),
+        value = stringResource(R.string.bipe_invite_note_default),
+        placeholder = stringResource(R.string.bipe_invite_note_placeholder),
+        supportingText = stringResource(R.string.bipe_invite_note_footer),
+        maxLines = 5,
+        submitText = stringResource(CommonStrings.action_continue),
+        onSubmit = onSubmit,
+        onDismissRequest = onDismiss,
     )
 }
 
@@ -124,17 +152,21 @@ private fun InviteButtons(state: BipeInvitesState) {
 private fun footer(state: BipeInvitesState): String {
     val explainer = stringResource(R.string.bipe_invites_explainer)
     if (state.isLoading) return explainer
-    if (state.available <= 0) {
-        val noneLeft = stringResource(R.string.bipe_invites_none_left)
-        val next = state.nextAvailableAt ?: return noneLeft
-        return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
-    }
+    if (state.available <= 0) return bipeInvitesNoneLeftText(state.nextAvailableAt)
     // A large count means nothing to the person, so it shows only when few invites are left.
     if (state.available > LOW_INVITE_COUNT) return explainer
     return "$explainer ${stringResource(R.string.bipe_invites_available, state.available.toString())}"
 }
 
 private const val LOW_INVITE_COUNT = 5
+
+/** The quota text when no invite is left, with when the next one comes back. Port of `BipeInviteQuota.noneLeft` on iOS. */
+@Composable
+internal fun bipeInvitesNoneLeftText(nextAvailableAt: Instant?): String {
+    val noneLeft = stringResource(R.string.bipe_invites_none_left)
+    val next = nextAvailableAt ?: return noneLeft
+    return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
+}
 
 @Composable
 private fun JoinedSection(state: BipeInvitesState, onUserClick: (String) -> Unit) {
@@ -254,9 +286,17 @@ internal fun BipeInvitesViewPreview() = ElementPreview {
             action = AsyncAction.Uninitialized,
             shareSheetUrl = null,
             qrCodeUrl = null,
+            createdCount = 0,
+            noteDestination = null,
             eventSink = {},
         ),
         onBackClick = {},
         onUserClick = {},
     )
+}
+
+@PreviewsDayNight
+@Composable
+internal fun BipeInviteNoteDialogPreview() = ElementPreview {
+    BipeInviteNoteDialog(onSubmit = {}, onDismiss = {})
 }
