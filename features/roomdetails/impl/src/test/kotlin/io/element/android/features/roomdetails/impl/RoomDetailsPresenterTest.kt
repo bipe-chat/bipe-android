@@ -30,11 +30,13 @@ import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.RoomMembersState
+import io.element.android.libraries.matrix.api.room.RoomMembershipState
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.room.StateEventType
 import io.element.android.libraries.matrix.api.room.join.JoinRule
 import io.element.android.libraries.matrix.api.room.powerlevels.RoomPermissions
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.AN_AVATAR_URL
 import io.element.android.libraries.matrix.test.AN_EVENT_ID
 import io.element.android.libraries.matrix.test.A_ROOM_NAME
@@ -264,6 +266,65 @@ class RoomDetailsPresenterTest {
         presenter.testWithLifecycleOwner(lifecycleOwner = fakeLifecycleOwner) {
             val initialState = awaitItem()
             assertThat(initialState.roomType).isEqualTo(RoomDetailsType.Dm(otherMember = otherRoomMember))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // Bipe (bipe#524): the SDK isDm decides. The DM layout stays when the other person has left.
+    @Test
+    fun `present - DM keeps the DM roomType when the other member has left`() = runTest {
+        val myRoomMember = aRoomMember(A_SESSION_ID)
+        val otherRoomMember = aRoomMember(A_USER_ID_2, membership = RoomMembershipState.LEAVE)
+        val room = aJoinedRoom(
+            roomPermissions = roomPermissions(),
+            getUpdatedMemberResult = { userId ->
+                when (userId) {
+                    A_SESSION_ID -> Result.success(myRoomMember)
+                    A_USER_ID_2 -> Result.success(otherRoomMember)
+                    else -> lambdaError()
+                }
+            },
+        ).apply {
+            givenRoomMembersState(RoomMembersState.Ready(persistentListOf(myRoomMember, otherRoomMember)))
+            givenRoomInfo(aRoomInfo(isDm = true, activeMembersCount = 1))
+        }
+        val presenter = createRoomDetailsPresenter(room)
+        presenter.testWithLifecycleOwner(lifecycleOwner = fakeLifecycleOwner) {
+            val initialState = awaitItem()
+            assertThat(initialState.roomType).isEqualTo(RoomDetailsType.Dm(otherMember = otherRoomMember))
+            assertThat(initialState.canEdit).isFalse()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // Bipe (bipe#524): with no member event for the other person, the hero keeps the DM layout.
+    @Test
+    fun `present - DM uses the hero when the other member is not in the member list`() = runTest {
+        val myRoomMember = aRoomMember(A_SESSION_ID)
+        val heroMember = aRoomMember(A_USER_ID_2, displayName = A_USER_NAME, membership = RoomMembershipState.LEAVE)
+        val room = aJoinedRoom(
+            roomPermissions = roomPermissions(),
+            getUpdatedMemberResult = { userId ->
+                when (userId) {
+                    A_SESSION_ID -> Result.success(myRoomMember)
+                    A_USER_ID_2 -> Result.success(heroMember)
+                    else -> lambdaError()
+                }
+            },
+        ).apply {
+            givenRoomMembersState(RoomMembersState.Ready(persistentListOf(myRoomMember)))
+            givenRoomInfo(
+                aRoomInfo(
+                    isDm = true,
+                    activeMembersCount = 1,
+                    heroes = listOf(MatrixUser(userId = A_USER_ID_2, displayName = A_USER_NAME)),
+                )
+            )
+        }
+        val presenter = createRoomDetailsPresenter(room)
+        presenter.testWithLifecycleOwner(lifecycleOwner = fakeLifecycleOwner) {
+            val initialState = awaitItem()
+            assertThat(initialState.roomType).isEqualTo(RoomDetailsType.Dm(otherMember = heroMember))
             cancelAndIgnoreRemainingEvents()
         }
     }

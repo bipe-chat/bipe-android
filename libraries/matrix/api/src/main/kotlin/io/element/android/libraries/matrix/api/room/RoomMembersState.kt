@@ -10,6 +10,7 @@ package io.element.android.libraries.matrix.api.room
 
 import androidx.compose.runtime.Immutable
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.collections.immutable.ImmutableList
 
 @Immutable
@@ -42,3 +43,31 @@ fun RoomMembersState.getDirectRoomMember(roomInfo: RoomInfo, sessionId: SessionI
         ?.takeIf { roomInfo.isDm }
         ?.find { !it.isServiceMember && it.userId != sessionId && it.membership.isActive() }
 }
+
+/**
+ * Bipe (bipe#524): the other person of a DM, also after they left. The SDK `isDm` decides if the room is a DM.
+ * An active member comes first, then the last known member (left or banned), then a hero of the room summary.
+ * Returns null when the room is not a DM, or when nothing about the other person is known yet.
+ */
+fun RoomMembersState.bipeDmOtherMember(roomInfo: RoomInfo, sessionId: SessionId): RoomMember? {
+    if (!roomInfo.isDm) return null
+    val others = roomMembers().orEmpty().filter { !it.isServiceMember && it.userId != sessionId }
+    return others.firstOrNull { it.membership.isActive() }
+        ?: others.firstOrNull()
+        ?: roomInfo.heroes.firstOrNull { it.userId != sessionId }?.bipeToLeftRoomMember()
+}
+
+/** Bipe (bipe#524): a hero with no loaded member event. The membership is not known, so it is LEAVE, the case this fallback is for. */
+private fun MatrixUser.bipeToLeftRoomMember() = RoomMember(
+    userId = userId,
+    displayName = displayName,
+    avatarUrl = avatarUrl,
+    membership = RoomMembershipState.LEAVE,
+    isNameAmbiguous = false,
+    powerLevel = 0L,
+    isIgnored = false,
+    role = RoomMember.Role.User,
+    membershipChangeReason = null,
+    isServiceMember = false,
+    displayedStatus = displayedStatus,
+)

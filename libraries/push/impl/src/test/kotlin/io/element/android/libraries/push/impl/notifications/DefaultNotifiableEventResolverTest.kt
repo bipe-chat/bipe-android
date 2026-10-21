@@ -546,6 +546,7 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
                             senderId = A_USER_ID_2,
                         ),
                         isDirect = true,
+                        isDm = true,
                     ))
                 )
             )
@@ -583,6 +584,7 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
                             senderId = A_USER_ID_2,
                         ),
                         isDirect = true,
+                        isDm = true,
                         senderDisplayName = null,
                     ))
                 )

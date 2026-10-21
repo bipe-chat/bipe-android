@@ -22,6 +22,7 @@ import io.element.android.libraries.matrix.test.A_USER_NAME_2
 fun aNotificationData(
     content: NotificationContent = NotificationContent.MessageLike.RoomEncrypted,
     isDirect: Boolean = false,
+    isDm: Boolean = false,
     isSpace: Boolean = false,
     hasMention: Boolean = false,
     threadId: ThreadId? = null,
@@ -43,7 +44,7 @@ fun aNotificationData(
         roomAvatarUrl = null,
         roomDisplayName = roomDisplayName,
         isDirect = isDirect,
-        isDm = false,
+        isDm = isDm,
         isSpace = isSpace,
         isEncrypted = false,
         isNoisy = isNoisy,

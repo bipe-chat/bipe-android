@@ -222,7 +222,8 @@ class DefaultNotifiableEventResolver(
                     isUpdated = false,
                     description = descriptionFromRoomMembershipInvite(
                         senderDisambiguatedDisplayName = senderDisambiguatedDisplayName,
-                        isDirectRoom = isDirect,
+                        // Bipe (bipe#524): the SDK isDm is the one DM test.
+                        isDirectRoom = isDm,
                         isSpace = isSpace
                     ),
                     // TODO check if type is needed anymore
