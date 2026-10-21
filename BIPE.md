@@ -189,7 +189,7 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Sign-up attestation | None yet | App Attest | Play Integrity not built on Android (#92) **Gap** |
 | Criar conta da empresa | Company option in Nova conta hidden | Company option in Nova conta on a phone with App Attest | A company account needs an attested device (ADR 0043, ADR 0087); Play Integrity not built on Android (#92) **Gap** |
 | Synced recovery token | Block Store (gplay); none in the F-Droid build | iCloud Keychain | Platform credential store (ADR 0059). F-Droid has no Google Play services |
-| App lock | Element's lock screen, 8-digit account PIN, biometric option | Element's lock screen, the account PIN, biometrics on | Element X lock screen per platform |
+| App lock | Off by default; switch in Sua conta. Element's lock screen, biometrics optional | Off by default; switch in Sua conta. Element's lock screen, biometrics optional | Element X lock screen per platform |
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
@@ -203,8 +203,6 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Quiet groups "done" marker | The poll rule in the account's push rules (once per account) | A flag on the device (once per device) | Android has no per-session store in libraries/bipe; same result for the user |
 | Conferir no Bipe: close | Back to Bipe | Back to the app that shared | The iOS check runs in the share extension; Android shows it in the app (ADR 0091) |
 | Message actions | Element's bottom sheet | Native context menu on long press: reaction row, actions, the message as preview | Platform idiom |
-| Archive chats | Not built | Swipe or long press to archive (`m.lowpriority`); Arquivadas row at the top of the list | Built on iOS first (#435) **Gap** |
-| App lock screen during biometrics | Element's lock screen | Bipe logo, Bipe bloqueado and the Face ID or Touch ID prompt | Built on iOS first (#435) **Gap** |
 | Terms screen and a recovery alert due together | Recovery alert first, then the terms screen | Terms screen first, the alert right after Continue | On iOS a root alert cannot show over the full-screen terms cover; on Android the terms screen is an overlay that waits for the alert |
 | Settings: Idioma | No row | Row that opens the iPhone Ajustes | iOS sets the app language in system settings; Android follows the system language |
 | Company avatar shape | Circle | Rounded square for a company account, verified or not (ADR 0132) | Built on iOS first (#397) **Gap** |
