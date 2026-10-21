@@ -10,6 +10,8 @@ package io.element.android.features.home.impl
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.bipe.R as BipeR
 
@@ -36,7 +38,8 @@ enum class HomeNavigationBarItem(
     fun icon(
         isSelected: Boolean,
     ) = when (this) {
-        Chats -> if (isSelected) CompoundIcons.ChatSolid() else CompoundIcons.Chat()
+        // Bipe: the b mark on Conversas, filled when selected.
+        Chats -> ImageVector.vectorResource(if (isSelected) R.drawable.bipe_tab_chats_fill else R.drawable.bipe_tab_chats)
         Spaces -> if (isSelected) CompoundIcons.SpaceSolid() else CompoundIcons.Space()
         Groups -> CompoundIcons.Group()
         You -> if (isSelected) CompoundIcons.UserProfileSolid() else CompoundIcons.UserProfile()

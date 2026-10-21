@@ -129,6 +129,8 @@ fun HorizontalFloatingToolbarItem(
     showWarning: Boolean = false,
     // Bipe: a long press on the item (ADR 0135, the Você tab). It replaces the tooltip on a long press.
     onLongClick: (() -> Unit)? = null,
+    // Bipe: a red dot on the lower right of the icon while another account has notifications (the Você tab)
+    showLowerDot: Boolean = false,
 ) {
     TooltipBox(
         positionProvider =
@@ -166,11 +168,22 @@ fun HorizontalFloatingToolbarItem(
             }
         ) {
             val iconContent = @Composable {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = icon,
-                    contentDescription = tooltipLabel,
-                )
+                Box(modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        imageVector = icon,
+                        contentDescription = tooltipLabel,
+                    )
+                    if (showLowerDot) {
+                        RedIndicatorAtom(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 2.dp, y = 2.dp),
+                            size = 11.dp,
+                            borderSize = 1.5.dp,
+                        ) // Bipe
+                    }
+                }
             }
             if (onLongClick == null) {
                 IconButton(

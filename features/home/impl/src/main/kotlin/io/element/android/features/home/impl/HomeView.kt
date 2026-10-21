@@ -82,9 +82,11 @@ import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbar
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.coroutines.launch
 
 @Composable
@@ -260,6 +262,7 @@ private fun HomeScaffold(
                     nextAccount = state.bipeNextAccount(),
                     // Bipe: "Nova conta" only while the phone has one account; with more, it is in Sua conta.
                     canAddAccount = state.bipeCanAddAccount && state.bipeAccounts.size == 1,
+                    notifiedAccounts = state.bipeNotifiedAccounts,
                     onSwitch = { state.eventSink(HomeEvent.SwitchToAccount(it)) },
                     onAddAccount = onAddAccountClick,
                     onMenuOpen = { bipeHaptics(BipeHaptic.Hold) }, // Bipe: account_menu (ADR 0134)
@@ -464,6 +467,7 @@ private fun HomeBottomBar(
                 BipeAccountMenuAnchor(
                     accounts = bipeAccountSwitcher.accounts,
                     canAddAccount = bipeAccountSwitcher.canAddAccount,
+                    notifiedAccounts = bipeAccountSwitcher.notifiedAccounts,
                     onAccountSwitch = bipeAccountSwitcher.onSwitch,
                     onAddAccount = bipeAccountSwitcher.onAddAccount,
                 ) { openMenu ->
@@ -488,6 +492,7 @@ private fun HomeBottomBar(
                         },
                         counter = counter,
                         showWarning = bipeBadges.youWarning,
+                        showLowerDot = bipeAccountSwitcher.notifiedAccounts.isNotEmpty(),
                     )
                 }
             } else {
@@ -508,6 +513,8 @@ private data class BipeAccountSwitcher(
     val accounts: ImmutableList<MatrixUser>,
     val nextAccount: SessionId?,
     val canAddAccount: Boolean,
+    /** The other accounts with a notification in the shade: a red dot on the Você icon and on their menu rows. */
+    val notifiedAccounts: ImmutableSet<UserId>,
     val onSwitch: (SessionId) -> Unit,
     val onAddAccount: () -> Unit,
     val onMenuOpen: () -> Unit,

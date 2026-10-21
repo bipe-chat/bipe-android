@@ -13,8 +13,10 @@ import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.libraries.bipe.tabs.BipeTabBadges
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
+import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 
 data class HomeState(
     /**
@@ -36,6 +38,8 @@ data class HomeState(
     val bipeAccounts: ImmutableList<MatrixUser>,
     /** Bipe: the Você tab menu shows "Nova conta" while the cap allows one more account (ADR 0086). */
     val bipeCanAddAccount: Boolean,
+    /** Bipe: the other accounts with a notification in the shade. Never the current account. */
+    val bipeNotifiedAccounts: ImmutableSet<UserId>,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem.isBipeRoomList && roomListState.displayFilters // Bipe: Conversas and Grupos

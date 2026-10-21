@@ -31,6 +31,7 @@ import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.sync.FakeSyncService
+import io.element.android.libraries.push.api.notifications.BipeNotifiedSessions
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
 import io.element.android.libraries.sessionstorage.test.aSessionData
@@ -163,6 +164,7 @@ internal fun createHomePresenter(
     seenInvitesStore: SeenInvitesStore = InMemorySeenInvitesStore(),
     bipeYouTabWarning: BipeYouTabWarning = BipeYouTabWarning { flowOf(false) },
     bipeClearedChats: BipeClearedChats = aBipeClearedChats(),
+    bipeNotifiedSessions: BipeNotifiedSessions = BipeNotifiedSessions { flowOf(emptySet()) },
 ) = HomePresenter(
     client = client,
     syncService = syncService,
@@ -176,4 +178,5 @@ internal fun createHomePresenter(
     seenInvitesStore = seenInvitesStore,
     bipeYouTabWarning = bipeYouTabWarning,
     bipeClearedChats = bipeClearedChats,
+    bipeNotifiedSessions = bipeNotifiedSessions,
 )
