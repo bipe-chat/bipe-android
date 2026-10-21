@@ -41,6 +41,7 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.appyx.canPop
 import io.element.android.libraries.architecture.callback
 import io.element.android.libraries.architecture.createNode
+import io.element.android.libraries.bipe.contacts.BipeContactsNode
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
 import io.element.android.libraries.bipe.handle.BipeHandleNode
 import io.element.android.libraries.bipe.invites.BipeInvitesNode
@@ -130,6 +131,9 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object BipeInvites : NavTarget
+
+        @Parcelize
+        data object BipeContacts : NavTarget
 
         @Parcelize
         data object BipePublicProfile : NavTarget
@@ -282,6 +286,18 @@ class PreferencesFlowNode(
                 }
                 createNode<BipeInvitesNode>(buildContext, listOf(callback))
             }
+            NavTarget.BipeContacts -> {
+                val callback = object : BipeContactsNode.Callback {
+                    override fun navigateToUserProfile(userId: String) {
+                        callback.navigateToUserProfile(UserId(userId))
+                    }
+
+                    override fun navigateToInvites() {
+                        backstack.push(NavTarget.BipeInvites)
+                    }
+                }
+                createNode<BipeContactsNode>(buildContext, listOf(callback))
+            }
             NavTarget.BipePublicProfile -> {
                 val callback = object : BipePublicProfileNode.Callback {
                     override fun navigateToHandle() {
@@ -334,6 +350,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToBlockedUsers() {
                         backstack.push(NavTarget.BlockedUsers)
+                    }
+
+                    override fun navigateToContacts() {
+                        backstack.push(NavTarget.BipeContacts)
                     }
 
                     override fun navigateToOssLicenses() {

@@ -64,12 +64,11 @@ fun BipeInvitesView(
         onBackClick = onBackClick,
         modifier = modifier,
     ) {
-        InviteButtons(state)
-        ListSupportingText(text = footer(state))
+        BipeInviteButtons(state)
+        ListSupportingText(text = bipeInvitesFooter(state))
         JoinedSection(state, onUserClick)
         PendingSection(state, onInviteClick = { selectedPendingInvite = it })
     }
-    BipeHapticOnChange(BipeHaptic.Success, state.createdCount) { previous, current -> current > previous } // invite_created
     selectedPendingInvite?.let { invite ->
         PendingInviteActionsSheet(
             invite = invite,
@@ -78,6 +77,16 @@ fun BipeInvitesView(
             onDismiss = { selectedPendingInvite = null },
         )
     }
+    BipeInviteSheets(state)
+}
+
+/**
+ * The note dialog, share sheet, QR code, haptic and error of a new invite. "Convidar pessoas" and "Contatos e convites"
+ * both use it with the state of [BipeInvitesPresenter].
+ */
+@Composable
+internal fun BipeInviteSheets(state: BipeInvitesState) {
+    BipeHapticOnChange(BipeHaptic.Success, state.createdCount) { previous, current -> current > previous } // invite_created
     if (state.noteDestination != null) {
         BipeInviteNoteDialog(
             onSubmit = { state.eventSink(BipeInvitesEvent.CreateInvite(it)) },
@@ -125,8 +134,9 @@ internal fun BipeInviteNoteDialog(
     )
 }
 
+/** "Convidar alguém" and "Mostrar QR code". */
 @Composable
-private fun InviteButtons(state: BipeInvitesState) {
+internal fun BipeInviteButtons(state: BipeInvitesState) {
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -148,8 +158,9 @@ private fun InviteButtons(state: BipeInvitesState) {
     }
 }
 
+/** The text under the invite buttons: the explainer, and the quota when few or no invites are left. */
 @Composable
-private fun footer(state: BipeInvitesState): String {
+internal fun bipeInvitesFooter(state: BipeInvitesState): String {
     val explainer = stringResource(R.string.bipe_invites_explainer)
     if (state.isLoading) return explainer
     if (state.available <= 0) return bipeInvitesNoneLeftText(state.nextAvailableAt)
