@@ -89,6 +89,7 @@ internal fun createRoomListRoomSummary(
     isTombstoned: Boolean = false,
     isSpace: Boolean = false,
     dmUserStatus: DisplayedStatus? = null,
+    bipeLatestEventTimestamp: Long? = null,
 ) = RoomListRoomSummary(
     id = A_ROOM_ID.value,
     roomId = A_ROOM_ID,
@@ -113,4 +114,5 @@ internal fun createRoomListRoomSummary(
     isTombstoned = isTombstoned,
     isSpace = isSpace,
     dmUserStatus = dmUserStatus,
+    bipeLatestEventTimestamp = bipeLatestEventTimestamp,
 )

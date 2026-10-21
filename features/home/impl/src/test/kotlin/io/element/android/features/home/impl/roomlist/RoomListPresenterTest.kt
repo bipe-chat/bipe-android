@@ -140,6 +140,7 @@ class RoomListPresenterTest {
                     numberOfUnreadMentions = 1,
                     numberOfUnreadMessages = 2,
                     timestamp = "0 TimeOrDate true",
+                    bipeLatestEventTimestamp = 0L,
                 )
             )
             assertThat(withRoomsState.contentAsRooms().seenRoomInvites).containsExactly(A_ROOM_ID, A_ROOM_ID_2, A_ROOM_ID_3)
