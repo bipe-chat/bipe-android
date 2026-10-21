@@ -97,7 +97,7 @@ class BipeDeviceAccount(
 
     /**
      * Finishes a sign-up whose answer never reached this device (ADR 0094). `null` when there is nothing to finish.
-     * The account PIN of the first try becomes the app lock PIN.
+     * The account PIN of the first try updates the app lock PIN only while the lock is on ([adoptAccountPin]).
      */
     suspend fun resumePendingSignup(): Result<SessionId>? {
         val pending = vault.read().pendingSignup ?: return null
@@ -189,7 +189,7 @@ class BipeDeviceAccount(
 
     /**
      * Signs in with `m.login.password` (the Matrix user ID and the hidden password). [pin], when the user just typed it,
-     * becomes the app lock PIN.
+     * goes to [adoptAccountPin]. A sign-in never turns the app lock on.
      */
     suspend fun signIn(userId: String, password: String, pin: String?): Result<SessionId> = runCatchingExceptions {
         authenticationService.setHomeserver(BipeConfig.HOMESERVER_BASE_URL).getOrThrow()
@@ -208,7 +208,7 @@ class BipeDeviceAccount(
         val (userId, account) = data.accounts.entries.lastOrNull { it.value.password != null && it.key !in signedIn } ?: return null
         val password = account.password ?: return null
         Timber.i("Bipe: silent sign-in for $userId")
-        // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for the app lock.
+        // The app closed between sign-up and sign-in: the pending sign-up still holds the PIN for [adoptAccountPin].
         return signIn(userId, password, pin = data.pendingSignup?.pin).onSuccess {
             if (data.pendingSignup != null) vault.update { it.copy(pendingSignup = null) }
         }
@@ -313,19 +313,23 @@ class BipeDeviceAccount(
     internal val lock: BipeAppLock get() = appLock
 
     /**
-     * The device PIN locks the app and belongs to the phone (ADR 0086). It follows the account PIN only while the phone
-     * holds one account, so a one-account user keeps one PIN for both. With more accounts, a set device PIN stays.
+     * The device PIN locks the app and belongs to the phone (ADR 0086). The lock is off by default; the user turns it on in
+     * Sua conta. While it is on, the device PIN follows the account PIN only while the phone holds one account, so a
+     * one-account user keeps one PIN for both. With more accounts, a set device PIN stays.
      */
     internal suspend fun devicePinFollowsAccountPin(): Boolean = sessionStore.numberOfSessions() <= 1
 
     /** Accounts with a session on this phone. Adding an account never signs one of them in again (ADR 0086). */
     private suspend fun signedInUserIds(): Set<String> = sessionStore.getAllSessions().mapTo(mutableSetOf()) { it.userId }
 
-    /** [pin] is an account PIN the user just typed or set. It becomes the device PIN when [devicePinFollowsAccountPin] or none is set. */
+    /**
+     * [pin] is an account PIN the user just typed or set. It replaces the device PIN only while the lock is on and
+     * [devicePinFollowsAccountPin]. It never turns the lock on, and the biometric unlock choice stays as it is.
+     */
     internal suspend fun adoptAccountPin(pin: String) {
         runCatchingExceptions {
-            if (devicePinFollowsAccountPin() || !appLock.isPinSet()) appLock.setPin(pin)
-        }.onFailure { Timber.e(it, "Bipe: app lock PIN not set") }
+            if (appLock.isPinSet() && devicePinFollowsAccountPin()) appLock.setPin(pin)
+        }.onFailure { Timber.e(it, "Bipe: app lock PIN not updated") }
     }
 
     private companion object {

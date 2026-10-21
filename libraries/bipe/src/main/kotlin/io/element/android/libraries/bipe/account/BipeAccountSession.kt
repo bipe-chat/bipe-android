@@ -18,6 +18,7 @@ import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.bipe.settings.BipeDataExportFile
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.services.toolbox.api.strings.StringProvider
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,8 +57,8 @@ class BipeAccountSession(
     suspend fun takePendingInviter(): String? = deviceAccount.takePendingInviter(userId)
 
     /**
-     * Sets or changes this account's PIN on the server, then the device PIN when it follows the account PIN (ADR 0086).
-     * The caller does the biometric check first.
+     * Sets or changes this account's PIN on the server, then the device PIN when the app lock is on and the device PIN
+     * follows the account PIN (ADR 0086). The caller does the biometric check first.
      */
     suspend fun changePin(pin: String): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.setPin(pin, it) }
@@ -134,6 +135,13 @@ class BipeAccountSession(
     suspend fun hasSyncedRecoveryToken(): Boolean = deviceAccount.hasSyncedRecoveryToken(userId)
 
     suspend fun hasAppLockPin(): Boolean = deviceAccount.lock.isPinSet()
+
+    /** `true` while the app lock is on. The lock is off by default; "Bloquear o app" in Sua conta turns it on. */
+    fun appLockOnFlow(): Flow<Boolean> = deviceAccount.lock.pinSetFlow()
+
+    /** Turns the app lock off: removes the device PIN and the biometric unlock. The caller proves the owner first. */
+    suspend fun turnOffAppLock(): Result<Unit> = runCatchingExceptions { deviceAccount.lock.removePin() }
+        .onFailure { Timber.e(it, "Bipe: app lock not turned off") }
 
     suspend fun verifyAppLockPin(pin: String): Boolean = deviceAccount.lock.verifyPin(pin)
 

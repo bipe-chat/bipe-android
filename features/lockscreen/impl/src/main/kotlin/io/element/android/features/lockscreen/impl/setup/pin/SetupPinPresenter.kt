@@ -70,7 +70,8 @@ class SetupPinPresenter(
             if (confirmPinEntry.isComplete()) {
                 if (confirmPinEntry == choosePinEntry) {
                     pinCodeManager.createPinCode(confirmPinEntry.toText())
-                    // Bipe: the app lock PIN is the account PIN (ADR 0057). The lock screen checked the owner before this step.
+                    // Bipe: with one account the app lock PIN is the account PIN (ADR 0057, ADR 0086). "Bloquear o app" in Sua conta
+                    // checked the owner before this step (BipeAppLockRow).
                     bipeSession.account.onAppLockPinSet(confirmPinEntry.toText())
                 } else {
                     setupPinFailure = SetupPinFailure.PinsDoNotMatch

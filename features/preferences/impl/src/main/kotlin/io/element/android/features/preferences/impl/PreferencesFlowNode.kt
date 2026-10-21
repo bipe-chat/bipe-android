@@ -21,6 +21,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
 import io.element.android.features.licenses.api.OpenSourceLicensesEntryPoint
+import io.element.android.features.lockscreen.api.LockScreenEntryPoint
 import io.element.android.features.logout.api.LogoutEntryPoint
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.preferences.impl.about.AboutNode
@@ -66,6 +67,7 @@ class PreferencesFlowNode(
     private val fileViewerEntryPoint: FileViewerEntryPoint,
     private val logoutEntryPoint: LogoutEntryPoint,
     private val openSourceLicensesEntryPoint: OpenSourceLicensesEntryPoint,
+    private val lockScreenEntryPoint: LockScreenEntryPoint,
 ) : BaseFlowNode<PreferencesFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = plugins.filterIsInstance<PreferencesEntryPoint.Params>().first().initialElement.toNavTarget(),
@@ -139,6 +141,10 @@ class PreferencesFlowNode(
         /** Bipe: "Quem pode me mandar mensagem" (ADR 0016). */
         @Parcelize
         data object BipeMessaging : NavTarget
+
+        /** Bipe: "Bloquear o app" turned on in Sua conta. Element's lock screen setup: new PIN, confirm, biometric offer. */
+        @Parcelize
+        data object BipeAppLockSetup : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -310,6 +316,10 @@ class PreferencesFlowNode(
                         callback.navigateToSecureBackup()
                     }
 
+                    override fun navigateToAppLockSetup() {
+                        backstack.push(NavTarget.BipeAppLockSetup)
+                    }
+
                     override fun navigateToLinkNewDevice() {
                         callback.navigateToLinkNewDevice()
                     }
@@ -350,6 +360,19 @@ class PreferencesFlowNode(
             }
             NavTarget.BipeMessaging -> {
                 createNode<BipeMessagingNode>(buildContext)
+            }
+            NavTarget.BipeAppLockSetup -> {
+                // Back from the setup leaves no PIN, so the switch in Sua conta shows off again.
+                lockScreenEntryPoint.createNode(
+                    parentNode = this,
+                    buildContext = buildContext,
+                    navTarget = LockScreenEntryPoint.Target.Setup,
+                    callback = object : LockScreenEntryPoint.Callback {
+                        override fun onSetupDone() {
+                            backstack.pop()
+                        }
+                    },
+                )
             }
             NavTarget.About -> {
                 val callback = object : AboutNode.Callback {

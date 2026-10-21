@@ -18,6 +18,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.preferences.impl.root.ThemeOption
 import io.element.android.libraries.bipe.account.BipePin
+import io.element.android.libraries.bipe.account.ui.BipeAppLockRow
 import io.element.android.libraries.bipe.account.ui.BipePinRow
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryEmailRows
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
@@ -55,7 +56,8 @@ import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * A group screen of ADR 0112. The sections, rows, order and gates come from the settings registry in bipe-shared;
- * this view only says how each row looks on Android. [onRowClick] gets the link, url, action and destructive rows.
+ * this view only says how each row looks on Android. [onRowClick] gets the link, url, action and destructive rows, and
+ * "Bloquear o app" when the user turns it on.
  */
 @Composable
 fun BipeSettingsGroupView(
@@ -169,6 +171,9 @@ private fun SettingsRow(
         BipeSettingsRow.PRIVACY_READ_RECEIPTS -> InfoRow(title, stringResource(BipeR.string.bipe_privacy_read_receipts_value))
         BipeSettingsRow.PRIVACY_EXPORT -> LocalBipeAccount.current?.let { BipeDataExportRow(account = it, title = title) }
         BipeSettingsRow.ACCOUNT_WAYS_BACK_STATUS -> state.waysBack?.let { WaysBackStatus(it.size) }
+        // Off by default (mz, 2026-10-20). On opens the lock screen setup through [onClick].
+        BipeSettingsRow.ACCOUNT_APP_LOCK -> LocalBipeAccount.current?.let { BipeAppLockRow(account = it, title = title, onTurnOn = onClick) }
+        // The biometric row shows only while the lock is on (DefaultBipeBiometricUnlock).
         BipeSettingsRow.ACCOUNT_BIOMETRIC_UNLOCK -> biometricUnlockRow()
         BipeSettingsRow.ACCOUNT_CHANGE_PIN -> LocalBipeAccount.current?.let { BipePinRow(it) }
         BipeSettingsRow.ACCOUNT_EMAIL -> LocalBipeAccount.current?.let { BipeRecoveryEmailRows(it) }
