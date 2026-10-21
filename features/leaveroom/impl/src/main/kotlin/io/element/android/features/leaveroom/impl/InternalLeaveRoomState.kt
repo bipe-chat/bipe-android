@@ -16,6 +16,8 @@ import io.element.android.libraries.matrix.api.core.RoomId
 
 data class InternalLeaveRoomState(
     val leaveAction: AsyncAction<Unit>,
+    /** Bipe (bipe#464): "Apagar conversa" in a DM. */
+    val bipeClearAction: AsyncAction<Unit>,
     override val eventSink: (LeaveRoomEvent) -> Unit
 ) : LeaveRoomState
 

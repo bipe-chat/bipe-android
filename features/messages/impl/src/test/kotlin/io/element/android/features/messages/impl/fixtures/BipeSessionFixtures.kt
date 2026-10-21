@@ -8,10 +8,14 @@ package io.element.android.features.messages.impl.fixtures
 
 import io.element.android.libraries.bipe.BipeHandleChanges
 import io.element.android.libraries.bipe.BipeHandleResolver
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
@@ -26,3 +30,9 @@ internal fun aBipeSession(scope: CoroutineScope = CoroutineScope(EmptyCoroutineC
         every { this@mockk.handleResolver } returns handleResolver
     }
 }
+
+/** No cleared DMs. Account data reads fail in [FakeMatrixClient] by default, so the errors are dropped. */
+internal fun aBipeClearedChats() = BipeClearedChats(
+    matrixClient = FakeMatrixClient(),
+    sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+)

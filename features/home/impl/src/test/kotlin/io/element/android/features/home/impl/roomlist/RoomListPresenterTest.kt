@@ -14,6 +14,7 @@ import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.announcement.test.FakeAnnouncementService
 import io.element.android.features.home.impl.FakeDateTimeObserver
+import io.element.android.features.home.impl.aBipeClearedChats
 import io.element.android.features.home.impl.aBipeSelfChat
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
@@ -36,6 +37,7 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerStore
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.bipe.invites.BipeInvitePairs
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
@@ -737,6 +739,7 @@ class RoomListPresenterTest {
         bipeInvitePairs: BipeInvitePairs = mockk(relaxed = true) { every { userIds } returns MutableStateFlow(emptySet()) },
         bipeHandlePrompt: BipeHandlePrompt = mockk { every { shows } returns MutableStateFlow(false) },
         bipeRemoteBannerStore: BipeRemoteBannerStore = mockk(relaxed = true) { every { shown } returns MutableStateFlow(null) },
+        bipeClearedChats: BipeClearedChats = aBipeClearedChats(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -774,5 +777,6 @@ class RoomListPresenterTest {
         bipeInvitePairs = bipeInvitePairs,
         bipeHandlePrompt = bipeHandlePrompt,
         bipeRemoteBannerStore = bipeRemoteBannerStore,
+        bipeClearedChats = bipeClearedChats,
     )
 }

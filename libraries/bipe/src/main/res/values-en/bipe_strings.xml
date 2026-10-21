@@ -657,6 +657,11 @@
     <string name="bipe_dm_left">%1$s left the chat</string>
     <string name="bipe_dm_left_by_you">You left the chat</string>
     <string name="bipe_dm_leaving">Leaving the chat</string>
+    <string name="bipe_dm_delete_action">Delete chat</string>
+    <string name="bipe_dm_delete_title">Delete this chat?</string>
+    <string name="bipe_dm_delete_body">The messages disappear from all your devices. The other person keeps the chat.</string>
+    <string name="bipe_dm_delete_confirm">Delete</string>
+    <string name="bipe_dm_delete_error">Couldn\'t delete the chat. Try again.</string>
     <string name="bipe_dm_error_muting">Couldn\'t mute the chat. Try again.</string>
     <string name="bipe_dm_error_unmuting">Couldn\'t turn the chat sound on. Try again.</string>
     <string name="bipe_dm_media_empty">Photos and videos from this chat show up here.</string>
@@ -820,6 +825,9 @@
     <string name="bipe_onboarding_join_with_invite">Join with the invite</string>
     <string name="bipe_onboarding_have_invite">I have an invite</string>
     <string name="bipe_onboarding_have_account">I already have an account</string>
+    <string name="bipe_onboarding_paste_invite_hint">Copied the invite link?</string>
+    <string name="bipe_onboarding_paste_invite">Paste invite</string>
+    <string name="bipe_onboarding_paste_invite_none">What you copied is not a Bipe invite.</string>
     <string name="bipe_invite_code_title">Invite code</string>
     <string name="bipe_invite_code_body">Ask the person who invited you for the code.</string>
     <string name="bipe_invite_code_none">No invite?</string>

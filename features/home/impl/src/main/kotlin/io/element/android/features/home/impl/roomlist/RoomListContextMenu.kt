@@ -228,13 +228,13 @@ private fun RoomListModalBottomSheetContent(
         }
         ListItem(
             content = {
-                // Bipe: a DM is a conversation
-                Text(text = stringResource(if (contextMenu.isDm) CommonStrings.action_leave_conversation else CommonStrings.action_leave_room))
+                // Bipe (bipe#464): a DM has "Apagar conversa" in place of leave. The user stays in the room.
+                Text(text = stringResource(if (contextMenu.isDm) BipeR.string.bipe_dm_delete_action else CommonStrings.action_leave_room))
             },
             modifier = Modifier.clickable { onLeaveRoomClick() },
             leadingContent = ListItemContent.Icon(
                 iconSource = IconSource.Vector(
-                    CompoundIcons.Leave(),
+                    if (contextMenu.isDm) CompoundIcons.Delete() else CompoundIcons.Leave(),
                 )
             ),
             style = ListItemStyle.Destructive,

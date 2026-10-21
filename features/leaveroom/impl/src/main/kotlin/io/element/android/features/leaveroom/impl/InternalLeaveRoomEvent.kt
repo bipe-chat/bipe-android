@@ -9,7 +9,11 @@
 package io.element.android.features.leaveroom.impl
 
 import io.element.android.features.leaveroom.api.LeaveRoomEvent
+import io.element.android.libraries.matrix.api.core.RoomId
 
 sealed interface InternalLeaveRoomEvent : LeaveRoomEvent {
     data object ResetState : InternalLeaveRoomEvent
+
+    /** Bipe (bipe#464): "Apagar conversa" in a DM. The user stays in the room. */
+    data class BipeClearDm(val roomId: RoomId) : InternalLeaveRoomEvent
 }

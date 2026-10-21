@@ -80,6 +80,7 @@ class RoomListRoomSummaryFactory(
             isTombstoned = roomInfo.successorRoom != null,
             isSpace = roomInfo.isSpace,
             dmUserStatus = roomInfo.dmUserStatus(),
+            bipeLatestEventTimestamp = roomSummary.latestEventTimestamp,
         )
     }
 

@@ -864,10 +864,10 @@ private fun OtherActionsSection(
         }
         ListItem(
             content = {
-                // Bipe: a DM is a conversation, not a room.
-                Text(stringResource(if (isDm) CommonStrings.action_leave_conversation else CommonStrings.action_leave_room))
+                // Bipe (bipe#464): a DM has "Apagar conversa" in place of leave. The user stays in the room.
+                Text(stringResource(if (isDm) BipeR.string.bipe_dm_delete_action else CommonStrings.action_leave_room))
             },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Leave())),
+            leadingContent = ListItemContent.Icon(IconSource.Vector(if (isDm) CompoundIcons.Delete() else CompoundIcons.Leave())),
             style = ListItemStyle.Destructive,
             onClick = onLeaveRoomClick,
         )
