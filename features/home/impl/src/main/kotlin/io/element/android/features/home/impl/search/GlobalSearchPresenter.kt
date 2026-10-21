@@ -25,6 +25,8 @@ import io.element.android.features.home.impl.search.history.SearchHistoryStore
 import io.element.android.libraries.androidutils.filesize.FileSizeFormatter
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.dateformatter.api.DateFormatterMode
@@ -77,6 +79,7 @@ class GlobalSearchPresenter(
     private val coroutineDispatchers: CoroutineDispatchers,
     private val matrixClient: MatrixClient,
     private val searchHistoryStore: SearchHistoryStore,
+    private val bipeClearedChats: BipeClearedChats,
 ) : Presenter<GlobalSearchState> {
     @Composable
     override fun present(): GlobalSearchState {
@@ -156,8 +159,11 @@ class GlobalSearchPresenter(
                     combine(
                         currentMessageSearch.results,
                         currentMessageSearch.paginationState,
-                    ) { results, paginationState ->
-                        Pair(results, paginationState)
+                        bipeClearedChats.state,
+                    ) { results, paginationState, clearedChats ->
+                        // Bipe (bipe#464): search leaves out the messages of a cleared DM up to its marker.
+                        val keptResults = results.filter { ClearedChats.keepsEvent(clearedChats.marker(it.roomId.value), it.timestamp) }
+                        Pair(keptResults, paginationState)
                     }.collectLatest { (results, paginationState) ->
                         Timber.d("Message search found ${results.size} items, pagination state: $paginationState")
 

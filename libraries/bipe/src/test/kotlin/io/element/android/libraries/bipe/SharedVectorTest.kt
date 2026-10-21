@@ -8,17 +8,21 @@ package io.element.android.libraries.bipe
 
 import com.google.common.truth.Truth.assertWithMessage
 import io.element.android.libraries.bipe.account.BipePin
+import io.element.android.libraries.bipe.clearedchats.ClearedChats
+import io.element.android.libraries.bipe.generated.BipeRegistries
 import io.element.android.libraries.bipe.generated.BipeTrustFacts
 import io.element.android.libraries.bipe.generated.BipeTrustInput
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlinx.serialization.json.longOrNull
 import org.junit.Test
 import java.io.File
 
@@ -145,6 +149,36 @@ class SharedVectorTest {
                 is BadgeVerificationResult.Invalid -> result.failure.code
             }
             assertWithMessage("badge ${vector.string("name")}").that(outcome).isEqualTo(vector.string("expect"))
+        }
+    }
+
+    @Test
+    fun clearedChats() {
+        val file = load("cleared-chats.json")
+        assertWithMessage("cleared-chats event type").that(file.string("event_type")).isEqualTo(BipeRegistries.CLEARED_CHATS_EVENT_TYPE)
+        val markers = vectors("cleared-chats.json", "marker")
+        assertWithMessage("cleared-chats marker vectors").that(markers).isNotEmpty()
+        for (vector in markers) {
+            val chats = ClearedChats.parse(vector.getValue("content").toString())
+            assertWithMessage("marker ${vector.string("name")}").that(chats.marker(vector.string("room_id")!!))
+                .isEqualTo(vector.getValue("expected").jsonPrimitive.longOrNull)
+        }
+        for (vector in vectors("cleared-chats.json", "hidden")) {
+            val marker = vector.getValue("marker").jsonPrimitive.longOrNull
+            val latestTs = vector.getValue("latest_ts").jsonPrimitive.longOrNull
+            assertWithMessage("hidden ${vector.string("name")}").that(ClearedChats.isHidden(marker, latestTs))
+                .isEqualTo(vector.getValue("expected").jsonPrimitive.boolean)
+        }
+        for (vector in vectors("cleared-chats.json", "keeps")) {
+            val marker = vector.getValue("marker").jsonPrimitive.longOrNull
+            val eventTs = vector.getValue("event_ts").jsonPrimitive.long
+            assertWithMessage("keeps ${vector.string("name")}").that(ClearedChats.keepsEvent(marker, eventTs))
+                .isEqualTo(vector.getValue("expected").jsonPrimitive.boolean)
+        }
+        for (vector in vectors("cleared-chats.json", "clear")) {
+            val content = vector.getValue("content").takeUnless { it is JsonNull }?.toString()
+            val written = ClearedChats.contentClearing(content, vector.string("room_id")!!, vector.getValue("ts").jsonPrimitive.long)
+            assertWithMessage("clear ${vector.string("name")}").that(Json.parseToJsonElement(written)).isEqualTo(vector.getValue("expected"))
         }
     }
 

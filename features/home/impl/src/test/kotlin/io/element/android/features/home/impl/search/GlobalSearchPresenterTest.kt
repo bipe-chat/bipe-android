@@ -10,6 +10,7 @@
 package io.element.android.features.home.impl.search
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.home.impl.aBipeClearedChats
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
 import io.element.android.features.home.impl.search.history.FakeSearchHistoryStore
 import io.element.android.features.home.impl.search.history.SearchHistoryResult
@@ -501,6 +502,7 @@ private fun TestScope.createGlobalSearchPresenter(
                     roomListService = roomListService,
                     coroutineDispatchers = testCoroutineDispatchers(),
                     roomSummaryFactory = aRoomListRoomSummaryFactory(),
+                    bipeClearedChats = aBipeClearedChats(),
                 )
             }
         },
@@ -513,5 +515,6 @@ private fun TestScope.createGlobalSearchPresenter(
         coroutineDispatchers = testCoroutineDispatchers(),
         matrixClient = matrixClient,
         searchHistoryStore = searchHistoryStore,
+        bipeClearedChats = aBipeClearedChats(),
     )
 }

@@ -717,4 +717,7 @@ object BipeRegistries {
     val badgeKeys: Map<String, String> = mapOf(
         "prod-2026-10" to "9j3_slBroZbxa3B6Tdgcm_U-O_LIdrNFXzDgY8oLwxE",
     )
+
+    /** Cleared DMs (bipe-chat/bipe#464; registries/cleared-chats.json): the global account data event with the markers. */
+    const val CLEARED_CHATS_EVENT_TYPE = "chat.bipe.cleared_chats"
 }
