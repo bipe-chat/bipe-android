@@ -49,7 +49,7 @@ interface NotificationConversationService {
      * @param sessionId the session the room belongs to.
      * @param roomId the room that was cleared.
      */
-    suspend fun onClearedRoom(sessionId: SessionId, roomId: RoomId) = Unit
+    suspend fun onClearedRoom(sessionId: SessionId, roomId: RoomId) {}
 
     /**
      * Called when the list of available rooms changes.
