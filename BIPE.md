@@ -195,7 +195,7 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | Sign-up attestation | None yet | App Attest | Play Integrity not built on Android (#92) **Gap** |
 | Criar conta da empresa | Company option in Nova conta hidden | Company option in Nova conta on a phone with App Attest | A company account needs an attested device (ADR 0043, ADR 0087); Play Integrity not built on Android (#92) **Gap** |
 | Synced recovery token | Block Store (gplay); none in the F-Droid build | iCloud Keychain | Platform credential store (ADR 0059). F-Droid has no Google Play services |
-| App lock | Element's lock screen, 8-digit account PIN, biometric option | Element's lock screen, the account PIN, biometrics on | Element X lock screen per platform |
+| App lock | Off by default; switch in Sua conta. Element's lock screen, biometrics optional | Off by default; switch in Sua conta. Element's lock screen, biometrics optional | Element X lock screen per platform |
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
 | Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
