@@ -15,6 +15,7 @@ import io.element.android.libraries.bipe.BipePublicProfiles
 import io.element.android.libraries.bipe.account.BipeAccountSession
 import io.element.android.libraries.bipe.account.BipeDeviceAccount
 import io.element.android.libraries.bipe.api.BipeApiClient
+import io.element.android.libraries.bipe.company.BipeAccountTypes
 import io.element.android.libraries.bipe.company.BipeCompanySeals
 import io.element.android.libraries.bipe.company.BipeCompanySealsSeen
 import io.element.android.libraries.bipe.settings.BipePrivacySettings
@@ -90,6 +91,13 @@ class BipeSession(
             preferences = lazy { context.getSharedPreferences("bipe_company_seals", Context.MODE_PRIVATE) },
             sessionUserId = sessionId.value,
         ),
+    )
+
+    /** Account types: a company account's avatar is a rounded square (ADR 0132, bipe#397). */
+    val accountTypes = BipeAccountTypes(
+        apiClient = apiClient,
+        serverName = matrixClient.userIdServerName(),
+        scope = sessionCoroutineScope,
     )
 
     /** Web sign-in by QR code and the linked devices (ADR 0116, ADR 0118). */

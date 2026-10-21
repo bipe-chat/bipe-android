@@ -94,6 +94,7 @@ import io.element.android.libraries.bipe.ui.LocalBipeHandleResolver
 import io.element.android.libraries.bipe.ui.LocalBipePublicProfiles
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.designsystem.components.avatar.LocalBipeCompanyAccounts
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.di.SessionScope
@@ -814,6 +815,7 @@ class LoggedInFlowNode(
                 LocalBipePublicProfiles provides bipeSession.publicProfiles, // Bipe: public profile bios in shared UI
                 LocalBipeAccount provides bipeSession.account, // Bipe: PIN rows in settings (ADR 0057)
                 LocalBipeCompanySeals provides bipeSession.companySeals, // Bipe: company seals in shared UI (bipe#252)
+                LocalBipeCompanyAccounts provides bipeSession.accountTypes, // Bipe: company avatar shape (ADR 0132, bipe#397)
             ) {
                 val isOnline by syncService.isOnline.collectAsState()
                 // Outside the connectivity indicator so the two strips stack rather than fight: an
