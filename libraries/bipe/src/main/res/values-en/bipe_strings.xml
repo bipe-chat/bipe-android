@@ -820,6 +820,9 @@
     <string name="bipe_onboarding_join_with_invite">Join with the invite</string>
     <string name="bipe_onboarding_have_invite">I have an invite</string>
     <string name="bipe_onboarding_have_account">I already have an account</string>
+    <string name="bipe_onboarding_paste_invite_hint">Copied the invite link?</string>
+    <string name="bipe_onboarding_paste_invite">Paste invite</string>
+    <string name="bipe_onboarding_paste_invite_none">What you copied is not a Bipe invite.</string>
     <string name="bipe_invite_code_title">Invite code</string>
     <string name="bipe_invite_code_body">Ask the person who invited you for the code.</string>
     <string name="bipe_invite_code_none">No invite?</string>
