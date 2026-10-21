@@ -15,11 +15,13 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.features.leaveroom.api.LeaveRoomEvent
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeServerAccountData
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.test.A_ROOM_ID
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.aRoomInfo
+import io.element.android.libraries.push.test.notifications.FakeNotificationCleaner
 import io.element.android.libraries.push.test.notifications.conversations.FakeNotificationConversationService
 import io.element.android.tests.testutils.WarmUpRule
 import io.element.android.tests.testutils.lambda.assert
@@ -245,5 +247,7 @@ private fun TestScope.createLeaveRoomPresenter(
     bipeClearedChats = BipeClearedChats(
         matrixClient = FakeMatrixClient(),
         sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+        serverAccountData = BipeServerAccountData { Result.success(null) },
     ),
+    notificationCleaner = FakeNotificationCleaner(clearMessagesForRoomLambda = { _, _ -> }),
 )

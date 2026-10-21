@@ -148,6 +148,15 @@ class DefaultNotificationConversationService(
         }
     }
 
+    // Bipe (bipe-chat/bipe#479): only the dynamic shortcut goes. A pinned one stays enabled, so the next message can update it.
+    override suspend fun onClearedRoom(sessionId: SessionId, roomId: RoomId) {
+        runCatchingExceptions {
+            ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(createShortcutId(sessionId, roomId)))
+        }.onFailure {
+            Timber.e(it, "Failed to remove shortcut for cleared room $roomId in session $sessionId")
+        }
+    }
+
     override suspend fun onAvailableRoomsChanged(sessionId: SessionId, roomIds: Set<RoomId>) {
         runCatchingExceptions {
             val shortcuts = ShortcutManagerCompat.getDynamicShortcuts(context)

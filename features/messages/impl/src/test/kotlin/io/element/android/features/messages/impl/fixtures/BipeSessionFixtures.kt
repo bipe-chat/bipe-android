@@ -9,6 +9,7 @@ package io.element.android.features.messages.impl.fixtures
 import io.element.android.libraries.bipe.BipeHandleChanges
 import io.element.android.libraries.bipe.BipeHandleResolver
 import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
+import io.element.android.libraries.bipe.clearedchats.BipeServerAccountData
 import io.element.android.libraries.bipe.di.BipeSession
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.mockk.every
@@ -35,4 +36,5 @@ internal fun aBipeSession(scope: CoroutineScope = CoroutineScope(EmptyCoroutineC
 internal fun aBipeClearedChats() = BipeClearedChats(
     matrixClient = FakeMatrixClient(),
     sessionCoroutineScope = CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+    serverAccountData = BipeServerAccountData { Result.success(null) },
 )

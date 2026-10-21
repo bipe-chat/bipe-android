@@ -30,6 +30,7 @@ dependencies {
     implementation(projects.libraries.core)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe) // Bipe: cleared DMs (bipe-chat/bipe#479)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.matrixui)
     implementation(projects.libraries.sessionStorage.api)

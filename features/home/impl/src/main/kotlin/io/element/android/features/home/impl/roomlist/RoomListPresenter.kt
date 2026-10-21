@@ -380,13 +380,14 @@ class RoomListPresenter(
                     }
                 }
 
-                // Bipe: numberOfRooms counts every room, not the rooms of the tab. A Grupos tab with no groups
-                // shows its own empty state. With a filter on, the filter empty state shows instead.
-                val bipeTabIsEmpty = listed.isEmpty() && archived.isEmpty()
-                if (bipeShowsGroups && bipeTabIsEmpty && !bipeHasAnyFilterSelected) {
+                // Bipe: numberOfRooms counts every room, not the rooms of the tab, and cleared DMs too (bipe#479).
+                // A tab with no rows (no rooms, no Pedidos, no Arquivadas) shows its own empty state.
+                // With a filter on, the filter empty state shows instead.
+                val bipeTabIsEmpty = listed.isEmpty() && archived.isEmpty() && requests.isEmpty()
+                if (bipeTabIsEmpty && !bipeHasAnyFilterSelected) {
                     return RoomListContentState.Empty(
                         securityBannerState = securityBannerState,
-                        bipeGroups = true,
+                        bipeGroups = bipeShowsGroups,
                     )
                 }
 

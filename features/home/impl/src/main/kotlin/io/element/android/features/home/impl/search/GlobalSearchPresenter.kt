@@ -98,12 +98,14 @@ class GlobalSearchPresenter(
         StartSearchBackfillWhenVisible(isEnabled = isEnabled, isSearchActive = isSearchActive)
 
         val searchHistory by produceState<AsyncData<ImmutableList<SearchHistoryListItem>>>(initialValue = AsyncData.Uninitialized) {
-            searchHistoryStore.history.collectLatest { history ->
+            // Bipe (bipe-chat/bipe#479): a cleared DM leaves the history too, until a newer event arrives.
+            combine(searchHistoryStore.history, bipeClearedChats.state, ::Pair).collectLatest { (history, clearedChats) ->
                 val mappedHistoryItems = history.mapNotNull { result ->
                     when (result) {
                         is SearchHistoryResult.Query -> SearchHistoryListItem.Query(term = result.term)
                         is SearchHistoryResult.Room -> {
                             val roomInfo = matrixClient.getRoomInfo(result.roomId).getOrNull() ?: return@mapNotNull null
+                            if (roomInfo.isDm && bipeClearedChats.isHidden(result.roomId, clearedChats)) return@mapNotNull null
                             SearchHistoryListItem.Room(roomId = result.roomId, roomInfo = roomInfo)
                         }
                     }

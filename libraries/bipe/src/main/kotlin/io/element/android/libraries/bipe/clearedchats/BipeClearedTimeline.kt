@@ -37,6 +37,15 @@ object BipeClearedTimeline {
         return (head + tail).filterNot { it is MatrixTimelineItem.Virtual && it.virtual is VirtualTimelineItem.RoomBeginning }
     }
 
+    /**
+     * Drops every event with a time up to [marker] and keeps the other items as they are. For lists that are not the
+     * room timeline: the pinned events (bipe-chat/bipe#479). A null [marker] keeps all items.
+     */
+    fun keptEvents(items: List<MatrixTimelineItem>, marker: Long?): List<MatrixTimelineItem> {
+        if (marker == null) return items
+        return items.filter { it !is MatrixTimelineItem.Event || ClearedChats.keepsEvent(marker, it.event.timestamp) }
+    }
+
     /** True when the loaded items reach the marker, so back-pagination has nothing more to show. */
     fun reachesMarker(items: List<MatrixTimelineItem>, marker: Long?): Boolean {
         if (marker == null) return false

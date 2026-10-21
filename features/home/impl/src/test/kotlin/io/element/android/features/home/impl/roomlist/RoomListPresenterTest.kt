@@ -151,6 +151,7 @@ class RoomListPresenterTest {
     @Test
     fun `present - handle DismissRequestVerificationPrompt`() = runTest {
         val roomList = FakeDynamicRoomList(
+            summaries = MutableStateFlow(listOf(aRoomSummary())),
             loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(1))
         )
         val roomListService = FakeRoomListService(
@@ -180,6 +181,7 @@ class RoomListPresenterTest {
             recoveryStateStateFlow.emit(RecoveryState.DISABLED)
         }
         val roomList = FakeDynamicRoomList(
+            summaries = MutableStateFlow(listOf(aRoomSummary())),
             loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(1))
         )
         val roomListService = FakeRoomListService(
