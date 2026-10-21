@@ -53,6 +53,7 @@ class BipeSettingsGroupNode(
         fun navigateToMediaSettings()
         fun navigateToLocationSettings()
         fun navigateToSecureBackup()
+        fun navigateToAppLockSetup()
         fun navigateToLinkNewDevice()
         fun navigateToSignOut()
         fun navigateToMessaging()
@@ -93,6 +94,8 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.PRIVACY_MESSAGING -> callback.navigateToMessaging()
                     BipeSettingsRow.PRIVACY_BLOCKED -> callback.navigateToBlockedUsers()
                     BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> callback.navigateToSecureBackup()
+                    // "Bloquear o app" turned on, after the owner check in BipeAppLockRow.
+                    BipeSettingsRow.ACCOUNT_APP_LOCK -> callback.navigateToAppLockSetup()
                     BipeSettingsRow.ACCOUNT_LINKED_DEVICES -> callback.navigateToLinkNewDevice()
                     BipeSettingsRow.ACCOUNT_ADD -> {
                         showNewAccount = true
