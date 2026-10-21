@@ -32,6 +32,9 @@ class RoomMembershipContentFormatter(
         val memberIsYou = matrixClient.isMe(userId)
         val userDisplayNameOrId = membershipContent.userDisplayName ?: userId.value
         val reason = membershipContent.reason?.takeIf { it.isNotBlank() }
+        // Bipe: a DM has no invite lines, in the timeline or the room list preview. An invite pair's
+        // auto-accept made "You accepted the invite" the preview (BIPE.md "DMs are DMs").
+        if (isDm && membershipContent.change in bipeDmHiddenChanges) return null
         return when (membershipContent.change) {
             // Bipe: a DM says "conversa", not "sala" (bipe#507)
             MembershipChange.JOINED -> if (isDm && memberIsYou) {
@@ -152,4 +155,6 @@ class RoomMembershipContentFormatter(
             }
         }
     }
+
+    private val bipeDmHiddenChanges = setOf(MembershipChange.INVITED, MembershipChange.INVITATION_ACCEPTED)
 }

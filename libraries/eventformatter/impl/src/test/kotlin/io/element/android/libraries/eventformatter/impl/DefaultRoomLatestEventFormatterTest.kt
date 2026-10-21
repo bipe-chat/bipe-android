@@ -493,6 +493,10 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         val someoneAcceptedInviteEvent = createLatestEvent(sentByYou = false, senderDisplayName = otherName, content = someoneContent)
         val someoneAcceptedInvite = formatter.format(someoneAcceptedInviteEvent, false)
         assertThat(someoneAcceptedInvite).isEqualTo("$otherName accepted the invite")
+
+        // Bipe: no invite lines in a DM preview
+        assertThat(formatter.format(youAcceptedInviteEvent, true)).isNull()
+        assertThat(formatter.format(someoneAcceptedInviteEvent, true)).isNull()
     }
 
     @Test
