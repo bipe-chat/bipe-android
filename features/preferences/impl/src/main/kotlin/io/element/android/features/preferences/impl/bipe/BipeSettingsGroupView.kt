@@ -78,7 +78,7 @@ fun BipeSettingsGroupView(
     ) {
         var first = true
         for (section in state.group.sections) {
-            val rows = BipeSettingsGate.visibleRows(section) { it in state.enabledFlags }.filter { isAvailable(it) }
+            val rows = BipeSettingsGate.visibleRows(section) { it in state.enabledFlags }
             if (rows.isEmpty()) continue
             PreferenceCategory(
                 title = section.title?.let { stringResource(it) },
@@ -100,13 +100,6 @@ fun BipeSettingsGroupView(
             )
         }
     }
-}
-
-/** Rows that need something this build does not have yet. */
-private fun isAvailable(row: BipeSettingsRow): Boolean = when (row) {
-    // Android has no "Contatos no Bipe" screen (address-book matching) yet.
-    BipeSettingsRow.PRIVACY_CONTACTS -> false
-    else -> true
 }
 
 /** Footers with a value to fill in. With more than one account, the PIN footer says the device PIN stays (ADR 0086). */

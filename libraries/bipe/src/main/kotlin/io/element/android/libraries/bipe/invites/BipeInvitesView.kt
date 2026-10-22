@@ -6,29 +6,20 @@
 
 package io.element.android.libraries.bipe.invites
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.bipe.R
 import io.element.android.libraries.bipe.api.BipeInvite
 import io.element.android.libraries.bipe.generated.BipeHaptic
 import io.element.android.libraries.bipe.haptics.BipeHapticOnChange
-import io.element.android.libraries.bipe.qrcode.BipeQrCodeContent
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.dialogs.TextFieldDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
@@ -36,19 +27,12 @@ import io.element.android.libraries.designsystem.components.preferences.Preferen
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
-import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.ListItemStyle
-import io.element.android.libraries.designsystem.theme.components.ListSupportingText
 import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
-import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.ui.strings.CommonStrings
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /** Port of BipeInvitesScreen on iOS: one-tap invite, people who joined, then invites not used yet. */
 @Composable
@@ -64,8 +48,12 @@ fun BipeInvitesView(
         onBackClick = onBackClick,
         modifier = modifier,
     ) {
-        InviteButtons(state)
-        ListSupportingText(text = footer(state))
+        BipeInviteButtonsSection(
+            canCreate = state.canCreate,
+            footer = bipeInviteFooter(available = state.available.takeUnless { state.isLoading }, nextAvailableAt = state.nextAvailableAt),
+            onInviteByLink = { state.eventSink(BipeInvitesEvent.InviteByLink) },
+            onInviteInPerson = { state.eventSink(BipeInvitesEvent.InviteInPerson) },
+        )
         JoinedSection(state, onUserClick)
         PendingSection(state, onInviteClick = { selectedPendingInvite = it })
     }
@@ -84,21 +72,12 @@ fun BipeInvitesView(
             onDismiss = { state.eventSink(BipeInvitesEvent.DismissNote) },
         )
     }
-    state.shareSheetUrl?.let { url ->
-        val context = LocalContext.current
-        val message = stringResource(R.string.bipe_invites_share_message, url)
-        LaunchedEffect(url) {
-            context.startSharePlainTextIntent(activityResultLauncher = null, chooserTitle = null, text = message)
-            state.eventSink(BipeInvitesEvent.ShareSheetOpened)
-        }
-    }
-    state.qrCodeUrl?.let { url ->
-        InviteQrCodeSheet(
-            url = url,
-            shareText = stringResource(R.string.bipe_invites_share_message, url),
-            onDismiss = { state.eventSink(BipeInvitesEvent.DismissQrCode) },
-        )
-    }
+    BipeInviteSheets(
+        shareSheetUrl = state.shareSheetUrl,
+        qrCodeUrl = state.qrCodeUrl,
+        onShareSheetOpen = { state.eventSink(BipeInvitesEvent.ShareSheetOpened) },
+        onDismissQrCode = { state.eventSink(BipeInvitesEvent.DismissQrCode) },
+    )
     AsyncActionView(
         async = state.action,
         onSuccess = {},
@@ -126,49 +105,6 @@ internal fun BipeInviteNoteDialog(
 }
 
 @Composable
-private fun InviteButtons(state: BipeInvitesState) {
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Button(
-            text = stringResource(R.string.bipe_invites_invite_someone),
-            leadingIcon = IconSource.Vector(CompoundIcons.ShareAndroid()),
-            enabled = state.canCreate,
-            onClick = { state.eventSink(BipeInvitesEvent.InviteByLink) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedButton(
-            text = stringResource(R.string.bipe_invites_show_qr),
-            leadingIcon = IconSource.Vector(CompoundIcons.QrCode()),
-            enabled = state.canCreate,
-            onClick = { state.eventSink(BipeInvitesEvent.InviteInPerson) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
-}
-
-@Composable
-private fun footer(state: BipeInvitesState): String {
-    val explainer = stringResource(R.string.bipe_invites_explainer)
-    if (state.isLoading) return explainer
-    if (state.available <= 0) return bipeInvitesNoneLeftText(state.nextAvailableAt)
-    // A large count means nothing to the person, so it shows only when few invites are left.
-    if (state.available > LOW_INVITE_COUNT) return explainer
-    return "$explainer ${stringResource(R.string.bipe_invites_available, state.available.toString())}"
-}
-
-private const val LOW_INVITE_COUNT = 5
-
-/** The quota text when no invite is left, with when the next one comes back. Port of `BipeInviteQuota.noneLeft` on iOS. */
-@Composable
-internal fun bipeInvitesNoneLeftText(nextAvailableAt: Instant?): String {
-    val noneLeft = stringResource(R.string.bipe_invites_none_left)
-    val next = nextAvailableAt ?: return noneLeft
-    return "$noneLeft ${stringResource(R.string.bipe_invites_next, formatDate(next, withTime = true))}"
-}
-
-@Composable
 private fun JoinedSection(state: BipeInvitesState, onUserClick: (String) -> Unit) {
     val joinedInvites = state.joinedInvites
     if (joinedInvites.isEmpty()) return
@@ -192,7 +128,7 @@ private fun PendingSection(state: BipeInvitesState, onInviteClick: (BipeInvite) 
     if (pendingInvites.isEmpty()) return
     PreferenceCategory(title = stringResource(R.string.bipe_invites_pending_header)) {
         for (invite in pendingInvites) {
-            val expiry = stringResource(R.string.bipe_invites_expires, formatDate(invite.expiresAt, withTime = false))
+            val expiry = stringResource(R.string.bipe_invites_expires, formatInviteDate(invite.expiresAt, withTime = false))
             val otherDevice = stringResource(R.string.bipe_invites_other_device)
             val description = if (state.shareUrls.containsKey(invite.id)) expiry else "$expiry. $otherDevice"
             ListItem(
@@ -244,31 +180,6 @@ private fun PendingInviteActionsSheet(
             },
         )
     }
-}
-
-/** The invite link as a QR code. Scanned with the camera, it opens sign-up with the code, or the invite page when the app is missing. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun InviteQrCodeSheet(url: String, shareText: String, onDismiss: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, scrollable = true) {
-        BipeQrCodeContent(
-            url = url,
-            title = stringResource(R.string.bipe_invites_qr_title),
-            footer = stringResource(R.string.bipe_invites_qr_footer),
-            shareText = shareText,
-            shareLabel = stringResource(CommonStrings.action_share),
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
-        )
-    }
-}
-
-private fun formatDate(instant: Instant, withTime: Boolean): String {
-    val formatter = if (withTime) {
-        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-    } else {
-        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-    }
-    return formatter.withZone(ZoneId.systemDefault()).format(instant)
 }
 
 @PreviewsDayNight

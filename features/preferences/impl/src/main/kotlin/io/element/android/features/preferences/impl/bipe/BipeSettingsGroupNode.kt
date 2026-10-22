@@ -58,6 +58,7 @@ class BipeSettingsGroupNode(
         fun navigateToSignOut()
         fun navigateToMessaging()
         fun navigateToBlockedUsers()
+        fun navigateToContacts()
         fun navigateToOssLicenses()
         fun navigateToSupport()
         fun navigateToBugReport()
@@ -93,6 +94,7 @@ class BipeSettingsGroupNode(
                     BipeSettingsRow.PROFILE_PUBLIC_PROFILE -> callback.navigateToPublicProfile()
                     BipeSettingsRow.PRIVACY_MESSAGING -> callback.navigateToMessaging()
                     BipeSettingsRow.PRIVACY_BLOCKED -> callback.navigateToBlockedUsers()
+                    BipeSettingsRow.PRIVACY_CONTACTS -> callback.navigateToContacts()
                     BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> callback.navigateToSecureBackup()
                     // "Bloquear o app" turned on, after the owner check in BipeAppLockRow.
                     BipeSettingsRow.ACCOUNT_APP_LOCK -> callback.navigateToAppLockSetup()
