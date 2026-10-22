@@ -183,6 +183,7 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - Clearing deletes nothing on the server or in the local media cache: the SDK has no media cache call for one room. The clear sends no read receipt: ADR 0050 allows public receipts only, and a public one tells the other person the chat was read.
 - A DM that the user left before this change stays as it is.
 - iOS does the same (`BipeInviteToGroupSheet`).
+- One DM test: the SDK isDm decides on every screen (bipe#524).
 - A DM shows no 'sala' in any string (bipe#507); a new DM-reachable string gets a `bipe_dm_*` variant.
 - A DM shows no topic anywhere (bipe#527). `RoomBeginningPostProcessor` drops topic events from the DM timeline, and `StateContentFormatter` gives no line for `OtherState.RoomTopic` with `isDm`, so a topic event is never the room list last message. A DM invite (`JoinRoomView`) shows no topic.
 - A group says "descrição" for its topic, never "tópico": in Bipe "tópico" is a thread (`linguagem.md`). `bipe_string_overrides.xml` aliases the topic lines, `common_topic`, the create field and "Adicionar" to `bipe_group_*` strings (bipe#527).

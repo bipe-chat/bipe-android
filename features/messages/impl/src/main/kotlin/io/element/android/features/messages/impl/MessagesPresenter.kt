@@ -252,7 +252,8 @@ class MessagesPresenter(
         val dmRoomMember by room.getDirectRoomMember(membersState)
         val bipeInviter by bipeInviterGreeting.inviter.collectAsState()
         val bipeInviterHandle = bipeInviter?.takeIf { inviter ->
-            roomInfo.isDirect && (dmRoomMember?.userId == inviter.userId || roomInfo.heroes.any { it.userId == inviter.userId })
+            // Bipe (bipe#524): the SDK isDm is the one DM test.
+            roomInfo.isDm && (dmRoomMember?.userId == inviter.userId || roomInfo.heroes.any { it.userId == inviter.userId })
         }?.handle
         // Bipe ADR 0136: the inviter's phone sends their note when it learns of the join. Until a message from them is here, say they know.
         val bipeInviterId = bipeInviter?.userId?.takeIf { bipeInviterHandle != null }

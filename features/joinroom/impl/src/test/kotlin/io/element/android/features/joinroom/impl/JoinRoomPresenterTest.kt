@@ -113,7 +113,7 @@ class JoinRoomPresenterTest {
                 assertThat(contentState.topic).isEqualTo(roomInfo.topic)
                 assertThat(contentState.alias).isEqualTo(roomInfo.canonicalAlias)
                 assertThat(contentState.numberOfMembers).isEqualTo(roomInfo.joinedMembersCount)
-                assertThat(contentState.details).isEqualTo(aLoadedDetailsRoom(isDm = roomInfo.isDirect))
+                assertThat(contentState.details).isEqualTo(aLoadedDetailsRoom(isDm = roomInfo.isDm))
                 assertThat(contentState.roomAvatarUrl).isEqualTo(roomInfo.avatarUrl)
             }
         }

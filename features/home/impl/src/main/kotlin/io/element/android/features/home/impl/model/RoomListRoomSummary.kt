@@ -36,7 +36,7 @@ data class RoomListRoomSummary(
     val userDefinedNotificationMode: RoomNotificationMode?,
     val hasRoomCall: Boolean,
     val activeCallIntent: CallIntent?,
-    val isDirect: Boolean,
+    /** Bipe (bipe#524): the SDK isDm is the one DM test. The `m.direct` flag is not kept here. */
     val isDm: Boolean,
     val isFavorite: Boolean,
     val inviteSender: InviteSender?,
