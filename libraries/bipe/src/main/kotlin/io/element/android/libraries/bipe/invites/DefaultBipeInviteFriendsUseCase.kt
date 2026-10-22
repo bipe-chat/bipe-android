@@ -9,7 +9,6 @@ package io.element.android.libraries.bipe.invites
 import android.app.Activity
 import android.widget.Toast
 import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.bipe.api.BipeApiException
 import io.element.android.libraries.deeplink.api.usecase.InviteFriendsUseCase
@@ -29,8 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @ContributesBinding(SessionScope::class)
 @SingleIn(SessionScope::class)
-@Inject
-class BipeInviteFriendsUseCase(
+class DefaultBipeInviteFriendsUseCase(
     private val inviteCreator: BipeInviteCreator,
     private val stringProvider: StringProvider,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,

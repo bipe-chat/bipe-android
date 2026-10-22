@@ -19,7 +19,7 @@ import io.element.android.services.toolbox.api.strings.StringProvider
 import timber.log.Timber
 import io.element.android.libraries.androidutils.R as AndroidUtilsR
 
-// Bipe: not bound. BipeInviteFriendsUseCase (libraries/bipe) shares a personal invite link instead of a matrix.to link.
+// Bipe: not bound. DefaultBipeInviteFriendsUseCase (libraries/bipe) shares a personal invite link instead of a matrix.to link.
 class DefaultInviteFriendsUseCase(
     private val stringProvider: StringProvider,
     private val matrixClient: MatrixClient,

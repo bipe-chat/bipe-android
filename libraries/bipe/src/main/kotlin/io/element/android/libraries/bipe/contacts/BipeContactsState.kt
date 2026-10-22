@@ -22,7 +22,6 @@ enum class BipeContactsAccess {
 
 data class BipeContactsMatch(
     val userId: String,
-
     /** The name in the user's own address book. */
     val contactName: String,
 )
@@ -30,7 +29,6 @@ data class BipeContactsMatch(
 /** A person on Bipe: an address-book match, someone who joined with the user's invite, or both. */
 data class BipeContactsRow(
     val userId: String,
-
     /** `null` when the person is not in the address book. */
     val contactName: String?,
     val joinedWithInvite: Boolean,
@@ -43,32 +41,24 @@ data class BipeContactsState(
     val isLoading: Boolean,
     val hasSearched: Boolean,
     val matches: List<BipeContactsMatch>,
-
     /** `null` until the status loads. */
     val phoneLinked: Boolean?,
     val discoverableByPhone: Boolean,
-
     /** `null` until the invites load. */
     val invitesAvailable: Int?,
     val nextInviteAt: Instant?,
     val joinedUserIds: List<String>,
     val pendingInviteCount: Int,
-
     /** Matrix ID to "@handle" (or the Matrix ID). */
     val displayTexts: Map<String, String>,
-
     /** Invite creation, lookup and discovery requests. Failure carries the localised message. */
     val action: AsyncAction<Unit>,
-
     /** Set to open the system share sheet for this invite link once. */
     val shareSheetUrl: String?,
-
     /** Set to show this invite link as a QR code. */
     val qrCodeUrl: String?,
-
     /** Goes up by one for each invite made, so the view plays the success haptic. */
     val createdCount: Int,
-
     /** Set while the note dialog for a new invite shows (ADR 0136). */
     val noteDestination: BipeInviteDestination?,
     val eventSink: (BipeContactsEvent) -> Unit,
