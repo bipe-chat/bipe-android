@@ -1078,4 +1078,19 @@
     <string name="bipe_group_state_event_room_topic_changed_by_you">Você mudou a descrição do grupo para: %1$s</string>
     <string name="bipe_group_state_event_room_topic_removed">%1$s tirou a descrição do grupo</string>
     <string name="bipe_group_state_event_room_topic_removed_by_you">Você tirou a descrição do grupo</string>
+    <string name="bipe_app_start_loading">Abrindo sua conta…</string>
+    <string name="bipe_app_start_no_account_title">Nenhuma conta neste celular</string>
+    <string name="bipe_app_start_no_account_body">Esta versão de teste abre uma conta que já está neste celular.</string>
+    <string name="bipe_app_start_error">Não deu para abrir sua conta. Confira a internet e tente de novo.</string>
+    <string name="bipe_app_retry">Tentar de novo</string>
+    <string name="bipe_app_chat_list_title">Conversas</string>
+    <string name="bipe_app_chat_list_empty">Nenhuma conversa ainda.</string>
+    <string name="bipe_app_chat_list_unread">Mensagens não lidas: %1$s</string>
+    <string name="bipe_app_timeline_composer_placeholder">Mensagem</string>
+    <string name="bipe_app_timeline_send">Enviar</string>
+    <string name="bipe_app_timeline_sending">Enviando…</string>
+    <string name="bipe_app_timeline_failed">Não deu para enviar. Toque para tentar de novo.</string>
+    <string name="bipe_app_timeline_undecryptable">Ainda não dá para ler esta mensagem neste celular.</string>
+    <string name="bipe_app_timeline_loading_history">Carregando mensagens anteriores…</string>
+    <string name="bipe_app_timeline_start">Aqui começa a conversa.</string>
 </resources>
