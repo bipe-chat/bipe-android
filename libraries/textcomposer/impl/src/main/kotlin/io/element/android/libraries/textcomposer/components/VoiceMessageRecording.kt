@@ -29,11 +29,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
+import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.libraries.ui.utils.time.formatShort
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -45,6 +50,9 @@ internal fun VoiceMessageRecording(
     levels: ImmutableList<Float>,
     duration: Duration,
     modifier: Modifier = Modifier,
+    // Bipe: pause and resume (bipe#80). Null hides the button.
+    isPaused: Boolean = false,
+    onPauseToggle: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier
@@ -53,11 +61,11 @@ internal fun VoiceMessageRecording(
                 color = ElementTheme.colors.bgSubtleSecondary,
                 shape = MaterialTheme.shapes.medium,
             )
-            .padding(start = 12.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
+            .padding(start = 12.dp, end = if (onPauseToggle == null) 20.dp else 4.dp, top = 8.dp, bottom = 8.dp)
             .heightIn(26.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        RedRecordingDot()
+        RedRecordingDot(isPaused = isPaused)
 
         Spacer(Modifier.size(8.dp))
 
@@ -76,11 +84,26 @@ internal fun VoiceMessageRecording(
                 .weight(1f),
             levels = levels,
         )
+
+        if (onPauseToggle != null) {
+            IconButton(onClick = onPauseToggle, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    imageVector = if (isPaused) CompoundIcons.MicOn() else CompoundIcons.PauseSolid(),
+                    contentDescription = stringResource(if (isPaused) CommonStrings.a11y_voice_message_record else CommonStrings.a11y_pause),
+                    tint = ElementTheme.colors.iconSecondary,
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun RedRecordingDot() {
+private fun RedRecordingDot(isPaused: Boolean) {
+    if (isPaused) {
+        // Bipe: a still dot while paused.
+        Box(modifier = Modifier.size(8.dp).background(color = ElementTheme.colors.iconSecondary, shape = CircleShape))
+        return
+    }
     val infiniteTransition = rememberInfiniteTransition("RedRecordingDot")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -103,4 +126,5 @@ private fun RedRecordingDot() {
 @Composable
 internal fun VoiceMessageRecordingPreview() = ElementPreview {
     VoiceMessageRecording(List(100) { it.toFloat() / 100 }.toImmutableList(), 0.seconds)
+    VoiceMessageRecording(List(100) { it.toFloat() / 100 }.toImmutableList(), 3.seconds, isPaused = true, onPauseToggle = {})
 }

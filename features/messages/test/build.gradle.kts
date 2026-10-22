@@ -17,6 +17,7 @@ android {
 dependencies {
     api(projects.features.messages.impl)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe)
     implementation(projects.libraries.matrix.test)
     implementation(projects.libraries.audio.test)
     implementation(projects.libraries.mediaplayer.test)

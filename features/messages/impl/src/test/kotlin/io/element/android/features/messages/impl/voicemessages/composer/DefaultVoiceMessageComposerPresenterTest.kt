@@ -821,6 +821,8 @@ class DefaultVoiceMessageComposerPresenterTest {
             player = VoiceMessageComposerPlayer(FakeMediaPlayer(), this),
             messageComposerContext = messageComposerContext,
             permissionsPresenterFactory = FakePermissionsPresenterFactory(permissionsPresenter),
+            // Bipe: no on-device transcription in these tests.
+            transcriber = { _, _ -> null },
         )
     }
 

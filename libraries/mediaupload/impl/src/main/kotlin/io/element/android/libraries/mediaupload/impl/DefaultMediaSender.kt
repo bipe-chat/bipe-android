@@ -147,6 +147,7 @@ class DefaultMediaSender(
         uri: Uri,
         mimeType: String,
         waveForm: List<Float>,
+        caption: String?,
         inReplyToEventId: EventId?,
     ): Result<Unit> {
         return preProcessor
@@ -166,7 +167,7 @@ class DefaultMediaSender(
                 withTimeline { timeline ->
                     timeline.sendMedia(
                         uploadInfo = newInfo,
-                        caption = null,
+                        caption = caption,
                         formattedCaption = null,
                         inReplyToEventId = inReplyToEventId,
                     )
@@ -252,6 +253,7 @@ class DefaultMediaSender(
                     file = uploadInfo.file,
                     audioInfo = uploadInfo.audioInfo,
                     waveform = uploadInfo.waveform,
+                    caption = caption,
                     inReplyToEventId = inReplyToEventId,
                 )
             }

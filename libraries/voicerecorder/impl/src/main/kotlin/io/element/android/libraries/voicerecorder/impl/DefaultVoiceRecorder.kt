@@ -24,13 +24,17 @@ import io.element.android.libraries.voicerecorder.impl.audio.AudioConfig
 import io.element.android.libraries.voicerecorder.impl.audio.AudioLevelCalculator
 import io.element.android.libraries.voicerecorder.impl.audio.AudioReader
 import io.element.android.libraries.voicerecorder.impl.audio.Encoder
+import io.element.android.libraries.voicerecorder.impl.audio.SampleRate
 import io.element.android.libraries.voicerecorder.impl.audio.resample
 import io.element.android.libraries.voicerecorder.impl.file.VoiceFileConfig
 import io.element.android.libraries.voicerecorder.impl.file.VoiceFileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -38,7 +42,9 @@ import kotlinx.coroutines.yield
 import timber.log.Timber
 import java.io.File
 import java.util.UUID
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 @SingleIn(RoomScope::class)
@@ -70,6 +76,22 @@ class DefaultVoiceRecorder(
     private val _state = MutableStateFlow<VoiceRecorderState>(VoiceRecorderState.Idle)
     override val state: StateFlow<VoiceRecorderState> = _state
 
+    // Bipe: pause and resume (bipe#80). The paused time does not count in the elapsed time.
+    private var startedAt: TimeMark? = null
+    private var pausedAt: TimeMark? = null
+    private var pausedTotal: Duration = Duration.ZERO
+
+    // Bipe: the PCM for on-device transcription (ADR 0023). Chunks are copies; a slow collector loses chunks, never the recording.
+    private val _pcm = MutableSharedFlow<ShortArray>(extraBufferCapacity = PCM_BUFFER_CHUNKS)
+    override val pcm: Flow<ShortArray> = _pcm.asSharedFlow()
+    override val pcmSampleRateHz: Int = SampleRate.HZ
+
+    private fun elapsedTime(): Duration {
+        val start = startedAt ?: return Duration.ZERO
+        val currentPause = pausedAt?.elapsedNow() ?: Duration.ZERO
+        return start.elapsedNow() - pausedTotal - currentPause
+    }
+
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun startRecord() = lock.withLock {
         if (recordingJob != null) {
@@ -85,12 +107,16 @@ class DefaultVoiceRecorder(
 
         val audioRecorder = audioReaderFactory.create(config, dispatchers).also { audioReader = it }
 
+        startedAt = timeSource.markNow()
+        pausedAt = null
+        pausedTotal = Duration.ZERO
         recordingJob = voiceCoroutineScope.launch {
-            val startedAt = timeSource.markNow()
             audioRecorder.record { audio ->
                 yield()
+                // Bipe: a read that a pause interrupted is not part of the recording.
+                if (pausedAt != null) return@record
 
-                val elapsedTime = startedAt.elapsedNow()
+                val elapsedTime = elapsedTime()
 
                 if (elapsedTime > VoiceMessageConfig.maxVoiceMessageDuration) {
                     Timber.w("Voice message time limit reached")
@@ -107,6 +133,9 @@ class DefaultVoiceRecorder(
                             _state.emit(VoiceRecorderState.Recording(elapsedTime, levels.toList()))
                         }
                         encoder.encode(audio.buffer, audio.readSize)
+                        if (_pcm.subscriptionCount.value > 0 && audio.readSize > 0) {
+                            if (!_pcm.tryEmit(audio.buffer.copyOf(audio.readSize))) Timber.w("Voice recorder: PCM chunk dropped")
+                        }
                     }
                     is Audio.Error -> {
                         Timber.e("Voice message error: code=${audio.audioRecordErrorCode}")
@@ -115,6 +144,25 @@ class DefaultVoiceRecorder(
                 }
             }
         }
+    }
+
+    override suspend fun pauseRecord() = lock.withLock {
+        val reader = audioReader ?: return@withLock
+        if (pausedAt != null) return@withLock
+        reader.pause()
+        pausedAt = timeSource.markNow()
+        Timber.i("Voice recorder paused")
+        _state.emit(VoiceRecorderState.Recording(elapsedTime(), levels.toList(), isPaused = true))
+    }
+
+    override suspend fun resumeRecord() = lock.withLock {
+        val reader = audioReader ?: return@withLock
+        val pause = pausedAt ?: return@withLock
+        pausedTotal += pause.elapsedNow()
+        pausedAt = null
+        reader.resume()
+        Timber.i("Voice recorder resumed")
+        _state.emit(VoiceRecorderState.Recording(elapsedTime(), levels.toList(), isPaused = false))
     }
 
     /**
@@ -129,6 +177,7 @@ class DefaultVoiceRecorder(
             Timber.i("Voice recorder stopped recording")
         }
         recordingJob = null
+        pausedAt = null
 
         audioReader?.stop()
         audioReader = null
@@ -168,3 +217,6 @@ class DefaultVoiceRecorder(
         _state.emit(VoiceRecorderState.Idle)
     }
 }
+
+/** About 40 s of audio at the reader's buffer size, so a short stall in the transcriber loses nothing. */
+private const val PCM_BUFFER_CHUNKS = 512

@@ -275,12 +275,14 @@ interface Timeline : AutoCloseable {
      * @param file the recorded audio to upload.
      * @param audioInfo the duration, size and MIME type of the recording.
      * @param waveform the amplitudes used to draw the waveform, normalised between 0 and 1.
+     * @param caption Bipe: the sender's transcript (ADR 0023), or `null` for none.
      * @param inReplyToEventId the event this message replies to, or `null` if it is not a reply.
      */
     suspend fun sendVoiceMessage(
         file: File,
         audioInfo: AudioInfo,
         waveform: List<Float>,
+        caption: String?,
         inReplyToEventId: EventId?,
     ): Result<MediaUploadHandler>
 

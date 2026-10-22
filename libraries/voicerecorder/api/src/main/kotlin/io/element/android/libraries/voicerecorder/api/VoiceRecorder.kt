@@ -10,6 +10,7 @@ package io.element.android.libraries.voicerecorder.api
 
 import android.Manifest
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -23,6 +24,17 @@ interface VoiceRecorder {
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     suspend fun startRecord()
+
+    /**
+     * Bipe: pause the current recording. The microphone stops and the paused time does not count. Call [resumeRecord] to go on,
+     * or [stopRecord] to finish with the audio so far.
+     */
+    suspend fun pauseRecord()
+
+    /**
+     * Bipe: resume a paused recording into the same file. The permission was checked when the recording started.
+     */
+    suspend fun resumeRecord()
 
     /**
      * Stop the current recording.
@@ -44,4 +56,13 @@ interface VoiceRecorder {
      * The current state of the recorder.
      */
     val state: StateFlow<VoiceRecorderState>
+
+    /**
+     * Bipe: the recorded audio as it is read, 16-bit mono PCM at [pcmSampleRateHz], for on-device transcription (ADR 0023).
+     * Nothing is emitted while paused.
+     */
+    val pcm: Flow<ShortArray>
+
+    /** Bipe: the sample rate of [pcm]. */
+    val pcmSampleRateHz: Int
 }

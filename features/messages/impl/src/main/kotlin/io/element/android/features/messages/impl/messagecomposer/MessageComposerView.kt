@@ -121,6 +121,7 @@ internal fun MessageComposerView(
         onError = ::onError,
         onTyping = ::onTyping,
         onSelectRichContent = ::sendUri,
+        onVoiceTranscriptChange = { voiceMessageState.eventSink(VoiceMessageComposerEvent.TranscriptChange(it)) },
     )
 
     AsyncActionView(

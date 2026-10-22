@@ -9,6 +9,7 @@
 package io.element.android.libraries.textcomposer.model
 
 import androidx.compose.runtime.Immutable
+import io.element.android.libraries.bipe.voice.BipeVoiceTranscriptDraft
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Duration
 
@@ -25,11 +26,15 @@ sealed interface VoiceMessageState {
         val duration: Duration,
         // Values are between 0 and 1
         val waveform: ImmutableList<Float>,
+        // Bipe: the sender-side transcript (ADR 0023); null when this phone cannot transcribe on the device.
+        val transcript: BipeVoiceTranscriptDraft? = null,
     ) : VoiceMessageState
 
     data class Recording(
         val duration: Duration,
         // Values are between 0 and 1
         val levels: ImmutableList<Float>,
+        // Bipe: pause and resume while recording (bipe#80).
+        val isPaused: Boolean = false,
     ) : VoiceMessageState
 }

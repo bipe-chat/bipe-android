@@ -162,6 +162,14 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - **`assetlinks.json`** on `bipe.chat` for verified app links.
 - Bipe screens (phase 5) and the routing for Bipe links.
 
+## Voice messages: pause, resume and the sender's transcript (ADR 0023, bipe#80)
+
+- **Pause and resume:** a pause button sits at the end of the recording row (`VoiceMessageRecording`). Pause stops the microphone (`AudioRecord.stop`) and keeps the Ogg file open; the paused time does not count. Stop while paused goes to the preview with the audio so far, as on iOS.
+- **Transcript:** `AndroidBipeVoiceTranscriber` (libraries/bipe `voice/`) feeds the recorder's PCM (`VoiceRecorder.pcm`, 16-bit mono 48 kHz) through a pipe to an on-device `SpeechRecognizer` (`createOnDeviceSpeechRecognizer`, `EXTRA_AUDIO_SOURCE`, one segmented session per recording) while the person records. Language: the first phone language with an installed on-device model, then pt-BR. No server fallback, no model download.
+- **Android 13 and later only.** Android 12 and older cannot give a recogniser an audio stream, so those phones send voice messages without a transcript and show no transcript row.
+- **Preview:** `BipeVoiceTranscriptEditor` above the player: "Transcrevendo…", then an editable field, or "Não deu para transcrever". Send never waits: a transcript still in progress is dropped.
+- **Send:** the transcript is the caption of the voice event (MSC2530). The caption goes through `MediaSender.sendVoiceMessage` and `Timeline.sendVoiceMessage` to the SDK's `UploadParameters.caption`.
+
 ## Stickers (ADR 0029, 0033, issue #101)
 
 - **Picker:** attachments sheet → `PickAttachmentSource.Sticker` → `MessageComposerState.stickerPicker` → `StickerPickerBottomSheet` in `MessagesView`. UI: `messagecomposer/BipeStickerPicker.kt`.
@@ -213,7 +221,7 @@ Each line is a difference with its reason. A difference not listed here is a bug
 | App lock | Off by default; switch in Sua conta. Element's lock screen, biometrics optional | Off by default; switch in Sua conta. Element's lock screen, biometrics optional | Element X lock screen per platform |
 | Check before a PIN change | Biometrics or the phone's screen lock; else the app lock PIN | Biometrics or the phone's passcode | `LAContext` on iOS, `BiometricPrompt` with `DEVICE_CREDENTIAL` on Android |
 | Invite code input | Pasted text collapses to the code in the field | Paste button | Platform idiom |
-| Voice messages | Shows the transcript and checks it for scams; no sender-side transcription | Sender-side transcription, pause and resume | On-device recognition on low-end Android unmeasured (#80, #81) **Gap** |
+| Voice transcript | Android 13 and later with an installed on-device model; older phones send without a transcript | Any iPhone with an on-device model for the language | Android gives a recogniser an audio stream only from Android 13. Quality on low-end phones is not measured (#81) |
 | Sticker from a photo | Centred square crop | Subject cut-out (Vision) | Cut-out needs ML Kit, not decided (#101) **Undecided** |
 | Sticker import | Chat export ZIP or files; picker opens in WhatsApp's stickers folder | Chat export ZIP or files | iOS apps cannot read WhatsApp's files |
 | Signed-device isolation | Fixed on | User preference, default on | Undecided (#102) **Undecided** |

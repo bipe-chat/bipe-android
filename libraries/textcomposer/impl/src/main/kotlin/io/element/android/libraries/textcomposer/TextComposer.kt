@@ -58,6 +58,7 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.androidutils.ui.showKeyboard
 import io.element.android.libraries.bipe.generated.BipeHaptic
 import io.element.android.libraries.bipe.haptics.rememberBipeHaptics
+import io.element.android.libraries.bipe.ui.BipeVoiceTranscriptEditor
 import io.element.android.libraries.designsystem.components.media.WaveFormSamples
 import io.element.android.libraries.designsystem.preview.DAY_MODE_NAME
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -132,6 +133,8 @@ fun TextComposer(
     modifier: Modifier = Modifier,
     showTextFormatting: Boolean = false,
     isInThreadTimeline: Boolean = false,
+    // Bipe: the sender corrects the voice transcript before sending (ADR 0023).
+    onVoiceTranscriptChange: (String) -> Unit = {},
 ) {
     val markdown = when (state) {
         is TextEditorState.Markdown -> state.state.text.value()
@@ -364,7 +367,14 @@ fun TextComposer(
 
     val voiceRecording = @Composable {
         when (voiceMessageState) {
-            is VoiceMessageState.Preview ->
+            is VoiceMessageState.Preview -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                voiceMessageState.transcript?.let { transcript ->
+                    BipeVoiceTranscriptEditor(
+                        draft = transcript,
+                        onTextChange = onVoiceTranscriptChange,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+                }
                 VoiceMessagePreview(
                     isInteractive = !voiceMessageState.isSending,
                     isPlaying = voiceMessageState.isPlaying,
@@ -377,10 +387,15 @@ fun TextComposer(
                     onPauseClick = onPauseVoiceMessageClick,
                     onSeek = onSeekVoiceMessage,
                 )
+            }
             is VoiceMessageState.Recording ->
                 VoiceMessageRecording(
                     levels = voiceMessageState.levels,
                     duration = voiceMessageState.duration,
+                    isPaused = voiceMessageState.isPaused,
+                    onPauseToggle = {
+                        onVoiceRecorderEvent(if (voiceMessageState.isPaused) VoiceMessageRecorderEvent.Resume else VoiceMessageRecorderEvent.Pause)
+                    },
                 )
             VoiceMessageState.Idle -> {}
         }
