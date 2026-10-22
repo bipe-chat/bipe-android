@@ -34,6 +34,7 @@ dependencies {
     implementation(projects.libraries.core)
     implementation(projects.libraries.network)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe)
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.preferences.api)
     implementation(projects.libraries.uiStrings)
