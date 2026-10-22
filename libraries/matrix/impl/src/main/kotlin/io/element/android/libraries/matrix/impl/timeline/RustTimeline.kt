@@ -522,14 +522,15 @@ class RustTimeline(
         file: File,
         audioInfo: AudioInfo,
         waveform: List<Float>,
+        caption: String?,
         inReplyToEventId: EventId?,
     ): Result<MediaUploadHandler> {
         return sendAttachment(listOf(file)) {
             inner.sendVoiceMessage(
                 params = UploadParameters(
                     source = UploadSource.File(file.path),
-                    // Maybe allow a caption in the future?
-                    caption = null,
+                    // Bipe: the sender's transcript (ADR 0023, MSC2530 caption).
+                    caption = caption,
                     formattedCaption = null,
                     mentions = null,
                     inReplyTo = inReplyToEventId?.value,

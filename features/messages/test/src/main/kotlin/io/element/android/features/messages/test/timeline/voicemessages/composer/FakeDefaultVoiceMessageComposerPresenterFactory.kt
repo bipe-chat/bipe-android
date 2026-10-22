@@ -42,6 +42,7 @@ class FakeDefaultVoiceMessageComposerPresenterFactory(
             ),
             messageComposerContext = FakeMessageComposerContext(),
             permissionsPresenterFactory = FakePermissionsPresenterFactory(),
+            transcriber = { _, _ -> null },
         )
     }
 }

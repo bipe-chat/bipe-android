@@ -25,4 +25,7 @@ sealed interface VoiceMessageComposerEvent {
     data object DismissPermissionsRationale : VoiceMessageComposerEvent
     data class LifecycleEvent(val event: Lifecycle.Event) : VoiceMessageComposerEvent
     data object DismissSendFailureDialog : VoiceMessageComposerEvent
+
+    // Bipe: the sender's correction of the transcript (ADR 0023).
+    data class TranscriptChange(val text: String) : VoiceMessageComposerEvent
 }

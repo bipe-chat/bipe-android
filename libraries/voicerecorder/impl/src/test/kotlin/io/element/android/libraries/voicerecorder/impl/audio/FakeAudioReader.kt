@@ -37,4 +37,8 @@ class FakeAudioReader(
     override fun stop() {
         isRecording = false
     }
+
+    override fun pause() = Unit
+
+    override fun resume() = Unit
 }

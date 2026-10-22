@@ -13,6 +13,8 @@ import io.element.android.libraries.voicerecorder.api.VoiceRecorder
 import io.element.android.libraries.voicerecorder.api.VoiceRecorderState
 import io.element.android.tests.testutils.lambda.lambdaError
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
@@ -31,6 +33,11 @@ class FakeVoiceRecorder(
 ) : VoiceRecorder {
     private val _state = MutableStateFlow<VoiceRecorderState>(VoiceRecorderState.Idle)
     override val state: StateFlow<VoiceRecorderState> = _state
+
+    /** Emit on this to feed PCM to the code under test. */
+    val pcmFlow = MutableSharedFlow<ShortArray>(extraBufferCapacity = 16)
+    override val pcm: Flow<ShortArray> = pcmFlow
+    override val pcmSampleRateHz: Int = 48_000
 
     private val levelInterval = if (levels.isEmpty()) Duration.ZERO else recordingDuration / levels.size
 
@@ -51,6 +58,16 @@ class FakeVoiceRecorder(
             timeSource += levelInterval
             _state.emit(VoiceRecorderState.Recording(startedAt.elapsedNow(), levels.take(i)))
         }
+    }
+
+    override suspend fun pauseRecord() {
+        val recording = _state.value as? VoiceRecorderState.Recording ?: return
+        _state.emit(recording.copy(isPaused = true))
+    }
+
+    override suspend fun resumeRecord() {
+        val recording = _state.value as? VoiceRecorderState.Recording ?: return
+        _state.emit(recording.copy(isPaused = false))
     }
 
     override suspend fun stopRecord(cancelled: Boolean) {

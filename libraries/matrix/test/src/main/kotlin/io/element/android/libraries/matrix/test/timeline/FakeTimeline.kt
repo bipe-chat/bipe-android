@@ -287,6 +287,7 @@ class FakeTimeline(
         file: File,
         audioInfo: AudioInfo,
         waveform: List<Float>,
+        caption: String?,
         inReplyToEventId: EventId?,
     ): Result<MediaUploadHandler> = simulateLongTask {
         sendVoiceMessageLambda(

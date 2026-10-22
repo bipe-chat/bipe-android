@@ -22,6 +22,12 @@ interface AudioReader {
 
     fun stop()
 
+    /** Bipe: stop the microphone without ending [record]. */
+    fun pause()
+
+    /** Bipe: start the microphone again after [pause]. */
+    fun resume()
+
     interface Factory {
         fun create(config: AudioConfig, dispatchers: CoroutineDispatchers): AudioReader
     }

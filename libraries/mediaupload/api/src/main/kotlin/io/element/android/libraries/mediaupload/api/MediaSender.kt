@@ -99,17 +99,19 @@ interface MediaSender {
     ): Result<Unit>
 
     /**
-     * Sends a recorded voice message, which is never compressed and carries a waveform instead of a caption.
+     * Sends a recorded voice message, which is never compressed and carries a waveform.
      *
      * @param uri the recorded audio file.
      * @param mimeType the MIME type of that recording.
      * @param waveForm the amplitudes used to draw the waveform.
+     * @param caption Bipe: the sender's transcript (ADR 0023), or `null` for none.
      * @param inReplyToEventId the event this message replies to, or `null` if it is not a reply.
      */
     suspend fun sendVoiceMessage(
         uri: Uri,
         mimeType: String,
         waveForm: List<Float>,
+        caption: String? = null,
         inReplyToEventId: EventId? = null,
     ): Result<Unit>
 

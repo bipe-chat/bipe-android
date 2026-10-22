@@ -17,6 +17,7 @@ import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.data.tryOrNull
 import io.element.android.libraries.di.RoomScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 
@@ -30,6 +31,9 @@ private constructor(
     private var noiseSuppressor: NoiseSuppressor? = null
     private var automaticGainControl: AutomaticGainControl? = null
     private val outputBuffer: ShortArray
+
+    @Volatile
+    private var isPaused = false
 
     init {
         outputBuffer = createOutputBuffer(config.sampleRate)
@@ -49,6 +53,11 @@ private constructor(
         audioRecord.startRecording()
         withContext(dispatchers.io) {
             while (isActive) {
+                if (isPaused) {
+                    // Bipe: the microphone is off while paused; wait for resume() or cancellation.
+                    delay(PAUSE_POLL_MS)
+                    continue
+                }
                 if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
                     break
                 }
@@ -70,7 +79,22 @@ private constructor(
         )
     }
 
+    override fun pause() {
+        isPaused = true
+        if (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+            audioRecord.stop()
+        }
+    }
+
+    override fun resume() {
+        if (audioRecord.state == AudioRecord.STATE_INITIALIZED) {
+            audioRecord.startRecording()
+        }
+        isPaused = false
+    }
+
     override fun stop() {
+        isPaused = false
         if (audioRecord.state == AudioRecord.STATE_INITIALIZED) {
             audioRecord.stop()
         }
@@ -124,6 +148,8 @@ private constructor(
         }
     }
 }
+
+private const val PAUSE_POLL_MS = 50L
 
 private fun isAudioRecordErrorResult(result: Int): Boolean {
     return result < 0

@@ -12,4 +12,8 @@ sealed interface VoiceMessageRecorderEvent {
     data object Start : VoiceMessageRecorderEvent
     data object Stop : VoiceMessageRecorderEvent
     data object Cancel : VoiceMessageRecorderEvent
+
+    // Bipe: pause and resume while recording (bipe#80).
+    data object Pause : VoiceMessageRecorderEvent
+    data object Resume : VoiceMessageRecorderEvent
 }
