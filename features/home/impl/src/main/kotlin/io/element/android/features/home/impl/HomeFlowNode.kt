@@ -216,7 +216,7 @@ class HomeFlowNode(
             onOpenRageShake = callback::navigateToBugReport,
             onEditProfileClick = { callback.bipeNavigateToSettings(PreferencesEntryPoint.InitialTarget.BipeEditProfile(it)) },
             onBipeHandleClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Handle) },
-            onBipeInvitesClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Invites) },
+            onBipeInvitesClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Contacts) },
             onBipeProfileClick = { openBipeSettings(PreferencesEntryPoint.BipeSettingsScreen.Profile) },
             onBipeGroupClick = { openBipeSettings(it.toBipeSettingsScreen()) },
             bipeTabContentPadding = contentPadding,

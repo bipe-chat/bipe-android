@@ -65,7 +65,7 @@ class BipeInvitesPresenter(
 
         suspend fun load() {
             try {
-                val myInvites = withTokenRetry { token -> bipeSession.apiClient.myInvites(token) }
+                val myInvites = inviteCreator.myInvites()
                 quota = myInvites.quota
                 available = myInvites.available
                 nextAvailableAt = myInvites.nextAvailableAt

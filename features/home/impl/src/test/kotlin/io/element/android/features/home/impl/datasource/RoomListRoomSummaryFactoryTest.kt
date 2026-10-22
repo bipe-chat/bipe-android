@@ -18,14 +18,35 @@ import io.element.android.libraries.matrix.test.room.aRoomSummary
 import org.junit.Test
 
 class RoomListRoomSummaryFactoryTest {
+    // Bipe (bipe#524): the SDK isDm decides, not the member count.
     @Test
-    fun `a room with two members does not prefix its preview with the sender`() {
+    fun `a DM does not prefix its preview with the sender`() {
+        val formatter = FakeRoomLatestEventFormatter()
+        val factory = aRoomListRoomSummaryFactory(roomLatestEventFormatter = formatter)
+
+        factory.create(aRoomSummary(info = aRoomInfo(isDm = true, activeMembersCount = 2)))
+
+        assertThat(formatter.lastIsDmRoom).isTrue()
+    }
+
+    @Test
+    fun `a DM the other person left does not prefix its preview with the sender`() {
+        val formatter = FakeRoomLatestEventFormatter()
+        val factory = aRoomListRoomSummaryFactory(roomLatestEventFormatter = formatter)
+
+        factory.create(aRoomSummary(info = aRoomInfo(isDm = true, activeMembersCount = 1)))
+
+        assertThat(formatter.lastIsDmRoom).isTrue()
+    }
+
+    @Test
+    fun `a group with two members prefixes its preview with the sender`() {
         val formatter = FakeRoomLatestEventFormatter()
         val factory = aRoomListRoomSummaryFactory(roomLatestEventFormatter = formatter)
 
         factory.create(aRoomSummary(info = aRoomInfo(isDm = false, activeMembersCount = 2)))
 
-        assertThat(formatter.lastIsDmRoom).isTrue()
+        assertThat(formatter.lastIsDmRoom).isFalse()
     }
 
     @Test

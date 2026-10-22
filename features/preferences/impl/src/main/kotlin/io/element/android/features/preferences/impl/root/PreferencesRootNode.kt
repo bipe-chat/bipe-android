@@ -38,7 +38,7 @@ class PreferencesRootNode(
         fun navigateToLocationSettings()
         fun navigateToLabs()
         fun navigateToBipeHandle() // Bipe
-        fun navigateToBipeInvites() // Bipe
+        fun navigateToBipeContacts() // Bipe: "Convidar pessoas" opens the contacts screen, as on iOS
         fun navigateToBipePublicProfile() // Bipe
         fun navigateToBipeGroup(group: BipeSettingsGroup) // Bipe: Seu perfil and the groups of ADR 0112
     }
@@ -58,7 +58,7 @@ class PreferencesRootNode(
             onOpenRageShake = callback::navigateToBugReport,
             onEditProfileClick = callback::navigateToUserProfile,
             onBipeHandleClick = callback::navigateToBipeHandle,
-            onBipeInvitesClick = callback::navigateToBipeInvites,
+            onBipeInvitesClick = callback::navigateToBipeContacts,
             onBipeProfileClick = { callback.navigateToBipeGroup(BipeSettingsGroup.PROFILE) },
             onBipeGroupClick = callback::navigateToBipeGroup,
         )

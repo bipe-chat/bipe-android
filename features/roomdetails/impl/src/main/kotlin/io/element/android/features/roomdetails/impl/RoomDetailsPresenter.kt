@@ -53,7 +53,7 @@ import io.element.android.libraries.matrix.api.room.powerlevels.canEditRolesAndP
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
 import io.element.android.libraries.matrix.api.room.roomNotificationSettings
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
-import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
+import io.element.android.libraries.matrix.ui.room.bipeDmOtherMember
 import io.element.android.libraries.matrix.ui.room.roomMemberIdentityStateChange
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
@@ -127,7 +127,8 @@ class RoomDetailsPresenter(
         val permissions by getPermissions()
         val canonicalAlias by remember { derivedStateOf { roomInfo.canonicalAlias } }
         val isEncrypted by remember { derivedStateOf { roomInfo.isEncrypted == true } }
-        val dmMember by room.getDirectRoomMember(membersState)
+        // Bipe (bipe#524): the SDK isDm decides. The DM layout stays when the other person has left.
+        val dmMember by room.bipeDmOtherMember(membersState)
         val roomMemberDetailsPresenter = roomMemberDetailsPresenter(dmMember?.userId)
         val roomType = getRoomType(dmMember)
         val roomCallState = roomCallStatePresenter.present()

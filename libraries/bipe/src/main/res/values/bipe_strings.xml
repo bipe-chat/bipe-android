@@ -247,6 +247,7 @@
     <string name="bipe_contacts_allow">Permitir acesso aos contatos</string>
     <string name="bipe_contacts_denied">O Bipe não tem acesso aos seus contatos. Para permitir, abra as configurações do app neste celular.</string>
     <string name="bipe_contacts_open_settings">Abrir Ajustes</string>
+    <string name="bipe_contacts_open_settings_android">Abrir configurações</string>
     <string name="bipe_contacts_none">Nenhum contato seu está no Bipe ainda.</string>
     <string name="bipe_contacts_invite">Convidar quem não está</string>
     <string name="bipe_contacts_joined_with_invite">Entrou com seu convite</string>
