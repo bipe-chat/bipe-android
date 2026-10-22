@@ -51,9 +51,31 @@ fun BipeRecoveryAlerts(account: BipeAccountSession) {
         }
     }
     val alerts by account.alerts.collectAsState()
-    val alert = alerts.firstOrNull() ?: return
+    val deletion by account.deletionAlert.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    // ADR 0140: a waiting deletion that another device asked for comes before the recoveries.
+    deletion?.let { waiting ->
+        ConfirmationDialog(
+            title = stringResource(R.string.bipe_account_delete_alert_title),
+            content = stringResource(R.string.bipe_account_delete_alert_body, formatTime(waiting.dueAt)),
+            submitText = stringResource(R.string.bipe_recovery_alert_cancel),
+            cancelText = stringResource(R.string.bipe_recovery_alert_keep),
+            destructiveSubmit = true,
+            onSubmitClick = {
+                scope.launch {
+                    // Toast, as for the recovery alert below: the alert shows over any screen (bipe#450).
+                    account.cancelDeletion()
+                        .onSuccess { Toast.makeText(context, R.string.bipe_account_delete_cancelled, Toast.LENGTH_LONG).show() }
+                        .onFailure { Toast.makeText(context, R.string.bipe_error_generic, Toast.LENGTH_LONG).show() }
+                }
+            },
+            onCancelClick = { scope.launch { account.dismiss(waiting) } },
+            onDismiss = {},
+        )
+        return
+    }
+    val alert = alerts.firstOrNull() ?: return
     val title = stringResource(R.string.bipe_recovery_alert_title)
 
     if (alert.state == BipeRecoveryState.COMPLETED) {

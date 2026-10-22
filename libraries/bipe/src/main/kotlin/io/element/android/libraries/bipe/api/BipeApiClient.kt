@@ -96,6 +96,15 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
         checked { service.cancelRecovery(bearer(accessToken), recoveryId) }
     }
 
+    /** `POST /v1/me/deletion` (ADR 0140). Run the owner check first. Starts the wait, or returns the waiting one. */
+    suspend fun requestDeletion(pin: String, redactMessages: Boolean, accessToken: String): BipeAccountDeletion =
+        call { service.requestDeletion(bearer(accessToken), DeletionRequest(pin, redactMessages)) }
+
+    /** `POST /v1/me/deletion/cancel`. Any signed-in device of the account can cancel. */
+    suspend fun cancelDeletion(accessToken: String) {
+        checked { service.cancelDeletion(bearer(accessToken)) }
+    }
+
     /** `POST /v1/recovery/token`. No auth. The synced token first, then the PIN. */
     suspend fun recoverWithToken(recoveryToken: String, pin: String): BipeCredentials =
         call { service.recoverWithToken(TokenRecoveryRequest(recoveryToken, pin)) }
@@ -399,6 +408,12 @@ internal interface BipeApiService {
 
     @POST("v1/me/recoveries/{recoveryId}/cancel")
     suspend fun cancelRecovery(@Header("Authorization") authorization: String, @Path("recoveryId") recoveryId: String): Response<Unit>
+
+    @POST("v1/me/deletion")
+    suspend fun requestDeletion(@Header("Authorization") authorization: String, @Body request: DeletionRequest): Response<BipeAccountDeletion>
+
+    @POST("v1/me/deletion/cancel")
+    suspend fun cancelDeletion(@Header("Authorization") authorization: String): Response<Unit>
 
     @POST("v1/recovery/token")
     suspend fun recoverWithToken(@Body request: TokenRecoveryRequest): Response<BipeCredentials>

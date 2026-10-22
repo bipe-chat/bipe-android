@@ -706,6 +706,11 @@ object BipeRegistries {
     // Wait between the full-access warning and the biometric check of a web sign-in approval (ADR 0118).
     const val WEB_LINK_COOLDOWN_SECONDS = 5
 
+    // Wait between an account deletion request and the deletion; other devices can cancel (ADR 0140).
+    const val DELETION_COOLDOWN_HOURS = 72
+    // Days a released @ stays held for its last holder, also after an account deletion (ADR 0016, registries/handles.json).
+    const val HANDLE_RELEASE_HOLD_DAYS = 90
+
     // Terms and privacy accepted at sign-up (ADR 0113; registries/legal.json). Paths are on the public site.
     const val LEGAL_VERSION = "2026-10-16"
     const val TERMS_PATH = "/termos/"

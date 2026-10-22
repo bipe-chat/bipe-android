@@ -261,6 +261,8 @@ data class BipeAccountStatus(
     @SerialName("max_accounts") val maxAccounts: Int? = null,
     /** ADR 0087: `personal` or `company`. `null` from an older server: personal. */
     @SerialName("account_type") val accountType: String? = null,
+    /** ADR 0140: the waiting deletion of this account. `null` when none. */
+    @SerialName("deletion") val deletion: BipeAccountDeletion? = null,
 ) {
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }
@@ -305,6 +307,22 @@ data class BipeHandleChange(
     @SerialName("new") val new: String? = null,
     @Serializable(with = InstantSerializer::class) @SerialName("at") val at: Instant,
 )
+
+/** `AccountDeletion` (ADR 0140): the server deletes the account at [dueAt] unless a device cancels. */
+@Serializable
+data class BipeAccountDeletion(
+    @Serializable(with = InstantSerializer::class) @SerialName("created_at") val createdAt: Instant,
+    @Serializable(with = InstantSerializer::class) @SerialName("due_at") val dueAt: Instant,
+    @SerialName("redact_messages") val redactMessages: Boolean,
+) {
+    /** The id this device stores when the person answered the alert, or when this device asked. */
+    val alertId: String get() = "deletion:${createdAt.epochSecond}"
+}
+
+@Serializable
+internal data class DeletionRequest(@SerialName("pin") val pin: String, @SerialName("redact_messages") val redactMessages: Boolean) {
+    override fun toString(): String = "DeletionRequest"
+}
 
 @Serializable
 internal data class PinRequest(@SerialName("pin") val pin: String) {

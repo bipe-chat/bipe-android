@@ -19,6 +19,7 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.preferences.impl.root.ThemeOption
 import io.element.android.libraries.bipe.account.BipePin
 import io.element.android.libraries.bipe.account.ui.BipeAppLockRow
+import io.element.android.libraries.bipe.account.ui.BipeDeletionRows
 import io.element.android.libraries.bipe.account.ui.BipePinRow
 import io.element.android.libraries.bipe.account.ui.BipeRecoveryEmailRows
 import io.element.android.libraries.bipe.account.ui.LocalBipeAccount
@@ -177,6 +178,8 @@ private fun SettingsRow(
         BipeSettingsRow.ACCOUNT_BIOMETRIC_UNLOCK -> biometricUnlockRow()
         BipeSettingsRow.ACCOUNT_CHANGE_PIN -> LocalBipeAccount.current?.let { BipePinRow(it) }
         BipeSettingsRow.ACCOUNT_EMAIL -> LocalBipeAccount.current?.let { BipeRecoveryEmailRows(it) }
+        // ADR 0140: the row runs the whole deletion flow itself (owner check, senha, wait, cancel).
+        BipeSettingsRow.ACCOUNT_DELETE -> LocalBipeAccount.current?.let { BipeDeletionRows(account = it, title = title) }
         BipeSettingsRow.ACCOUNT_RECOVERY_KEY -> LinkRow(
             title = title,
             subtitle = state.recoveryKeyEnabled?.let {

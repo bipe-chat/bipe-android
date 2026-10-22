@@ -7,6 +7,7 @@
 package io.element.android.libraries.bipe.account
 
 import io.element.android.libraries.bipe.R
+import io.element.android.libraries.bipe.api.BipeAccountDeletion
 import io.element.android.libraries.bipe.api.BipeAccountStatus
 import io.element.android.libraries.bipe.api.BipeApiClient
 import io.element.android.libraries.bipe.api.BipeApiException
@@ -37,6 +38,7 @@ class BipeAccountSession(
 ) {
     private val statusFlow = MutableStateFlow<BipeAccountStatus?>(null)
     private val alertsFlow = MutableStateFlow<List<BipeRecovery>>(emptyList())
+    private val deletionAlertFlow = MutableStateFlow<BipeAccountDeletion?>(null)
 
     /** `null` until the first answer of `GET /v1/me/account`. */
     val status: StateFlow<BipeAccountStatus?> = statusFlow.asStateFlow()
@@ -44,12 +46,16 @@ class BipeAccountSession(
     /** Recoveries to show on this device, newest first: waiting ones, and token sign-ins on another device. */
     val alerts: StateFlow<List<BipeRecovery>> = alertsFlow.asStateFlow()
 
+    /** ADR 0140: a waiting deletion that another device asked for and nobody answered here. */
+    val deletionAlert: StateFlow<BipeAccountDeletion?> = deletionAlertFlow.asStateFlow()
+
     suspend fun refresh(): Result<BipeAccountStatus> = runCatchingExceptions {
         deviceAccount.rememberSignedIn(userId)
         val status = BipeApiClient.withTokenRetry(accessToken) { apiClient.account(it) }
         BipeAccountCap.onServerValue(status.maxAccounts)
         statusFlow.value = status
         alertsFlow.value = alertsFor(status)
+        deletionAlertFlow.value = status.deletion?.takeIf { it.alertId !in deviceAccount.dismissedRecoveries() }
         status
     }.onFailure { Timber.w(it, "Bipe: account state not loaded") }
 
@@ -122,6 +128,24 @@ class BipeAccountSession(
     suspend fun cancelRecovery(recovery: BipeRecovery): Result<Unit> = runCatchingExceptions<Unit> {
         BipeApiClient.withTokenRetry(accessToken) { apiClient.cancelRecovery(recovery.id, it) }
         deviceAccount.dismissRecovery(recovery.id)
+        refresh()
+    }
+
+    /** ADR 0140: the server checks the PIN; the caller ran the owner check. This device gets no alert for its own request. */
+    suspend fun requestDeletion(pin: String, redactMessages: Boolean): Result<Unit> = runCatchingExceptions<Unit> {
+        val deletion = BipeApiClient.withTokenRetry(accessToken) { apiClient.requestDeletion(pin, redactMessages, it) }
+        deviceAccount.dismissRecovery(deletion.alertId)
+        refresh()
+    }
+
+    suspend fun cancelDeletion(): Result<Unit> = runCatchingExceptions<Unit> {
+        BipeApiClient.withTokenRetry(accessToken) { apiClient.cancelDeletion(it) }
+        refresh()
+    }
+
+    /** "It was me" on the deletion alert: it does not show again on this device. */
+    suspend fun dismiss(deletion: BipeAccountDeletion) {
+        deviceAccount.dismissRecovery(deletion.alertId)
         refresh()
     }
 
