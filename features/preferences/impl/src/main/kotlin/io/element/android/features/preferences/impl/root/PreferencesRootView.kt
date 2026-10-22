@@ -43,10 +43,10 @@ import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
 import io.element.android.libraries.bipe.BipeTrustProfile
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.govbr.BipeGovbrSheet
 import io.element.android.libraries.bipe.handle.BipeInvitesRow
 import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
 import io.element.android.libraries.bipe.settings.BipeWayBack
-import io.element.android.libraries.bipe.govbr.BipeGovbrSheet
 import io.element.android.libraries.bipe.ui.BipeTrustProfileCard
 import io.element.android.libraries.designsystem.components.avatar.AvatarRow
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
