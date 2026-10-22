@@ -12,8 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
 import io.element.android.features.preferences.impl.account.PreferencesAccountState
 import io.element.android.features.preferences.impl.bipe.BipeSettingsValues
@@ -21,13 +25,18 @@ import io.element.android.features.preferences.impl.notifications.SystemNotifica
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.bipe.BadgeLevel
 import io.element.android.libraries.bipe.di.BipeSession
+import io.element.android.libraries.bipe.govbr.BipeGovbrFlow
+import io.element.android.libraries.bipe.govbr.unverifiedLevel
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
+import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.user.toMatrixUser
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
@@ -90,6 +99,11 @@ class PreferencesRootPresenter(
 
         val showDeveloperSettings by showDeveloperSettingsProvider.showDeveloperSettings.collectAsState()
 
+        // Bipe: trust step 5 (bipe#545).
+        val bipeGovbrEnabled by remember { featureFlagService.isFeatureEnabledFlow(FeatureFlags.BipeGovbr) }.collectAsState(initial = false)
+        var bipeGovbrFlow by remember { mutableStateOf<BipeGovbrFlow?>(null) }
+        var bipeBadgeReload by remember { mutableIntStateOf(0) }
+
         fun handleEvent(event: PreferencesRootEvent) {
             when (event) {
                 is PreferencesRootEvent.OnVersionInfoClick -> {
@@ -103,6 +117,11 @@ class PreferencesRootPresenter(
                 }
                 is PreferencesRootEvent.SetTheme -> sessionCoroutineScope.launch {
                     appPreferencesStore.setTheme(event.theme)
+                }
+                PreferencesRootEvent.BipeOpenGovbr -> bipeGovbrFlow = BipeGovbrFlow(bipeSession.apiClient, bipeSession.accessToken)
+                PreferencesRootEvent.BipeCloseGovbr -> {
+                    bipeGovbrFlow = null
+                    bipeBadgeReload++
                 }
             }
         }
@@ -120,6 +139,11 @@ class PreferencesRootPresenter(
         val bipeWaysBack = BipeSettingsValues.waysBack(bipeSession, matrixClient)
         val bipeIsCompany = BipeSettingsValues.isCompany(bipeSession)
         val bipeBusiness = BipeSettingsValues.business(bipeSession, bipeIsCompany)
+        // The server is the authority; the app reads its own badge level only for the trust card.
+        val bipePersonBadge by produceState<BadgeLevel?>(initialValue = null, bipeIsCompany, bipeBadgeReload) {
+            if (bipeIsCompany) return@produceState
+            value = runCatchingExceptions { bipeSession.apiClient.badge(bipeSession.userId) }.getOrNull()?.unverifiedLevel()
+        }
         val bipeNotificationsOn = BipeSettingsValues.notificationsOn(userPushStoreFactory, systemNotificationsEnabledProvider, matrixClient)
 
         return PreferencesRootState(
@@ -144,6 +168,9 @@ class PreferencesRootPresenter(
             bipeNotificationsOn = bipeNotificationsOn,
             bipeDeviceId = matrixClient.deviceId.value,
             bipeIsDeveloperBuild = buildMeta.buildType != BuildType.RELEASE,
+            bipePersonBadge = bipePersonBadge,
+            bipeGovbrEnabled = bipeGovbrEnabled,
+            bipeGovbrFlow = bipeGovbrFlow,
             eventSink = ::handleEvent,
         )
     }

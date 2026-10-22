@@ -14,8 +14,10 @@ import androidx.compose.ui.res.stringResource
 import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.account.PreferencesAccountState
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
+import io.element.android.libraries.bipe.BadgeLevel
 import io.element.android.libraries.bipe.api.BipeBusinessClaim
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
+import io.element.android.libraries.bipe.govbr.BipeGovbrFlow
 import io.element.android.libraries.designsystem.components.preferences.DropdownOption
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -50,6 +52,10 @@ data class PreferencesRootState(
     val bipeDeviceId: String,
     // Bipe: Analytics, Labs and "Report a problem" show only in builds that are not release builds (ADR 0112).
     val bipeIsDeveloperBuild: Boolean,
+    // Bipe: trust step 5 (bipe#545). The level of the account's own person badge, the feature flag, and the open sheet.
+    val bipePersonBadge: BadgeLevel? = null,
+    val bipeGovbrEnabled: Boolean = false,
+    val bipeGovbrFlow: BipeGovbrFlow? = null,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 

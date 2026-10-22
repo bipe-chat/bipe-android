@@ -82,6 +82,14 @@ enum class FeatureFlags(
         defaultValue = { true },
         isFinished = true,
     ),
+    BipeGovbr(
+        key = "feature.bipe_govbr",
+        title = "gov.br verification",
+        // Bipe: trust step 5 (bipe#545). Off until the legal review of the gov.br signer terms (bipe#17).
+        description = "Trust step 5: sign a Bipe challenge PDF in the gov.br app",
+        defaultValue = { false },
+        isFinished = false,
+    ),
     AllowBlackTheme(
         key = "feature.allow_black_theme",
         title = "Black theme",

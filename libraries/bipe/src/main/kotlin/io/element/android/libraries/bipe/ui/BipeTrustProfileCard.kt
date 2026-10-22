@@ -34,6 +34,7 @@ fun BipeTrustProfileCard(
     onEditProfileClick: () -> Unit,
     onHandleClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onGovbrClick: () -> Unit = {},
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     if (profile.liveStepsDone && !expanded) {
@@ -52,6 +53,7 @@ fun BipeTrustProfileCard(
             onEditProfileClick = onEditProfileClick,
             onHandleClick = onHandleClick,
             modifier = modifier,
+            onGovbrClick = onGovbrClick,
         )
     }
 }

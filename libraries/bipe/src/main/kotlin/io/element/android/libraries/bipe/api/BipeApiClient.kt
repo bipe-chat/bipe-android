@@ -188,6 +188,15 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
     /** `GET /v1/profiles/{handle}`. No auth. HTTP 404 for "no such handle" and "profile off" alike. */
     suspend fun publicProfile(handle: String): BipePublicProfile = call { service.publicProfile(handle) }
 
+    // gov.br verification (bipe#545)
+
+    /** `POST /v1/verifications/govbr`. A challenge PDF bound to this device, valid 30 minutes. */
+    suspend fun startGovbrVerification(accessToken: String): BipeGovbrChallenge = call { service.startGovbrVerification(bearer(accessToken)) }
+
+    /** `PUT /v1/verifications/govbr/{id}/document`. The signed PDF. A rejection is a 200 with a reason, not an error. */
+    suspend fun sendGovbrDocument(verificationId: String, pdf: ByteArray, accessToken: String): BipeVerificationStatus =
+        call { service.sendGovbrDocument(bearer(accessToken), verificationId, pdf.toRequestBody(PDF)) }
+
     // Badges (bipe-shared/docs/badge-attestation.md)
 
     /**
@@ -266,6 +275,7 @@ class BipeApiClient internal constructor(private val service: BipeApiService) {
 
     companion object {
         private val JPEG = "image/jpeg".toMediaType()
+        private val PDF = "application/pdf".toMediaType()
         private val EXPORT_FILE_NAME = Regex("""bipe-dados-\d{4}-\d{2}-\d{2}\.json""")
 
         /** The `lang` for emails Bipe sends: English for an English device, else Portuguese (the app's fallback). Same rule as iOS. */
@@ -512,6 +522,16 @@ internal interface BipeApiService {
     /** Retrofit sends a [RequestBody] as it is, past the JSON converter. */
     @PUT("v1/me/profile/photo")
     suspend fun setMyProfilePhoto(@Header("Authorization") authorization: String, @Body photo: RequestBody): Response<BipeMyProfile>
+
+    @POST("v1/verifications/govbr")
+    suspend fun startGovbrVerification(@Header("Authorization") authorization: String): Response<BipeGovbrChallenge>
+
+    @PUT("v1/verifications/govbr/{verificationId}/document")
+    suspend fun sendGovbrDocument(
+        @Header("Authorization") authorization: String,
+        @Path("verificationId") verificationId: String,
+        @Body pdf: RequestBody,
+    ): Response<BipeVerificationStatus>
 
     @DELETE("v1/me/profile/photo")
     suspend fun deleteMyProfilePhoto(@Header("Authorization") authorization: String): Response<BipeMyProfile>

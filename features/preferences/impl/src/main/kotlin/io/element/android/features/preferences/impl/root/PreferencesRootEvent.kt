@@ -15,4 +15,8 @@ sealed interface PreferencesRootEvent {
     data class SwitchToSession(val sessionId: SessionId) : PreferencesRootEvent
     data object ToggleOtherAccountsExpanded : PreferencesRootEvent
     data class SetTheme(val theme: ThemeOption) : PreferencesRootEvent
+
+    // Bipe: open and close the "Verificar com gov.br" sheet (bipe#545).
+    data object BipeOpenGovbr : PreferencesRootEvent
+    data object BipeCloseGovbr : PreferencesRootEvent
 }
