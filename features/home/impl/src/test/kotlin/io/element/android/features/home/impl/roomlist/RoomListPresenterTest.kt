@@ -14,6 +14,7 @@ import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.announcement.test.FakeAnnouncementService
 import io.element.android.features.home.impl.FakeDateTimeObserver
+import io.element.android.features.home.impl.aBipeClearedChats
 import io.element.android.features.home.impl.aBipeSelfChat
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
@@ -36,6 +37,7 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.bipe.banner.BipeRemoteBannerStore
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.bipe.invites.BipeInvitePairs
 import io.element.android.libraries.bipe.invites.BipeInviterGreeting
 import io.element.android.libraries.bipe.onboarding.BipeHandlePrompt
@@ -138,6 +140,7 @@ class RoomListPresenterTest {
                     numberOfUnreadMentions = 1,
                     numberOfUnreadMessages = 2,
                     timestamp = "0 TimeOrDate true",
+                    bipeLatestEventTimestamp = 0L,
                 )
             )
             assertThat(withRoomsState.contentAsRooms().seenRoomInvites).containsExactly(A_ROOM_ID, A_ROOM_ID_2, A_ROOM_ID_3)
@@ -148,6 +151,7 @@ class RoomListPresenterTest {
     @Test
     fun `present - handle DismissRequestVerificationPrompt`() = runTest {
         val roomList = FakeDynamicRoomList(
+            summaries = MutableStateFlow(listOf(aRoomSummary())),
             loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(1))
         )
         val roomListService = FakeRoomListService(
@@ -177,6 +181,7 @@ class RoomListPresenterTest {
             recoveryStateStateFlow.emit(RecoveryState.DISABLED)
         }
         val roomList = FakeDynamicRoomList(
+            summaries = MutableStateFlow(listOf(aRoomSummary())),
             loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(1))
         )
         val roomListService = FakeRoomListService(
@@ -737,6 +742,7 @@ class RoomListPresenterTest {
         bipeInvitePairs: BipeInvitePairs = mockk(relaxed = true) { every { userIds } returns MutableStateFlow(emptySet()) },
         bipeHandlePrompt: BipeHandlePrompt = mockk { every { shows } returns MutableStateFlow(false) },
         bipeRemoteBannerStore: BipeRemoteBannerStore = mockk(relaxed = true) { every { shown } returns MutableStateFlow(null) },
+        bipeClearedChats: BipeClearedChats = aBipeClearedChats(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -774,5 +780,6 @@ class RoomListPresenterTest {
         bipeInvitePairs = bipeInvitePairs,
         bipeHandlePrompt = bipeHandlePrompt,
         bipeRemoteBannerStore = bipeRemoteBannerStore,
+        bipeClearedChats = bipeClearedChats,
     )
 }

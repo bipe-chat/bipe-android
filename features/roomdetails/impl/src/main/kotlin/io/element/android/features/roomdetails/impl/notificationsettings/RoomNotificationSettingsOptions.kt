@@ -21,6 +21,7 @@ fun RoomNotificationSettingsOptions(
     onSelectOption: (RoomNotificationSettingsItem) -> Unit,
     displayMentionsOnlyDisclaimer: Boolean,
     modifier: Modifier = Modifier,
+    isDm: Boolean = false, // Bipe: bipe#507
 ) {
     val items = roomNotificationSettingsItems()
     Column(modifier = modifier.selectableGroup()) {
@@ -30,6 +31,7 @@ fun RoomNotificationSettingsOptions(
                 isSelected = selected == item.mode,
                 onSelectOption = onSelectOption,
                 displayMentionsOnlyDisclaimer = displayMentionsOnlyDisclaimer,
+                isDm = isDm,
                 enabled = enabled
             )
         }

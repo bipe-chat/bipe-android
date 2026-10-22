@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,6 +23,7 @@ import dev.zacsweers.metro.AssistedInject
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runUpdatingState
+import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -30,6 +32,7 @@ import kotlinx.coroutines.launch
 class ReportRoomPresenter(
     @Assisted private val roomId: RoomId,
     private val reportRoom: ReportRoom,
+    private val client: MatrixClient, // Bipe: reads RoomInfo.isDm (bipe#507)
 ) : Presenter<ReportRoomState> {
     @AssistedFactory
     fun interface Factory {
@@ -41,6 +44,11 @@ class ReportRoomPresenter(
         var reason by rememberSaveable { mutableStateOf("") }
         var leaveRoom by rememberSaveable { mutableStateOf(false) }
         var reportAction: MutableState<AsyncAction<Unit>> = remember { mutableStateOf(AsyncAction.Uninitialized) }
+
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        val isDm by produceState(initialValue = false) {
+            value = client.getRoomInfo(roomId).getOrNull()?.isDm == true
+        }
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -60,6 +68,7 @@ class ReportRoomPresenter(
         }
         return ReportRoomState(
             reason = reason,
+            isDm = isDm,
             leaveRoom = leaveRoom,
             reportAction = reportAction.value,
             eventSink = ::handleEvent,

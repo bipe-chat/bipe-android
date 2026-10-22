@@ -32,6 +32,7 @@ internal class UserDefinedRoomNotificationSettingsStatePreviewParam : PreviewPar
                 setNotificationSettingAction = AsyncAction.Uninitialized,
                 restoreDefaultAction = AsyncAction.Uninitialized,
                 displayMentionsOnlyDisclaimer = false,
+                isDm = false,
                 eventSink = { },
             ),
         )

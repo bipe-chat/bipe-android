@@ -48,6 +48,7 @@ import io.element.android.libraries.matrixmedia.api.MediaRequestData
 import io.element.android.libraries.mediaviewer.impl.R
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.libraries.ui.strings.Strings
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Ref: https://www.figma.com/design/G1xy0HDZKJf5TCRFmKb5d5/Compound-Android-Components?node-id=4168-7384
@@ -81,7 +82,10 @@ fun MediaDeleteConfirmationBottomSheet(
                     .padding(vertical = 16.dp, horizontal = 8.dp),
                 title = stringResource(R.string.screen_media_browser_delete_confirmation_title),
                 iconStyle = BigIcon.Style.Default(CompoundIcons.Delete(), useCriticalTint = true),
-                subTitle = stringResource(R.string.screen_media_browser_delete_confirmation_subtitle),
+                // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                subTitle = stringResource(
+                    if (state.isDm) BipeR.string.bipe_dm_media_delete_body else R.string.screen_media_browser_delete_confirmation_subtitle
+                ),
             )
             Spacer(modifier = Modifier.height(16.dp))
             MediaRow(

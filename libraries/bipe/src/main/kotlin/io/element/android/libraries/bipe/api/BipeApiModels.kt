@@ -265,6 +265,12 @@ data class BipeAccountStatus(
     override fun toString(): String = "BipeAccountStatus($userId, deviceFirst=$deviceFirst, pinSet=$pinSet, pinBlocked=$pinBlocked)"
 }
 
+/** `GET /v1/accounts/{userId}/type` (ADR 0132). `personal` or `company`; the type comes from sign-up, never from the profile. */
+@Serializable
+data class BipeAccountTypeResponse(
+    @SerialName("account_type") val accountType: String,
+)
+
 /** `RecoveryStarted`: the claim secret is sent once. Keep it on the new device. */
 @Serializable
 data class BipeRecoveryStarted(

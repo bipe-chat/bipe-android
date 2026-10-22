@@ -60,6 +60,7 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 internal fun MessagesViewTopBar(
@@ -74,6 +75,7 @@ internal fun MessagesViewTopBar(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     bipeDmUserId: String? = null,
+    isDm: Boolean = false, // Bipe: a DM without a name says "conversa", not "sala" (bipe#507)
     menuActions: @Composable RowScope.() -> Unit,
 ) {
     TopAppBar(
@@ -99,6 +101,7 @@ internal fun MessagesViewTopBar(
                     isTombstoned = isTombstoned,
                     heroes = heroes,
                     dmUserStatus = dmUserStatus,
+                    isDm = isDm,
                     modifier = titleModifier
                 )
 
@@ -154,6 +157,7 @@ private fun RoomAvatarAndNameRow(
     heroes: ImmutableList<AvatarData>,
     isTombstoned: Boolean,
     dmUserStatus: DisplayedStatus?,
+    isDm: Boolean,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -168,7 +172,7 @@ private fun RoomAvatarAndNameRow(
             ),
         )
         DisplayNameWithStatus(
-            name = roomName ?: stringResource(CommonStrings.common_no_room_name),
+            name = roomName ?: stringResource(if (isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name), // Bipe
             status = dmUserStatus,
             modifier = Modifier.padding(start = 8.dp),
             style = ElementTheme.typography.fontBodyLgMedium,

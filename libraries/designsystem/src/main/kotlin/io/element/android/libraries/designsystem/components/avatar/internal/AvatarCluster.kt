@@ -25,6 +25,7 @@ import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.components.avatar.anAvatarData
 import io.element.android.libraries.designsystem.components.avatar.avatarShape
+import io.element.android.libraries.designsystem.components.avatar.bipeUserAvatarShape
 import io.element.android.libraries.designsystem.preview.ElementThemedPreview
 import io.element.android.libraries.designsystem.preview.PreviewGroup
 import kotlinx.collections.immutable.ImmutableList
@@ -58,7 +59,12 @@ internal fun AvatarCluster(
             InitialOrImageAvatar(
                 avatarData = limitedAvatars[0],
                 hideAvatarImage = hideAvatarImages,
-                avatarShape = avatarType.avatarShape(limitedAvatars[0].size.dp),
+                avatarShape = if (avatarType == AvatarType.User) {
+                    // Bipe (ADR 0132): the hero of a DM is a rounded square when it is a company account.
+                    bipeUserAvatarShape(limitedAvatars[0].id, limitedAvatars[0].size.dp)
+                } else {
+                    avatarType.avatarShape(limitedAvatars[0].size.dp)
+                },
                 forcedAvatarSize = null,
                 modifier = modifier,
                 contentDescription = contentDescription,

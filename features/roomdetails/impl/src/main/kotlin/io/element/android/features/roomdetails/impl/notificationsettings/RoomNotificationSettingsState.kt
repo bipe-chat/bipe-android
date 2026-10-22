@@ -23,6 +23,8 @@ data class RoomNotificationSettingsState(
     val setNotificationSettingAction: AsyncAction<Unit>,
     val restoreDefaultAction: AsyncAction<Unit>,
     val displayMentionsOnlyDisclaimer: Boolean,
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    val isDm: Boolean,
     val eventSink: (RoomNotificationSettingsEvent) -> Unit
 )
 

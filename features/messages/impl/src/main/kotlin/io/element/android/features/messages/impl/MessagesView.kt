@@ -151,6 +151,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableSet
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun MessagesView(
@@ -284,6 +285,7 @@ fun MessagesView(
                                 heroes = state.heroes,
                                 isTombstoned = state.isTombstoned,
                                 onBackClick = onBackClick,
+                                isDm = state.timelineState.timelineRoomInfo.isDm, // Bipe: bipe#507
                             )
                         }
                         else -> {
@@ -296,6 +298,7 @@ fun MessagesView(
                                 sharedHistoryIcon = state.topBarSharedHistoryIcon,
                                 dmUserStatus = state.dmUserStatus,
                                 bipeDmUserId = state.bipeDmUserId,
+                                isDm = state.timelineState.timelineRoomInfo.isDm, // Bipe: bipe#507
                                 onBackClick = { hidingKeyboard { onBackClick() } },
                                 onRoomDetailsClick = { hidingKeyboard { onRoomDetailsClick() } },
                                 menuActions = {
@@ -691,6 +694,7 @@ private fun MessagesViewComposerBottomSheetContents(
                     .fillMaxWidth()
                     .padding(contentPadding),
                 roomSuccessor = state.successorRoom,
+                isDm = state.timelineState.timelineRoomInfo.isDm, // Bipe: bipe#507
                 onRoomSuccessorClick = onRoomSuccessorClick
             )
         }
@@ -730,13 +734,17 @@ private fun MessagesViewComposerBottomSheetContents(
             }
         }
         else -> {
-            CantSendMessageBanner(Modifier.padding(contentPadding))
+            CantSendMessageBanner(isDm = state.timelineState.timelineRoomInfo.isDm, modifier = Modifier.padding(contentPadding)) // Bipe: bipe#507
         }
     }
 }
 
 @Composable
-private fun CantSendMessageBanner(modifier: Modifier = Modifier) {
+private fun CantSendMessageBanner(
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    isDm: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -746,7 +754,9 @@ private fun CantSendMessageBanner(modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
-            text = stringResource(id = R.string.screen_room_timeline_no_permission_to_post),
+            text = stringResource(
+                id = if (isDm) BipeR.string.bipe_dm_no_permission_to_post else R.string.screen_room_timeline_no_permission_to_post // Bipe
+            ),
             color = ElementTheme.colors.textSecondary,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
@@ -758,15 +768,19 @@ private fun CantSendMessageBanner(modifier: Modifier = Modifier) {
 @Composable
 private fun SuccessorRoomBanner(
     roomSuccessor: SuccessorRoom,
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    isDm: Boolean,
     onRoomSuccessorClick: (RoomId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ComposerAlertMolecule(
         avatar = null,
-        content = stringResource(R.string.screen_room_timeline_tombstoned_room_message).toAnnotatedString(),
+        content = stringResource(
+            if (isDm) BipeR.string.bipe_dm_tombstoned_message else R.string.screen_room_timeline_tombstoned_room_message // Bipe
+        ).toAnnotatedString(),
         onSubmitClick = { onRoomSuccessorClick(roomSuccessor.roomId) },
         modifier = modifier,
-        submitText = stringResource(R.string.screen_room_timeline_tombstoned_room_action)
+        submitText = stringResource(if (isDm) BipeR.string.bipe_dm_tombstoned_action else R.string.screen_room_timeline_tombstoned_room_action)
     )
 }
 

@@ -11,6 +11,7 @@ package io.element.android.libraries.push.impl.notifications.conversations
 import android.content.Context
 import android.content.pm.ShortcutInfo
 import android.os.Build
+import android.os.PersistableBundle
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -41,12 +42,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Category shared with the `<share-target>` in `app/src/main/res/xml/shortcuts.xml`. The system only offers a shortcut
  * in the Direct Share row of the share sheet when the two match, so the literal has to be kept in step with that file.
  */
 private const val SHARE_TARGET_CATEGORY = "io.element.android.category.SHARE_TARGET"
+
+/** Bipe: the shortcut extra that marks a DM, so its removal reason says "conversa", not "sala" (bipe#507). */
+private const val BIPE_EXTRA_IS_DM = "chat.bipe.is_dm"
 
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
@@ -118,6 +123,7 @@ class DefaultNotificationConversationService(
             .setIntent(intentProvider.getViewRoomIntent(sessionId, roomId, threadId = null, eventId = null))
             .setCategories(categories)
             .setLongLived(true)
+            .setExtras(PersistableBundle().apply { putBoolean(BIPE_EXTRA_IS_DM, roomIsDirect) }) // Bipe: bipe#507
             .let {
                 when (roomIsDirect) {
                     true -> it.addCapabilityBinding("actions.intent.SEND_MESSAGE")
@@ -134,17 +140,28 @@ class DefaultNotificationConversationService(
 
     override suspend fun onLeftRoom(sessionId: SessionId, roomId: RoomId) {
         val shortcutsToRemove = listOf(createShortcutId(sessionId, roomId))
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        val isDm = matrixClientProvider.getOrRestore(sessionId).getOrNull()?.getRoomInfo(roomId)?.getOrNull()?.isDm == true
         runCatchingExceptions {
             ShortcutManagerCompat.removeDynamicShortcuts(context, shortcutsToRemove)
             if (isRequestPinShortcutSupported) {
                 ShortcutManagerCompat.disableShortcuts(
                     context,
                     shortcutsToRemove,
-                    context.getString(CommonStrings.common_android_shortcuts_remove_reason_left_room)
+                    leftRoomReason(isDm),
                 )
             }
         }.onFailure {
             Timber.e(it, "Failed to remove shortcut for room $roomId in session $sessionId")
+        }
+    }
+
+    // Bipe (bipe-chat/bipe#479): only the dynamic shortcut goes. A pinned one stays enabled, so the next message can update it.
+    override suspend fun onClearedRoom(sessionId: SessionId, roomId: RoomId) {
+        runCatchingExceptions {
+            ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(createShortcutId(sessionId, roomId)))
+        }.onFailure {
+            Timber.e(it, "Failed to remove shortcut for cleared room $roomId in session $sessionId")
         }
     }
 
@@ -153,28 +170,41 @@ class DefaultNotificationConversationService(
             val shortcuts = ShortcutManagerCompat.getDynamicShortcuts(context)
 
             val shortcutsToRemove = mutableListOf<String>()
+            // Bipe: the DM shortcuts get the "conversa" reason (bipe#507)
+            val dmShortcutsToRemove = mutableSetOf<String>()
             shortcuts.filter { it.id.startsWith(sessionId.value) }
                 .forEach { shortcut ->
                     val roomId = RoomId(shortcut.id.removePrefix("$sessionId-"))
                     if (!roomIds.contains(roomId)) {
                         shortcutsToRemove.add(shortcut.id)
+                        if (shortcut.extras?.getBoolean(BIPE_EXTRA_IS_DM) == true) {
+                            dmShortcutsToRemove.add(shortcut.id)
+                        }
                     }
                 }
 
             if (shortcutsToRemove.isNotEmpty()) {
                 ShortcutManagerCompat.removeDynamicShortcuts(context, shortcutsToRemove)
                 if (isRequestPinShortcutSupported) {
-                    ShortcutManagerCompat.disableShortcuts(
-                        context,
-                        shortcutsToRemove,
-                        context.getString(CommonStrings.common_android_shortcuts_remove_reason_left_room)
-                    )
+                    // Bipe: one call per reason (bipe#507)
+                    val (dmShortcuts, otherShortcuts) = shortcutsToRemove.partition { it in dmShortcutsToRemove }
+                    if (dmShortcuts.isNotEmpty()) {
+                        ShortcutManagerCompat.disableShortcuts(context, dmShortcuts, leftRoomReason(isDm = true))
+                    }
+                    if (otherShortcuts.isNotEmpty()) {
+                        ShortcutManagerCompat.disableShortcuts(context, otherShortcuts, leftRoomReason(isDm = false))
+                    }
                 }
             }
         }.onFailure {
             Timber.e(it, "Failed to remove shortcuts for session $sessionId")
         }
     }
+
+    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+    private fun leftRoomReason(isDm: Boolean): String = context.getString(
+        if (isDm) BipeR.string.bipe_dm_left_by_you else CommonStrings.common_android_shortcuts_remove_reason_left_room
+    )
 
     private fun clearShortcuts() {
         runCatchingExceptions {

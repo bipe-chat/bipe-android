@@ -19,7 +19,6 @@ import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.eventformatter.api.RoomLatestEventFormatter
 import io.element.android.libraries.matrix.api.room.CallIntentConsensus
 import io.element.android.libraries.matrix.api.room.CurrentUserMembership
-import io.element.android.libraries.matrix.api.room.RoomInfo
 import io.element.android.libraries.matrix.api.roomlist.LatestEventValue
 import io.element.android.libraries.matrix.api.roomlist.RoomSummary
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
@@ -48,7 +47,8 @@ class RoomListRoomSummaryFactory(
                 mode = DateFormatterMode.TimeOrDate,
                 useRelative = true,
             ),
-            latestEvent = computeLatestEvent(roomSummary.latestEvent, roomInfo.hasOnlyTwoMembers()),
+            // Bipe (bipe#524): the SDK isDm is the one DM test, not a member count.
+            latestEvent = computeLatestEvent(roomSummary.latestEvent, roomInfo.isDm),
             avatarData = avatarData,
             userDefinedNotificationMode = roomInfo.userDefinedNotificationMode,
             hasRoomCall = roomInfo.hasRoomCall,
@@ -57,7 +57,6 @@ class RoomListRoomSummaryFactory(
                 is CallIntentConsensus.Partial -> consensus.callIntent
                 CallIntentConsensus.None -> null
             },
-            isDirect = roomInfo.isDirect,
             isFavorite = roomInfo.isFavorite,
             isLowPriority = roomInfo.isLowPriority,
             inviteSender = roomInfo.inviter?.toInviteSender(),
@@ -80,11 +79,8 @@ class RoomListRoomSummaryFactory(
             isTombstoned = roomInfo.successorRoom != null,
             isSpace = roomInfo.isSpace,
             dmUserStatus = roomInfo.dmUserStatus(),
+            bipeLatestEventTimestamp = roomSummary.latestEventTimestamp,
         )
-    }
-
-    private fun RoomInfo.hasOnlyTwoMembers(): Boolean {
-        return isDm || activeMembersCount <= 2
     }
 
     private fun computeLatestEvent(latestEvent: LatestEventValue, dm: Boolean): LatestEvent {

@@ -19,6 +19,7 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.room.BaseRoom
 import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.api.room.RoomMembersState
+import io.element.android.libraries.matrix.api.room.bipeDmOtherMember
 import io.element.android.libraries.matrix.api.room.getDirectRoomMember
 import io.element.android.libraries.matrix.api.room.roomMembers
 
@@ -45,6 +46,17 @@ fun BaseRoom.getDirectRoomMember(roomMembersState: RoomMembersState): State<Room
     val roomInfo by roomInfoFlow.collectAsState()
     return remember(roomInfo.isDm) {
         mutableStateOf(roomMembersState.getDirectRoomMember(roomInfo, sessionId))
+    }
+}
+
+/**
+ * Bipe (bipe#524): the other person of a DM, also after they left. See [bipeDmOtherMember].
+ */
+@Composable
+fun BaseRoom.bipeDmOtherMember(roomMembersState: RoomMembersState): State<RoomMember?> {
+    val roomInfo by roomInfoFlow.collectAsState()
+    return remember(roomInfo.isDm, roomInfo.heroes, roomMembersState) {
+        mutableStateOf(roomMembersState.bipeDmOtherMember(roomInfo, sessionId))
     }
 }
 

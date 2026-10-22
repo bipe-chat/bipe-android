@@ -164,7 +164,19 @@ open class RoomListRoomSummaryPreviewParam : PreviewParameterProvider<RoomListRo
                     hasRoomCall = true,
                     activeCallIntent = CallIntent.AUDIO
                 ),
-            )
+            ),
+            // Bipe: a DM (bipe#507)
+            listOf(
+                aRoomListRoomSummary(
+                    name = null,
+                    isDm = true,
+                ),
+                aRoomListRoomSummary(
+                    name = "A tombstoned DM",
+                    isDm = true,
+                    isTombstoned = true,
+                ),
+            ),
         ).flatten()
 }
 
@@ -192,7 +204,6 @@ internal fun aRoomListRoomSummary(
     hasRoomCall: Boolean = false,
     activeCallIntent: CallIntent? = null,
     avatarData: AvatarData = AvatarData(id, name, size = AvatarSize.RoomListItem),
-    isDirect: Boolean = false,
     isDm: Boolean = false,
     isFavorite: Boolean = false,
     inviteSender: InviteSender? = null,
@@ -216,7 +227,6 @@ internal fun aRoomListRoomSummary(
     userDefinedNotificationMode = notificationMode,
     hasRoomCall = hasRoomCall,
     activeCallIntent = activeCallIntent,
-    isDirect = isDirect,
     isDm = isDm,
     isFavorite = isFavorite,
     inviteSender = inviteSender,

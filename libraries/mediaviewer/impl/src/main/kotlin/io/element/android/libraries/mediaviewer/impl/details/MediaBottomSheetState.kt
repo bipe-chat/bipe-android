@@ -27,5 +27,7 @@ sealed interface MediaBottomSheetState {
         val eventId: EventId,
         val mediaInfo: MediaInfo,
         val thumbnailSource: MediaSource?,
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        val isDm: Boolean,
     ) : MediaBottomSheetState
 }

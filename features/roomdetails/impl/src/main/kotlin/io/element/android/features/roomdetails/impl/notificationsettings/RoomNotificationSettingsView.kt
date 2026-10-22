@@ -125,7 +125,8 @@ private fun RoomSpecificNotificationSettingsView(
                             isSelected = true,
                             onSelectOption = { },
                             displayMentionsOnlyDisclaimer = displayMentionsOnlyDisclaimer,
-                            enabled = true
+                            enabled = true,
+                            isDm = state.isDm, // Bipe: bipe#507
                         )
                     }
                 }
@@ -135,6 +136,7 @@ private fun RoomSpecificNotificationSettingsView(
                         selected = state.displayNotificationMode,
                         enabled = !state.displayIsDefault.orTrue(),
                         displayMentionsOnlyDisclaimer = state.displayMentionsOnlyDisclaimer,
+                        isDm = state.isDm, // Bipe: bipe#507
                         onSelectOption = {
                             state.eventSink(RoomNotificationSettingsEvent.ChangeRoomNotificationMode(it.mode))
                         },

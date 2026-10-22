@@ -121,7 +121,8 @@ class PinnedMessagesBannerPresenter(
                         is AsyncData.Failure -> flowOf(AsyncData.Failure(asyncTimeline.error))
                         is AsyncData.Loading -> flowOf(AsyncData.Loading())
                         is AsyncData.Success -> {
-                            asyncTimeline.data.timelineItems
+                            // Bipe (bipe-chat/bipe#479): a cleared DM leaves out the pinned events at or before its marker.
+                            pinnedEventsTimelineProvider.bipeKeptItems(asyncTimeline.data)
                                 .map { timelineItems ->
                                     val pinnedItems = timelineItems.mapNotNull { timelineItem ->
                                         itemFactory.create(timelineItem)

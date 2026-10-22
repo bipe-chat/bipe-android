@@ -47,6 +47,7 @@ import io.element.android.libraries.push.impl.notifications.shortcut.createShort
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.appnavstate.api.ROOM_OPENED_FROM_NOTIFICATION
 import io.element.android.services.toolbox.api.strings.StringProvider
+import io.element.android.libraries.bipe.R as BipeR
 
 interface NotificationCreator {
     /**
@@ -464,7 +465,8 @@ class DefaultNotificationCreator(
             }
             when {
                 event.isSmartReplyError() -> addMessage(
-                    stringProvider.getString(R.string.notification_inline_reply_failed),
+                    // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                    stringProvider.getString(if (event.roomIsDm) BipeR.string.bipe_dm_inline_reply_failed else R.string.notification_inline_reply_failed),
                     event.timestamp,
                     senderPerson
                 )

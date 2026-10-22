@@ -114,12 +114,12 @@ class TimelineItemContentFactory(
                     return TimelineItemRoomMembershipContent(text)
                 }
                 val senderDisambiguatedDisplayName = senderProfile.getDisambiguatedDisplayName(sender)
-                roomMembershipFactory.create(itemContent, isOutgoing, sender, senderDisambiguatedDisplayName)
+                roomMembershipFactory.create(itemContent, isOutgoing, sender, senderDisambiguatedDisplayName, isDm)
             }
             is LegacyCallInviteContent -> TimelineItemLegacyCallInviteContent
             is StateContent -> {
                 val senderDisambiguatedDisplayName = senderProfile.getDisambiguatedDisplayName(sender)
-                stateFactory.create(itemContent, isOutgoing, sender, senderDisambiguatedDisplayName)
+                stateFactory.create(itemContent, isOutgoing, sender, senderDisambiguatedDisplayName, isDm) // Bipe: bipe#507
             }
             is StickerContent -> stickerFactory.create(itemContent)
             is PollContent -> pollFactory.create(eventId, isEditable, isOutgoing, itemContent)

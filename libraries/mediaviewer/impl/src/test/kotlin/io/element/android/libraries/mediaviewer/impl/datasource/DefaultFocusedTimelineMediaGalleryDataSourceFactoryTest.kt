@@ -22,6 +22,7 @@ class DefaultFocusedTimelineMediaGalleryDataSourceFactoryTest {
             room = FakeJoinedRoom(),
             timelineMediaItemsFactory = createTimelineMediaItemsFactory(),
             mediaItemsPostProcessor = MediaItemsPostProcessor(),
+            bipeClearedChats = aBipeClearedChats(),
         )
         val result = sut.createFor(
             eventId = AN_EVENT_ID,

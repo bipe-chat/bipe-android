@@ -71,6 +71,7 @@ dependencies {
 
     implementation(projects.appconfig)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe) // Bipe: DM strings (bipe#507)
     implementation(projects.libraries.core)
     implementation(projects.libraries.dateformatter.api)
     implementation(projects.libraries.designsystem)

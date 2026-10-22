@@ -36,7 +36,7 @@ data class RoomListRoomSummary(
     val userDefinedNotificationMode: RoomNotificationMode?,
     val hasRoomCall: Boolean,
     val activeCallIntent: CallIntent?,
-    val isDirect: Boolean,
+    /** Bipe (bipe#524): the SDK isDm is the one DM test. The `m.direct` flag is not kept here. */
     val isDm: Boolean,
     val isFavorite: Boolean,
     val inviteSender: InviteSender?,
@@ -46,6 +46,8 @@ data class RoomListRoomSummary(
     val dmUserStatus: DisplayedStatus?,
     /** Bipe (bipe#435): archived, the `m.lowpriority` tag. */
     val isLowPriority: Boolean = false,
+    /** Bipe (bipe#464): origin_server_ts of the latest event, to hide a cleared DM. Null when the room has no latest event. */
+    val bipeLatestEventTimestamp: Long? = null,
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

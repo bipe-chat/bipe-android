@@ -36,6 +36,7 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.inputs
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.core.coroutine.withPreviousValue
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -78,6 +79,7 @@ class RoomFlowNode(
     private val roomAliasResolverEntryPoint: RoomAliasResolverEntryPoint,
     private val membershipObserver: RoomMembershipObserver,
     private val analyticsService: AnalyticsService,
+    private val bipeClearedChats: BipeClearedChats,
 ) : BaseFlowNode<RoomFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = run {
@@ -191,6 +193,12 @@ class RoomFlowNode(
                 }
             }
         }.launchIn(lifecycleScope)
+
+        // Bipe (bipe#464): after "Apagar conversa" on this device the user stays in the DM, so close it as a leave does.
+        bipeClearedChats.clearedHere
+            .filter { it == roomId }
+            .onEach { navigateUp() }
+            .launchIn(lifecycleScope)
     }
 
     override fun resolve(navTarget: NavTarget, buildContext: BuildContext): Node {

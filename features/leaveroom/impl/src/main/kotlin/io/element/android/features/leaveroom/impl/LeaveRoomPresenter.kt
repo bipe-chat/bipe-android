@@ -19,12 +19,14 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runCatchingUpdatingState
+import io.element.android.libraries.bipe.clearedchats.BipeClearedChats
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.BaseRoom
 import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.api.room.powerlevels.usersWithRole
+import io.element.android.libraries.push.api.notifications.NotificationCleaner
 import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -36,13 +38,17 @@ class LeaveRoomPresenter(
     private val client: MatrixClient,
     private val dispatchers: CoroutineDispatchers,
     private val notificationConversationService: NotificationConversationService,
+    private val bipeClearedChats: BipeClearedChats,
+    private val notificationCleaner: NotificationCleaner,
 ) : Presenter<LeaveRoomState> {
     @Composable
     override fun present(): LeaveRoomState {
         val scope = rememberCoroutineScope()
         val leaveAction = remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
+        val bipeClearAction = remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
         return InternalLeaveRoomState(
             leaveAction = leaveAction.value,
+            bipeClearAction = bipeClearAction.value,
         ) { event ->
             when (event) {
                 is LeaveRoomEvent.LeaveRoom ->
@@ -51,7 +57,14 @@ class LeaveRoomPresenter(
                     } else {
                         scope.leaveRoom(roomId = event.roomId, leaveAction = leaveAction)
                     }
-                InternalLeaveRoomEvent.ResetState -> leaveAction.value = AsyncAction.Uninitialized
+                InternalLeaveRoomEvent.ResetState -> {
+                    leaveAction.value = AsyncAction.Uninitialized
+                    bipeClearAction.value = AsyncAction.Uninitialized
+                }
+                is InternalLeaveRoomEvent.BipeClearDm -> {
+                    leaveAction.value = AsyncAction.Uninitialized
+                    scope.bipeClearDm(roomId = event.roomId, clearAction = bipeClearAction)
+                }
             }
         }
     }
@@ -92,6 +105,21 @@ class LeaveRoomPresenter(
                     .onFailure { Timber.e(it, "Error while leaving room ${room.roomId}") }
                     .getOrThrow()
             }
+        }
+    }
+
+    // Bipe (bipe#464): a DM is not left. The marker hides it until a newer event arrives.
+    private fun CoroutineScope.bipeClearDm(
+        roomId: RoomId,
+        clearAction: MutableState<AsyncAction<Unit>>,
+    ) = launch(dispatchers.io) {
+        clearAction.runCatchingUpdatingState {
+            bipeClearedChats.clear(roomId)
+                .onFailure { Timber.e(it, "Bipe: could not clear the DM $roomId") }
+                .getOrThrow()
+            // The tray and the share sheet drop the DM too (bipe-chat/bipe#479). iOS: removeDeliveredMessageNotifications.
+            notificationCleaner.clearMessagesForRoom(client.sessionId, roomId)
+            notificationConversationService.onClearedRoom(client.sessionId, roomId)
         }
     }
 

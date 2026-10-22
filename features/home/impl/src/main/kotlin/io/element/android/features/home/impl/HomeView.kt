@@ -258,7 +258,8 @@ private fun HomeScaffold(
                 bipeAccountSwitcher = BipeAccountSwitcher(
                     accounts = state.bipeAccounts,
                     nextAccount = state.bipeNextAccount(),
-                    canAddAccount = state.bipeCanAddAccount,
+                    // Bipe: "Nova conta" only while the phone has one account; with more, it is in Sua conta.
+                    canAddAccount = state.bipeCanAddAccount && state.bipeAccounts.size == 1,
                     onSwitch = { state.eventSink(HomeEvent.SwitchToAccount(it)) },
                     onAddAccount = onAddAccountClick,
                     onMenuOpen = { bipeHaptics(BipeHaptic.Hold) }, // Bipe: account_menu (ADR 0134)

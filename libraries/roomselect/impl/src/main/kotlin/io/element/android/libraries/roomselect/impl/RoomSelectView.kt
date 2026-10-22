@@ -98,6 +98,7 @@ import io.element.android.libraries.roomselect.api.RoomSelectMode
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Ref: https://www.figma.com/design/kEAcfun9iSpszeUDvdKZ6b/ER-351--Multi-account-in-EX?node-id=195-38510
@@ -466,7 +467,8 @@ private fun RoomSummaryView(
             // Name
             Text(
                 style = ElementTheme.typography.fontBodyLgRegular,
-                text = roomInfo.name ?: stringResource(id = CommonStrings.common_no_room_name),
+                // Bipe: a DM says "conversa", not "sala" (bipe#507)
+                text = roomInfo.name ?: stringResource(id = if (roomInfo.isDm) BipeR.string.bipe_dm_no_name else CommonStrings.common_no_room_name),
                 fontStyle = FontStyle.Italic.takeIf { roomInfo.name == null },
                 color = ElementTheme.colors.textPrimary,
                 maxLines = 1,

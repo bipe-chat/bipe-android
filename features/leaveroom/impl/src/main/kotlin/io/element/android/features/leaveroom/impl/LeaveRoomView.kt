@@ -53,6 +53,17 @@ fun LeaveRoomView(
         errorMessage = { stringResource(CommonStrings.error_network_or_server_issue) },
         progressDialog = { LeaveRoomProgressDialog() },
     )
+    // Bipe (bipe#464): "Apagar conversa" in a DM.
+    AsyncActionView(
+        async = state.bipeClearAction,
+        onSuccess = {
+            state.eventSink(InternalLeaveRoomEvent.ResetState)
+        },
+        onErrorDismiss = {
+            state.eventSink(InternalLeaveRoomEvent.ResetState)
+        },
+        errorMessage = { stringResource(BipeR.string.bipe_dm_delete_error) },
+    )
 }
 
 @Composable
@@ -64,11 +75,14 @@ private fun LeaveRoomConfirmationDialog(
     val defaultOnSubmitClick = { roomId: RoomId -> { eventSink(LeaveRoomEvent.LeaveRoom(roomId, needsConfirmation = false)) } }
     val defaultDismissAction = { eventSink(InternalLeaveRoomEvent.ResetState) }
     when (confirmation) {
-        // Bipe: a DM is a conversation, not a private room.
+        // Bipe (bipe#464): a DM has "Apagar conversa" in place of leave. The user stays in the room.
         is Confirmation.Dm -> LeaveRoomConfirmationDialog(
-            text = stringResource(BipeR.string.bipe_dm_leave_body),
+            title = stringResource(BipeR.string.bipe_dm_delete_title),
+            text = stringResource(BipeR.string.bipe_dm_delete_body),
             isDm = true,
-            onSubmitClick = defaultOnSubmitClick(confirmation.roomId),
+            submitText = stringResource(BipeR.string.bipe_dm_delete_confirm),
+            destructiveSubmit = true,
+            onSubmitClick = { eventSink(InternalLeaveRoomEvent.BipeClearDm(confirmation.roomId)) },
             onDismiss = defaultDismissAction,
         )
 

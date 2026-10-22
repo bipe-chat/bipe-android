@@ -29,6 +29,10 @@ internal val roomCreateEvent = MatrixTimelineItem.Event(
     uniqueId = UniqueId("m.room.create"),
     event = anEventTimelineItem(sender = A_USER_ID, content = StateContent("", OtherState.RoomCreate))
 )
+internal val roomTopicEvent = MatrixTimelineItem.Event(
+    uniqueId = UniqueId("m.room.topic"),
+    event = anEventTimelineItem(sender = A_USER_ID, content = StateContent("", OtherState.RoomTopic("A topic")))
+)
 internal val roomCreatorJoinEvent = MatrixTimelineItem.Event(
     uniqueId = UniqueId("m.room.member"),
     event = anEventTimelineItem(content = aRoomMembershipContent(userId = A_USER_ID, change = MembershipChange.JOINED))

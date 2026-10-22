@@ -9,6 +9,7 @@
 package io.element.android.features.home.impl.search
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.home.impl.aBipeClearedChats
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
 import io.element.android.libraries.dateformatter.test.FakeDateFormatter
 import io.element.android.libraries.eventformatter.test.FakeRoomLatestEventFormatter
@@ -156,6 +157,7 @@ fun TestScope.createRoomListSearchPresenter(
                     ),
                     coroutineDispatchers = testCoroutineDispatchers(),
                     coroutineScope = coroutineScope,
+                    bipeClearedChats = aBipeClearedChats(),
                 )
             }
         }

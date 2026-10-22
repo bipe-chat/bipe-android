@@ -51,5 +51,9 @@ open class AcceptDeclineInviteStatePreviewParam : PreviewParameterProvider<Accep
             anAcceptDeclineInviteState(
                 declineAction = AsyncAction.Failure(RuntimeException("Error while declining invite")),
             ),
+            // Bipe: an invalid DM invite (bipe#507)
+            anAcceptDeclineInviteState(
+                acceptAction = AsyncAction.Failure(AcceptInvite.Failures.InvalidDmInvite),
+            ),
         )
 }

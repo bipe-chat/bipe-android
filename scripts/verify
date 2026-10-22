@@ -19,8 +19,17 @@ TASKS=":app:compileGplayDebugKotlin :app:compileFdroidDebugKotlin compileDebugUn
 
 sdk="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 if [ -d "$sdk" ] || grep -qs '^sdk.dir=' local.properties; then
+  # One heavy build at a time on the Mac, across the Bipe repos and Starlings (AGENTS.md, "Before you push").
+  # build-lock waits while another build holds the lock and names it. Without it (CI, another Mac) Gradle runs as before.
+  lock=$(command -v build-lock || echo "$HOME/.local/bin/build-lock")
+  if [ -x "$lock" ]; then
+    set -- "$lock" "bipe-android verify"
+  else
+    set --
+    [ -n "${CI:-}" ] || echo "verify: build-lock is not installed; building without the machine lock" >&2
+  fi
   # shellcheck disable=SC2086
-  ./gradlew $TASKS --continue
+  "$@" ./gradlew $TASKS --continue
   echo "verify: ok"
   exit 0
 fi

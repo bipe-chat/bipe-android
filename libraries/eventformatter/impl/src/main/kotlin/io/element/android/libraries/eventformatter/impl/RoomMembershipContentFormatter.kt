@@ -14,6 +14,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.MembershipCha
 import io.element.android.libraries.matrix.api.timeline.item.event.RoomMembershipContent
 import io.element.android.services.toolbox.api.strings.StringProvider
 import timber.log.Timber
+import io.element.android.libraries.bipe.R as BipeR
 
 @Inject
 class RoomMembershipContentFormatter(
@@ -24,18 +25,33 @@ class RoomMembershipContentFormatter(
         membershipContent: RoomMembershipContent,
         senderDisambiguatedDisplayName: String,
         senderIsYou: Boolean,
+        // Bipe: a DM says "conversa", not "sala" (bipe#507)
+        isDm: Boolean = false,
     ): CharSequence? {
         val userId = membershipContent.userId
         val memberIsYou = matrixClient.isMe(userId)
         val userDisplayNameOrId = membershipContent.userDisplayName ?: userId.value
         val reason = membershipContent.reason?.takeIf { it.isNotBlank() }
+        // Bipe: a DM has no invite lines, in the timeline or the room list preview. An invite pair's
+        // auto-accept made "You accepted the invite" the preview (BIPE.md "DMs are DMs").
+        if (isDm && membershipContent.change in bipeDmHiddenChanges) return null
         return when (membershipContent.change) {
-            MembershipChange.JOINED -> if (memberIsYou) {
+            // Bipe: a DM says "conversa", not "sala" (bipe#507)
+            MembershipChange.JOINED -> if (isDm && memberIsYou) {
+                sp.getString(BipeR.string.bipe_dm_joined_by_you)
+            } else if (isDm) {
+                sp.getString(BipeR.string.bipe_dm_joined, senderDisambiguatedDisplayName)
+            } else if (memberIsYou) {
                 sp.getString(R.string.state_event_room_join_by_you)
             } else {
                 sp.getString(R.string.state_event_room_join, senderDisambiguatedDisplayName)
             }
-            MembershipChange.LEFT -> if (memberIsYou) {
+            // Bipe: a DM says "conversa", not "sala" (bipe#507)
+            MembershipChange.LEFT -> if (isDm && memberIsYou) {
+                sp.getString(BipeR.string.bipe_dm_left_by_you)
+            } else if (isDm) {
+                sp.getString(BipeR.string.bipe_dm_left, senderDisambiguatedDisplayName)
+            } else if (memberIsYou) {
                 sp.getString(R.string.state_event_room_leave_by_you)
             } else {
                 sp.getString(R.string.state_event_room_leave, senderDisambiguatedDisplayName)
@@ -88,7 +104,12 @@ class RoomMembershipContentFormatter(
             } else {
                 sp.getString(R.string.state_event_room_reject, userDisplayNameOrId)
             }
-            MembershipChange.INVITATION_REVOKED -> if (senderIsYou) {
+            // Bipe: a DM says "conversa", not "sala" (bipe#507)
+            MembershipChange.INVITATION_REVOKED -> if (isDm && senderIsYou) {
+                sp.getString(BipeR.string.bipe_dm_third_party_revoked_invite_by_you, userDisplayNameOrId)
+            } else if (isDm) {
+                sp.getString(BipeR.string.bipe_dm_third_party_revoked_invite, senderDisambiguatedDisplayName, userDisplayNameOrId)
+            } else if (senderIsYou) {
                 sp.getString(R.string.state_event_room_third_party_revoked_invite_by_you, userDisplayNameOrId)
             } else {
                 sp.getString(R.string.state_event_room_third_party_revoked_invite, senderDisambiguatedDisplayName, userDisplayNameOrId)
@@ -134,4 +155,6 @@ class RoomMembershipContentFormatter(
             }
         }
     }
+
+    private val bipeDmHiddenChanges = setOf(MembershipChange.INVITED, MembershipChange.INVITATION_ACCEPTED)
 }

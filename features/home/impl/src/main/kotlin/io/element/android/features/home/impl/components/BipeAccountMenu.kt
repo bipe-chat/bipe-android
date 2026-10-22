@@ -37,7 +37,7 @@ import io.element.android.libraries.bipe.R as BipeR
 
 /**
  * Bipe: the account menu on a long press of the Você tab (ADR 0135, bipe#446). Every account as a single choice, the
- * current one first with a check, then "Nova conta" while the cap allows one more account (ADR 0086).
+ * current one first with a check, then "Nova conta" while the phone has one account and the cap allows one more (ADR 0086).
  */
 @Composable
 internal fun BipeAccountMenuAnchor(

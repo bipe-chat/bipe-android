@@ -25,6 +25,7 @@ import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.bipe.R as BipeR
 
 @Composable
 fun AcceptDeclineInviteView(
@@ -47,10 +48,10 @@ fun AcceptDeclineInviteView(
                 stringResource(CommonStrings.common_something_went_wrong)
             },
             errorMessage = { error ->
-                if (error is AcceptInvite.Failures.InvalidInvite) {
-                    stringResource(CommonStrings.error_invalid_invite)
-                } else {
-                    stringResource(CommonStrings.error_network_or_server_issue)
+                when (error) {
+                    AcceptInvite.Failures.InvalidDmInvite -> stringResource(BipeR.string.bipe_dm_invite_invalid) // Bipe
+                    AcceptInvite.Failures.InvalidInvite -> stringResource(CommonStrings.error_invalid_invite)
+                    else -> stringResource(CommonStrings.error_network_or_server_issue)
                 }
             }
         )

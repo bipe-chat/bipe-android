@@ -218,6 +218,7 @@ class MediaGalleryPresenterTest {
                     eventId = AN_EVENT_ID,
                     mediaInfo = item.mediaInfo,
                     thumbnailSource = item.thumbnailSource,
+                    isDm = false,
                 )
             )
             // Close the bottom sheet

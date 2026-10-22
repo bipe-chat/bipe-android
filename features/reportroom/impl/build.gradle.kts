@@ -28,6 +28,7 @@ setupDependencyInjection()
 dependencies {
     api(projects.features.reportroom.api)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.bipe) // Bipe: DM strings (bipe#507)
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.uiStrings)

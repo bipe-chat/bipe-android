@@ -493,6 +493,10 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         val someoneAcceptedInviteEvent = createLatestEvent(sentByYou = false, senderDisplayName = otherName, content = someoneContent)
         val someoneAcceptedInvite = formatter.format(someoneAcceptedInviteEvent, false)
         assertThat(someoneAcceptedInvite).isEqualTo("$otherName accepted the invite")
+
+        // Bipe: no invite lines in a DM preview
+        assertThat(formatter.format(youAcceptedInviteEvent, true)).isNull()
+        assertThat(formatter.format(someoneAcceptedInviteEvent, true)).isNull()
     }
 
     @Test
@@ -767,6 +771,12 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         val someoneSetBlankRoomTopicEvent = createLatestEvent(sentByYou = false, senderDisplayName = otherName, content = blankContent)
         val someoneSetBlankRoomTopic = formatter.format(someoneSetBlankRoomTopicEvent, false)
         assertThat(someoneSetBlankRoomTopic).isEqualTo("$otherName removed the room topic")
+
+        // Bipe: a DM has no topic, so no last message about one (bipe#527).
+        listOf(changedContent, removedContent, blankContent).forEach { content ->
+            assertThat(formatter.format(createLatestEvent(sentByYou = true, senderDisplayName = null, content = content), true)).isNull()
+            assertThat(formatter.format(createLatestEvent(sentByYou = false, senderDisplayName = otherName, content = content), true)).isNull()
+        }
     }
 
     @Test
