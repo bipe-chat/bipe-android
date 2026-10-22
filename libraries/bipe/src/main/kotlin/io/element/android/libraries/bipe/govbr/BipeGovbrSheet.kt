@@ -98,8 +98,14 @@ fun BipeGovbrSheet(flow: BipeGovbrFlow, onDismiss: () -> Unit) {
                 }
                 BipeGovbrFlow.Phase.Checking -> WaitingRow(R.string.bipe_govbr_checking)
                 is BipeGovbrFlow.Phase.Verified -> ListItem(
-                    content = { Text(current.name?.let { stringResource(R.string.bipe_govbr_verified, it) } ?: stringResource(R.string.bipe_trust_step_govbr)) },
-                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.CheckCircleSolid()), tintColor = ElementTheme.colors.iconSuccessPrimary),
+                    content = {
+                        val name = current.name
+                        Text(if (name != null) stringResource(R.string.bipe_govbr_verified, name) else stringResource(R.string.bipe_trust_step_govbr))
+                    },
+                    leadingContent = ListItemContent.Icon(
+                        IconSource.Vector(CompoundIcons.CheckCircleSolid()),
+                        tintColor = ElementTheme.colors.iconSuccessPrimary,
+                    ),
                 )
                 is BipeGovbrFlow.Phase.Rejected -> {
                     ListSupportingText(text = stringResource(current.reason.messageRes))

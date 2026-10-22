@@ -53,9 +53,9 @@ data class PreferencesRootState(
     // Bipe: Analytics, Labs and "Report a problem" show only in builds that are not release builds (ADR 0112).
     val bipeIsDeveloperBuild: Boolean,
     // Bipe: trust step 5 (bipe#545). The level of the account's own person badge, the feature flag, and the open sheet.
-    val bipePersonBadge: BadgeLevel? = null,
-    val bipeGovbrEnabled: Boolean = false,
-    val bipeGovbrFlow: BipeGovbrFlow? = null,
+    val bipePersonBadge: BadgeLevel?,
+    val bipeGovbrEnabled: Boolean,
+    val bipeGovbrFlow: BipeGovbrFlow?,
     val eventSink: (PreferencesRootEvent) -> Unit,
 )
 

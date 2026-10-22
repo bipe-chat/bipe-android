@@ -114,15 +114,15 @@ enum class BipeGovbrReason(val id: String) {
  */
 fun BipeBadgeLookup.unverifiedLevel(): BadgeLevel? {
     val envelope = (this as? BipeBadgeLookup.Envelope)?.json ?: return null
-    val lvl = runCatchingExceptions { json.decodeFromString<BadgeEnvelope>(envelope) }.getOrNull()?.unverifiedPayload()?.lvl
+    val lvl = runCatchingExceptions { looseJson.decodeFromString<BadgeEnvelope>(envelope) }.getOrNull()?.unverifiedPayload()?.lvl
     return BadgeLevel.entries.firstOrNull { it.name.equals(lvl, ignoreCase = true) }
 }
 
 @Serializable
 private data class LoosePayload(val name: String? = null, val lvl: String? = null)
 
-private val json = Json { ignoreUnknownKeys = true }
+private val looseJson = Json { ignoreUnknownKeys = true }
 
 private fun BadgeEnvelope.unverifiedPayload(): LoosePayload? = runCatchingExceptions {
-    json.decodeFromString<LoosePayload>(String(Base64.getUrlDecoder().decode(payload), Charsets.UTF_8))
+    looseJson.decodeFromString<LoosePayload>(String(Base64.getUrlDecoder().decode(payload), Charsets.UTF_8))
 }.getOrNull()
