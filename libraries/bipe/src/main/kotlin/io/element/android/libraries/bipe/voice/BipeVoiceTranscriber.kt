@@ -82,7 +82,7 @@ class AndroidBipeVoiceTranscriber(
         // EXTRA_AUDIO_SOURCE and segmented sessions came with Android 13.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
         if (!SpeechRecognizer.isOnDeviceRecognitionAvailable(context)) return null
-        return OnDeviceSession(context, scope, sampleRateHz).also { it.start() }
+        return OnDeviceSession(context, scope, sampleRateHz).apply { start() }
     }
 }
 

@@ -56,12 +56,11 @@ private constructor(
                 if (isPaused) {
                     // Bipe: the microphone is off while paused; wait for resume() or cancellation.
                     delay(PAUSE_POLL_MS)
-                    continue
-                }
-                if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                } else if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
                     break
+                } else {
+                    onAudio(read())
                 }
-                onAudio(read())
             }
         }
     }
