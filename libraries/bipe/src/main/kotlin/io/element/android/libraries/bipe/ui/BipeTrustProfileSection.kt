@@ -43,11 +43,12 @@ fun BipeTrustProfileSection(
     onEditProfileClick: () -> Unit,
     onHandleClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onGovbrClick: () -> Unit = {},
 ) {
     Column(modifier) {
         Header(profile)
         for (step in profile.steps) {
-            StepRow(step, profile.isCompany)
+            StepRow(step, profile.isCompany, onClick = onGovbrClick.takeIf { step.id == StepId.GOVBR && step.status == Status.TODO })
             if (step.id == StepId.PROFILE) {
                 for (item in profile.missingProfileItems) {
                     ListItem(
@@ -96,7 +97,7 @@ private fun Header(profile: BipeTrustProfile) {
 }
 
 @Composable
-private fun StepRow(step: BipeTrustProfile.Step, isCompany: Boolean) {
+private fun StepRow(step: BipeTrustProfile.Step, isCompany: Boolean, onClick: (() -> Unit)? = null) {
     val (icon, tint) = when (step.status) {
         Status.DONE -> CompoundIcons.CheckCircleSolid() to ElementTheme.colors.iconSuccessPrimary
         Status.TODO -> CompoundIcons.Circle() to ElementTheme.colors.iconSecondary
@@ -120,6 +121,7 @@ private fun StepRow(step: BipeTrustProfile.Step, isCompany: Boolean) {
         } else {
             null
         },
+        onClick = onClick,
     )
 }
 

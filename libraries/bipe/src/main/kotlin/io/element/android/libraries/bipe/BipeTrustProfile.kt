@@ -46,13 +46,19 @@ data class BipeTrustProfile(
     val liveStepsDone: Boolean get() = steps.none { it.status == Status.TODO }
 
     companion object {
-        /** [business] is `GET /v1/me/business`: `null` when the account has no claim or the claim did not load. */
+        /**
+         * [business] is `GET /v1/me/business`: `null` when the account has no claim or the claim did not load.
+         * [personBadge] is the level of the account's own badge from `GET /v1/badges`: `null` without one or until it loads.
+         * [govbrEnabled] makes step 5 live (bipe#545); else it shows "Em breve".
+         */
         fun create(
             displayName: String?,
             hasAvatar: Boolean,
             handle: String?,
             isCompany: Boolean = false,
             business: BipeBusinessClaim? = null,
+            personBadge: BadgeLevel? = null,
+            govbrEnabled: Boolean = false,
         ): BipeTrustProfile {
             val missing = buildList {
                 if (displayName.isNullOrBlank()) add(ProfileItem.DISPLAY_NAME)
@@ -76,7 +82,14 @@ data class BipeTrustProfile(
                 listOf(
                     Step(StepId.EMAIL, Status.COMING_SOON),
                     Step(StepId.PIX, Status.COMING_SOON),
-                    Step(StepId.GOVBR, Status.COMING_SOON),
+                    Step(
+                        StepId.GOVBR,
+                        when {
+                            personBadge == BadgeLevel.GOVBR -> Status.DONE
+                            govbrEnabled -> Status.TODO
+                            else -> Status.COMING_SOON
+                        },
+                    ),
                 )
             }
             return BipeTrustProfile(isCompany = isCompany, steps = start + rest, missingProfileItems = missing)

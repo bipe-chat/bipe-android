@@ -545,3 +545,22 @@ internal data class BadgeGoneBody(val reason: String? = null)
 data class BipeRemoteBannerResponse(
     @SerialName("banner") val banner: BipeRemoteBanner? = null,
 )
+
+/** `GovbrChallenge` (bipe#545). JSON keys are camelCase here, as in the contract. */
+@Serializable
+data class BipeGovbrChallenge(
+    @SerialName("verificationId") val verificationId: String,
+    /** The challenge PDF, base64. */
+    @SerialName("pdf") val pdf: String,
+    @SerialName("fileName") val fileName: String,
+    @SerialName("expiresAt") val expiresAt: String,
+)
+
+/** `VerificationStatus`. `state` is `pending`, `verified`, `rejected` or `expired`; `reason` comes with `rejected`. */
+@Serializable
+data class BipeVerificationStatus(
+    @SerialName("verificationId") val verificationId: String,
+    @SerialName("state") val state: String,
+    @SerialName("badge") val badge: BadgeEnvelope? = null,
+    @SerialName("reason") val reason: String? = null,
+)

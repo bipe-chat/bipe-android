@@ -147,6 +147,13 @@ Shared test vectors (ADR 0031 rule 4): `libraries/bipe/src/test/.../SharedVector
 - **Self-chat ("Anotações"):** `BipeSelfChat` (libraries/bipe). The room ID is in global account data `chat.bipe.self_chat`, content `{"room_id": "..."}`, the same as iOS. It opens the stored room when the user is joined, else creates an encrypted private room with no invites. The room does not show in Conversas or Grupos.
 - **Search** stays in the top bar on Conversas and Grupos.
 
+## gov.br verification (trust step 5, bipe#545, port of the iOS sheet)
+
+- **Gate:** feature flag `BipeGovbr` (`feature.bipe_govbr`, developer settings), off by default until the legal review of the gov.br signer terms (bipe#17). Off: step 5 shows "Em breve".
+- **Flow:** the step 5 row in `BipeTrustProfileSection` sends `PreferencesRootEvent.BipeOpenGovbr`; the presenter holds a `BipeGovbrFlow` (libraries/bipe `govbr/`) and the view shows `BipeGovbrSheet`. Tap 1: `POST /v1/verifications/govbr`, then the system save dialog (`CreateDocument`), then the gov.br app (`br.gov.meugovbr`, else its Play page). "Já assinei" (`OpenDocument`) reads the signed PDF (at most 5 MB plus one byte) and sends it to `PUT .../document`.
+- **Done state:** the presenter reads the account's own badge (`GET /v1/badges`) and takes `lvl` without the signature check, only for the card. Closing the sheet reads it again. Seals always go through `BadgeVerifier`.
+- Not done: Bipe as a share target for the signed PDF (`ACTION_SEND` with `application/pdf`).
+
 ## "Conferir no Bipe" (bipe ADR 0091, bipe#294)
 
 - **Share target:** Element's share intent. `RootFlowNode.onIncomingShare` asks `BipePixShareReader` (libraries/bipe, `pix/`) for shared text, or the QR codes in shared images (zxing-cpp, the reader Element uses for login QR). When it finds a Pix code or key it pushes `NavTarget.BipePixCheck` with `BipePixCheckView`, also with no account. "Enviar para uma conversa" continues to Element's share flow (`continueIncomingShare`). Close goes back to the app, not to the sharing app.

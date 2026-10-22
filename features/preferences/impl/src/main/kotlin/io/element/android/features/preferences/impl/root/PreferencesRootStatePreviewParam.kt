@@ -14,8 +14,10 @@ import io.element.android.features.preferences.impl.account.aPreferencesAccountS
 import io.element.android.features.preferences.impl.userstatus.UserStatusPickerState
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
 import io.element.android.features.preferences.impl.userstatus.aUserStatusState
+import io.element.android.libraries.bipe.BadgeLevel
 import io.element.android.libraries.bipe.api.BipeBusinessClaim
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
+import io.element.android.libraries.bipe.govbr.BipeGovbrFlow
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
@@ -77,6 +79,9 @@ fun aPreferencesRootState(
     bipeNotificationsOn: Boolean? = true,
     bipeDeviceId: String = "ABCDEFGHIJ",
     bipeIsDeveloperBuild: Boolean = false,
+    bipePersonBadge: BadgeLevel? = null,
+    bipeGovbrEnabled: Boolean = false,
+    bipeGovbrFlow: BipeGovbrFlow? = null,
     eventSink: (PreferencesRootEvent) -> Unit = {},
 ) = PreferencesRootState(
     myUser = myUser,
@@ -100,5 +105,8 @@ fun aPreferencesRootState(
     bipeNotificationsOn = bipeNotificationsOn,
     bipeDeviceId = bipeDeviceId,
     bipeIsDeveloperBuild = bipeIsDeveloperBuild,
+    bipePersonBadge = bipePersonBadge,
+    bipeGovbrEnabled = bipeGovbrEnabled,
+    bipeGovbrFlow = bipeGovbrFlow,
     eventSink = eventSink,
 )

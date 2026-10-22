@@ -43,6 +43,7 @@ import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
 import io.element.android.libraries.bipe.BipeTrustProfile
 import io.element.android.libraries.bipe.api.BipeWhoCanMessage
 import io.element.android.libraries.bipe.generated.BipeSettingsGroup
+import io.element.android.libraries.bipe.govbr.BipeGovbrSheet
 import io.element.android.libraries.bipe.handle.BipeInvitesRow
 import io.element.android.libraries.bipe.selfchat.BipeSelfChatRow
 import io.element.android.libraries.bipe.settings.BipeWayBack
@@ -114,10 +115,16 @@ fun PreferencesRootView(
                     handle = state.bipeHandle,
                     isCompany = state.bipeIsCompany,
                     business = state.bipeBusiness,
+                    personBadge = state.bipePersonBadge,
+                    govbrEnabled = state.bipeGovbrEnabled,
                 ),
                 onEditProfileClick = { onEditProfileClick(state.myUser) },
                 onHandleClick = onBipeHandleClick,
+                onGovbrClick = { state.eventSink(PreferencesRootEvent.BipeOpenGovbr) },
             )
+            state.bipeGovbrFlow?.let { flow ->
+                BipeGovbrSheet(flow = flow, onDismiss = { state.eventSink(PreferencesRootEvent.BipeCloseGovbr) })
+            }
             BipeInvitesRow(onClick = onBipeInvitesClick)
             BipeSettingsGroupRows(state = state, onGroupClick = onBipeGroupClick)
             DeveloperSection(
