@@ -584,6 +584,11 @@ object BipeRegistries {
         "bankAlert",
     )
 
+    /** Photo match (ADR 0049, registries/photo-match.json): dHash grid size and the largest Hamming distance that matches. */
+    const val PHOTO_MATCH_WIDTH = 9
+    const val PHOTO_MATCH_HEIGHT = 8
+    const val PHOTO_MATCH_MAX_DISTANCE = 6
+
     /** Username (handle) rules. The server is the authority; clients check early for feedback. */
     const val HANDLE_MIN_LENGTH = 3
     const val HANDLE_MAX_LENGTH = 30
@@ -611,6 +616,17 @@ object BipeRegistries {
     const val PROFILE_BIO_MAX_LINES = 4
     const val PROFILE_PHOTO_MAX_BYTES = 262144
     const val PROFILE_PHOTO_MAX_PIXELS = 512
+    /** Security rule 8: marks that look like the verified seal; none may sit in a display name (variation selectors removed). */
+    val sealLookalikeEmoji: List<String> = listOf(
+        "💜",
+        "🟣",
+        "🟪",
+        "✅",
+        "☑",
+        "✔",
+        "✓",
+        "🔰",
+    )
 
     /** Invite codes: the code inside anything a user pastes (registries/invite-codes.json). */
     const val INVITE_CODE_PATTERN = "(?<![A-Z0-9])([A-HJKMNP-Z2-9]{4})[ \\-\\u2010-\\u2014\\u2212]?([A-HJKMNP-Z2-9]{4})[ \\-\\u2010-\\u2014\\u2212]?([A-HJKMNP-Z2-9]{4})(?![A-Z0-9])"
